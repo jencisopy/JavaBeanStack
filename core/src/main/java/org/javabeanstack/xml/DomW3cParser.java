@@ -48,28 +48,29 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.javabeanstack.error.ErrorManager;
-
+import org.javabeanstack.util.Fn;
+import static org.javabeanstack.util.Strings.*;
 
 /**
  *
  * @author Jorge Enciso
  */
 public class DomW3cParser {
-
     private static final Logger LOGGER = Logger.getLogger(DomW3cParser.class);
-    private static final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();    
+    private static final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     private static final XPathFactory xpathFactory = XPathFactory.newInstance();
     private static final XPath xpath = xpathFactory.newXPath();
+    private static final String DEFAULTCHARSET = "UTF-8";
 
     /**
      * Crea un objeto Document
+     *
      * @return objeto document
-     * @throws ParserConfigurationException 
+     * @throws ParserConfigurationException
      */
-    public static Document newDocument() throws ParserConfigurationException{
+    public static Document newDocument() throws ParserConfigurationException {
         return factory.newDocumentBuilder().newDocument();
     }
-    
 
     /**
      * Crea y devuelve un documento DOM
@@ -84,10 +85,18 @@ public class DomW3cParser {
             throws ParserConfigurationException, SAXException, IOException {
 
         DocumentBuilder builder = factory.newDocumentBuilder();
-        InputStream stream = new ByteArrayInputStream(xml.getBytes());
+        InputStream stream;
+        String charSet = getXmlFileCharSet(xml);
+        if (!charSet.isEmpty()){
+            stream = new ByteArrayInputStream(xml.getBytes(charSet));            
+        }
+        else{
+            stream = new ByteArrayInputStream(xml.getBytes());                        
+        }
         Document xmlDom = builder.parse(stream);
         return xmlDom;
     }
+
 
     /**
      * Crea y devuelve un documento DOM
@@ -105,7 +114,7 @@ public class DomW3cParser {
         Document xmlDom = builder.parse(xml);
         return xmlDom;
     }
-    
+
     /**
      * Crea y devuelve un documento DOM
      *
@@ -115,20 +124,20 @@ public class DomW3cParser {
      * @throws java.io.FileNotFoundException
      * @throws org.xml.sax.SAXException
      */
-    public static Document loadXml(File file) throws 
-                ParserConfigurationException, FileNotFoundException, IOException, SAXException {
+    public static Document loadXml(File file) throws
+            ParserConfigurationException, FileNotFoundException, IOException, SAXException {
         if (file.exists() && file.isFile() && file.canRead() && file.length() > 0) {
             BufferedInputStream f;
 
             byte[] buffer = new byte[(int) file.length()];
             f = new BufferedInputStream(new FileInputStream(file));
             f.read(buffer);
-            IOUtils.closeQuietly(f);            
+            IOUtils.closeQuietly(f);
             return loadXml(new String(buffer));
         }
         return null;
     }
-    
+
     /**
      * Crea nuevo elemento
      *
@@ -147,7 +156,7 @@ public class DomW3cParser {
         }
         return null;
     }
-    
+
     /**
      * Crea nuevo elemento
      *
@@ -176,15 +185,15 @@ public class DomW3cParser {
     public static Element createElement(Element element, Element parentNode) {
         if (element != null && element instanceof Element && parentNode instanceof Element) {
             // Si el elemento a agregar no pertenece al documento a agregar            
-            if (parentNode.getOwnerDocument() != element.getOwnerDocument()){
-                element = (Element)parentNode.getOwnerDocument().adoptNode(element);
+            if (parentNode.getOwnerDocument() != element.getOwnerDocument()) {
+                element = (Element) parentNode.getOwnerDocument().adoptNode(element);
             }
             parentNode.appendChild(element);
             return element;
         }
         return null;
     }
-    
+
     /**
      * Crea nuevo elemento
      *
@@ -196,22 +205,21 @@ public class DomW3cParser {
     public static Element createElement(Element element, Element parentNode, int position) {
         if (element != null && element instanceof Element && parentNode instanceof Element) {
             // Si el elemento a agregar no pertenece al documento a agregar
-            if (parentNode.getOwnerDocument() != element.getOwnerDocument()){
-                element = (Element)parentNode.getOwnerDocument().adoptNode(element);
+            if (parentNode.getOwnerDocument() != element.getOwnerDocument()) {
+                element = (Element) parentNode.getOwnerDocument().adoptNode(element);
             }
-            if (parentNode.getChildNodes() == null || position > parentNode.getChildNodes().getLength()){
+            if (parentNode.getChildNodes() == null || position > parentNode.getChildNodes().getLength()) {
                 parentNode.appendChild(element);
-            }
-            else {
-                Node nodeRef=null;
-                if (parentNode.hasChildNodes()){
+            } else {
+                Node nodeRef = null;
+                if (parentNode.hasChildNodes()) {
                     List<Element> children = DomW3cParser.getChildren(parentNode);
-                    if (children.size() > position){
+                    if (children.size() > position) {
                         nodeRef = children.get(position);
                     }
                 }
                 parentNode.insertBefore(element, nodeRef);
-            } 
+            }
             return element;
         }
         return null;
@@ -228,16 +236,16 @@ public class DomW3cParser {
     public static Element insertElementBefore(Element element, Element parentNode, Element nodeRef) {
         if (element != null && element instanceof Element && parentNode instanceof Element) {
             // Si el elemento a agregar no pertenece al documento a agregar
-            if (parentNode.getOwnerDocument() != element.getOwnerDocument()){
-                element = (Element)parentNode.getOwnerDocument().adoptNode(element);
+            if (parentNode.getOwnerDocument() != element.getOwnerDocument()) {
+                element = (Element) parentNode.getOwnerDocument().adoptNode(element);
             }
             parentNode.insertBefore(element, nodeRef);
             return element;
         }
         return null;
     }
-    
-        /**
+
+    /**
      * Borra un elemento
      *
      * @param xmlDom objeto DOM
@@ -253,7 +261,7 @@ public class DomW3cParser {
         node.getParentNode().removeChild(node);
         return true;
     }
-    
+
     /**
      * Selecciona un elemento
      *
@@ -265,7 +273,7 @@ public class DomW3cParser {
     public static Element getElement(Document xmlDom, String nodePath) throws Exception {
         Node node = selectSingleNode(xmlDom, nodePath);
         if (node != null && node instanceof Element) {
-            return (Element)node;
+            return (Element) node;
         }
         return null;
     }
@@ -275,7 +283,8 @@ public class DomW3cParser {
      *
      * @param xmlDom
      * @param property nombre del atributo
-     * @param nodePath nodo en la que se realizará la búsqueda (en formato XPath)
+     * @param nodePath nodo en la que se realizará la búsqueda (en formato
+     * XPath)
      * @return valor del atributo o null en caso que no exista.
      * @throws java.lang.Exception
      */
@@ -307,7 +316,8 @@ public class DomW3cParser {
      * @param xmlDom
      * @param value nuevo valor de la propiedad
      * @param property nombre de la propiedad
-     * @param nodePath nodo en la que se realizará la búsqueda (en formato XPath)
+     * @param nodePath nodo en la que se realizará la búsqueda (en formato
+     * XPath)
      * @return true si se completó la operación con éxito o false en caso
      * contrario.
      * @throws java.lang.Exception
@@ -336,84 +346,111 @@ public class DomW3cParser {
             return true;
         }
         return false;
-    }    
+    }
 
     /**
      * Busca y devuelve un elemento o nodo del objeto DOM
+     *
      * @param document Objeto dom
-     * @param nodePath  path del elemento o nodo
+     * @param nodePath path del elemento o nodo
      * @return elemento que cumple con el criterio de busqueda
-     * @throws Exception 
+     * @throws Exception
      */
     public static Node selectSingleNode(Document document, String nodePath) throws Exception {
         XPathExpression xpathExpr;
-        if (!nodePath.startsWith("/")){
-            nodePath = "//"+nodePath;
+        if (!nodePath.startsWith("/")) {
+            nodePath = "//" + nodePath;
         }
         xpathExpr = xpath.compile(nodePath);
 
-        Node element = (Node)xpathExpr.evaluate(document,XPathConstants.NODE);
+        Node element = (Node) xpathExpr.evaluate(document, XPathConstants.NODE);
         return element;
     }
-    
+
     /**
      * Busca y selecciona una lista de nodos del objeto DOM
+     *
      * @param document objeto DOM
-     * @param nodePath  path del nodo o elemento buscado
-     * @return  lista de nodos que cumple con los criterios solicitados
-     * @throws Exception 
+     * @param nodePath path del nodo o elemento buscado
+     * @return lista de nodos que cumple con los criterios solicitados
+     * @throws Exception
      */
     public static NodeList selectNodes(Document document, String nodePath) throws Exception {
         XPathExpression xpathExpr;
-        if (!nodePath.startsWith("/")){
-            nodePath = "//"+nodePath;
+        if (!nodePath.startsWith("/")) {
+            nodePath = "//" + nodePath;
         }
         xpathExpr = xpath.compile(nodePath);
-        NodeList nodes = (NodeList)xpathExpr.evaluate(document,XPathConstants.NODESET);
+        NodeList nodes = (NodeList) xpathExpr.evaluate(document, XPathConstants.NODESET);
         return nodes;
     }
-    
+
     /**
      * Busca y selecciona una lista de nodos del objeto DOM
+     *
      * @param document objeto DOM
-     * @param nodePath  path del nodo o elemento buscado
-     * @return  lista de nodos que cumple con los criterios solicitados
-     * @throws Exception 
+     * @param nodePath path del nodo o elemento buscado
+     * @return lista de nodos que cumple con los criterios solicitados
+     * @throws Exception
      */
     public static List<Element> getElements(Document document, String nodePath) throws Exception {
         NodeList nodes = selectNodes(document, nodePath);
         List<Element> elements = new ArrayList();
-        if (nodes == null){
+        if (nodes == null) {
             return elements;
         }
-        for (int i = 0;i < nodes.getLength();i++){
-            if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE){
-                elements.add((Element)nodes.item(i));                
+        for (int i = 0; i < nodes.getLength(); i++) {
+            if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                elements.add((Element) nodes.item(i));
             }
         }
         return elements;
     }
-    
+
     /**
      * Devuelve el texto xml de un objeto DOM
+     *
      * @param content objeto DOM
      * @return texto xml
      * @throws javax.xml.transform.TransformerConfigurationException
      */
-    public static String getXmlText(Node content) throws TransformerConfigurationException, TransformerException{
+    public static String getXmlText(Node content) throws TransformerConfigurationException, TransformerException {
+        return getXmlText(content, null);
+    }
+
+    /**
+     * Devuelve el texto xml de un objeto DOM
+     *
+     * @param content objeto DOM
+     * @param defaultCharSet
+     * @return texto xml
+     * @throws javax.xml.transform.TransformerConfigurationException
+     */
+    public static String getXmlText(Node content, String defaultCharSet) throws TransformerConfigurationException, TransformerException {
+        defaultCharSet = Fn.nvl(defaultCharSet, DEFAULTCHARSET);
+        String encoding;
+        if (content instanceof Document) {
+            encoding = ((Document) content).getInputEncoding();
+        } else {
+            encoding = content.getOwnerDocument().getInputEncoding();
+        }
+        encoding = Fn.nvl(encoding,defaultCharSet);
+
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "10");
+        transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
         DOMSource source = new DOMSource(content);
         StreamResult result = new StreamResult(new StringWriter());
         transformer.transform(source, result);
-        String str = result.getWriter().toString();    
+        
+        String str = result.getWriter().toString();
         return str;
     }
-    
-    public static List<Element> getChildren(Document document, String nodePath){
-        try {        
+
+    public static List<Element> getChildren(Document document, String nodePath) {
+        try {
             Element nodeParent = getElement(document, nodePath);
             return getChildren(nodeParent);
         } catch (Exception ex) {
@@ -421,28 +458,28 @@ public class DomW3cParser {
         }
         return null;
     }
-    
-    public static List<Element> getChildren(Element nodeParent){
-        if (nodeParent == null){
+
+    public static List<Element> getChildren(Element nodeParent) {
+        if (nodeParent == null) {
             return null;
         }
         List<Element> children = new ArrayList();
         int childCount = nodeParent.getChildNodes().getLength();
         NodeList nodes = nodeParent.getChildNodes();
-        for (int i = 1; i < childCount; i++){
-            if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE){
-                children.add((Element)nodes.item(i));
+        for (int i = 1; i < childCount; i++) {
+            if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                children.add((Element) nodes.item(i));
             }
         }
         return children;
     }
-    
-    public static Element getChild(Element nodeParent, String nodeName){
-        try {        
-            Element result=null;
+
+    public static Element getChild(Element nodeParent, String nodeName) {
+        try {
+            Element result = null;
             List<Element> children = getChildren(nodeParent);
-            for (Element element: children){
-                if (element.getNodeName().equals(nodeName)){
+            for (Element element : children) {
+                if (element.getNodeName().equals(nodeName)) {
                     result = element;
                     break;
                 }
@@ -453,11 +490,11 @@ public class DomW3cParser {
         }
         return null;
     }
-    
-    public static Element replaceChild(Element parentNode, Element newNode, Element oldNode){
+
+    public static Element replaceChild(Element parentNode, Element newNode, Element oldNode) {
         // Si el elemento a agregar no pertenece al documento a agregar            
-        if (newNode.getOwnerDocument() != oldNode.getOwnerDocument()){
-            newNode = (Element)oldNode.getOwnerDocument().adoptNode(newNode);
+        if (newNode.getOwnerDocument() != oldNode.getOwnerDocument()) {
+            newNode = (Element) oldNode.getOwnerDocument().adoptNode(newNode);
         }
         parentNode.replaceChild(newNode, oldNode);
         return newNode;

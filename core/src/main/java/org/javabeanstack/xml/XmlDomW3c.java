@@ -34,6 +34,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.*;
 
 /**
@@ -41,6 +42,7 @@ import static org.javabeanstack.util.Strings.*;
  * @author Jorge Enciso
  */
 public class XmlDomW3c implements IXmlDom<Document, Element> {
+
     private static final Logger LOGGER = Logger.getLogger(XmlDomW3c.class);
     /**
      * En esta propiedad se le asignará el objeto XMLDOM.
@@ -66,9 +68,22 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      */
     private IXmlSearcher<Document> xmlSearcher = new XmlSearcher();
 
+    private String charSet;
+
     public XmlDomW3c() {
     }
+
+    private void setCharSet(String xmlText) {
+        if (!isNullorEmpty(charSet)){
+            return; 
+        }
+        charSet = getXmlFileCharSet(xmlText);
+        if (getConfigParam().get("encoding") == null && !isNullorEmpty(charSet)) {
+            addConfigParam("encoding", charSet);
+        }
+    }
     
+
     /**
      * Devuelve el objeto XmlSearcher
      *
@@ -156,7 +171,6 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         return exception;
     }
 
-
     /**
      * Devuelve un objeto DOM procesado en formato org.w3c.dom.Document
      *
@@ -184,7 +198,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         try {
             return DomW3cParser.getXmlText(xmlDom);
         } catch (TransformerException ex) {
-            ErrorManager.showError(exception, LOGGER);
+            ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
@@ -197,7 +211,14 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      */
     @Override
     public String getXmlTextRaw(Document document) {
-        return getXml();
+        try {
+            String defaultEncoding
+                    = Fn.nvl(getConfigParam().get("encoding"), "UTF-8");
+            return DomW3cParser.getXmlText(document, defaultEncoding);
+        } catch (TransformerException ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
     }
 
     /**
@@ -212,10 +233,10 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
 
     @Override
     public void setConfigParam(Map<String, String> params) {
+        configParam.clear();
         if (params == null) {
             return;
         }
-        configParam.clear();
         params.entrySet().forEach((element) -> {
             configParam.put(element.getKey(), element.getValue());
         });
@@ -252,15 +273,20 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      * @param file archivo dentro del cual se buscará el texto
      * @param element nombre del tag del texto xml
      * @param notInherit Para que no considere las clases derivadas
-     * @param params Valores de parametros a ser reemplazados en el texto xml
      * @return Verdadero si tuvo exito en la creación y configuración del objeto
      * XMLDOM
      * <br>Falso si no.
      */
     @Override
     public boolean config(File file, String element, boolean notInherit, Map<String, String> params) {
-        this.xmlDom = null;
-        return this.config("file://" + file.getPath(), "", element, notInherit, params);
+        setConfigParam(params);
+        return this.config("file://" + file.getPath(), "", element, notInherit);
+    }
+
+    @Override
+    public boolean config(File file, String element, boolean notInherit) {
+        xmlDom = null;
+        return this.config("file://" + file.getPath(), "", element, notInherit);
     }
 
     /**
@@ -272,18 +298,19 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      * @param xmlText texto xml que se convertira en objeto DOM
      * @param elementPath nombre del tag del texto xml
      * @param notInherit Para que no considere las clases derivadas
-     * @param params Valores de parametros a ser reemplazados en el texto xml
      * @return Verdadero si tuvo exito en la creación y configuración del objeto
      * XMLDOM
      * <br>Falso si no.
      *
      */
     @Override
-    public boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit, Map<String, String> params) {
+    public boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit) {
         try {
             exception = null;
             xmlDom = null;
-            setConfigParam(params);
+            charSet = "";
+            setCharSet(xmlText);
+
             xmlDom = getObject(documentPath, xmlText, elementPath, notInherit);
             getXmlSearcher().addToCache(this, documentPath, elementPath, xmlDom, true);
             replaceAttrWithParamValues();
@@ -293,6 +320,12 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             exception = ex;
         }
         return false;
+    }
+
+    @Override
+    public boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit, Map<String, String> params) {
+        setConfigParam(params);
+        return config(documentPath, xmlText, elementPath, notInherit);
     }
 
     /**
@@ -325,25 +358,25 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             else if (!isNullorEmpty(elementPath)) {
                 // Buscar en el cache
                 IXmlCache<Document> cache = xmlSearcher.getFromCache(documentPath, elementPath);
-                if (cache == null){
+                if (cache == null) {
                     cache = xmlSearcher.getFromCache(documentPath);
                 }
-                document = (cache != null)? cache.getDom(): null;
+                document = (cache != null) ? cache.getDom() : null;
                 // Si existe en cache
                 if (document != null) {
-                    if (cache.isCompiled()){
+                    if (cache.isCompiled()) {
                         return document;
-                    }
-                    else {
+                    } else {
                         // Traer solo del elementpath
-                        Node root = DomW3cParser.getElement(document, elementPath);                        
-                        Document document2 = DomW3cParser.newDocument();
-                        document2.appendChild(document2.adoptNode(root.cloneNode(true)));
-                        document = document2;
+                        if (!document.getDocumentElement().getNodeName().equals(elementPath)) {
+                            Node root = DomW3cParser.getElement(document, elementPath);
+                            Document document2 = DomW3cParser.newDocument();
+                            document2.appendChild(document2.adoptNode(root.cloneNode(true)));
+                            document = document2;
+                        }
                         processed = true;
                     }
-                } 
-                // Si no existe en cache buscar el texto xml
+                } // Si no existe en cache buscar el texto xml
                 else {
                     xml = this.getString(documentPath, "", elementPath);
                 }
@@ -354,6 +387,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                 if (isNullorEmpty((String) xml)) {
                     return null;
                 }
+                setCharSet((String)xml);
                 document = DomW3cParser.loadXml((String) xml);
             } else if (xml instanceof Document) {
                 document = (Document) xml;
@@ -365,7 +399,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         // Si se heredará el texto de las clases
         if (!notInherit) {
             Element node = document.getDocumentElement();
-            String xmlText = DomW3cParser.getXmlText(node);
+            String xmlText = DomW3cParser.getXmlText(node, getConfigParam().get("encoding"));
             // Si existe elementos que derivan de clases
             if (!isNullorEmpty(node.getAttribute("clase"))
                     || findString("clase", xmlText.toLowerCase()) > 0) {
@@ -418,10 +452,10 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             return node;
         }
         // Heredar las propiedades
-        Attr attribute;        
+        Attr attribute;
         NamedNodeMap attributes = nodeClass.getAttributes();
-        for (int i = 0; i < attributes.getLength();i++) {
-            attribute = (Attr)attributes.item(i);
+        for (int i = 0; i < attributes.getLength(); i++) {
+            attribute = (Attr) attributes.item(i);
             if ("__".equals(left(attribute.getName(), 2))) {
                 continue;
             }
@@ -458,7 +492,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                 Element nodeFound = DomW3cParser.getChild(node, childNodeClass.getNodeName());
                 if (nodeFound == null) {
                     // Insertar antes del primer nodo hijo si existe nodo hijo
-                    Element childNode = (Element)childNodeClass.cloneNode(true);
+                    Element childNode = (Element) childNodeClass.cloneNode(true);
                     DomW3cParser.insertElementBefore(childNode, node, firstChild);
                 } else {
                     inheritAttribute(nodeFound, childNodeClass, src);
@@ -471,19 +505,20 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                         //Element nodeChildFound = nodeFound.getChild(nodeAdd.getName());
                         if (nodeChildFound == null) {
                             // Insertar antes del primer nodo hijo si existe nodo hijo
-                            DomW3cParser.insertElementBefore((Element)nodeAdd.cloneNode(true), nodeFound, firstNodeChild);
+                            DomW3cParser.insertElementBefore((Element) nodeAdd.cloneNode(true), nodeFound, firstNodeChild);
                         }
                     }
                 }
             }
         }
         List<Element> children = DomW3cParser.getChildren(node);
-        String xmlNodo = DomW3cParser.getXmlText(node);
+        String xmlNodo = DomW3cParser.getXmlText(node, getConfigParam().get("encoding"));
         for (int i = 0; i < children.size(); i++) {
             Element nodeChild = children.get(i);
             if (findString("clase", xmlNodo.toLowerCase()) > 0) {
-                Document dom = getObject(src, DomW3cParser.getXmlText(nodeChild), "", false);
-                Element newNode = (Element)dom.getDocumentElement().cloneNode(true);
+                Document dom = getObject(src,
+                        DomW3cParser.getXmlText(nodeChild, getConfigParam().get("encoding")), "", false);
+                Element newNode = (Element) dom.getDocumentElement().cloneNode(true);
                 DomW3cParser.replaceChild(node, newNode, nodeChild);
             }
         }
@@ -509,24 +544,30 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         if (isNullorEmpty(xml)) {
             // Buscar en el cache
             IXmlCache<Document> cache = xmlSearcher.getFromCache(xmlPath);
-            document = (cache != null)? cache.getDom():null;
+            document = (cache != null) ? cache.getDom() : null;
         }
         // Si no se encontro en el cache y no se tiene el texto xml
         if (document == null && isNullorEmpty(xml)) {
             xml = searchXmlText(xmlPath);
+            setCharSet(xml);
             document = DomW3cParser.loadXml(xml);
             getXmlSearcher().addToCache(this, xmlPath, document);
         } // Si se tiene el texto xml
         else if (!isNullorEmpty(xml)) {
+            setCharSet(xml);
             document = DomW3cParser.loadXml(xml);
         }
+        String encoding = null;
         if (!isNullorEmpty(elementPath)) {
-            Element root = DomW3cParser.getElement(document, elementPath);
-            Document document2 = DomW3cParser.newDocument();            
-            document2.appendChild(document2.adoptNode(root.cloneNode(true)));
-            document = document2;
+            if (!document.getDocumentElement().getNodeName().equals(elementPath)) {
+                Element root = DomW3cParser.getElement(document, elementPath);
+                Document document2 = DomW3cParser.newDocument();
+                document2.appendChild(document2.adoptNode(root.cloneNode(true)));
+                document = document2;
+            }
         }
-        String xmlText = DomW3cParser.getXmlText(document);
+        encoding = Fn.nvl(encoding, this.getConfigParam().get("encoding"));
+        String xmlText = DomW3cParser.getXmlText(document, encoding);
         return xmlText;
     }
 
@@ -551,7 +592,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      * @return Devuelve el primer elemento de un nodo si lo tiene.
      */
     private Element getFirstElement(Element parent) {
-        if (!parent.hasChildNodes()){
+        if (!parent.hasChildNodes()) {
             return null;
         }
         List<Element> children = DomW3cParser.getChildren(parent);
@@ -560,7 +601,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         }
         return children.get(0);
     }
-    
+
     /**
      * Crea nuevo elemento
      *
@@ -704,7 +745,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     public Boolean removeChildren(String nodePath) {
         try {
             Element node = DomW3cParser.getElement(xmlDom, nodePath);
-            while (node.hasChildNodes()){
+            while (node.hasChildNodes()) {
                 Node child = node.getChildNodes().item(0);
                 node.removeChild(child);
             }
@@ -715,7 +756,6 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         }
         return false;
     }
-
 
     /**
      * Devuelve el valor del atributo de un nodo
@@ -785,12 +825,12 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         Node node;
         Attr attr;
         String key, value;
-        for (int i = 0;i < elements.getLength();i++){
+        for (int i = 0; i < elements.getLength(); i++) {
             node = elements.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE){
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
                 NamedNodeMap attributes = node.getAttributes();
-                for (int k = 0; k < attributes.getLength();k++){
-                    attr = (Attr)attributes.item(k);
+                for (int k = 0; k < attributes.getLength(); k++) {
+                    attr = (Attr) attributes.item(k);
                     if (attr.getValue().endsWith("}")) {
                         key = attr.getValue().replaceAll("\\}", "");
                         if (key.startsWith("{")) {
@@ -814,12 +854,12 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                         "//*[@*[(contains(., '#{') or contains(., '${') or contains(., '{'))"
                         + "  and (contains(.,'}')) ]]");
 
-        for (int i = 0;i < elements.getLength();i++){
+        for (int i = 0; i < elements.getLength(); i++) {
             node = elements.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE){
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
                 NamedNodeMap attributes = node.getAttributes();
-                for (int k = 0; k < attributes.getLength();k++){
-                    attr = (Attr)attributes.item(k);
+                for (int k = 0; k < attributes.getLength(); k++) {
+                    attr = (Attr) attributes.item(k);
                     if (attr.getValue().contains("{")) {
                         value = textMerge(attr.getValue(), configParam, "$# ");
                         attr.setValue(value);

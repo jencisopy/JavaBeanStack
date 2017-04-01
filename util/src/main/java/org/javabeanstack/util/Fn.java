@@ -219,6 +219,17 @@ public class Fn {
         return f.exists() && f.isDirectory();
     }
     
+    public static String addbs(String path){
+        if (Strings.isNullorEmpty(path)){
+            return path;
+        }
+        if (path.endsWith("/") || path.endsWith("\\")){
+            return path;
+        }
+        return path.trim()+File.separator;
+    }
+    
+    
     public static InputStream getResourceAsStream(Class clazz, String filePath){
         ClassLoader classLoader = clazz.getClassLoader();
         InputStream input = classLoader.getResourceAsStream(filePath);

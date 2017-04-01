@@ -23,13 +23,18 @@ package org.javabeanstack.appresources;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Map;
+import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.xml.IXmlDom;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Jorge Enciso
  */
 public interface IAppResource extends Serializable{
-    InputStream getResourceAsStream(String filePath);
-    String getProperty(String property, String nodePath);
-    String setProperty(String value, String property, String nodePath);
+    InputStream getResourceAsStream(IUserSession userSession, String resourcePath);
+    InputStream getResourceAsStream(String sessionId, String resourcePath);
+    IXmlDom<Document, Element> getResourceAsXmlDom(String sessionId, String resourcePath, Map<String, String> params);
 }

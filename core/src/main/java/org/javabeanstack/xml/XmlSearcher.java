@@ -24,7 +24,7 @@ package org.javabeanstack.xml;
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Map; 
 import java.util.TreeMap;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.fileToString;
@@ -97,20 +97,22 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
      */
     @Override
     public String search(IXmlDom context, String xmlPath) {
+        String encoding = Fn.nvl((String)context.getConfigParam().get("encoding"),"");
         xmlPath = xmlPath.trim();
         String pathType = getPathType(xmlPath);
         //Si no esta definido el pathType leer configuración del contexto
         if (isNullorEmpty(pathType)) {
             pathType = Fn.nvl((String)context.getConfigParam().get("pathtype"), "").toLowerCase();
-        }
+        } 
         xmlPath = getJustPath(xmlPath);
         String devolver = "";
         if (Fn.inList(pathType, "file", "file:")) {
             // Ver si no puede ubicar el archivo agregarle el path
             if (!xmlPath.contains("/") && !Fn.isFileExist(xmlPath)) {
-                xmlPath = Fn.nvl(context.getConfigParam().get("path"), "") + xmlPath;
+                String path = Fn.addbs(Fn.nvl((String)context.getConfigParam().get("path"), ""));
+                xmlPath = path + xmlPath;
             }
-            devolver = fileToString(xmlPath);
+            devolver = fileToString(xmlPath, encoding);
         }
         return devolver;
     }
@@ -192,9 +194,7 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
      *
      * @param context
      * @param documentPath clave (normalmente la ubicación del archivo)
-     * @param elementPath camino completo al elemento
      * @param document objeto DOM.
-     * @param compiled si es un documento procesado con sus nodos padres
      */
     @Override
     public void addToCache(IXmlDom context, String documentPath, 
@@ -232,7 +232,6 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
     /**
      * Determina si un elemento del cache es válido.
      * @param documentPath identificador del documento cacheado.
-     * @param elementPath camino al elemento
      * @return verdadero es válido, falso no lo es.
      */
     @Override

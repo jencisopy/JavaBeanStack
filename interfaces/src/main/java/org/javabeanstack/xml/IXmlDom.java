@@ -97,6 +97,8 @@ public interface IXmlDom<V, E> extends Serializable {
      * <br>Falso si no.
      */
     boolean config(File file, String element, boolean notInherit, Map<String, String> params);
+    
+    boolean config(File file, String element, boolean notInherit);    
 
     /**
      * Se ejecuta por intrucción explicita del sistema. <br>
@@ -113,6 +115,8 @@ public interface IXmlDom<V, E> extends Serializable {
      *
      */
     boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit, Map<String, String> params);
+
+    boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit);    
 
     /**
      * Crea nuevo elemento

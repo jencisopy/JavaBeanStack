@@ -22,7 +22,11 @@
 package org.javabeanstack.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -30,6 +34,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -293,6 +299,11 @@ public class Strings {
         return new String(decodedContent);
     }
     
+    public static String fileToString(File file){
+        return fileToString(file.getAbsolutePath());
+    }
+    
+    
     public static String fileToString(String filePath){
         StringBuilder sb = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
@@ -308,5 +319,83 @@ public class Strings {
             Logger.getLogger(Strings.class).error(ex.getMessage());                        
         }
         return sb.toString();        
+    }
+    
+    
+    public static String fileToString(String filePath, String charSet){
+        File file = new File(filePath);
+        String str=null;
+        try {
+            if (isNullorEmpty(charSet)){
+                str = fileToString(file);
+                if (file.getName().toLowerCase().endsWith(".xml")){
+                    charSet = getXmlFileCharSet(str);
+                    str = FileUtils.readFileToString(file, charSet);                
+                }
+            }
+            else{
+                str = FileUtils.readFileToString(file, charSet);                
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Strings.class).error(ex.getMessage());                                    
+        }
+        return str;
+    }
+
+    
+    public static String streamToString(InputStream input) throws IOException{
+        if (input == null){
+            return null;
+        }
+        String result = IOUtils.toString(input);
+        return result;
+    }    
+    
+    public static String streamToString(InputStream input, String charSet) throws IOException{
+        if (input == null){
+            return null;
+        }
+        String result = IOUtils.toString(input,charSet);
+        return result;
+    }    
+    
+    public static String streamToString(InputStream input, Charset charSet) throws IOException{
+        if (input == null){
+            return null;
+        }
+        String result = IOUtils.toString(input,charSet);
+        return result;
+    }    
+    
+    public static String getXmlFileCharSet(String text){
+        if (isNullorEmpty(text)){
+            return "";
+        }
+        String result="";
+        int pos1 = text.indexOf("encoding=");
+        if (pos1 > 0 ){
+            pos1 += 10;
+            int pos2 = text.indexOf("\"", pos1);
+            result = text.substring(pos1,pos2);
+        }
+        return result;
+    }
+
+    public static String getXmlFileCharSet(File file){
+        if (!file.exists() || file.canRead()){
+            return "";
+        }
+        String text = fileToString(file);
+        if (isNullorEmpty(text)){
+            return "";
+        }
+        String result="";
+        int pos1 = text.indexOf("encoding=");
+        if (pos1 > 0 ){
+            pos1 += 10;
+            int pos2 = text.indexOf("\"", pos1);
+            result = text.substring(pos1,pos2);
+        }
+        return result;
     }
 }
