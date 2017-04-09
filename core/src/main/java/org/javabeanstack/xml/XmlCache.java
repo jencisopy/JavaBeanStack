@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.Date;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
-import org.javabeanstack.error.ErrorManager;
 import org.xml.sax.SAXException;
+import org.javabeanstack.error.ErrorManager;
 
 /**
  * Clase que almacena un objeto DOM o texto xml con el fin de utilizarlos

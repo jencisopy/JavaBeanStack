@@ -19,33 +19,22 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-package org.javabeanstack.model;
+package org.javabeanstack.resources;
 
-import java.math.BigInteger;
-import java.util.Date;
-import org.javabeanstack.data.IDataRow;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.Map;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.xml.IXmlDom;
 
 /**
  *
  * @author Jorge Enciso
  */
-public interface IAppXmlSources extends IDataRow {
-    Long getIdXmlSource();
-    Long getIdObject();
-    String getXmlName();
-    String getXmlSource();
-    String getXmlCompiled();
-    Date getProcessTime();
-    BigInteger getReferencetime();
-    String getXmlPath();
-    boolean isValid();
-
-    void setIdXmlSource(Long idxmlsource);    
-    void setIdObject(Long idobject);  
-    void setXmlName(String xmlname);
-    void setXmlSource(String xmlsource);    
-    void setXmlCompiled(String xmlcompile);    
-    void setProcessTime(Date processtime);    
-    void setReferencetime(BigInteger referencetime);
-    void setXmlPath(String xmlpath);
+public interface IAppResource extends Serializable{
+    InputStream getResourceAsStream(IUserSession userSession, String resourcePath);
+    InputStream getResourceAsStream(String sessionId, String resourcePath);
+    IXmlDom<Document, Element> getResourceAsXmlDom(String sessionId, String resourcePath, String elementPath, Map<String, String> params);
 }

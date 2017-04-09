@@ -20,7 +20,7 @@
 * MA 02110-1301  USA
 */
 package org.javabeanstack.xml;
-
+import java.util.Date;
 import java.util.Objects;
 import static org.javabeanstack.util.Strings.left;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
@@ -33,6 +33,8 @@ public class XmlCacheKey implements IXmlCacheKey {
     private String pathType;
     private String documentPath;
     private String elementPath="";
+    private Date lastReference;
+    private Integer referenceTime=0;
     
     public XmlCacheKey(){
     }
@@ -126,5 +128,25 @@ public class XmlCacheKey implements IXmlCacheKey {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Date getLastReference() {
+        return lastReference;
+    }
+
+    @Override
+    public Integer getReferenceTime() {
+        return referenceTime;
+    }
+
+    @Override
+    public void setLastReference(Date date) {
+        this.lastReference = date;
+    }
+
+    @Override
+    public void addReferenceTime() {
+        referenceTime++;
     }
 }

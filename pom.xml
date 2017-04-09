@@ -29,9 +29,9 @@
         </developer>
     </developers>  
     <modules>
+        <module>core</module>
         <module>interfaces</module>
         <module>io</module>
-        <module>core</module>
         <module>util</module>
     </modules>
     <distributionManagement>  

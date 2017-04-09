@@ -21,6 +21,7 @@
 */
 package org.javabeanstack.data;
 
+
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,16 @@ public interface IDataNativeQuery {
      * @return objeto DataNativeQuery con los datos asignados
      */
     public IDataNativeQuery from(String entities);
+    
+    /**
+     * Asigna ls lista de entidades que formarán la sentencia SELECT
+     * @param subQuery  objeto IDataNativeQuery cuya sentencia es utilizada como
+     * subquery dentro de la clausula FROM. 
+     * @param alias alias del subquery
+     * @return objeto DataNativeQuery con los datos asignados
+     */
+    public IDataNativeQuery from(IDataNativeQuery subQuery, String alias);
+    
     /**
      * Provee a la clase información para agregar una instrucción join a la sentencia
      * @param entity    es la entidad (tabla o vista)
@@ -52,6 +63,16 @@ public interface IDataNativeQuery {
      * @return objeto DataNativeQuery con los datos asignados
      */
     public IDataNativeQuery join(String entity, String joinExpr);
+    
+    /**
+     * Provee a la clase información para agregar una instrucción join a la sentencia
+     * @param subquery 
+     * @param alias    alias del subquery
+     * @param joinExpr  expresión para unir las entidades.
+     * @return objeto DataNativeQuery con los datos asignados
+     */
+    public IDataNativeQuery join(IDataNativeQuery subquery, String alias, String joinExpr);
+    
     /**
      * Provee a la clase información para agregar una instrucción join a la sentencia
      * @param entity    es la entidad (tabla o vista)

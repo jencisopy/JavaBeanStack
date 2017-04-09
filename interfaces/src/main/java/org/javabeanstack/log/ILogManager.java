@@ -23,9 +23,9 @@ package org.javabeanstack.log;
 
 import java.util.List;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.IAppMessages;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.model.ILogRecord;
+import org.javabeanstack.model.IAppMessage;
 
 /**
  *
@@ -46,6 +46,6 @@ public interface ILogManager {
     boolean fWrite(String message, String file, boolean flag);
     boolean logSend();
     
-    IAppMessages getAppMessages(Integer msgNumber);
-    List<IAppMessages> getAppMessages();    
+    IAppMessage getAppMessage(Integer msgNumber);
+    List<IAppMessage> getAppMessages();    
 }

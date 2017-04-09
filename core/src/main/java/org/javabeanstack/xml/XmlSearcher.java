@@ -19,6 +19,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
+
 package org.javabeanstack.xml; 
 
 import java.io.File;
@@ -172,6 +173,13 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
             cache.remove(key);
             return null;
         }
+        for (Map.Entry<IXmlCacheKey, IXmlCache<V>> e : cache.entrySet()) {
+            if (key.equals(e.getKey())){
+                e.getKey().setLastReference(new Date());
+                e.getKey().addReferenceTime();
+                break;
+            }
+        }        
         return cache.get(key);
     }
     

@@ -36,7 +36,7 @@ import org.javabeanstack.security.ISessionsLocal;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.ILogRecord;
-import org.javabeanstack.model.IAppMessages;
+import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.data.IGenericDAO;
 
@@ -237,10 +237,10 @@ public class LogManager implements ILogManager {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)        
-    public IAppMessages getAppMessages(Integer msgNumber) {
+    public IAppMessage getAppMessage(Integer msgNumber) {
         try {
-            IAppMessages message = 
-                    dao.findByQuery(IAppMessages.class, IDBManager.CATALOGO,
+            IAppMessage message = 
+                    dao.findByQuery(IAppMessage.class, IDBManager.CATALOGO,
                                     "select o from DicMensaje o where nro = " + msgNumber.toString(),
                                     null);
 
@@ -258,9 +258,9 @@ public class LogManager implements ILogManager {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)        
-    public List<IAppMessages> getAppMessages() {
+    public List<IAppMessage> getAppMessages() {
         try {
-            List<IAppMessages> messages = 
+            List<IAppMessage> messages = 
                     dao.findListByQuery(IDBManager.CATALOGO,
                                         "select o from DicMensaje o order by nro",
                                          null);

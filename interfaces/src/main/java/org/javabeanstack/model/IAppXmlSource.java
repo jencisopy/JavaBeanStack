@@ -19,24 +19,33 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-package org.javabeanstack.xml;
+package org.javabeanstack.model;
+
+import java.math.BigInteger;
 import java.util.Date;
+import org.javabeanstack.data.IDataRow;
 
 /**
  *
  * @author Jorge Enciso
  */
-public interface IXmlCacheKey {
-    String getPathType();
-    String getDocumentPath();
-    String getElementPath();
-    Date getLastReference();
-    Integer getReferenceTime();
-    void setDocumentPath(String documentPath);
-    void setElementPath(String elementPath);
-    void setPathType(String pathType);
-    void setLastReference(Date date);
-    void addReferenceTime();
-    
-}
+public interface IAppXmlSource extends IDataRow {
+    Long getIdXmlSource();
+    Long getIdObject();
+    String getXmlName();
+    String getXmlSource();
+    String getXmlCompiled();
+    Date getProcessTime();
+    BigInteger getReferencetime();
+    String getXmlPath();
+    boolean isValid();
 
+    void setIdXmlSource(Long idxmlsource);    
+    void setIdObject(Long idobject);  
+    void setXmlName(String xmlname);
+    void setXmlSource(String xmlsource);    
+    void setXmlCompiled(String xmlcompile);    
+    void setProcessTime(Date processtime);    
+    void setReferencetime(BigInteger referencetime);
+    void setXmlPath(String xmlpath);
+}

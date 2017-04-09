@@ -23,26 +23,32 @@ package org.javabeanstack.xml;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.ejb.EJB;
 import org.apache.log4j.Logger;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.model.IAppXmlSources;
+import org.javabeanstack.model.IAppResource;
 import org.javabeanstack.util.Fn;
-
+import static org.javabeanstack.util.Strings.isNullorEmpty;
 /**
  *
  * @author Jorge Enciso
  * @param <V>
  */
-public class XmlFileObjectSearcher<V> extends XmlSearcher<V> {
+public class XmlResourceSearcher<V> extends XmlSearcher<V> {
 
-    private static final Logger LOGGER = Logger.getLogger(XmlFileObjectSearcher.class);
+    private static final Logger LOGGER = Logger.getLogger(XmlResourceSearcher.class);
 
-    @EJB
     private IGenericDAO dao;
 
+    public IGenericDAO getDao() {
+        return dao;
+    }
+
+    public void setDao(IGenericDAO dao) {
+        this.dao = dao;
+    }
+    
     /**
      * Si esta disponible la busqueda en un tipo de path determinado.
      *
@@ -67,19 +73,31 @@ public class XmlFileObjectSearcher<V> extends XmlSearcher<V> {
     @Override
     public String search(IXmlDom context, String xmlPath) {
         if (Fn.inList(getPathType(xmlPath), "file", "file:", "obj", "obj:")) {
-            String queryString = "select o from AppXmlSource o where xmlpath = :xmlpath";
+            String queryString1 = "select o from AppResource o where url = :value";
+            String queryString2 = "select o from AppResource o where name = :value and type = 'XML'";
             Map<String, Object> parameters = new HashMap();
             String xmlPath2 = XmlSearcher.getJustPath(xmlPath).toLowerCase();
 
-            parameters.put("xmlpath", xmlPath2);
-            IAppXmlSources appXmlSource;
+            parameters.put("value", xmlPath2);
+            IAppResource appXmlSource;
             try {
                 appXmlSource
-                        = dao.findByQuery(IAppXmlSources.class,
+                        = dao.findByQuery(IAppResource.class,
                                             IDBManager.CATALOGO,
-                                            queryString, parameters);
-                if (appXmlSource != null && appXmlSource.isValid()) {
-                    return appXmlSource.getXmlCompiled();
+                                            queryString1, parameters);
+                if (appXmlSource == null){
+                    appXmlSource
+                        = dao.findByQuery(IAppResource.class,
+                                            IDBManager.CATALOGO,
+                                            queryString2, parameters);
+                }
+                if (appXmlSource != null) {
+                    if (appXmlSource.isValid()) {
+                        return appXmlSource.getCompiled();
+                    }
+                    else if (!isNullorEmpty(appXmlSource.getSource())){
+                        return appXmlSource.getSource();
+                    }
                 }
             } catch (Exception ex) {
                 ErrorManager.showError(ex, LOGGER);
@@ -87,4 +105,5 @@ public class XmlFileObjectSearcher<V> extends XmlSearcher<V> {
         }
         return super.search(context, xmlPath);
     }
+
 }

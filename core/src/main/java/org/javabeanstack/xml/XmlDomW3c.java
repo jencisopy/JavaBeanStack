@@ -19,6 +19,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
+
 package org.javabeanstack.xml;
 
 import java.io.File;
@@ -69,20 +70,23 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     private IXmlSearcher<Document> xmlSearcher = new XmlSearcher();
 
     private String charSet;
+    
+    private boolean alreadyInCache=false;
+    
+    private String documentPath;
 
     public XmlDomW3c() {
     }
 
     private void setCharSet(String xmlText) {
-        if (!isNullorEmpty(charSet)){
-            return; 
+        if (!isNullorEmpty(charSet)) {
+            return;
         }
         charSet = getXmlFileCharSet(xmlText);
         if (getConfigParam().get("encoding") == null && !isNullorEmpty(charSet)) {
             addConfigParam("encoding", charSet);
         }
     }
-    
 
     /**
      * Devuelve el objeto XmlSearcher
@@ -306,13 +310,20 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     @Override
     public boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit) {
         try {
+            this.documentPath = documentPath;
             exception = null;
             xmlDom = null;
             charSet = "";
+            alreadyInCache = false;
             setCharSet(xmlText);
 
             xmlDom = getObject(documentPath, xmlText, elementPath, notInherit);
-            getXmlSearcher().addToCache(this, documentPath, elementPath, xmlDom, true);
+            if (xmlDom == null) {
+                return false;
+            }
+            if (alreadyInCache != true){
+                getXmlSearcher().addToCache(this, documentPath, elementPath, xmlDom, true);                
+            }
             replaceAttrWithParamValues();
             return true;
         } catch (Exception ex) {
@@ -347,35 +358,63 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         Document document = null;
         boolean processed = false;
         // Validar viabilidad para devolver el objeto requerido
-        if ((xml instanceof String) && isNullorEmpty((String) xml) && isNullorEmpty(elementPath)) {
+        if ((xml instanceof String) && isNullorEmpty((String) xml) && isNullorEmpty(documentPath)) {
             return null;
         }
         if ((xml instanceof String)) {
-            // Si se tiene el texto xml y el elementPath, conseguir el texto apuntado por el elementPath
-            if (!isNullorEmpty((String) xml) && !isNullorEmpty(elementPath)) {
+            // Si solo tenemos el path del documento.
+            if (!isNullorEmpty(documentPath) && isNullorEmpty(elementPath) && isNullorEmpty((String) xml)) {
+                //Buscar en el cache
+                IXmlCache<Document> cache = xmlSearcher.getFromCache(documentPath);
+                if (cache == null) {
+                    xml = this.getString(documentPath, "", "");
+                    document = DomW3cParser.loadXml((String) xml);
+                    processed = true;
+                } else {
+                    document = cache.getDom();
+                    if (document != null) {
+                        if (cache.isCompiled()) {
+                            return document;
+                        }
+                    }
+                    processed = true;
+                }
+
+            } // Si se tiene el texto xml y el elementPath, conseguir el texto apuntado por el elementPath
+            else if (!isNullorEmpty((String) xml) && !isNullorEmpty(elementPath)) {
                 xml = this.getString(documentPath, (String) xml, elementPath);
-            } // Si no se tiene el texto xml y se tiene el elementPath
-            else if (!isNullorEmpty(elementPath)) {
+            } // Si no se tiene el texto xml y se tiene el elementPath y el documentPath
+            else if (!isNullorEmpty(documentPath) && !isNullorEmpty(elementPath)) {
                 // Buscar en el cache
                 IXmlCache<Document> cache = xmlSearcher.getFromCache(documentPath, elementPath);
+                boolean check = false;
                 if (cache == null) {
                     cache = xmlSearcher.getFromCache(documentPath);
+                    check = true;
+                    if (this.documentPath.equals(documentPath)){
+                        alreadyInCache = true;                        
+                    }
                 }
                 document = (cache != null) ? cache.getDom() : null;
                 // Si existe en cache
                 if (document != null) {
-                    if (cache.isCompiled()) {
-                        return document;
-                    } else {
-                        // Traer solo del elementpath
-                        if (!document.getDocumentElement().getNodeName().equals(elementPath)) {
-                            Node root = DomW3cParser.getElement(document, elementPath);
-                            Document document2 = DomW3cParser.newDocument();
-                            document2.appendChild(document2.adoptNode(root.cloneNode(true)));
-                            document = document2;
-                        }
-                        processed = true;
+                    if (cache.isCompiled()){ 
+                        // Si el cache corresponde el elementPath
+                        if (!check || elementPath.equals(document.getDocumentElement().getNodeName())) {
+                            return document;
+                        }    
                     }
+                    // Traer solo del elementpath
+                    if (!document.getDocumentElement().getNodeName().equals(elementPath)) {
+                        Node root = DomW3cParser.getElement(document, elementPath);
+                        Document document2 = DomW3cParser.newDocument();
+                        document2.appendChild(document2.adoptNode(root.cloneNode(true)));
+                        document = document2;
+                        if (cache.isCompiled()){
+                            return document;
+                        }
+                    }
+                    processed = true;
                 } // Si no existe en cache buscar el texto xml
                 else {
                     xml = this.getString(documentPath, "", elementPath);
@@ -387,7 +426,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                 if (isNullorEmpty((String) xml)) {
                     return null;
                 }
-                setCharSet((String)xml);
+                setCharSet((String) xml);
                 document = DomW3cParser.loadXml((String) xml);
             } else if (xml instanceof Document) {
                 document = (Document) xml;
@@ -426,7 +465,10 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      * @throws Exception
      */
     private Element inherit(Element node, String className, String src) throws Exception {
-        Document doc = this.getObject(src, "", className, false);
+        Document doc = null;
+        if (!isNullorEmpty(className)) {
+            doc = this.getObject(src, "", className, false);
+        }
         Element nodeClass = null;
         if (doc != null) {
             nodeClass = doc.getDocumentElement();
@@ -550,6 +592,9 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         if (document == null && isNullorEmpty(xml)) {
             xml = searchXmlText(xmlPath);
             setCharSet(xml);
+            if (isNullorEmpty(elementPath)) {
+                return xml;
+            }
             document = DomW3cParser.loadXml(xml);
             getXmlSearcher().addToCache(this, xmlPath, document);
         } // Si se tiene el texto xml
