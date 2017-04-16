@@ -1,7 +1,7 @@
-/JavaBeanStack-Core/target/
-/JavaBeanStack-Util/target/
-/JavaBeanStack-IO/target/
-/JavaBeanStack-Interfaces/target/
-/JavaBeanStack/nb-configuration.xml
+/core/target/
+/io/target/
+/interfaces/target/
 /target/
 /util/target/
+/util/nbproject/
+/business/target/

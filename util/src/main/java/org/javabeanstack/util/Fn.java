@@ -22,17 +22,12 @@
 package org.javabeanstack.util;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 
@@ -41,7 +36,7 @@ import org.apache.log4j.Logger;
  * @author Jorge Enciso
  */
 public class Fn {
-    public static Object toObject(Object source, Object target) {
+    public static Object toObject(Object source, Object target) throws Exception {
         if (target instanceof String) {
             return String.valueOf(source);
         } else if (target instanceof Double) {
@@ -57,7 +52,7 @@ public class Fn {
         } else if (target instanceof Boolean) {
             return Boolean.valueOf(source.toString());
         }
-        return null;
+        throw new Exception("No fue posible convertir el objeto source al objeto target");
     }
 
     public static Date toDate(String dateString) {
@@ -65,6 +60,11 @@ public class Fn {
         return toDate(dateString, formatter);
     }
 
+    public static Date toDate(String dateString, String format) {
+        SimpleDateFormat formatter = new SimpleDateFormat(format);
+        return toDate(dateString, formatter);
+    }
+    
     public static Date toDate(String dateString, SimpleDateFormat formatter) {
         Date date = null;
         try {
@@ -95,14 +95,6 @@ public class Fn {
         return false;
     }
 
-    public static boolean inList(String obj, int... list) {
-        for (Object e : list) {
-            if (obj.equals(e)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static boolean inList(Integer obj, int... list) {
         for (Object e : list) {
@@ -155,10 +147,6 @@ public class Fn {
         return false;
     }
 
-    public static String getMD5(String var1, String var2, String var3, String var4) {
-        String msg = var1.toUpperCase().trim() + var2.trim() + var3.trim();
-        return Fn.getMD5(msg);
-    }
 
     public static String getMD5(String msg) {
         MessageDigest md = null;
@@ -208,7 +196,7 @@ public class Fn {
         }
         return value;
     }
-    
+
     public static boolean isFileExist(String filePath){
         File f = new File(filePath);
         return f.exists() && !f.isDirectory();
@@ -227,68 +215,5 @@ public class Fn {
             return path;
         }
         return path.trim()+File.separator;
-    }
-    
-    
-    public static InputStream getResourceAsStream(Class clazz, String filePath){
-        ClassLoader classLoader = clazz.getClassLoader();
-        InputStream input = classLoader.getResourceAsStream(filePath);
-        return input;
-    }
-
-    public static Properties getPropertiesFrom(String filePath){
-        // load a properties file
-        InputStream input=null;
-        Properties properties = new Properties();
-        if (!Fn.isFileExist(filePath)){
-            return null;
-        }
-        try {                
-            input = new FileInputStream(filePath);
-            properties.load(input);            
-            return properties;
-        } catch (IOException ex) {
-            Logger.getLogger(Fn.class).error(ex.getMessage());                        
-        }
-        finally{
-            IOUtils.closeQuietly(input);            
-        }
-        return null;
-    }
-    
-    public static Properties getPropertiesFrom(File file){
-        // load a properties file
-        InputStream input=null;
-        Properties properties = new Properties();
-        if (file == null || !file.isFile() || file.canRead()){
-            return null;
-        }
-        try {                
-            input = new FileInputStream(file);
-            properties.load(input);            
-            return properties;
-        } catch (IOException ex) {
-            Logger.getLogger(Fn.class).error(ex.getMessage());            
-        }
-        finally{
-            IOUtils.closeQuietly(input);            
-        }
-        return null;
-    }
-    
-    public static Properties getPropertiesFromResource(Class clazz, String filePath){
-        InputStream input = null;
-        Properties properties = new Properties();
-        try {                
-            input = getResourceAsStream(clazz, filePath);                    
-            properties.load(input);            
-            return properties;
-        } catch (IOException ex) {
-            Logger.getLogger(Fn.class).error(ex.getMessage());
-        }
-        finally{
-            IOUtils.closeQuietly(input);            
-        }
-        return null;
     }
 }
