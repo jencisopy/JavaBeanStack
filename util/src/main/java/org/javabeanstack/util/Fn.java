@@ -55,6 +55,11 @@ public class Fn {
         throw new Exception("No fue posible convertir el objeto source al objeto target");
     }
 
+    /**
+     * Convierte una cadena a una fecha
+     * @param dateString
+     * @return 
+     */
     public static Date toDate(String dateString) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         return toDate(dateString, formatter);
