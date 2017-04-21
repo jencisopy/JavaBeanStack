@@ -7,7 +7,10 @@ Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y es
 
 **Core:** agrupa las funciones de manejo de errores, log de eventos, configuración de la aplicación, gestión de recursos entre otros.
 
-**Business Layer:** contiene componentes para acceso, validación y grabación del dato.
+**Business:** contiene componentes para acceso, validación y grabación del dato.
+
+**Util:** contiene clases para simplificar el uso de cadenas, objeto tipo fecha entre otros.
+
 
 
 
