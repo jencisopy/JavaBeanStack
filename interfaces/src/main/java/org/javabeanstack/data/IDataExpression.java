@@ -110,4 +110,9 @@ public interface IDataExpression {
      * @param value
      */
     public void addSentenceParam(String key, Object value);
+    /**
+     * Agrega expresiones desde otro objeto DataExpression
+     * @param dataExpression 
+     */
+    public void addExpressions(IDataExpression dataExpression);
 }

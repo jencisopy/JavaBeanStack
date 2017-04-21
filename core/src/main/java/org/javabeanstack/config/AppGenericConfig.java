@@ -32,6 +32,7 @@ import org.javabeanstack.xml.DomW3cParser;
  *
  * @author Jorge Enciso
  */
+@Lock(LockType.READ)
 public class AppGenericConfig implements IAppConfig {
     protected static final Logger LOGGER = Logger.getLogger(AppGenericConfig.class);
 

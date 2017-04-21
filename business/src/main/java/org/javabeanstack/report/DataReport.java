@@ -18,8 +18,7 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.report;
 
 import java.util.HashMap;
@@ -423,7 +422,7 @@ public class DataReport {
      * (columnsGroup1, columnsGroup2, columns, entityRoot, entitiesToJoin,
      * entitiesAlias, whereFilter, orderBy, groupBy), el valor resultante asigna
      * en el atributo sqlSentence y en el objeto query que luego será utilizado
-     * en sqlSentenceExecute.
+     * en executeSqlSentence.
      */
     public void createSqlSentence() {
         setProperties();
@@ -453,7 +452,7 @@ public class DataReport {
      * (columnsGroup1, columnsGroup2, columns, entityRoot, entitiesToJoin,
      * entitiesAlias, whereFilter, orderBy, groupBy), el valor resultante asigna
      * en el atributo sqlSentence y en el objeto query que luego será utilizado
-     * en sqlSentenceExecute.
+     * en executeSqlSentence.
      *
      * @param query
      * @return
@@ -487,13 +486,13 @@ public class DataReport {
     }
 
     /**
-     * Ejecuta la sentencia sql generada previamente en el
-     * metodocreateSqlSentence.
+     * Ejecuta la sentencia sql generada previamente en el metodoc
+     * reateSqlSentence.
      *
      * @return el resultado de la ejecución de la sentencia sql.
      * @throws Exception
      */
-    public List<IDataQueryModel> sqlSentenceExecute() throws Exception {
+    public List<IDataQueryModel> executeSqlSentence() throws Exception {
         return query.execQuery();
     }
 

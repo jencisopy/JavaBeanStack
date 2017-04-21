@@ -44,6 +44,11 @@ public class DataExpression implements IDataExpression {
     private boolean openparenthesis = false;
     private Map<String, Object> sentenceParams = new HashMap();
 
+    
+    public final List<ElementExpr> getExpressionList(){
+        return exprList;
+    }
+    
     /**
      * Lee los parámetros de la sentencia
      * @return parámetros de la sentencia
@@ -72,7 +77,7 @@ public class DataExpression implements IDataExpression {
         this.sentenceParams.put(key, value);
     }
 
-    private class ElementExpr {
+    public final class ElementExpr {
 
         String operador = "and";
         String expresion;
@@ -226,6 +231,16 @@ public class DataExpression implements IDataExpression {
         addExpression(expr, params);
     }
 
+    @Override
+    public void addExpressions(IDataExpression dataExpression) {
+        ((DataExpression)dataExpression).getExpressionList().forEach((expr) -> {
+            exprList.add(expr);
+        });
+        dataExpression.getSentenceParams().entrySet().forEach((element) -> {
+            this.getSentenceParams().put(element.getKey(), element.getValue());
+        });
+    }
+    
     /**
      * Genera la sentencia y lo devuelve
      * @return  la expresión resultante 
