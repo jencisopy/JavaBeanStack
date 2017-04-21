@@ -5,9 +5,9 @@ Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y es
 
 ## Paquetes ##
 
-** Core: ** agrupa las funciones de manejo de errores, log de eventos, configuración de la aplicación, gestión de recursos entre otros.
+**Core:** agrupa las funciones de manejo de errores, log de eventos, configuración de la aplicación, gestión de recursos entre otros.
 
-** Business Layer: ** contiene componentes para acceso, validación y grabación del dato.
+**Business Layer:** contiene componentes para acceso, validación y grabación del dato.
 
 
 
