@@ -26,7 +26,7 @@ public interface IEmpresa extends IDataRow, Serializable {
     String getFilesystem();
     String getFirma();
     Long getIdempresa();
-    IEmpresa getIdempresagrupo();
+    Long getIdempresagrupo();
     Long getIdempresamask();
     Long getIdperiodo();
     String getLogo();
@@ -48,7 +48,7 @@ public interface IEmpresa extends IDataRow, Serializable {
     void setFilesystem(String filesystem);
     void setFirma(String firma);
     void setIdempresa(Long idempresa);
-    void setIdempresagrupo(IEmpresa idempresagrupo);
+    void setIdempresagrupo(Long idempresagrupo);
     void setIdempresamask(Long idempresamask);
     void setIdperiodo(Long idperiodo);
     void setLogo(String logo);

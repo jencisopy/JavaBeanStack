@@ -286,4 +286,16 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
         }
         return path.trim();
     }
+    
+
+    @Override
+    public boolean exist(String xmlPath) {
+        xmlPath = xmlPath.trim();
+        String pathType = getPathType(xmlPath);
+        xmlPath = getJustPath(xmlPath);
+        if (Fn.inList(pathType, "file", "file:")) {
+            return !(!xmlPath.contains("/") && !Fn.isFileExist(xmlPath));
+        }
+        return false;
+    }
 }

@@ -59,6 +59,9 @@ public class AppResource implements IAppResource {
             return null;
         }
         IXmlDom xmlDom = new XmlDomW3c();
+        if (!xmlManager.getXmlSearcher().exist(resourcePath)){
+            return null;
+        }
         xmlDom.setXmlSearcher(xmlManager.getXmlSearcher());
         boolean result = xmlDom.config(resourcePath, "", elementPath, false, params);
         if (!result){

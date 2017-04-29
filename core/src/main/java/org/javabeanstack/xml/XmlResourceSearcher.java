@@ -106,4 +106,32 @@ public class XmlResourceSearcher<V> extends XmlSearcher<V> {
         return super.search(context, xmlPath);
     }
 
+    @Override
+    public boolean exist(String xmlPath) {
+        if (Fn.inList(getPathType(xmlPath), "file", "file:", "obj", "obj:")) {
+            String queryString1 = "select o from AppResource o where url = :value";
+            String queryString2 = "select o from AppResource o where name = :value and type = 'XML'";
+            Map<String, Object> parameters = new HashMap();
+            String xmlPath2 = XmlSearcher.getJustPath(xmlPath).toLowerCase();
+
+            parameters.put("value", xmlPath2);
+            IAppResource appXmlSource;
+            try {
+                appXmlSource
+                        = dao.findByQuery(IAppResource.class,
+                                            IDBManager.CATALOGO,
+                                            queryString1, parameters);
+                if (appXmlSource == null){
+                    appXmlSource
+                        = dao.findByQuery(IAppResource.class,
+                                            IDBManager.CATALOGO,
+                                            queryString2, parameters);
+                }
+                return (appXmlSource != null);
+            } catch (Exception ex) {
+                ErrorManager.showError(ex, LOGGER);
+            }
+        }
+        return super.exist(xmlPath);
+    }    
 }

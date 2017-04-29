@@ -26,9 +26,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.javabeanstack.model.IEmpresa;
+import org.javabeanstack.security.IUserSession;
 import static org.javabeanstack.util.Fn.nvl;
+import static org.javabeanstack.util.Strings.isNullorEmpty;
+import static org.javabeanstack.util.Strings.textMerge;
 import static org.javabeanstack.util.Fn.inList;
-import org.javabeanstack.util.Strings;
+
 
 /**
  * Contiene metodos necesarios para generar expresiones utilizadas principalmente en los selects nativos. 
@@ -40,17 +44,18 @@ import org.javabeanstack.util.Strings;
  * @author Jorge Enciso
  */
 public class DataExpression implements IDataExpression {
+
     private List<ElementExpr> exprList = new ArrayList<>();
     private boolean openparenthesis = false;
     private Map<String, Object> sentenceParams = new HashMap();
 
-    
-    public final List<ElementExpr> getExpressionList(){
+    public final List<ElementExpr> getExpressionList() {
         return exprList;
     }
-    
+
     /**
      * Lee los parámetros de la sentencia
+     *
      * @return parámetros de la sentencia
      */
     @Override
@@ -60,7 +65,8 @@ public class DataExpression implements IDataExpression {
 
     /**
      * Asignar los parametros de la sentencia
-     * @param sentenceParams 
+     *
+     * @param sentenceParams
      */
     @Override
     public void setSentenceParams(Map<String, Object> sentenceParams) {
@@ -68,8 +74,9 @@ public class DataExpression implements IDataExpression {
     }
 
     /**
-     * Agrega un parámetro 
-     * @param key   clave del parámetro
+     * Agrega un parámetro
+     *
+     * @param key clave del parámetro
      * @param value valor del parámetro
      */
     @Override
@@ -89,27 +96,26 @@ public class DataExpression implements IDataExpression {
             this.params = params;
         }
 
-        
         public ElementExpr(String expr, Map<String, String> params, String operator) {
             this.expresion = expr;
             this.params = params;
-            if (!Strings.isNullorEmpty(operator)) {
+            if (!isNullorEmpty(operator)) {
                 this.operador = operator;
             }
         }
-        
+
         public ElementExpr(String expr, Map<String, String> params, String operator, String group) {
             this.expresion = expr;
             this.params = params;
             this.grupo = group;
-            if (!Strings.isNullorEmpty(operator)) {
+            if (!isNullorEmpty(operator)) {
                 this.operador = operator;
             }
         }
     }
 
     /**
-     *  Limpia las expresiones
+     * Limpia las expresiones
      */
     @Override
     public void clearExpressions() {
@@ -117,17 +123,17 @@ public class DataExpression implements IDataExpression {
     }
 
     /**
-     *  Inserta un parentesis a la expresión
+     * Inserta un parentesis a la expresión
      */
     @Override
     public void openParenthesis() {
         ElementExpr element = new ElementExpr("", null, "(");
         exprList.add(element);
-        openparenthesis=true;
+        openparenthesis = true;
     }
 
     /**
-     *  Inserta un cierre de parentesis en la expresión
+     * Inserta un cierre de parentesis en la expresión
      */
     @Override
     public void closeParenthesis() {
@@ -137,8 +143,9 @@ public class DataExpression implements IDataExpression {
     }
 
     /**
-     *  Agrega un operador a la expresión 
-     * @param operator operador  (and, or, in)
+     * Agrega un operador a la expresión
+     *
+     * @param operator operador (and, or, in)
      */
     @Override
     public void addOperator(String operator) {
@@ -147,8 +154,9 @@ public class DataExpression implements IDataExpression {
     }
 
     /**
-     *  Agrega un operador a la expresión 
-     * @param operator operador  (and, or, in)
+     * Agrega un operador a la expresión
+     *
+     * @param operator operador (and, or, in)
      * @param group
      */
     @Override
@@ -156,11 +164,12 @@ public class DataExpression implements IDataExpression {
         ElementExpr element = new ElementExpr("", null, operator, group);
         exprList.add(element);
     }
-    
+
     /**
      * Agrega una expresión
-     * @param expr      expresión
-     * @param keyParams    lista de parametros con sus valores.
+     *
+     * @param expr expresión
+     * @param keyParams lista de parametros con sus valores.
      */
     @Override
     public void addExpression(String expr, Map<String, String> keyParams) {
@@ -169,10 +178,11 @@ public class DataExpression implements IDataExpression {
 
     /**
      * Agrega una expresión
-     * @param expr      expresión
+     *
+     * @param expr expresión
      * @param keyParams lista de parametros con sus valores.
-     * @param operator  operador (and, or, in)
-     * 
+     * @param operator operador (and, or, in)
+     *
      */
     @Override
     public void addExpression(String expr, Map<String, String> keyParams, String operator) {
@@ -186,11 +196,12 @@ public class DataExpression implements IDataExpression {
 
     /**
      * Agrega una expresión
-     * @param expr      expresión
-     * @param keyParams    lista de parametros con sus valores.
-     * @param operator  operador (and, or, in)
+     *
+     * @param expr expresión
+     * @param keyParams lista de parametros con sus valores.
+     * @param operator operador (and, or, in)
      * @param group
-     * 
+     *
      */
     @Override
     public void addExpression(String expr, Map<String, String> keyParams, String operator, String group) {
@@ -201,12 +212,13 @@ public class DataExpression implements IDataExpression {
         exprList.add(element);
         openparenthesis = false;
     }
-    
+
     /**
      * Agrega una expresión
-     * @param expr      expresión
+     *
+     * @param expr expresión
      * @param keyParamList lista de parametros
-     * 
+     *
      */
     @Override
     public void addExpression(String expr, Object... keyParamList) {
@@ -233,27 +245,29 @@ public class DataExpression implements IDataExpression {
 
     @Override
     public void addExpressions(IDataExpression dataExpression) {
-        ((DataExpression)dataExpression).getExpressionList().forEach((expr) -> {
+        ((DataExpression) dataExpression).getExpressionList().forEach((expr) -> {
             exprList.add(expr);
         });
         dataExpression.getSentenceParams().entrySet().forEach((element) -> {
             this.getSentenceParams().put(element.getKey(), element.getValue());
         });
     }
-    
+
     /**
      * Genera la sentencia y lo devuelve
-     * @return  la expresión resultante 
+     *
+     * @return la expresión resultante
      */
     @Override
     public String getSentence() {
         return getSentence("");
     }
-    
+
     /**
      * Genera la sentencia y lo devuelve
+     *
      * @param group
-     * @return  la expresión resultante 
+     * @return la expresión resultante
      */
     @Override
     public String getSentence(String group) {
@@ -263,7 +277,7 @@ public class DataExpression implements IDataExpression {
         for (int i = 0; i < exprList.size(); i++) {
             ElementExpr e = exprList.get(i);
             // Si se pasa un grupo solo procesar ese grupo
-            if (!group.isEmpty() && !nvl(e.grupo,"").equals(group)){
+            if (!group.isEmpty() && !nvl(e.grupo, "").equals(group)) {
                 continue;
             }
             if (i == 0 && inList(e.operador.toLowerCase(), "and", "or")) {
@@ -271,14 +285,74 @@ public class DataExpression implements IDataExpression {
             }
             expr = e.expresion;
             if (e.params != null) {
-                expr = Strings.textMerge(expr, e.params);
+                expr = textMerge(expr, e.params);
             }
-            if (!Strings.isNullorEmpty(e.expresion)) {
+            if (!isNullorEmpty(e.expresion)) {
                 expr = " (" + expr + ") ";
             }
-            devolver += linefeed+e.operador + expr;
+            devolver += linefeed + e.operador + expr;
             linefeed = "\n";
         }
         return devolver;
+    }
+
+    public static String getEmpresaFilter(IUserSession userSession) {
+        return getEmpresaFilter(userSession, "");
+    }
+    
+    public static String getEmpresaFilter(IUserSession userSession,String alias) {
+        alias = (isNullorEmpty(alias)) ? "" : alias + ".";        
+        String result = "";
+        Long idempresa = userSession.getIdEmpresa();
+        if (nvl(idempresa, 0L) == 0L) {
+            return "";
+        }
+        if (userSession.getEmpresa() != null && !userSession.getEmpresa().getEmpresaList().isEmpty()) {
+            for (IEmpresa empresa : userSession.getEmpresa().getEmpresaList()) {
+                result += "," + empresa.getIdempresa();
+            }
+            if (!"".equals(nvl(result, ""))) {
+                result = alias+"idempresa in (" + idempresa + result + ")";
+            }
+        } else {
+            result = alias+"idempresa = " + idempresa;
+        }
+        return result;
+    }
+
+    public static String getEmpresaAndPeriodoFilter(IUserSession userSession) {    
+        return getEmpresaAndPeriodoFilter(userSession,"");
+    }
+    
+    public static String getEmpresaAndPeriodoFilter(IUserSession userSession, String alias) {
+        String result = "";
+        alias = (isNullorEmpty(alias)) ? "" : alias + ".";
+        Long idempresa = userSession.getIdEmpresa();
+        Long idperiodo = userSession.getEmpresa().getIdperiodo();
+        if (nvl(idempresa, 0L) == 0L) {
+            return "";
+        }
+        result = "(" + alias + "idempresa = " + idempresa;
+        if (nvl(idperiodo, 0L) != 0L) {
+            result += " and " + alias + "idperiodo=" + idperiodo;
+        }
+        result += ")";
+        if (userSession.getEmpresa() != null && !userSession.getEmpresa().getEmpresaList().isEmpty()) {
+            String separador = " or ";
+            for (IEmpresa empresa : userSession.getEmpresa().getEmpresaList()) {
+                result += separador;
+
+                idempresa = empresa.getIdempresa();
+                idperiodo = empresa.getIdperiodo();
+                // Agregar filtro de empresa si no los tiene
+                result += textMerge("({alias}idempresa = {idempresa}", "alias", alias, "idempresa", idempresa);
+                if (nvl(idperiodo, 0L) != 0L) {
+                    result += " and " + textMerge("{alias}idperiodo = {idperiodo}", "alias", alias, "idperiodo", idperiodo);
+                }
+                result += ")";
+            }
+            result = "(" + result + ")";
+        }
+        return result;
     }
 }
