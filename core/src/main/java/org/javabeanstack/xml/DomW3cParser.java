@@ -466,7 +466,7 @@ public class DomW3cParser {
         List<Element> children = new ArrayList();
         int childCount = nodeParent.getChildNodes().getLength();
         NodeList nodes = nodeParent.getChildNodes();
-        for (int i = 1; i < childCount; i++) {
+        for (int i = 0; i < childCount; i++) {
             if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE) {
                 children.add((Element) nodes.item(i));
             }
