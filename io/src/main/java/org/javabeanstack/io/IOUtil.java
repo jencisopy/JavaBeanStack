@@ -35,7 +35,6 @@ import org.javabeanstack.util.Strings;
  * @author Jorge Enciso
  */
 public class IOUtil {
-
     /**
      * Determina la existencia o no de un archivo
      *
@@ -85,9 +84,8 @@ public class IOUtil {
      * @param filePath ubicación del archivo dentro de la carpeta resource
      * @return un archivo en formato inputStream.
      */
-    public static InputStream getResourceAsStream(Class clazz, String filePath) {
-        ClassLoader classLoader = clazz.getClassLoader();
-        InputStream input = classLoader.getResourceAsStream(filePath);
+    public static InputStream getResourceAsStream(Class clazz, String filePath){
+        InputStream input = clazz.getResourceAsStream(filePath);
         return input;
     }
 

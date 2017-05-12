@@ -19,15 +19,18 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-
 package org.javabeanstack.xml; 
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map; 
 import java.util.TreeMap;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
+import static org.javabeanstack.io.IOUtil.getResourceAsStream;
 import static org.javabeanstack.util.Strings.fileToString;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 import static org.javabeanstack.util.Strings.left;
@@ -98,6 +101,7 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
      */
     @Override
     public String search(IXmlDom context, String xmlPath) {
+        String readFromJAR = Fn.nvl((String)context.getConfigParam().get("readfromjar"),"");
         String encoding = Fn.nvl((String)context.getConfigParam().get("encoding"),"");
         xmlPath = xmlPath.trim();
         String pathType = getPathType(xmlPath);
@@ -113,7 +117,17 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
                 String path = Fn.addbs(Fn.nvl((String)context.getConfigParam().get("path"), ""));
                 xmlPath = path + xmlPath;
             }
-            devolver = fileToString(xmlPath, encoding);
+            if (Fn.isFileExist(xmlPath)){
+                devolver = fileToString(xmlPath, encoding);
+            }
+            else if ("YES".equals(readFromJAR)){
+                try {
+                    InputStream input = getResourceAsStream(context.getClass(), xmlPath);
+                    devolver = Strings.streamToString(input, encoding);
+                } catch (IOException ex) {
+                    //
+                }
+            }
         }
         return devolver;
     }
@@ -286,7 +300,6 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
         }
         return path.trim();
     }
-    
 
     @Override
     public boolean exist(String xmlPath) {

@@ -22,6 +22,7 @@
 package org.javabeanstack.xml;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +101,12 @@ public interface IXmlDom<V, E> extends Serializable {
     
     boolean config(File file, String element, boolean notInherit);    
 
+    boolean config(InputStream input, String element, boolean notInherit, Map<String, String> params);
+    
+    boolean config(InputStream input, String element, boolean notInherit);    
+    
+
+    
     /**
      * Se ejecuta por intrucción explicita del sistema. <br>
      * Su función es crear el objeto XMLDOM a partir de un objeto DOM dado.

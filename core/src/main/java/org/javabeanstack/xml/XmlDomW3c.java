@@ -19,10 +19,11 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-
 package org.javabeanstack.xml;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -36,6 +37,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.*;
 
 /**
@@ -293,6 +295,42 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         return this.config("file://" + file.getPath(), "", element, notInherit);
     }
 
+    /**
+     * Se ejecuta por intrucción explicita del sistema. <br>
+     * Su función es crear el objeto XMLDOM a partir de un archivo XML dado.
+     *
+     * @param input archivo dentro del cual se buscará el texto
+     * @param element nombre del tag del texto xml
+     * @param notInherit Para que no considere las clases derivadas
+     * @param params
+     * @return Verdadero si tuvo exito en la creación y configuración del objeto
+     * XMLDOM
+     * <br>Falso si no.
+     */
+    @Override
+    public boolean config(InputStream input, String element, boolean notInherit, Map<String, String> params) {
+        setConfigParam(params);
+        return this.config(input, element, notInherit);
+    }
+
+    @Override
+    public boolean config(InputStream input, String element, boolean notInherit) {
+        String result="";
+        try {
+            String encoding = getConfigParam().get("encoding");
+            encoding = (isNullorEmpty(encoding)) ? "UTF-8" : encoding;
+            result = Strings.streamToString(input, encoding);
+        } catch (IOException ex) {
+            ErrorManager.showError(ex, LOGGER);
+            exception = ex;
+        }
+        if (exception != null){
+            return false;
+        }
+        xmlDom = null;
+        return this.config("", result, element, notInherit);
+    }
+    
     /**
      * Se ejecuta por intrucción explicita del sistema. <br>
      * Su función es crear el objeto XMLDOM a partir de un objeto DOM dado.
