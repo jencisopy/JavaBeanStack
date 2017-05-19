@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.javabeanstack.model.IEmpresa;
-import org.javabeanstack.security.IUserSession;
 import static org.javabeanstack.util.Fn.nvl;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 import static org.javabeanstack.util.Strings.textMerge;
@@ -294,65 +292,5 @@ public class DataExpression implements IDataExpression {
             linefeed = "\n";
         }
         return devolver;
-    }
-
-    public static String getEmpresaFilter(IUserSession userSession) {
-        return getEmpresaFilter(userSession, "");
-    }
-    
-    public static String getEmpresaFilter(IUserSession userSession,String alias) {
-        alias = (isNullorEmpty(alias)) ? "" : alias + ".";        
-        String result = "";
-        Long idempresa = userSession.getIdEmpresa();
-        if (nvl(idempresa, 0L) == 0L) {
-            return "";
-        }
-        if (userSession.getEmpresa() != null && !userSession.getEmpresa().getEmpresaList().isEmpty()) {
-            for (IEmpresa empresa : userSession.getEmpresa().getEmpresaList()) {
-                result += "," + empresa.getIdempresa();
-            }
-            if (!"".equals(nvl(result, ""))) {
-                result = alias+"idempresa in (" + idempresa + result + ")";
-            }
-        } else {
-            result = alias+"idempresa = " + idempresa;
-        }
-        return result;
-    }
-
-    public static String getEmpresaAndPeriodoFilter(IUserSession userSession) {    
-        return getEmpresaAndPeriodoFilter(userSession,"");
-    }
-    
-    public static String getEmpresaAndPeriodoFilter(IUserSession userSession, String alias) {
-        String result = "";
-        alias = (isNullorEmpty(alias)) ? "" : alias + ".";
-        Long idempresa = userSession.getIdEmpresa();
-        Long idperiodo = userSession.getEmpresa().getIdperiodo();
-        if (nvl(idempresa, 0L) == 0L) {
-            return "";
-        }
-        result = "(" + alias + "idempresa = " + idempresa;
-        if (nvl(idperiodo, 0L) != 0L) {
-            result += " and " + alias + "idperiodo=" + idperiodo;
-        }
-        result += ")";
-        if (userSession.getEmpresa() != null && !userSession.getEmpresa().getEmpresaList().isEmpty()) {
-            String separador = " or ";
-            for (IEmpresa empresa : userSession.getEmpresa().getEmpresaList()) {
-                result += separador;
-
-                idempresa = empresa.getIdempresa();
-                idperiodo = empresa.getIdperiodo();
-                // Agregar filtro de empresa si no los tiene
-                result += textMerge("({alias}idempresa = {idempresa}", "alias", alias, "idempresa", idempresa);
-                if (nvl(idperiodo, 0L) != 0L) {
-                    result += " and " + textMerge("{alias}idperiodo = {idperiodo}", "alias", alias, "idperiodo", idperiodo);
-                }
-                result += ")";
-            }
-            result = "(" + result + ")";
-        }
-        return result;
     }
 }

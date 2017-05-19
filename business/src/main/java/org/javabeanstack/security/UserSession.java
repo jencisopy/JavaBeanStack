@@ -28,6 +28,7 @@ import java.util.Date;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IEmpresa;
 import org.javabeanstack.model.IUser;
+import org.javabeanstack.util.Fn;
 
 /**
  * Esta clase guarda información de la sesión de un usuario.
@@ -205,6 +206,14 @@ public class UserSession implements IUserSession{
 
     @Override
     public Long getIdEmpresa() {
+        if (getEmpresa() != null){
+            if (Fn.nvl(getEmpresa().getIdempresamask(),0L) != 0L){
+                return getEmpresa().getIdempresamask();
+            }
+            else{
+                return getEmpresa().getIdempresa();
+            }
+        }
         return idempresa;
     }
 

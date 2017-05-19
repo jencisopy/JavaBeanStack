@@ -493,7 +493,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         sqlComando = "select o from " + getType().getSimpleName() + " o ";
         if (isFieldExist("idempresa") && getIdempresa() != 0) {
-            filtro = " idempresa = " + getIdempresa();
+            filtro = DataUtil.getEmpresaFilter(getDAO().getUserSession());
             if (!"".equals(filter)) {
                 filtro += " and " + filter;
             }

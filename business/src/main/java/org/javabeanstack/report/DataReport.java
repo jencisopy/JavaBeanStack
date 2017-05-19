@@ -82,7 +82,7 @@ public class DataReport {
      */
     private String columnsGroup2;
     /**
-     * Segundo grupo de columnas
+     * Tercer grupo de columnas
      */
     private String columnsGroup3;
 
@@ -127,12 +127,22 @@ public class DataReport {
 
     protected Map<String, Object> preference1;
     protected Map<String, Object> preference2;
+    
+    private int dateGroup = 0; // 0 && Ninguno, 1 año, 2 año y mes
 
     public DataReport() {
     }
 
     public DataReport(IDataLink dao) {
         this.dataLink = dao;
+    }
+
+    public int getDateGroup() {
+        return dateGroup;
+    }
+
+    public void setDateGroup(int dateGroup) {
+        this.dateGroup = dateGroup;
     }
 
     public void init(Map<String, Object> preference1, Map<String, Object> preference2) {
@@ -389,7 +399,7 @@ public class DataReport {
      *
      * @return sentencia sql
      */
-    public final String getSqlSentence() {
+    public String getSqlSentence() {
         return sqlSentence;
     }
 
@@ -422,7 +432,7 @@ public class DataReport {
      * (columnsGroup1, columnsGroup2, columns, entityRoot, entitiesToJoin,
      * entitiesAlias, whereFilter, orderBy, groupBy), el valor resultante asigna
      * en el atributo sqlSentence y en el objeto query que luego será utilizado
-     * en executeSqlSentence.
+     * en sqlSentenceExecute.
      */
     public void createSqlSentence() {
         setProperties();
@@ -486,8 +496,8 @@ public class DataReport {
     }
 
     /**
-     * Ejecuta la sentencia sql generada previamente en el metodoc
-     * reateSqlSentence.
+     * Ejecuta la sentencia sql generada previamente en el metodo
+     * createSqlSentence.
      *
      * @return el resultado de la ejecución de la sentencia sql.
      * @throws Exception
@@ -693,4 +703,5 @@ public class DataReport {
         }
         return fieldsGroupBy;
     }
-}
+}    
+    
