@@ -703,5 +703,10 @@ public class DataReport {
         }
         return fieldsGroupBy;
     }
-}    
     
+    public String removeAlias(String text){
+        text = text.replaceAll("a\\.", "");
+        text = text.replaceAll("b\\.", "");
+        return text;
+    }
+}
