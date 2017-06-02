@@ -93,4 +93,11 @@ public class DataUtil {
         }
         return result;
     }
+    
+    public static String getDateTimeType(String engine){
+        if (engine.equals("ORACLE")){
+            return "DATE";
+        }
+        return "DATETIME";
+    }
 }
