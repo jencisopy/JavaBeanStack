@@ -403,6 +403,10 @@ public class DataReport {
         return sqlSentence;
     }
 
+    public Map<String, Object> getJasperParams() {
+        throw new UnsupportedOperationException("Debe implementar el metodo getJasperParams " + getClass().getName());
+    }
+    
     /**
      * Acomoda los valores previo a ejecutar el metodo sqlSentenciaCreate()
      */
@@ -427,6 +431,9 @@ public class DataReport {
         orderBy = nvl(orderBy, "");
     }
 
+    protected void beforeCreateSentence(){
+    }
+    
     /**
      * Genera la sentencia sql a partir de los parámetros asignados
      * (columnsGroup1, columnsGroup2, columns, entityRoot, entitiesToJoin,
@@ -435,6 +442,7 @@ public class DataReport {
      * en sqlSentenceExecute.
      */
     public void createSqlSentence() {
+        beforeCreateSentence();
         setProperties();
         String select = iif(!isNullorEmpty(columnsGroup1), columnsGroup1 + ",", "")
                 + iif(!isNullorEmpty(columnsGroup2), columnsGroup2 + ",", "")
@@ -455,6 +463,10 @@ public class DataReport {
 
         sqlSentence = query.createQuerySentence();
         LOGGER.debug(sqlSentence);
+        afterCreateSentence();
+    }
+    
+    protected void afterCreateSentence(){
     }
 
     /**
@@ -491,10 +503,10 @@ public class DataReport {
         return query;
     }
 
-    public Map<String, Object> getJasperParams() {
-        throw new UnsupportedOperationException("Debe implementar el metodo getJasperParams " + getClass().getName());
-    }
 
+    protected void beforeExecuteSqlSentence(){
+    }
+    
     /**
      * Ejecuta la sentencia sql generada previamente en el metodo
      * createSqlSentence.
@@ -503,8 +515,16 @@ public class DataReport {
      * @throws Exception
      */
     public List<IDataQueryModel> executeSqlSentence() throws Exception {
-        return query.execQuery();
+        beforeExecuteSqlSentence();
+        List<IDataQueryModel> result = query.execQuery();
+        result = afterExecuteSqlSentence(result);
+        return result;
     }
+    
+    protected List<IDataQueryModel> afterExecuteSqlSentence(List<IDataQueryModel> result){
+        return result;
+    }
+    
 
     /**
      * Se encarga de generar la lista de entidades de donde se buscarán extraer
@@ -704,7 +724,7 @@ public class DataReport {
         return fieldsGroupBy;
     }
     
-    public String removeAlias(String text){
+    protected String removeAlias(String text){
         text = text.replaceAll("a\\.", "");
         text = text.replaceAll("b\\.", "");
         return text;

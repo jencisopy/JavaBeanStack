@@ -22,7 +22,6 @@
 
 package org.javabeanstack.resources;
 
-import java.io.InputStream;
 import java.util.Map;
 import javax.ejb.EJB;
 import org.w3c.dom.Document;
@@ -32,6 +31,9 @@ import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.xml.IXmlDom;
 import org.javabeanstack.xml.IXmlManager;
 import org.javabeanstack.xml.XmlDomW3c;
+import org.javabeanstack.xml.XmlResourceSearcher;
+import static org.javabeanstack.util.Fn.nvl;
+
 
 /**
  *
@@ -43,12 +45,20 @@ public class AppResource implements IAppResource {
     @EJB private ISecManager secManager;    
 
     @Override
-    public InputStream getResourceAsStream(IUserSession userSession, String resourcePath) {
+    public byte[] getResourceAsBytes(IUserSession userSession, String resourcePath) {
+        if (resourcePath.toLowerCase().endsWith(".jrxml")){
+            String text = nvl(getResourceAsJRXml(userSession.getSessionId(), resourcePath),"");
+            return text.getBytes();
+        }
         return null;
     }
 
     @Override
-    public InputStream getResourceAsStream(String sessionId, String resourcePath) {
+    public byte[] getResourceAsBytes(String sessionId, String resourcePath) {
+        if (resourcePath.toLowerCase().endsWith(".jrxml")){
+            String text = nvl(getResourceAsJRXml(sessionId, resourcePath),"");
+            return text.getBytes();
+        }
         return null;
     }
 
@@ -64,10 +74,25 @@ public class AppResource implements IAppResource {
         }
         xmlDom.setXmlSearcher(xmlManager.getXmlSearcher());
         boolean result = xmlDom.config(resourcePath, "", elementPath, false, params);
-        if (!result){
+        if (!result){ 
             return null;
         }
         xmlDom.setXmlSearcher(null);
         return xmlDom;
+    }
+    
+    protected String getResourceAsJRXml(String sessionId, String resourcePath) {
+        if (!secManager.isSesionIdValid(sessionId)){
+            return null;
+        }
+        if (!xmlManager.getXmlSearcher().exist(resourcePath)){
+            return null;
+        }
+        XmlResourceSearcher searcher = (XmlResourceSearcher)xmlManager.getXmlSearcher();
+        String jrxml = searcher.search(null, resourcePath);
+        if (jrxml == null){
+            return null;
+        }
+        return jrxml;
     }
 }

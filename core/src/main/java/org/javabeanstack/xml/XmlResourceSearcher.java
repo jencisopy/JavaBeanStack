@@ -103,6 +103,9 @@ public class XmlResourceSearcher<V> extends XmlSearcher<V> {
                 ErrorManager.showError(ex, LOGGER);
             }
         }
+        if (context == null){
+            return null;
+        }        
         return super.search(context, xmlPath);
     }
 

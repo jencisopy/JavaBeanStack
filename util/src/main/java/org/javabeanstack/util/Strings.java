@@ -179,17 +179,17 @@ public class Strings {
         return result;
     }
 
-    public static String textMerge(String text, Map<String, String> params,String iniPattern) {
+    public static String textMerge(String text, Map<String, String> params, String iniPattern) {
         String result = text;
-        String regexSearch;        
+        String regexSearch;
         for (Map.Entry<String, String> entry : params.entrySet()) {
             String caracter;
-            for (int i = 0;i<iniPattern.length();i++){
+            for (int i = 0; i < iniPattern.length(); i++) {
                 caracter = "";
-                if (!" ".equals(substr(iniPattern,i,1))){
-                    caracter = "\\"+substr(iniPattern,i,1);                    
+                if (!" ".equals(substr(iniPattern, i, 1))) {
+                    caracter = "\\" + substr(iniPattern, i, 1);
                 }
-                regexSearch = "(?i)"+caracter+"\\{" + entry.getKey() + "\\}";
+                regexSearch = "(?i)" + caracter + "\\{" + entry.getKey() + "\\}";
                 result = result.replaceAll(regexSearch, entry.getValue());
             }
         }
@@ -261,13 +261,13 @@ public class Strings {
         boolean found = false;
         for (int i = 0; i < comodinBegin.length(); i++) {
             found = (findString(substr(comodinBegin, i, 1)
-                        + search, right(expression, search.length()+1)) >= 0);
+                    + search, right(expression, search.length() + 1)) >= 0);
 
             if (found) {
                 return true;
             }
 
-            for (int k = 0; k < comodinBegin.length(); k++) {
+            for (int k = 0; k < comodinEnd.length(); k++) {
                 found = (findString(substr(comodinBegin, i, 1)
                         + search
                         + substr(comodinEnd, k, 1), expression) >= 0)

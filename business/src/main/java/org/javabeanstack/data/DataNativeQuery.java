@@ -570,7 +570,9 @@ public class DataNativeQuery implements IDataNativeQuery {
     protected static String[] setColumnLabel(String columns) {
         /* Reemplazar texto que se encuentra entre parentesis */
         String regex = "\\(.*?\\)";
-        String expr = columns.replaceAll(regex, "()");
+        String expr = columns;
+        expr = Strings.varReplace(expr, "()");
+        expr = expr.replaceAll(regex, "()");
         String[] matrix = convertToMatrix(expr, ",");
         int pos;
         for (int i = 0; i < matrix.length; i++) {

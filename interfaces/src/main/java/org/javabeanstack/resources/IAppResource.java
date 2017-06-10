@@ -34,7 +34,8 @@ import org.javabeanstack.xml.IXmlDom;
  * @author Jorge Enciso
  */
 public interface IAppResource extends Serializable{
-    InputStream getResourceAsStream(IUserSession userSession, String resourcePath);
-    InputStream getResourceAsStream(String sessionId, String resourcePath);
+    byte[] getResourceAsBytes(IUserSession userSession, String resourcePath);
+    byte[] getResourceAsBytes(String sessionId, String resourcePath);
     IXmlDom<Document, Element> getResourceAsXmlDom(String sessionId, String resourcePath, String elementPath, Map<String, String> params);
 }
+
