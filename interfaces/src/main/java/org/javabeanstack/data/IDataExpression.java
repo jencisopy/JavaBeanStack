@@ -115,4 +115,21 @@ public interface IDataExpression {
      * @param dataExpression 
      */
     public void addExpressions(IDataExpression dataExpression);
+    
+    /**
+     * Elimina una expresión
+     * @param elementNumber  elimina una expresión que se encuentra en el nro de elemento 
+     * @return  
+     * 
+     */
+    public IDataExpression removeExpression(int elementNumber);
+
+    /**
+     * Elimina expresiones 
+     * @param group elimina expresiones pertenecientes a un grupo dado.
+     * @return 
+     * 
+     */
+    public IDataExpression removeExpression(String group);
+    
 }

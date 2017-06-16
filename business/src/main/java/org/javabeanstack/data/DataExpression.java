@@ -41,12 +41,13 @@ import static org.javabeanstack.util.Fn.inList;
  * 
  * @author Jorge Enciso
  */
-public class DataExpression implements IDataExpression {
+public class DataExpression implements IDataExpression{
 
     private List<ElementExpr> exprList = new ArrayList<>();
     private boolean openparenthesis = false;
     private Map<String, Object> sentenceParams = new HashMap();
 
+    
     public final List<ElementExpr> getExpressionList() {
         return exprList;
     }
@@ -81,6 +82,7 @@ public class DataExpression implements IDataExpression {
     public void addSentenceParam(String key, Object value) {
         this.sentenceParams.put(key, value);
     }
+
 
     public final class ElementExpr {
 
@@ -292,5 +294,35 @@ public class DataExpression implements IDataExpression {
             linefeed = "\n";
         }
         return devolver;
+    }
+    
+    @Override
+    public IDataExpression removeExpression(int elementNumber) {
+        IDataExpression dataExpr = new DataExpression();
+        ElementExpr element;
+        for (int i=0; i < exprList.size();i++){
+            if (i != elementNumber){
+                element = exprList.get(i);                            
+                dataExpr.addExpression(element.expresion, 
+                                        element.params,
+                                        element.operador,
+                                        element.grupo);
+            }
+        }
+        return dataExpr;
+    }
+
+    @Override
+    public IDataExpression removeExpression(String group) {
+        IDataExpression dataExpr = new DataExpression();
+        for (ElementExpr element: exprList){
+            if (!element.grupo.equalsIgnoreCase(group)){
+                dataExpr.addExpression(element.expresion, 
+                                        element.params,
+                                        element.operador,
+                                        element.grupo);
+            }
+        }
+        return dataExpr;
     }
 }

@@ -93,6 +93,20 @@ public class DataUtil {
         }
         return result;
     }
+
+    public static String getPeriodoFilter(IUserSession userSession) {
+        return getPeriodoFilter(userSession,"");
+    }
+    
+    public static String getPeriodoFilter(IUserSession userSession, String alias) {
+        String result = "";
+        alias = (isNullorEmpty(alias)) ? "" : alias + ".";
+        Long idperiodo = userSession.getEmpresa().getIdperiodo();
+        if (nvl(idperiodo, 0L) != 0L) {
+            result = alias+"idperiodo = " + idperiodo;
+        }
+        return result;
+    }
     
     public static String getDateTimeType(String engine){
         if (engine.equals("ORACLE")){
