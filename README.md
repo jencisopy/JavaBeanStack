@@ -7,7 +7,7 @@ Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y es
 
 **Core:** agrupa las funciones de manejo de errores, log de eventos, configuración de la aplicación, gestión de recursos entre otros.
 
-![Business Layer](https://github.com/jencisopy/JavaBeanStack/blob/master/business/src/main/resources/images/javabeanstack_core.png)
+![Core Layer](https://github.com/jencisopy/JavaBeanStack/blob/master/core/src/main/resources/images/javabeanstack_core.png)
 
 **Business:** contiene componentes para acceso, validación y grabación del dato.
 
