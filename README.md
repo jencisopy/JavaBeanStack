@@ -3,7 +3,7 @@ Framework para construcción de aplicaciones Java EE 7
 
 Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y estandarizar el desarrollo de aplicaciones empresariales. 
 
-## Modulos ##
+## Módulos ##
 
 ![ALL](https://github.com/jencisopy/JavaBeanStack/blob/master/images/javabeanstack_all.png)
 
