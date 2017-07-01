@@ -107,6 +107,15 @@ public class DataUtil {
         }
         return result;
     }
+
+    public static Long getEmpresaIdPeriodo(IUserSession userSession) {
+        Long result = 1L;
+        Long idperiodo = userSession.getEmpresa().getIdperiodo();
+        if (nvl(idperiodo, 0L) != 0L) {
+            result = idperiodo;
+        }
+        return result;
+    }
     
     public static String getDateTimeType(String engine){
         if (engine.equals("ORACLE")){

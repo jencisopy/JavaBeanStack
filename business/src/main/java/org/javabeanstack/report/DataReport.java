@@ -444,10 +444,16 @@ public class DataReport {
     public void createSqlSentence() {
         beforeCreateSentence();
         setProperties();
-        String select = iif(!isNullorEmpty(columnsGroup1), columnsGroup1 + ",", "")
+
+        String select = iif(!isNullorEmpty(columnsGroup1), columnsGroup1 + "," , "")
                 + iif(!isNullorEmpty(columnsGroup2), columnsGroup2 + ",", "")
                 + iif(!isNullorEmpty(columnsGroup3), columnsGroup3 + ",", "")
-                + iif(!isNullorEmpty(columns), columns, "");
+                + iif(!isNullorEmpty(columns),  columns, "");
+        
+        select = select.trim();
+        if (select.endsWith(",")){
+            select = select.substring(0, select.length()-1);
+        }
 
         EntitiesToRelation entityListRelations = new EntitiesToRelation();
         String sentenceSearch = select + " " + whereFilter.getSentence() + " " + orderBy;
@@ -686,17 +692,38 @@ public class DataReport {
     protected String getCotizacion() {
         Map<String, String> param = new HashMap<>();
         param.put("idmoneda", (String) preference2.get("moneda"));
-        if ((Boolean) preference2.get("cotizacionHistorico")) {
+        boolean cotizacionHistorico=false;
+        boolean cotizacionPromedio = false;
+        boolean cotizacionFija = true;
+        boolean cotizacionDocumento = false;
+        Double  cotizacionMonto = 1D;
+        if (preference2.get("cotizacionHistorico") != null){
+            cotizacionHistorico = (boolean)preference2.get("cotizacionHistorico");
+        }
+        if (preference2.get("cotizacionPromedio") != null){
+            cotizacionPromedio = (boolean)preference2.get("cotizacionPromedio");
+        }
+        if (preference2.get("cotizacionFija") != null){
+            cotizacionFija = (boolean)preference2.get("cotizacionFija");
+        }
+        if (preference2.get("cotizacionMonto") != null){
+            cotizacionMonto = (Double)preference2.get("cotizacionMonto");
+        }
+        if (preference2.get("cotizacionDocumento") != null){
+            cotizacionDocumento = (Boolean)preference2.get("cotizacionDocumento");
+        }
+
+        if (cotizacionHistorico) {
             param.put("cotizaciontipo", "1");
-        } else if ((Boolean) preference2.get("cotizacionPromedio")) {
+        } else if (cotizacionPromedio) {
             param.put("cotizaciontipo", "2");
-        } else if ((Boolean) preference2.get("cotizacionFija")) {
+        } else if (cotizacionFija) {
             param.put("cotizaciontipo", "3");
         } else {
             param.put("cotizaciontipo", "1");
         }
-        param.put("cotizacionmonto", preference2.get("cotizacion").toString());
-        param.put("usarcotizaciondoc", (Boolean) preference2.get("cotizacionDocumento") ? ":true" : ":false");
+        param.put("cotizacionmonto", cotizacionMonto.toString());
+        param.put("usarcotizaciondoc", cotizacionDocumento ? ":true" : ":false");
         return textMerge("{schema}.fn_GetCotizacionOf({idmoneda}, a.fecha, {cotizaciontipo}, {cotizacionmonto}, {usarcotizaciondoc}, a.idmoneda,a.cambio)", param);
     }
 

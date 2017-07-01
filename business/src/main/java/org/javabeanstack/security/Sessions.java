@@ -23,10 +23,7 @@
 
 package org.javabeanstack.security;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -34,15 +31,6 @@ import javax.ejb.LockType;
 import javax.ejb.Startup;
 import org.apache.log4j.Logger;
 
-import org.javabeanstack.data.DBManager;
-import org.javabeanstack.data.DataLink;
-import org.javabeanstack.data.DataNativeQuery;
-import org.javabeanstack.data.IDataQueryModel;
-import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.util.Fn;
-import org.javabeanstack.model.IDicPermisoEmpresa;
-import org.javabeanstack.model.IUser;
 import org.javabeanstack.data.IGenericDAO;
 
 
