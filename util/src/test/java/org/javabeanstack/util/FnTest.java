@@ -26,52 +26,6 @@ public class FnTest {
     }
 
     /**
-     * Test of toObject method, of class Fn.
-     * @throws java.lang.Exception
-     */
-    @Test
-    public void testToObject() throws Exception {
-        System.out.println("toObject");
-        String source = "1";
-        Integer target = 0;
-        Integer expResult = 1;
-        Object result = Fn.toObject(source, target);
-        assertEquals(expResult, result);
-        
-        source = "1";
-        Long target2 = 0L;
-        Long expResult2 = 1L;
-        result = Fn.toObject(source, target2);        
-        assertEquals(expResult2, result);
-        
-        source = "1.01";
-        Double target3 = 0D;
-        Double expResult3 = 1.01D;
-        result = Fn.toObject(source, target3);        
-        assertEquals(expResult3, result);
-
-        source = "1.01";
-        Float target4 = 0F;
-        Float expResult4 = 1.01F;
-        result = Fn.toObject(source, target4);        
-        assertEquals(expResult4, result);
-
-        source = "1";
-        Short target5 = 0;
-        Short expResult5 = 1;
-        result = Fn.toObject(source, target5);        
-        assertEquals(expResult5, result);
-        
-        /*
-        source = "1";
-        BigDecimal target6 = BigDecimal.valueOf(0L);
-        BigDecimal expResult6 = BigDecimal.valueOf(1L);
-        result = Fn.toObject(source, target6);        
-        assertEquals(expResult6, result);
-        */
-    }
-
-    /**
      * Test of toDate method, of class Fn.
      * @throws java.text.ParseException
      */

@@ -36,25 +36,6 @@ import org.apache.log4j.Logger;
  * @author Jorge Enciso
  */
 public class Fn {
-    public static Object toObject(Object source, Object target) throws Exception {
-        if (target instanceof String) {
-            return String.valueOf(source);
-        } else if (target instanceof Double) {
-            return Double.valueOf(source.toString());
-        } else if (target instanceof Float) {
-            return Float.valueOf(source.toString());
-        } else if (target instanceof Long) {
-            return Long.valueOf(source.toString());
-        } else if (target instanceof Integer) {
-            return Integer.valueOf(source.toString());
-        } else if (target instanceof Short) {
-            return Short.valueOf(source.toString());
-        } else if (target instanceof Boolean) {
-            return Boolean.valueOf(source.toString());
-        }
-        throw new Exception("No fue posible convertir el objeto source al objeto target");
-    }
-
     /**
      * Convierte una cadena a una fecha
      * @param dateString

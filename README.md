@@ -15,6 +15,7 @@ Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y es
 **Core:** agrupa las funciones de manejo de errores, log de eventos, configuración de la aplicación, gestión de recursos entre otros.
 
 
+![Util Stack](https://github.com/jencisopy/JavaBeanStack/blob/master/core/src/main/resources/images/javabeanstack_util.png)
 **Util:** contiene clases para simplificar el uso de cadenas, objeto tipo fecha entre otros.
 
 
