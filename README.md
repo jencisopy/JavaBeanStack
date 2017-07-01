@@ -3,7 +3,7 @@ Framework para construcción de aplicaciones Java EE 7
 
 Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y estandarizar el desarrollo de aplicaciones empresariales. 
 
-## Paquetes ##
+## Modulos ##
 
 ![ALL](https://github.com/jencisopy/JavaBeanStack/blob/master/images/javabeanstack_all.png)
 
@@ -11,6 +11,7 @@ Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y es
 **Business:** contiene componentes para acceso, validación y grabación del dato.
 
 ![Core Stack](https://github.com/jencisopy/JavaBeanStack/blob/master/core/src/main/resources/images/javabeanstack_core.png)
+
 **Core:** agrupa las funciones de manejo de errores, log de eventos, configuración de la aplicación, gestión de recursos entre otros.
 
 
