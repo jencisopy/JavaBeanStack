@@ -6,8 +6,8 @@
         <artifactId>JavaBeanStack</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>JavaBeanStack-Util</artifactId>
-    <name>JavaBeanStack-Util</name>    
+    <artifactId>JavaBeanStack-Commons</artifactId>
+    <name>JavaBeanStack-Commons</name>    
     <packaging>jar</packaging>
     <dependencies>
         <dependency>

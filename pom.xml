@@ -31,8 +31,8 @@
     <modules>
         <module>interfaces</module>        
         <module>core</module>
-        <module>util</module>
         <module>business</module>
+        <module>commons</module>
     </modules>
     <distributionManagement>  
         <snapshotRepository>
