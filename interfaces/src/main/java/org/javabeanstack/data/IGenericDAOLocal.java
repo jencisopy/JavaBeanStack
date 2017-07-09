@@ -4,7 +4,7 @@ import javax.ejb.Local;
 
 /**
  *
- * @author jenci_000
+ * @author Jorge Enciso
  */
 @Local
 public interface IGenericDAOLocal extends IGenericDAO {

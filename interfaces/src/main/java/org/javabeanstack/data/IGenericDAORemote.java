@@ -4,7 +4,7 @@ import javax.ejb.Remote;
 
 /**
  *
- * @author jenci_000
+ * @author Jorge Enciso
  */
 @Remote
 public interface IGenericDAORemote extends IGenericDAO{

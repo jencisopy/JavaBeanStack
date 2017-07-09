@@ -22,101 +22,11 @@
 
 package org.javabeanstack.data;
 
-import org.javabeanstack.model.IEmpresa;
-import org.javabeanstack.security.IUserSession;
-import static org.javabeanstack.util.Fn.nvl;
-import static org.javabeanstack.util.Strings.isNullorEmpty;
-import static org.javabeanstack.util.Strings.textMerge;
-
 /**
  *
  * @author Jorge Enciso
  */
 public class DataUtil {
-    public static String getEmpresaFilter(IUserSession userSession) {
-        return getEmpresaFilter(userSession, "");
-    }
-    
-    public static String getEmpresaFilter(IUserSession userSession,String alias) {
-        alias = (isNullorEmpty(alias)) ? "" : alias + ".";        
-        String result = "";
-        Long idempresa = userSession.getIdEmpresa();
-        if (nvl(idempresa, 0L) == 0L) {
-            return "";
-        }
-        if (userSession.getEmpresa() != null && !userSession.getEmpresa().getEmpresaList().isEmpty()) {
-            Long idempresaChild;
-            for (IEmpresa empresa : userSession.getEmpresa().getEmpresaList()) {
-                idempresaChild = empresa.getIdempresa();
-                // Si existe una mascara cambiando el idempresa
-                if (nvl(empresa.getIdempresamask(),0L) != 0L){
-                    idempresaChild = empresa.getIdempresamask();
-                }
-                result += "," + idempresaChild;
-            }
-            if (!"".equals(nvl(result, ""))) {
-                result = alias+"idempresa in (" + idempresa + result + ")";
-            }
-        } else {
-            result = alias+"idempresa = " + idempresa;
-        }
-        return result;
-    }
-
-    public static String getEmpresaAndPeriodoFilter(IUserSession userSession) {    
-        return getEmpresaAndPeriodoFilter(userSession,"");
-    }
-    
-    public static String getEmpresaAndPeriodoFilter(IUserSession userSession, String alias) {
-        String result = "";
-        alias = (isNullorEmpty(alias)) ? "" : alias + ".";
-        Long idempresa = userSession.getIdEmpresa();
-        Long idperiodo = userSession.getEmpresa().getIdperiodo();
-        if (nvl(idempresa, 0L) == 0L) {
-            return "";
-        }
-        result = "(" + alias + "idempresa = " + idempresa + ")";
-        if (userSession.getEmpresa() != null && !userSession.getEmpresa().getEmpresaList().isEmpty()) {
-            String separador = " or ";
-            for (IEmpresa empresa : userSession.getEmpresa().getEmpresaList()) {
-                result += separador;
-
-                idempresa = (nvl(empresa.getIdempresamask(),0L) != 0L ? empresa.getIdempresamask() : empresa.getIdempresa());
-                // Agregar filtro de empresa si no los tiene
-                result += textMerge("({alias}idempresa = {idempresa}", "alias", alias, "idempresa", idempresa);
-                result += ")";
-            }
-            result = "(" + result + ")";
-        }
-        if (nvl(idperiodo, 0L) != 0L) {
-            result = "("+result+" and " + alias + "idperiodo=" + idperiodo+")";
-        }
-        return result;
-    }
-
-    public static String getPeriodoFilter(IUserSession userSession) {
-        return getPeriodoFilter(userSession,"");
-    }
-    
-    public static String getPeriodoFilter(IUserSession userSession, String alias) {
-        String result = "";
-        alias = (isNullorEmpty(alias)) ? "" : alias + ".";
-        Long idperiodo = userSession.getEmpresa().getIdperiodo();
-        if (nvl(idperiodo, 0L) != 0L) {
-            result = alias+"idperiodo = " + idperiodo;
-        }
-        return result;
-    }
-
-    public static Long getEmpresaIdPeriodo(IUserSession userSession) {
-        Long result = 1L;
-        Long idperiodo = userSession.getEmpresa().getIdperiodo();
-        if (nvl(idperiodo, 0L) != 0L) {
-            result = idperiodo;
-        }
-        return result;
-    }
-    
     public static String getDateTimeType(String engine){
         if (engine.equals("ORACLE")){
             return "DATE";

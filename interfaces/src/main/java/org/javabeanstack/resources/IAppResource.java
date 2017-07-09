@@ -21,7 +21,6 @@
 */
 package org.javabeanstack.resources;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Map;
 import org.w3c.dom.Document;
