@@ -7,7 +7,6 @@ Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y es
 JAVA JDK 8
 
 ## Módulos ##
-
 ![ALL](https://github.com/jencisopy/JavaBeanStack/blob/master/images/javabeanstack_all.png)
 
 
