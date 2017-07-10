@@ -29,6 +29,7 @@ JAVA JDK 8
 
 ## Licencia ##
 **GNU Lesser General Public License v3.0**
+
 https://github.com/jencisopy/JavaBeanStack/blob/master/LICENSE
 
 
