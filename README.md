@@ -4,7 +4,7 @@ Framework para construcción de aplicaciones Java EE 7
 Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y estandarizar el desarrollo de aplicaciones empresariales. 
 
 ## Prerequisito ##
-Java jdk 8
+JAVA JDK 8
 
 ## Módulos ##
 
@@ -28,7 +28,7 @@ Java jdk 8
 ![Commons Stack](https://github.com/jencisopy/JavaBeanStack/blob/master/commons/src/main/resources/images/javabeanstack_commons.png)
 
 
-## Licence ##
+## Licencia ##
 https://github.com/jencisopy/JavaBeanStack/blob/master/LICENSE
 
 
