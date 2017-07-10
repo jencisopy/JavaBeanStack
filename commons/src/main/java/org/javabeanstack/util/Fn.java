@@ -21,14 +21,8 @@
 */
 package org.javabeanstack.util;
 
-import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -36,42 +30,6 @@ import org.apache.log4j.Logger;
  * @author Jorge Enciso
  */
 public class Fn {
-    /**
-     * Convierte una cadena a una fecha
-     * @param dateString
-     * @return 
-     */
-    public static Date toDate(String dateString) {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        return toDate(dateString, formatter);
-    }
-
-    public static Date toDate(String dateString, String format) {
-        SimpleDateFormat formatter = new SimpleDateFormat(format);
-        return toDate(dateString, formatter);
-    }
-    
-    public static Date toDate(String dateString, SimpleDateFormat formatter) {
-        Date date = null;
-        try {
-            date = formatter.parse(dateString);
-        } catch (ParseException ex) {
-            Logger.getLogger(Fn.class).error(ex.getMessage());
-        }
-        return date;
-    }
-
-    public static String toString(Date date, SimpleDateFormat formater) {
-        String result = formater.format(date);
-        return result;
-    }
-
-    public static String toString(Date date, String format) {
-        SimpleDateFormat formater = new SimpleDateFormat(format);
-        String result = formater.format(date);
-        return result;
-    }
-
     public static boolean inList(String obj, String... list) {
         for (Object e : list) {
             if (obj.equals(e)) {
@@ -91,6 +49,12 @@ public class Fn {
         return false;
     }
 
+    /**
+     * Busca un objeto en una matriz y si encuentra  devuelve el nro. de elemento
+     * @param matrix
+     * @param search
+     * @return nro. de elemento si encuentra el objeto
+     */
     public static Integer findInMatrix(Object[] matrix, Object search) {
         int posicion = -1;
         for (int i = 0; i < matrix.length; i++) {
@@ -102,6 +66,13 @@ public class Fn {
         return posicion;
     }
 
+    /**
+     * Busca un objeto en una matriz y si encuentra  devuelve el nro. de elemento
+     * @param matrix
+     * @param search
+     * @param caseSensitive
+     * @return nro. de elemento si encuentra el objeto
+     */
     public static Integer findInMatrix(String[] matrix, String search, Boolean caseSensitive) {
         int posicion = -1;
         for (int i = 0; i < matrix.length; i++) {
@@ -120,6 +91,11 @@ public class Fn {
         return posicion;
     }
 
+    /**
+     * Convierte a verdadero o falso (0 falso, 1 verdadero)
+     * @param value puede ser una variable numerica o una cadena.
+     * @return verdadero o falso.
+     */
     public static Boolean toLogical(Object value) {
         if (value == null) {
             return false;
@@ -134,6 +110,11 @@ public class Fn {
     }
 
 
+    /**
+     * Devuelve el resultante md5 de un texto dado.
+     * @param msg texto dado.
+     * @return md5 del texto dado.
+     */
     public static String getMD5(String msg) {
         MessageDigest md = null;
         try {
@@ -154,21 +135,6 @@ public class Fn {
         return null;
     }
 
-    public static Date now() {
-        return Calendar.getInstance().getTime();
-    }
-
-    public static Date today() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);        
-        calendar.set(Calendar.MILLISECOND,0);        
-
-        Date today = calendar.getTime();
-        return today;
-    }
-    
     public static <T> T iif(boolean condition, T value1, T value2) {
         if (condition) {
             return value1;
@@ -176,30 +142,18 @@ public class Fn {
         return value2;
     }
     
+    /**
+     * Devuelve un valor alternativo (alternateValue) si el valor dado (value)
+     * es nulo.
+     * @param <T>
+     * @param value  valor que devuelve si no es nulo
+     * @param alternateValue valor que devuelve si "value" es nulo
+     * @return 
+     */
     public static <T> T nvl(T value, T alternateValue) {
         if (value == null) {
             return alternateValue;
         }
         return value;
-    }
-
-    public static boolean isFileExist(String filePath){
-        File f = new File(filePath);
-        return f.exists() && !f.isDirectory();
-    }
-    
-    public static boolean isFolderExist(String folder){
-        File f = new File(folder);
-        return f.exists() && f.isDirectory();
-    }
-    
-    public static String addbs(String path){
-        if (Strings.isNullorEmpty(path)){
-            return path;
-        }
-        if (path.endsWith("/") || path.endsWith("\\")){
-            return path;
-        }
-        return path.trim()+File.separator;
     }
 }

@@ -1,17 +1,25 @@
 /*
-* Copyright (c) 2015-2017 OyM System Group S.A.
-* Capitan Cristaldo 464, Asunción, Paraguay
-* All rights reserved. 
+* JavaBeanStack FrameWork
 *
-* NOTICE:  All information contained herein is, and remains
-* the property of OyM System Group S.A. and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to OyM System Group S.A.
-* and its suppliers and protected by trade secret or copyright law.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from OyM System Group S.A.
+* Copyright (C) 2017 Jorge Enciso
+* Email: jorge.enciso.r@gmail.com
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 3 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+* MA 02110-1301  USA
 */
+
 package org.javabeanstack.services;
 
 import java.lang.reflect.Field;
@@ -39,7 +47,7 @@ import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.util.Fn;
 
 /**
- * Esta clsse deriva de AbstractDAO, a travéz de ella se recupera, válida y se graban
+ * Esta clase deriva de AbstractDAO, a travéz de ella se recupera, válida y se graban
  * los registros en la base de datos. Es un ejb que se ejecuta en la capa de la lógica 
  * del negocio.
  * 

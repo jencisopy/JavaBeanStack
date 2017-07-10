@@ -33,7 +33,7 @@ import javax.persistence.Query;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.services.IDataService;
-import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Strings;
 
 /**
@@ -751,10 +751,10 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
             }
         }
         if (Strings.findString(":today", queryString.toLowerCase()) >= 0) {
-            parameters.put("today", Fn.today());
+            parameters.put("today", Dates.today());
         }
         if (Strings.findString(":now", queryString.toLowerCase()) >= 0) {
-            parameters.put("now", Fn.now());
+            parameters.put("now", Dates.now());
         }
         return parameters;
     }

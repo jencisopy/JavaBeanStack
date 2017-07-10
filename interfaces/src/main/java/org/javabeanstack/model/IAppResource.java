@@ -75,9 +75,5 @@ public interface IAppResource extends IDataRow {
     String getAppuser();
     void setAppuser(String appuser);
 
-    Date getFechacreacion();
-    Date getFechamodificacion();
-    Date getFechareplicacion();
-    
     boolean isValid();
 }

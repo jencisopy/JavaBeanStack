@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.exceptions.SessionError;
+import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Fn.iif;
@@ -438,12 +439,12 @@ public class DataNativeQuery implements IDataNativeQuery {
         }
         if (!queryParams.containsKey("today")) {
             if (Strings.findString(":today", querySentence.toLowerCase()) >= 0) {
-                queryParams.put("today", Fn.today());
+                queryParams.put("today", Dates.today());
             }
         }
         if (!queryParams.containsKey("now")) {
             if (Strings.findString(":now", querySentence.toLowerCase()) >= 0) {
-                queryParams.put("now", Fn.now());
+                queryParams.put("now", Dates.now());
             }
         }
     }

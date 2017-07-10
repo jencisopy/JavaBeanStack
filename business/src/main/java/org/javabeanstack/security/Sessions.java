@@ -43,6 +43,7 @@ import org.javabeanstack.model.IEmpresa;
 
 import org.javabeanstack.model.IUser;
 import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.util.Dates;
 
 
 /**
@@ -165,7 +166,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
                 return userSession;
             }
             // Verificar que no expiro la cuenta
-            if (usuario.getExpira().before(Fn.now())){
+            if (usuario.getExpira().before(Dates.now())){
                 mensaje = "La cuenta "+usuario.getCodigo()+" expiro";
                 LOGGER.debug(mensaje);
                 userSession.setError(new ErrorReg(mensaje,2,""));

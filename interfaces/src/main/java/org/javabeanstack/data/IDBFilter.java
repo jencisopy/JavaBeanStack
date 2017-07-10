@@ -12,9 +12,8 @@
 * is strictly forbidden unless prior written permission is obtained
 * from OyM System Group S.A.
  */
-package py.com.oym.frame.data;
+package org.javabeanstack.data;
 
-import java.util.List;
 
 /**
  *

@@ -40,40 +40,89 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Funciones que facilitan el manejo de las variables String.
  * @author Jorge Enciso
  */
 public class Strings {
     private static final Logger LOGGER = Logger.getLogger(Strings.class);    
     
+    /**
+     * Devuelve verdadero si el valor que se pasa como parametro es nulo o vacio
+     * @param string valor
+     * @return verdadero si "string" es nulo o vacio.
+     */
     public static Boolean isNullorEmpty(String string) {
         return string == null || string.isEmpty();
     }
 
-    public static int findString(String searchExpr, String exprSearched) {
-        return findString(searchExpr, exprSearched, 1);
+    /**
+     * Busca una cadena "searchExpr" en otra cadena "exprIn" y devuelve
+     * la posición si existe o -1 si no.
+     * @param searchExpr    cadena buscada
+     * @param exprIn  cadena dentro del cual se busca la expresión.
+     * @return nro de posición dentro de exprIn
+     */
+    public static int findString(String searchExpr, String exprIn) {
+        return findString(searchExpr, exprIn, 1);
     }
 
-    public static int findString(String searchExpr, String exprSearched, int nOccurrence) {
+    /**
+     * Busca una cadena "searchExpr" en otra cadena "exprIn" y devuelve
+     * la posición si existe o -1 si no.
+     * @param searchExpr    cadena buscada
+     * @param exprIn  cadena dentro del cual se busca la expresión.
+     * @param nOccurrence   nro de ocurrencia.
+     * @return nro de posición dentro de exprIn
+     */
+    public static int findString(String searchExpr, String exprIn, int nOccurrence) {
         int pos = -1;
         for (int i = 1; i <= nOccurrence; i++) {
-            pos = exprSearched.indexOf(searchExpr, pos + 1);
+            pos = exprIn.indexOf(searchExpr, pos + 1);
         }
         return pos;
     }
 
-    public static int occurs(String searchExpr, String exprSearched) {
-        return StringUtils.countMatches(exprSearched, searchExpr);
+    /**
+     * Devuelve la cantidad de ocurrencias de "seachExpr" dentro de "exprIn"
+     * @param searchExpr  cadena buscada.
+     * @param exprIn cadena dentro de la cual es buscada "searchExpr"
+     * @return cantidad de ocurrencias si los hubiere.
+     */
+    public static int occurs(String searchExpr, String exprIn) {
+        return StringUtils.countMatches(exprIn, searchExpr);
     }
 
+    /**
+     * Replica "character" tantas veces "times" 
+     * @param character caracter a repetir 
+     * @param times  cantidad de veces
+     * @return repite un caracter tantas veces según parámetro.
+     */
     public static String replicate(String character, int times) {
         return StringUtils.repeat(character, times);
     }
 
+    /**
+     * Busca un caracter limitador dentro de una expresión, 
+     * se descartará la busqueda dentro de comillas y dentro de parentesis.
+     * 
+     * @param limit caracter limitador
+     * @param expr cadena dentro del cual se buscará el caracter limitador.
+     * @return posición dentro de "expr" si lo encuentra -1 si no encuentra.
+     */
     public static int findLimit(String limit, String expr) {
         return findLimit(limit, expr, 1);
     }
 
+    /**
+     * Busca un caracter limitador dentro de una expresión, 
+     * se descartará la busqueda dentro de comillas y dentro de parentesis.
+     * 
+     * @param limit caracter limitador
+     * @param expr cadena dentro del cual se buscará el caracter limitador.
+     * @param occurs nro de ocurrencia dentro de la cadena.
+     * @return posición dentro de "expr" si lo encuentra -1 si no encuentra.
+     */
     public static int findLimit(String limit, String expr, int occurs) {
         expr = varReplace(expr, "'");
         expr = varReplace(expr, "()");
@@ -81,10 +130,28 @@ public class Strings {
         return findString(limit, expr, occurs);
     }
 
+    /**
+     * Reemplazara con * cualquier valor dentro de "var" que se encuentre
+     * comprendido entre caracteres "limit"
+     * 
+     * @param var 
+     * @param limit lista de caracteres limitadores.
+     * @return cadena procesada.
+     */
     public static String varReplace(String var, String limit) {
         return varReplace(var, limit, "*");
     }
 
+    /**
+     * Reemplazara con un caracter "replace" cualquier valor dentro de "var" 
+     * que se encuentre comprendido entre caracteres "limit"
+     * 
+     * @param var 
+     * @param limit lista de caracteres limitadores.
+     * @param replace caracter con que se reemplazara las posiciones entre
+     * los caracteres "limit"
+     * @return cadena procesada.
+     */
     public static String varReplace(String var, String limit, String replace) {
         String result = var;
         // Si esta vacio la variable       
@@ -133,6 +200,12 @@ public class Strings {
         return result;
     }
 
+    /**
+     * Convierte una cadena separada por coma a un objeto List.
+     * No se considera las comas dentro de comillas ni dentro de parentesis.
+     * @param expr valor a convertir
+     * @return objeto List.
+     */
     public static List<String> stringToList(String expr) {
         List<String> lista = new ArrayList<>();
         int k = 0;
@@ -152,23 +225,44 @@ public class Strings {
         return lista;
     }
 
-    public static String[] convertToMatrix(String expr, String separador) {
-        String[] exprList = expr.split("\\" + separador);
+    /**
+     * Convierte una cadena a una matriz
+     * @param expr   cadena
+     * @param separator separador dentro de expr ejemplo "," que se utilizará
+     * para identificar los elementos que formarán la matriz.
+     * @return una cadena a una matriz.
+     */
+    public static String[] convertToMatrix(String expr, String separator) {
+        String[] exprList = expr.split("\\" + separator);
         for (int i = 0; i < exprList.length; i++) {
             exprList[i] = exprList[i].trim();
         }
         return exprList;
     }
 
-    public static List<String> convertToList(String expr, String separador) {
+    /**
+     * Convierte una cadena a un objeto List.
+     * @param expr   cadena
+     * @param separator separador dentro de expr ejemplo "," que se utilizará
+     * para identificar los elementos que formarán la matriz.
+     * @return una cadena a una matriz.
+     */
+    public static List<String> convertToList(String expr, String separator) {
         List<String> lista = new ArrayList<>();
-        String[] exprList = expr.split("\\" + separador);
-        for (int i = 0; i < exprList.length; i++) {
-            lista.add(exprList[i].trim());
+        String[] exprList = expr.split("\\" + separator);
+        for (String exprList1 : exprList) {
+            lista.add(exprList1.trim());
         }
         return lista;
     }
 
+    /**
+     * Fusiona una cadena "text" con valores de los parámetros. Los valores
+     * a fusionarse se encierran entre {} 
+     * @param text cadena a fusionarse con los valores de los parámetros.
+     * @param params parámetros con los valores a fusionar. 
+     * @return cadena procesada.
+     */
     public static String textMerge(String text, Map<String, String> params) {
         String result = text;
         String regexSearch;
@@ -179,6 +273,14 @@ public class Strings {
         return result;
     }
 
+    /**
+     * Fusiona una cadena "text" con valores de los parámetros. Los valores
+     * a fusionarse se encierran entre "iniPattern"{} 
+     * @param text cadena a fusionarse con los valores de los parámetros.
+     * @param params parámetros con los valores a fusionar. 
+     * @param iniPattern 
+     * @return cadena procesada.
+     */
     public static String textMerge(String text, Map<String, String> params, String iniPattern) {
         String result = text;
         String regexSearch;
@@ -196,6 +298,13 @@ public class Strings {
         return result;
     }
     
+    /**
+     * Fusiona una cadena "text" con valores de los parámetros. Los valores
+     * a fusionarse se encierran entre "iniPattern"{} 
+     * @param text cadena a fusionarse con los valores de los parámetros.
+     * @param keyParamList lista en pares (parametro, valor)
+     * @return cadena procesada.
+     */
     public static String textMerge(String text, Object... keyParamList) {
         Map<String, String> params = new HashMap<>();
         int i = 0;
@@ -243,11 +352,25 @@ public class Strings {
         return StringUtils.substring(str, start, start + charactersReturned);
     }
 
+    /**
+     * Convierte una variable date a string.
+     * @param date variable date
+     * @return string con formato yyyyMMddhhmmss
+     */
     public static String dateToString(Date date) {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddhhmmss");
         return formater.format(date);
     }
 
+    /**
+     * Busca una cadena dentro de otra encerrada entre caracteres "comodinBegin"
+     * y "comodinEnd"
+     * @param comodinBegin lista de caracteres iniciales ej. ",'(;"
+     * @param search  valor a buscar.
+     * @param comodinEnd  lista de caracteres finales. ej. ",');"
+     * @param expression expresión dentro de la cual se buscará la cadena "search"
+     * @return verdadero o falso si encuentra o no la cadena.
+     */
     public static boolean inString(String comodinBegin, String search, String comodinEnd, String expression) {
         search = search.toUpperCase();
         expression = expression.toUpperCase();
@@ -281,6 +404,11 @@ public class Strings {
         return found;
     }
     
+    /**
+     * Codifica una cadena a base 64
+     * @param message cadena
+     * @return cadena codificada.
+     */
     public static String encode64(String message){
         if (message == null){
             return null;
@@ -289,7 +417,12 @@ public class Strings {
         byte[] encodeContent = encoder.encode(message.getBytes());
         return new String(encodeContent);
     }
-    
+
+    /**
+     * Decodifica una cadena base 64 a base 10 
+     * @param messageEncode cadena
+     * @return cadena decodificada.
+     */
     public static String decode64(String messageEncode){
         if (messageEncode == null){
             return null;
@@ -298,12 +431,22 @@ public class Strings {
         byte[] decodedContent = decoder.decode(messageEncode);        
         return new String(decodedContent);
     }
-    
+
+    /**
+     * Convierte un archivo a una variable String.
+     * @param file objeto file.
+     * @return variable tipo cadena.
+     */
     public static String fileToString(File file){
         return fileToString(file.getAbsolutePath());
     }
     
-    
+
+    /**
+     * Convierte un archivo a una variable String.
+     * @param filePath  ubicación del archivo.
+     * @return variable tipo cadena.
+     */
     public static String fileToString(String filePath){
         StringBuilder sb = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
@@ -321,7 +464,12 @@ public class Strings {
         return sb.toString();        
     }
     
-    
+    /**
+     * Convierte un archivo a una variable String.
+     * @param filePath ubicación del archivo
+     * @param charSet  tabla de caracteres ej. UTF-8
+     * @return variable tipo cadena.
+     */
     public static String fileToString(String filePath, String charSet){
         File file = new File(filePath);
         String str=null;
@@ -342,7 +490,12 @@ public class Strings {
         return str;
     }
 
-    
+    /**
+     * Convierte un objeto stream a una cadena de carácteres
+     * @param input  objeto stream
+     * @return cadena de caracteres.
+     * @throws IOException 
+     */
     public static String streamToString(InputStream input) throws IOException{
         if (input == null){
             return null;
@@ -350,7 +503,14 @@ public class Strings {
         String result = IOUtils.toString(input);
         return result;
     }    
-    
+
+    /**
+     * Convierte un objeto stream a una cadena de carácteres
+     * @param input  objeto stream
+     * @param charSet tabla de caracteres en la que viene codificada el stream ej. UTF-8
+     * @return cadena de caracteres.
+     * @throws IOException 
+     */
     public static String streamToString(InputStream input, String charSet) throws IOException{
         if (input == null){
             return null;
@@ -358,7 +518,14 @@ public class Strings {
         String result = IOUtils.toString(input,charSet);
         return result;
     }    
-    
+
+    /**
+     * Convierte un objeto stream a una cadena de carácteres
+     * @param input  objeto stream
+     * @param charSet tabla de caracteres en la que viene codificada el stream ej. UTF-8
+     * @return cadena de caracteres.
+     * @throws IOException 
+     */
     public static String streamToString(InputStream input, Charset charSet) throws IOException{
         if (input == null){
             return null;
@@ -366,7 +533,14 @@ public class Strings {
         String result = IOUtils.toString(input,charSet);
         return result;
     }    
-    
+
+    /**
+     * Devuelve el charSet de un texto xml, para lo cual utiliza el 
+     * valor de la expresion encoding que se encuentra en la linea 1 del texto.
+     * 
+     * @param text texto con formato xml.
+     * @return charSet ej. UTF-8
+     */    
     public static String getXmlFileCharSet(String text){
         if (isNullorEmpty(text)){
             return "";
@@ -381,6 +555,14 @@ public class Strings {
         return result;
     }
 
+
+    /**
+     * Devuelve el charSet de un archivo xml, para lo cual utiliza el 
+     * valor de la expresion encoding que se encuentra en la linea 1 del archivo.
+     * 
+     * @param file objeto archivo.
+     * @return charSet ej. UTF-8
+     */    
     public static String getXmlFileCharSet(File file){
         if (!file.exists() || file.canRead()){
             return "";

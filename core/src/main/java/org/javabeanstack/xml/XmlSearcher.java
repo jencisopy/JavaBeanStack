@@ -28,9 +28,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map; 
 import java.util.TreeMap;
+import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 import static org.javabeanstack.io.IOUtil.getResourceAsStream;
+import org.javabeanstack.util.Dates;
 import static org.javabeanstack.util.Strings.fileToString;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 import static org.javabeanstack.util.Strings.left;
@@ -113,11 +115,11 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
         String devolver = "";
         if (Fn.inList(pathType, "file", "file:")) {
             // Ver si no puede ubicar el archivo agregarle el path
-            if (!xmlPath.contains("/") && !Fn.isFileExist(xmlPath)) {
-                String path = Fn.addbs(Fn.nvl((String)context.getConfigParam().get("path"), ""));
+            if (!xmlPath.contains("/") && !IOUtil.isFileExist(xmlPath)) {
+                String path = IOUtil.addbs(Fn.nvl((String)context.getConfigParam().get("path"), ""));
                 xmlPath = path + xmlPath;
             }
-            if (Fn.isFileExist(xmlPath)){
+            if (IOUtil.isFileExist(xmlPath)){
                 devolver = fileToString(xmlPath, encoding);
             }
             else if ("YES".equals(readFromJAR)){
@@ -235,7 +237,7 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
             } else {
                 cacheObj = new XmlCache(document);
             }
-            cacheObj.setProcessTime(Fn.now());
+            cacheObj.setProcessTime(Dates.now());
             cacheObj.setCompiled(compiled);
             cache.put(key, cacheObj);
         }
@@ -307,7 +309,7 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
         String pathType = getPathType(xmlPath);
         xmlPath = getJustPath(xmlPath);
         if (Fn.inList(pathType, "file", "file:")) {
-            return !(!xmlPath.contains("/") && !Fn.isFileExist(xmlPath));
+            return !(!xmlPath.contains("/") && !IOUtil.isFileExist(xmlPath));
         }
         return false;
     }

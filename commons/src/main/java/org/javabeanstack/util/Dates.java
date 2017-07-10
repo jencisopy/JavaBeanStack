@@ -28,7 +28,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Funciones wrapper que facilitan el manejo de variables Date
  * @author Jorge Enciso
  */
 public class Dates {
@@ -42,11 +42,23 @@ public class Dates {
         return toDate(dateString, formatter);
     }
 
+    /**
+     * Convierte una cadena a una fecha
+     * @param dateString
+     * @param format ejemplo dd/mm/yyyy
+     * @return 
+     */
     public static Date toDate(String dateString, String format) {
         SimpleDateFormat formatter = new SimpleDateFormat(format);
         return toDate(dateString, formatter);
     }
     
+    /**
+     * Convierte una cadena a una fecha
+     * @param dateString
+     * @param formatter
+     * @return 
+     */
     public static Date toDate(String dateString, SimpleDateFormat formatter) {
         Date date = null;
         try {
@@ -57,21 +69,44 @@ public class Dates {
         return date;
     }
 
+    /**
+     * Convierte una fecha a variable de cadena, según formato deseado.
+     * 
+     * @param date    
+     * @param formater    
+     * @return  string con el formato deseado.   
+    */
     public static String toString(Date date, SimpleDateFormat formater) {
         String result = formater.format(date);
         return result;
     }
 
+    /**
+     * Convierte una fecha a variable de cadena, según formato deseado.
+     * 
+     * @param date    
+     * @param format     ejemplo dd/mm/yyyy
+     * @return  string con el formato deseado.   
+    */
     public static String toString(Date date, String format) {
         SimpleDateFormat formater = new SimpleDateFormat(format);
         String result = formater.format(date);
         return result;
     }
-    
+
+    /**
+     * Devuelve una variable Date con la fecha y hora del momento
+     * 
+     * @return  fecha y hora de ahora.
+    */
     public static Date now() {
         return Calendar.getInstance().getTime();
     }
 
+    /**
+     * Devuelve una variable Date con el valor de la fecha del día
+     * @return fecha de hoy
+     */
     public static Date today() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);

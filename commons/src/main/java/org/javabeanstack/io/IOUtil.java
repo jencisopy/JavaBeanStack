@@ -31,7 +31,8 @@ import org.apache.log4j.Logger;
 import org.javabeanstack.util.Strings;
 
 /**
- *
+ * Funciones que facilitan el manejo de archivos, inputStream entre otros.
+ * 
  * @author Jorge Enciso
  */
 public class IOUtil {

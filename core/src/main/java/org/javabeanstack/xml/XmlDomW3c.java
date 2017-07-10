@@ -641,7 +641,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             document = DomW3cParser.loadXml(xml);
         }
         String encoding = null;
-        if (!isNullorEmpty(elementPath)) {
+        if (!isNullorEmpty(elementPath) && document != null) {
             if (!document.getDocumentElement().getNodeName().equals(elementPath)) {
                 Element root = DomW3cParser.getElement(document, elementPath);
                 Document document2 = DomW3cParser.newDocument();
