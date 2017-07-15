@@ -15,7 +15,13 @@
             <url>http://www.gnu.org/licenses/lgpl-3.0.txt</url>
         </license>
     </licenses>    
-    
+
+    <scm>
+        <connection>scm:git:git://github.com/jencisopy/JavaBeanStack.git</connection>
+        <developerConnection>scm:git:ssh://github.com/jencisopy/JavaBeanStack.git</developerConnection>
+        <url>https://github.com/jencisopy/JavaBeanStack/</url>        
+    </scm>
+            
     <organization>
         <name>OYM SYSTEM GROUP S.A.</name>
         <url>http://www.oym.com.py</url>
