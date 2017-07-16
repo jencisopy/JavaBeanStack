@@ -20,7 +20,6 @@
 * MA 02110-1301  USA
 */
 
-
 package org.javabeanstack.log;
 
 import java.util.Date;
@@ -41,7 +40,8 @@ import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.data.IGenericDAO;
 
 /**
- *
+ * Su función es gestionar la escritura y lectura del log del sistema.  
+ * 
  * @author Jorge Enciso
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)    
@@ -50,6 +50,22 @@ public class LogManager implements ILogManager {
     @EJB private IGenericDAO dao;
     @EJB private ISessionsLocal sessions;
 
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * @param <T>
+     * @param logType    
+     * @param sessionId   identificador de la sesión del usuario
+     * @param message     mensaje
+     * @param messageInfo información adicional del evento producido.
+     * @param messageNumber nro de mensaje (ver en AppMessage)
+     * @param category    (Aplicación, seguridad, Datos)
+     *                      ILogRecord.CATEGORY_APP, ILogRecord.CATEGORY_SECURITY, ILogRecord.CATEGORY_DATA
+     * @param level       (Error, Informacion, Alerta) 
+     *                      ILogRecord.LEVEL_ERROR, ILogRecord. LEVEL_ALERT, ILogRecord.LEVEL_INFO
+     * @param object
+     * @param objectField
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public <T extends ILogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message,
                                                   String messageInfo, Integer messageNumber, String category, 
@@ -59,7 +75,23 @@ public class LogManager implements ILogManager {
         return dbWrite(logType, sessionId, message, messageInfo, messageNumber, category,
                             level, object, objectField, lineNumber, choose);
     }
-    
+
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * @param <T>
+     * @param logType    
+     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
+     * @param message     mensaje
+     * @param messageInfo información adicional del evento producido.
+     * @param messageNumber nro de mensaje (ver en AppMessage)
+     * @param category    (Aplicación, seguridad, Datos)
+     *                      ILogRecord.CATEGORY_APP, ILogRecord.CATEGORY_SECURITY, ILogRecord.CATEGORY_DATA
+     * @param level       (Error, Informacion, Alerta) 
+     *                      ILogRecord.LEVEL_ERROR, ILogRecord. LEVEL_ALERT, ILogRecord.LEVEL_INFO
+     * @param object
+     * @param objectField
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public <T extends ILogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message,
                                                   String messageInfo, Integer messageNumber, String category, 
@@ -74,6 +106,24 @@ public class LogManager implements ILogManager {
                         category, level, object, objectField, lineNumber, choose);
     }
 
+    
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * @param <T>
+     * @param logType    
+     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
+     * @param message     mensaje
+     * @param messageInfo información adicional del evento producido.
+     * @param messageNumber nro de mensaje (ver en AppMessage)
+     * @param category    (Aplicación, seguridad, Datos)
+     *                      ILogRecord.CATEGORY_APP, ILogRecord.CATEGORY_SECURITY, ILogRecord.CATEGORY_DATA
+     * @param level       (Error, Informacion, Alerta) 
+     *                      ILogRecord.LEVEL_ERROR, ILogRecord. LEVEL_ALERT, ILogRecord.LEVEL_INFO
+     * @param object
+     * @param lineNumber   nro del linea del programa donde se produjo el evento.
+     * @param objectField
+     * @return verdadero si tuvo exito y falso si no.
+     */
     
     @Override
     public <T extends ILogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message,
@@ -87,6 +137,25 @@ public class LogManager implements ILogManager {
                         category, level, object, objectField, lineNumber, choose);
     }
 
+    
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * @param <T>
+     * @param logType    
+     * @param sessionId   identificador de la sesión del usuario
+     * @param message     mensaje
+     * @param messageInfo información adicional del evento producido.
+     * @param messageNumber nro de mensaje (ver en AppMessage)
+     * @param category    (Aplicación, seguridad, Datos)
+     *                      ILogRecord.CATEGORY_APP, ILogRecord.CATEGORY_SECURITY, ILogRecord.CATEGORY_DATA
+     * @param level       (Error, Informacion, Alerta) 
+     *                      ILogRecord.LEVEL_ERROR, ILogRecord. LEVEL_ALERT, ILogRecord.LEVEL_INFO
+     * @param object
+     * @param lineNumber   nro del linea del programa donde se produjo el evento.
+     * @param objectField
+     * @param choose       acción elegida por el usuario ante un pedido de ignorar o cancelar 
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public <T extends ILogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message, String messageInfo,
                                                         Integer messageNumber, String category, String level, String object,
@@ -110,6 +179,15 @@ public class LogManager implements ILogManager {
         return false;
     }
 
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * @param <T>
+     * @param logType    
+     * @param errorReg    objeto error conteniendo la información del evento.
+     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    
     @Override
     public <T extends ILogRecord> boolean dbWrite(Class<T> logType,IErrorReg errorReg, IUserSession userSession) {
         String sessionId = "";
@@ -119,6 +197,14 @@ public class LogManager implements ILogManager {
         return dbWrite(logType, errorReg, sessionId);
     }
 
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * @param <T>
+     * @param logType    
+     * @param errorReg    objeto error conteniendo la información del evento.
+     * @param sessionId   identificador de la sesión del usuario
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public <T extends ILogRecord> boolean dbWrite(Class<T> logType, IErrorReg errorReg, String sessionId) {
         try {
@@ -149,6 +235,14 @@ public class LogManager implements ILogManager {
         return false;
     }
 
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * @param <T>
+     * @param logType    
+     * @param exp    objeto error conteniendo información del evento.
+     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public <T extends ILogRecord> boolean dbWrite(Class<T> logType, Exception exp, IUserSession userSession) {
         String sessionId = "";
@@ -158,6 +252,14 @@ public class LogManager implements ILogManager {
         return dbWrite(logType, exp, sessionId);
     }
 
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * @param <T>
+     * @param logType    
+     * @param exp    objeto error conteniendo información del evento.
+     * @param sessionId   identificador de la sesión del usuario
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public <T extends ILogRecord> boolean dbWrite(Class<T> logType, Exception exp, String sessionId) {
         try {
@@ -180,6 +282,14 @@ public class LogManager implements ILogManager {
         return false;
     }
 
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * 
+     * @param <T>
+     * @param logRecord     registro del evento.
+     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public <T extends ILogRecord> boolean dbWrite(T logRecord, IUserSession userSession) {
         String sessionId = "";
@@ -189,6 +299,14 @@ public class LogManager implements ILogManager {
         return dbWrite(logRecord, sessionId);
     }
 
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     * 
+     * @param <T>
+     * @param logRecord     registro del evento.
+     * @param sessionId   identificador de la sesión del usuario
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public <T extends ILogRecord> boolean dbWrite(T logRecord, String sessionId) {
         String sesionId = "NINGUNA";
@@ -230,7 +348,8 @@ public class LogManager implements ILogManager {
     
 
     /**
-     * Busca en dic_mensaje el nro. de mensaje y devuelve el registro
+     * Busca en una tabla de mensajes en la base de datos "AppMessage" 
+     * el nro. de mensaje y devuelve el registro
      *
      * @param msgNumber nro. de mensaje
      * @return Mensaje solicitado
@@ -241,7 +360,7 @@ public class LogManager implements ILogManager {
         try {
             IAppMessage message = 
                     dao.findByQuery(IAppMessage.class, IDBManager.CATALOGO,
-                                    "select o from DicMensaje o where nro = " + msgNumber.toString(),
+                                    "select o from AppMessage o where nro = " + msgNumber.toString(),
                                     null);
 
             return message;
@@ -252,7 +371,8 @@ public class LogManager implements ILogManager {
     }
 
     /**
-     * Busca en dic_mensaje el nro. de mensaje y devuelve el registro
+     * Busca en una tabla de mensajes en la base de datos "AppMessage" 
+     * el nro. de mensaje y devuelve el registro
      *
      * @return Mensaje solicitado
      */
@@ -262,7 +382,7 @@ public class LogManager implements ILogManager {
         try {
             List<IAppMessage> messages = 
                     dao.findListByQuery(IDBManager.CATALOGO,
-                                        "select o from DicMensaje o order by nro",
+                                        "select o from AppMessage o order by nro",
                                          null);
 
             return messages;

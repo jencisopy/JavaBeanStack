@@ -55,7 +55,7 @@ public class ErrorManager {
     }
 
     /**
-     * Busca en dic_mensaje el nro. de mensaje y devuelve el texto.
+     * Busca en "AppMessage" el nro. de mensaje y devuelve el texto.
      *
      * @param msgNumber nro. de mensaje
      * @return Mensaje solicitado
@@ -65,7 +65,7 @@ public class ErrorManager {
     }
 
     /**
-     * Busca en dic_mensaje el nro. de mensaje y devuelve el texto.
+     * Busca en "AppMessage" el nro. de mensaje y devuelve el texto.
      *
      * @param msgNumber nro. de mensaje
      * @param logManager objeto que gestiona el acceso a la base de datos
@@ -81,7 +81,7 @@ public class ErrorManager {
 
 
    /**
-     * Busca en dic_mensaje el nro. de mensaje y devuelve el registro en formato IErrorReg
+     * Busca en AppMessage el nro. de mensaje y devuelve el registro en formato IErrorReg
      *
      * @param msgNumber nro. de mensaje
      * @param fieldName nombre del campo
@@ -92,7 +92,7 @@ public class ErrorManager {
     }
 
     /**
-     * Busca en dic_mensaje el nro. de mensaje y devuelve el registro en formato IErrorReg
+     * Busca en AppMessage el nro. de mensaje y devuelve el registro en formato IErrorReg
      *
      * @param msgNumber nro. de mensaje
      * @param fieldName nombre del campo
@@ -118,9 +118,31 @@ public class ErrorManager {
      * @param logger
      */
     public static void showError(Exception ex, Logger logger) {
-        logger.error(getStackTrace(ex));
+        logger.error(getStackCause(ex));
     }
 
+    /**
+     * Muestra el error utilizando log4j
+     *
+     * @param ex
+     * @param logger
+     * @param level
+     */
+    public static void showError(Exception ex, Logger logger, int level) {
+        if (level == 1){
+            logger.error(getStackCause(ex));            
+        }
+        else{
+            logger.error(getStackTrace(ex));            
+        }
+    }
+    
+    
+    /**
+     * Devuelve el error con el detalle de la pila de llamadas
+     * @param throwable 
+     * @return el error con el detalle de la pila de llamadas.
+     */
     public static String getStackTrace(final Throwable throwable) {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw, true);
@@ -128,6 +150,11 @@ public class ErrorManager {
         return sw.getBuffer().toString();
     }
 
+    /**
+     * Devuelve el error producido.
+     * @param err  
+     * @return error producido.
+     */
     public static String getStackCause(final Throwable err) {
         String errorMsg = "";
         if (err.getCause() != null) {

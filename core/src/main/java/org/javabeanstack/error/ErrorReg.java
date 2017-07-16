@@ -30,7 +30,7 @@ package org.javabeanstack.error;
 public class ErrorReg implements IErrorReg{
     /** Texto del mensaje */
     private String message  = "";
-    /** Nro del error, ver en dic_mensaje */
+    /** Nro del error, ver en AppMessage */
     private int    errorNumber = 0;
     private String entity = "";
     private String fieldName = "";

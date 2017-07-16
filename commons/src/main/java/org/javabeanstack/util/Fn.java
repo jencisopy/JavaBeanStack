@@ -26,10 +26,17 @@ import java.security.NoSuchAlgorithmException;
 
 
 /**
- *
+ * Funciones utiles
+ * 
  * @author Jorge Enciso
  */
 public class Fn {
+    /**
+     * Verifica si un valor "obj" se encuentra en una lista de variables
+     * @param obj   valor buscado
+     * @param list  lista de valores.
+     * @return  verdadero si encuentra y falso si no.
+     */
     public static boolean inList(String obj, String... list) {
         for (Object e : list) {
             if (obj.equals(e)) {
@@ -40,6 +47,12 @@ public class Fn {
     }
 
 
+    /**
+     * Verifica si un valor "obj" se encuentra en una lista de variables
+     * @param obj   valor buscado
+     * @param list  lista de valores.
+     * @return  verdadero si encuentra y falso si no.
+     */
     public static boolean inList(Integer obj, int... list) {
         for (Object e : list) {
             if (obj.equals(e)) {
@@ -48,6 +61,14 @@ public class Fn {
         }
         return false;
     }
+    
+    public static <T> T iif(boolean condition, T value1, T value2) {
+        if (condition) {
+            return value1;
+        }
+        return value2;
+    }
+    
 
     /**
      * Busca un objeto en una matriz y si encuentra  devuelve el nro. de elemento
@@ -135,13 +156,6 @@ public class Fn {
         return null;
     }
 
-    public static <T> T iif(boolean condition, T value1, T value2) {
-        if (condition) {
-            return value1;
-        }
-        return value2;
-    }
-    
     /**
      * Devuelve un valor alternativo (alternateValue) si el valor dado (value)
      * es nulo.

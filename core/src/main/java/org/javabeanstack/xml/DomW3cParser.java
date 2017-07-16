@@ -52,7 +52,9 @@ import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.*;
 
 /**
- *
+ * Esta clase implementa todas las funcionalidades de XDOM. Se agrego algunas variaciones
+ * a la misma de tal manera a poder tener textos XML que hereden de otros textos.
+ * 
  * @author Jorge Enciso
  */
 public class DomW3cParser {

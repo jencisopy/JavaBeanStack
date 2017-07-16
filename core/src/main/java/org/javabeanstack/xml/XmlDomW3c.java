@@ -41,7 +41,10 @@ import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.*;
 
 /**
- *
+ * Procesa textos xmls de distintos origenes, los parsea y los convierte en
+ * objeto DOM, puede heredar o fusionar cadenas xmls. Proporciona metodos
+ * para facilitar la manipulación del objeto DOM.
+ * 
  * @author Jorge Enciso
  */
 public class XmlDomW3c implements IXmlDom<Document, Element> {

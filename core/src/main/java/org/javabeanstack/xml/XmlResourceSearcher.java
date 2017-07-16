@@ -31,7 +31,9 @@ import org.javabeanstack.model.IAppResource;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 /**
- *
+ * Clase encargada de buscar un recurso xml en una base de datos o a 
+ * partir de una path de un archivo dado.
+ * 
  * @author Jorge Enciso
  * @param <V>
  */
@@ -109,6 +111,12 @@ public class XmlResourceSearcher<V> extends XmlSearcher<V> {
         return super.search(context, xmlPath);
     }
 
+    /**
+     * Determina si existe el recurso solicitado 
+     * 
+     * @param xmlPath path del objeto.
+     * @return verdadero si existe y falso si no.
+     */
     @Override
     public boolean exist(String xmlPath) {
         if (Fn.inList(getPathType(xmlPath), "file", "file:", "obj", "obj:")) {
