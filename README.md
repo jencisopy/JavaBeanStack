@@ -1,4 +1,6 @@
 # JavaBeanStack
+[![Build Status](https://travis-ci.org/jencisopy/JavaBeanStack.svg?branch=master)](https://travis-ci.org/jencisopy/JavaBeanStack)
+
 Framework para construcción de aplicaciones Java EE 7
 
 Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y estandarizar el desarrollo de aplicaciones empresariales. 
