@@ -1,0 +1,12 @@
+language: java
+jdk: oraclejdk8
+
+branches:
+  only:
+    - master
+    - 1.0.0-SNAPSHOT
+script: 
+    - mvn clean install 
+cache:
+  directories:
+    - '$HOME/.m2/repository'
