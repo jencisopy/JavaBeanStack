@@ -101,7 +101,7 @@ public class DatesTest {
     /**
      * Test of now method, of class Fn.
      */
-    @Test
+    //@Test
     public void testNow() {
         System.out.println("now");
         Date expResult = new Date();
