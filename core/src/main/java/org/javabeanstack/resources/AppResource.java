@@ -109,6 +109,12 @@ public class AppResource implements IAppResource {
         return xmlDom;
     }
 
+    /**
+     * Busca y retorna si existe el reporte formato Jasper solicitado 
+     * @param sessionId identificador de la sesión del usuario solicitante.
+     * @param resourcePath identificador del recurso.
+     * @return reporte Jasper
+     */
     protected String getResourceAsJRXml(String sessionId, String resourcePath) {
         if (!secManager.isSesionIdValid(sessionId)) {
             return null;
