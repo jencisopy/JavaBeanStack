@@ -6,7 +6,7 @@ branches:
     - master
     - 1.0.0-SNAPSHOT
 script: 
-    - mvn clean install 
+	- mvn -B verify # -B batch mode makes Maven less verbose
     - mvn deploy -s maven-settings.xml -DskipTests	
 cache:
   directories:
