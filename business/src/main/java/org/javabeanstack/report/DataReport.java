@@ -107,11 +107,6 @@ public class DataReport {
      */
     private String document;
     /**
-     * Determina si se utilizará información de la base historica o el de
-     * producción
-     */
-    private Boolean useHistoricData = false;
-    /**
      * Nro de reporte generado, para propsitos de auditoria
      */
     private Integer reportNumber = 0;
@@ -364,25 +359,6 @@ public class DataReport {
         this.orderBy = orderBy;
     }
 
-    /**
-     * Devuelve verdadero o falso se acuerdo a que si fue asignado utilizar la
-     * información del schema historico o del schema de datos en linea.
-     *
-     * @return verdadero o falso de acuerdo a si la información que se extraera
-     * de la base de datos sera del esquema historico o no.
-     */
-    public final Boolean getUseHistoricData() {
-        return useHistoricData;
-    }
-
-    /**
-     * Asigna si se va leer los datos del schema historico.
-     *
-     * @param useHistoricData
-     */
-    public final void setUseHistoricData(Boolean useHistoricData) {
-        this.useHistoricData = useHistoricData;
-    }
 
     /**
      * Devuelve el nro de reporte generado.
@@ -689,43 +665,6 @@ public class DataReport {
         }
     }
 
-    protected String getCotizacion() {
-        Map<String, String> param = new HashMap<>();
-        param.put("idmoneda", (String) preference2.get("moneda"));
-        boolean cotizacionHistorico=false;
-        boolean cotizacionPromedio = false;
-        boolean cotizacionFija = true;
-        boolean cotizacionDocumento = false;
-        Double  cotizacionMonto = 1D;
-        if (preference2.get("cotizacionHistorico") != null){
-            cotizacionHistorico = (boolean)preference2.get("cotizacionHistorico");
-        }
-        if (preference2.get("cotizacionPromedio") != null){
-            cotizacionPromedio = (boolean)preference2.get("cotizacionPromedio");
-        }
-        if (preference2.get("cotizacionFija") != null){
-            cotizacionFija = (boolean)preference2.get("cotizacionFija");
-        }
-        if (preference2.get("cotizacionMonto") != null){
-            cotizacionMonto = (Double)preference2.get("cotizacionMonto");
-        }
-        if (preference2.get("cotizacionDocumento") != null){
-            cotizacionDocumento = (Boolean)preference2.get("cotizacionDocumento");
-        }
-
-        if (cotizacionHistorico) {
-            param.put("cotizaciontipo", "1");
-        } else if (cotizacionPromedio) {
-            param.put("cotizaciontipo", "2");
-        } else if (cotizacionFija) {
-            param.put("cotizaciontipo", "3");
-        } else {
-            param.put("cotizaciontipo", "1");
-        }
-        param.put("cotizacionmonto", cotizacionMonto.toString());
-        param.put("usarcotizaciondoc", cotizacionDocumento ? ":true" : ":false");
-        return textMerge("{schema}.fn_GetCotizacionOf({idmoneda}, a.fecha, {cotizaciontipo}, {cotizacionmonto}, {usarcotizaciondoc}, a.idmoneda,a.cambio)", param);
-    }
 
     public final String createGroupBy(String columns) {
         List<String> campos = stringToList(columns);
@@ -751,9 +690,4 @@ public class DataReport {
         return fieldsGroupBy;
     }
     
-    protected String removeAlias(String text){
-        text = text.replaceAll("a\\.", "");
-        text = text.replaceAll("b\\.", "");
-        return text;
-    }
 }

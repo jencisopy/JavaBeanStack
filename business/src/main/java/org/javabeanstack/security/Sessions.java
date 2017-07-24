@@ -65,7 +65,6 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
     @EJB private IGenericDAO dao;
     
     public Sessions(){
-        
     }
     
     /**
@@ -82,50 +81,6 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
     @Override
     @Lock(LockType.WRITE)
     public IUserSession createSession(String userLogin, String password, Object idempresa, Integer idleSessionExpireInMinutes){
-        try{
-            IUserSession session;      
-            // Verifcar si coincide usuario y contraseña, si esta o no activo
-            session = login(userLogin, password);
-            if (session != null && session.getUser() != null){
-                Date fecha = new Date();
-                String usuarioCod = userLogin.toUpperCase().trim();
-                String usuarioRol = ((IUser)session.getUser()).getRol().trim();
-                String md5   = usuarioCod + usuarioRol + password.trim() + idempresa + fecha;        
-                // Verificar si tiene permiso para acceder a los datos de la empresa
-                if (!checkEmpresaPermision(((IUser)session.getUser()).getIdusuario(),(Long)idempresa)){
-                    session.setUser(null);
-                    String mensaje = "No tiene autorización para acceder a esta empresa";
-                    LOGGER.debug(mensaje);
-                    session.setError(new ErrorReg(mensaje,4,""));
-                    return session;
-                }
-                
-                DataLink dataLink = new DataLink(dao);  
-                
-                Map<String, Object> parameters = new HashMap();
-                parameters.put("idempresa", idempresa);
-                
-                IEmpresa empresa= dataLink.findByQuery(IEmpresa.class,
-                                  "select o from Empresa o "
-                                + " where idempresa = :idempresa",parameters);
-
-                String token = idempresa+"-"+Fn.getMD5(md5);
-                
-                String persistUnit = empresa.getDatos().trim();
-                session.setPersistenceUnit(persistUnit);
-                session.setEmpresa(empresa);
-                idempresa = session.getIdEmpresa();
-                session.setIdEmpresa(Long.parseLong(idempresa.toString()));
-
-                session.setSessionId(token);
-                session.setIdleSessionExpireInMinutes(idleSessionExpireInMinutes);
-                sessionVar.put(token, session);
-            }
-            return session;
-        }
-        catch (Exception exp){
-            ErrorManager.showError(exp, LOGGER);
-        }
         return null;
     }
     
@@ -139,52 +94,6 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
      */
     @Override
     public IUserSession login(String userLogin, String password) throws Exception {
-        LOGGER.debug("LOGIN IN");
-        String mensaje;
-        Map<String,Object> params = new HashMap<>();
-        params.put("userLogin", userLogin);
-        UserSession userSession;
-        if (userLogin != null) {
-            // Verificar existencia del usuario
-            IUser usuario = dao.findByQuery(IUser.class,DBManager.CATALOGO,
-                        "select o from Usuario o where codigo = :userLogin",
-                        params);
-            
-            userSession = new UserSession();
-            // Verificar que exista el usuario
-            if (usuario == null) {
-                mensaje = "Este usuario "+userLogin+" no existe";
-                LOGGER.debug(mensaje);                
-                userSession.setError(new ErrorReg(mensaje,1,""));
-                return userSession;
-            }
-            // Verificar que el usuario este activo.
-            if (usuario.getDisable()){
-                mensaje = "La cuenta "+usuario.getCodigo().trim()+" esta inactivo";                
-                LOGGER.info(mensaje);
-                userSession.setError(new ErrorReg(mensaje,2,""));
-                return userSession;
-            }
-            // Verificar que no expiro la cuenta
-            if (usuario.getExpira().before(Dates.now())){
-                mensaje = "La cuenta "+usuario.getCodigo()+" expiro";
-                LOGGER.debug(mensaje);
-                userSession.setError(new ErrorReg(mensaje,2,""));
-                return userSession;
-            }
-            // Verificar que la contraseña sea correcta
-            String md5 = usuario.getCodigo().toUpperCase().trim() + 
-                    usuario.getRol().trim() + 
-                    password.trim();
-                
-            String claveEncriptada = Fn.getMD5(md5);
-            if (!claveEncriptada.equals(usuario.getClave())){
-                userSession.setError(new ErrorReg("Contraseña incorrecta",3,""));
-                return userSession;
-            }
-            userSession.setUser(usuario);
-            return userSession;
-        }
         return null;
     }
 
@@ -213,16 +122,6 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
      */
     @Override
     public Boolean checkEmpresaPermision(Long idusuario, Long idempresa) throws Exception{
-        Map<String, Object> params = new HashMap<>();
-        params.put("idusuario", idusuario);
-        params.put("idempresa", idempresa);  
-        IDicPermisoEmpresa row = dao.findByQuery(IDicPermisoEmpresa.class, DBManager.CATALOGO, 
-                                                "select o from DicPermisoEmpresa o "
-                                              + "where idusuario = :idusuario  and idempresa = :idempresa", 
-                                                params);
-        if (row != null){
-            return !row.getNegar();
-        }
         return true;
     }
     
@@ -234,30 +133,6 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
      */
     @Override
     public UserSession getUserSession(String sessionId){
-        UserSession sesion = (UserSession)sessionVar.get(sessionId);
-        if (sesion != null){
-            Integer expireInMinutes = sesion.getIdleSessionExpireInMinutes();
-            if (expireInMinutes == null){
-                expireInMinutes = 30;
-            }
-            // Verificar si ya expiro su sesión
-            Calendar cal1 = Calendar.getInstance();
-            Calendar cal2 = Calendar.getInstance();
-            cal1.setTime(sesion.getLastReference());
-            cal2.setTime(new Date());
-            long time1 = cal1.getTimeInMillis();
-            long time2 = cal2.getTimeInMillis();
-            // Diferencias en minutos desde la ultima vez que se hizo referencia a esta sesión.        
-            long idleInMinutes = (time2 - time1)/(60 * 1000);
-            if (idleInMinutes >= expireInMinutes){
-                sessionVar.remove(sessionId);
-                sesion.setUser(null);
-                String mensaje = "La sesión expiro";
-                sesion.setError(new ErrorReg(mensaje, 6, ""));
-                return sesion;
-            }
-            sesion.setLastReference(new Date());
-        }
-        return sesion;
+        return null;
     }
 }
