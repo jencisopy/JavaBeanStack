@@ -157,6 +157,10 @@ public class DataReport {
         return query;
     }
 
+    protected void setQuery(IDataNativeQuery query) {
+        this.query = query;
+    }
+    
     /**
      * Asigna el objeto para acceso a la base de datos
      *
