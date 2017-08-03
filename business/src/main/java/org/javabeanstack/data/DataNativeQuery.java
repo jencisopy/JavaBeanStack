@@ -36,6 +36,7 @@ import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Fn.iif;
 import static org.javabeanstack.util.Strings.occurs;
+import static org.javabeanstack.util.Strings.isNullorEmpty;
 
 /**
  * Esta clase abstrae funcionalidades que permiten ejecutar sentencias nativas
@@ -72,6 +73,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     private int first;
     private int maxResult;
     private IDataNativeQuery subQueryFrom;
+    private String subQueryFromSentence;
     private String subQueryAlias;
 
     public DataNativeQuery() {
@@ -140,6 +142,25 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Asigna la/s entidad/es desde donde se extraeran la información.
+     *
+     * @param query objeto IDataNativeQuery cuya sentencia es utilizada como
+     * subquery dentro de la clausula FROM.
+     * @return objeto dataNativeQuery con la asignación de las entidades
+     */
+    @Override
+    public IDataNativeQuery from(String query, String alias) {
+        subQueryAlias = alias;
+        subQueryFromSentence = query;
+        entityExpr = "";
+        entityList = null;
+        fromEntity = null;
+        joinParams.clear();
+        queryCreated = false;        
+        return this;
+    }
+    
+    /**
      * Asigna la/s entidad/es que formarán parte del join
      *
      * @param entity es la lista de entidad (tabla o vista)
@@ -169,7 +190,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     /**
      * Asigna la/s entidad/es que formarán parte del join
      *
-     * @param entity es la lista de entidad (tabla o vista)
+     * @param entity entidad (tabla o vista)
      * @param joinExpr la expresión del join.
      * @return objeto dataNativeQuery con la asignación de las entidades
      */
@@ -359,6 +380,14 @@ public class DataNativeQuery implements IDataNativeQuery {
             fromExpr += getJoinExpr();
             return fromExpr;
         }
+        // Generar from desde una sentencia subquery
+        if (!isNullorEmpty(subQueryFromSentence)) {
+            String subQuerySentence = subQueryFromSentence;
+            fromExpr = "("+subQuerySentence+") "+subQueryAlias+ " ";
+            fromExpr += getJoinExpr();
+            return fromExpr;
+        }
+        
         String schema = dataLink.getDao().getSchema(dataLink.getPersistUnit());
         String joinEntityExpr = getJoinEntityExpr();
         entityExpr = fromEntity + iif(joinEntityExpr.isEmpty(), "", ", ");

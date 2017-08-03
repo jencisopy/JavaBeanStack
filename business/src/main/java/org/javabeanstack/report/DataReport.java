@@ -379,6 +379,15 @@ public class DataReport {
         return sqlSentence;
     }
 
+    /**
+     * Asigna la propiedad sqlSentence
+     *
+     * @param sqlSentence
+     */
+    protected void setSqlSentence(String sqlSentence) {
+        this.sqlSentence = sqlSentence;
+    }
+    
     public Map<String, Object> getJasperParams() {
         throw new UnsupportedOperationException("Debe implementar el metodo getJasperParams " + getClass().getName());
     }

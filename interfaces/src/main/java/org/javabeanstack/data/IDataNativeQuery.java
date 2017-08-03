@@ -48,13 +48,21 @@ public interface IDataNativeQuery {
     public IDataNativeQuery from(String entities);
     
     /**
-     * Asigna ls lista de entidades que formarán la sentencia SELECT
+     * Asigna lista de entidades que formarán la sentencia SELECT
      * @param subQuery  objeto IDataNativeQuery cuya sentencia es utilizada como
      * subquery dentro de la clausula FROM. 
      * @param alias alias del subquery
      * @return objeto DataNativeQuery con los datos asignados
      */
     public IDataNativeQuery from(IDataNativeQuery subQuery, String alias);
+
+    /**
+     * Asigna lista de entidades que formarán la sentencia SELECT
+     * @param subQuery  subquery dentro de la clausula FROM. 
+     * @param alias alias del subquery
+     * @return objeto DataNativeQuery con los datos asignados
+     */
+    public IDataNativeQuery from(String subQuery, String alias);
     
     /**
      * Provee a la clase información para agregar una instrucción join a la sentencia

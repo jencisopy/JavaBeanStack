@@ -78,6 +78,9 @@ public class Strings {
         int pos = -1;
         for (int i = 1; i <= nOccurrence; i++) {
             pos = exprIn.indexOf(searchExpr, pos + 1);
+            if (pos < 0){
+                break;
+            }
         }
         return pos;
     }
@@ -125,6 +128,7 @@ public class Strings {
      */
     public static int findLimit(String limit, String expr, int occurs) {
         expr = varReplace(expr, "'");
+        expr = varReplace(expr, "\"");
         expr = varReplace(expr, "()");
         // Buscar limitador de la cadena
         return findString(limit, expr, occurs);
@@ -165,7 +169,7 @@ public class Strings {
             limit2 = StringUtils.right(limit, 1);
         } else {
             limit1 = limit.substring(0, 1);
-            limit2 = limit.substring(1, 1);
+            limit2 = limit.substring(0, 1);
         }
         int c = 0, p1 = 0, p2 = 0, c2 = 0;
         while (true) {
