@@ -43,8 +43,12 @@
             <url>http://agente.oym.com.py:8001/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
         <repository>
+            <id>oym</id>
+            <url>http://agente.oym.com.py:8001/nexus/content/repositories/releases/</url>
+            <!--
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            -->
         </repository>
     </distributionManagement>      
     
@@ -59,7 +63,7 @@
         <profile>
             <id>with-all</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
             </activation>            
             <build>
                 <plugins>
@@ -93,6 +97,7 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <!--
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -107,6 +112,7 @@
                             </execution>
                         </executions>
                     </plugin>                    
+                    -->
                 </plugins>
             </build>
         </profile> 
