@@ -56,7 +56,6 @@ import org.javabeanstack.util.Strings;
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public abstract class AbstractDAO implements IGenericDAO, Serializable {
-
     private static final Logger LOGGER = Logger.getLogger(AbstractDAO.class);
 
     /**
@@ -75,16 +74,16 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Devuelve un entity manager. Se crea un entity manager por cada thread y
      * unidad de persistencia.
      *
-     * @param persistUnit unidad de persistencia
-     * @param threadId nro de thread.
+     * @param keyId
      * @return un entity manager
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public EntityManager getEntityManager(String persistUnit, long threadId) {
+    public EntityManager getEntityManager(String keyId) {
+        String persistUnit = keyId.substring(0,keyId.indexOf(":")).toLowerCase();
         LOGGER.debug("getEntityManager");
-        LOGGER.debug("pu: " + persistUnit + ", threadid: " + threadId);
-        return dbManager.getEntityManager(persistUnit, threadId);
+        LOGGER.debug("pu: " + persistUnit + ", threadid: " + keyId);
+        return dbManager.getEntityManager(keyId);
     }
 
     /**
@@ -101,8 +100,8 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     public <T extends Object> List<T> findAll(Class<T> entityClass,
             String persistentUnit) throws Exception {
         LOGGER.debug("findAll");
-        EntityManager em = getEntityManager(persistentUnit,
-                                            Thread.currentThread().getId());
+        
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
 
         CriteriaQuery<T> cq = em.getCriteriaBuilder().createQuery(entityClass);
         cq.select(cq.from(entityClass));
@@ -127,8 +126,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             String persistentUnit,
             Object id) throws Exception {
         LOGGER.debug("find");
-        EntityManager em = getEntityManager(persistentUnit,
-                                            Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
         T row = em.find(entityClass, id);
         // Refrescar lazy members
         List<Field> fields = DataInfo.getLazyMembers(row.getClass());
@@ -159,8 +157,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             String persistentUnit, T ejb) throws Exception {
         T row;
         Query q;
-        q = getEntityManager(persistentUnit,
-                Thread.currentThread().getId()).createQuery(ejb.getQueryUK());
+        q = getEntityManager(getEntityId(persistentUnit)).createQuery(ejb.getQueryUK());
 
         for (Parameter param : q.getParameters()) {
             q.setParameter(param, ejb.getValue(param.getName()));
@@ -200,8 +197,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         LOGGER.debug("findByQuery");
         LOGGER.debug(queryString);
 
-        EntityManager em = getEntityManager(persistentUnit,
-                                            Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
 
         Query query = em.createQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -265,8 +261,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             Map<String, Object> parameters,
             int first, int max) throws Exception {
         LOGGER.debug("findListByQuery");
-        EntityManager em = getEntityManager(persistentUnit,
-                                            Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
 
         Query query = em.createQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -311,8 +306,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     public <T extends IDataRow> T findByNamedQuery(String persistentUnit,
             String namedQuery,
             Map<String, Object> parameters) throws Exception {
-        EntityManager em = getEntityManager(persistentUnit,
-                Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
 
         Query query = em.createNamedQuery(namedQuery);
         if (parameters != null && !parameters.isEmpty()) {
@@ -396,8 +390,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             Map<String, Object> parameters,
             int first, int max) throws Exception {
 
-        EntityManager em = getEntityManager(persistentUnit,
-                Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
 
         Query query = em.createNamedQuery(namedQuery);
         if (parameters != null && !parameters.isEmpty()) {
@@ -426,8 +419,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             Map<String, Object> parameters) throws Exception {
         LOGGER.debug("findByNativeQuery");
         queryString = Strings.textMerge(queryString, getQueryConstants(persistentUnit));
-        EntityManager em = getEntityManager(persistentUnit,
-                Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
 
         Query query = em.createNativeQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -455,8 +447,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         LOGGER.debug("findByNativeQuery");
         queryString = Strings.textMerge(queryString, getQueryConstants(persistentUnit));
 
-        EntityManager em = getEntityManager(persistentUnit,
-                Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
 
         Query query = em.createNativeQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -480,8 +471,8 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             Map<String, Object> parameters) {
         LOGGER.debug("exec");
         sqlString = Strings.textMerge(sqlString, getQueryConstants(persistentUnit));
-        EntityManager em = getEntityManager(persistentUnit,
-                Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
+
         ErrorReg error = null;
         try {
             Query sql = em.createNativeQuery(sqlString);
@@ -563,7 +554,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
         IDataResult dataResult = new DataResult();
         IDataRow lastEjb = null;
-        EntityManager em = getEntityManager(persistentUnit, Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
 
         // Recorrer los objetos a actualizar en la base
         for (Map.Entry<String, List<? extends IDataRow>> entry : dataSet.getMapListSet().entrySet()) {
@@ -670,7 +661,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (maxRows == 0) {
             return new ArrayList<>();
         }
-        EntityManager em = getEntityManager(persistentUnit, Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
         Query q;
         q = em.createQuery(queryString);
         if (maxRows >= 0) {
@@ -711,7 +702,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     public <T extends IDataRow> List<T> refreshAll(String persistentUnit, List<T> rows) throws Exception {
-        EntityManager em = getEntityManager(persistentUnit, Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
         for (int i = 0; i <= rows.size(); i++) {
             em.refresh(rows.get(i));
         }
@@ -739,7 +730,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         } else {
             queryString = "select count(*) " + queryString.substring(pos, pos2);
         }
-        EntityManager em = getEntityManager(persistentUnit, Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistentUnit));
         Query query = em.createQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
             populateQueryParameters(query, parameters, queryString);
@@ -775,7 +766,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Map<String, Object> getEntityManagerProp(String persistUnit) {
-        EntityManager em = getEntityManager(persistUnit, Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistUnit));
         if (em == null) {
             LOGGER.info("Entity Manager Nulo");
             return null;
@@ -794,7 +785,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     public Map<String, Object> getPersistUnitProp(String persistUnit) {
         Map<String, Object> result = new HashMap<>();
         try {
-            EntityManager em = getEntityManager(persistUnit, Thread.currentThread().getId());
+            EntityManager em = getEntityManager(getEntityId(persistUnit));
             if (em.getEntityManagerFactory() == null) {
                 LOGGER.info("Entity Manager Factory Nulo");
                 return null;
@@ -843,9 +834,8 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @Override
     public Connection getConnection(String persistUnit) {
         // Para eclipse link
-        Connection connection = getEntityManager(persistUnit,
-                Thread.currentThread().getId())
-                .unwrap(java.sql.Connection.class);
+        Connection connection = getEntityManager(getEntityId(persistUnit))
+                                            .unwrap(java.sql.Connection.class);
         return connection;
     }
 
@@ -858,7 +848,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     public Connection getConnection(String persistUnit, IDBConnectFactory conn) {
-        EntityManager em = getEntityManager(persistUnit, Thread.currentThread().getId());
+        EntityManager em = getEntityManager(getEntityId(persistUnit));
         Connection result = conn.getConnection(em);
         return result;
     }
@@ -932,4 +922,16 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             ejb.setValue("appuser", appUser);
         }
     }
+    
+    private String getEntityId(String persistUnit){
+        if (Strings.isNullorEmpty(persistUnit)){
+            persistUnit = IDBManager.CATALOGO;
+        }
+        String key = persistUnit+":";
+        if (dbManager.getEntityIdStrategic() == IDBManager.PERTHREAD){
+            Long threadId = Thread.currentThread().getId();
+            key += threadId.toString();
+        }
+        return key;
+    }            
 }

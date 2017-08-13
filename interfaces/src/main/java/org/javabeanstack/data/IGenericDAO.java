@@ -38,14 +38,13 @@ import org.javabeanstack.security.IUserSession;
 public interface IGenericDAO {
 
     /**
-     * Devuelve un entity manager se crea un entity manager por cada thread y
-     * unidad de persistencia.
+     * Devuelve un entity manager se crea un entity manager por cada thread o 
+     * sesionid y unidad de persistencia.
      *
-     * @param persistUnit unidad de persistencia...
-     * @param threadId nro de thread.
+     * @param keyId
      * @return un entity manager
      */
-    public EntityManager getEntityManager(String persistUnit, long threadId);
+    public EntityManager getEntityManager(String keyId);
 
     /**
      * Sincroniza un ejb con la base de datos.
