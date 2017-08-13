@@ -47,21 +47,27 @@ import org.javabeanstack.error.ErrorManager;
 public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
     private static final Logger LOGGER = Logger.getLogger(DBManager.class);    
     
+    private int entityIdStrategic = IDBManager.PERTHREAD;
+            
     Map<String, EntityManager> entityManagers = new HashMap<>();
 
     @Resource
     SessionContext context;
 
+    @Override
+    public int getEntityIdStrategic() {
+        return entityIdStrategic;
+    }
+
+    
     /**
      * Devuelve un entityManager, lo crea si no existe en la unidad de persistencia solicitada
-     * @param persistentUnit        unidad de persistencia
-     * @param threadId  id thread
+     * @param key  id thread
      * @return Devuelve un entityManager
      */    
     @Override 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public EntityManager getEntityManager(String persistentUnit, long threadId) {
-        String key = persistentUnit + String.valueOf(threadId);
+    public EntityManager getEntityManager(String key) {
         try {
             if (key == null || "".equals(key)) {
                 return null;
@@ -71,7 +77,7 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
                 em = (EntityManager) entityManagers.get(key);
                 LOGGER.debug("--------- EntityManager ya existe --------- " + key);
             } else {
-                em = this.createEntityManager(persistentUnit, threadId);
+                em = this.createEntityManager(key);
             }
             return em;
         } catch (Exception ex) {
@@ -83,18 +89,16 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
     /**
      * Crea un entitymanager dentro de un Map utiliza la unidad de persistencia y el 
      *    threadid como clave
-     * @param persistentUnit unidad de persistencia
-     * @param threadId  id thread
+     * @param key  id thread
      * @return          el entity manager creado.
      */
     @Override 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     @Lock(LockType.WRITE)
-    public EntityManager createEntityManager(String persistentUnit, long threadId) {      
-        String key = persistentUnit + String.valueOf(threadId);
+    public EntityManager createEntityManager(String key) {      
         EntityManager em;
         try {
-            persistentUnit = persistentUnit.toLowerCase();
+            String persistentUnit = key.substring(0,key.indexOf(":")).toLowerCase();
             em = (EntityManager) context.lookup("java:comp/env/persistence/" + persistentUnit);
             entityManagers.put(key, em);
             LOGGER.debug("--------- Se ha creado un nuevo EntityManager --------- " + key);

@@ -31,21 +31,29 @@ import javax.persistence.EntityManager;
  */
 public interface IDBManager {
     public static final String CATALOGO = "PU1";
+    public static final int PERTHREAD = 1;    
+    public static final int PERSESSION = 2;
+
+    /**
+     * Devuelve 1 si la creación de los entity manager serán por thread
+     * o 2 por sesión de usuario.
+     * @return 1 por thread, 2 por sesión.
+     */
+    public int getEntityIdStrategic();
+
     /**
      * Devuelve un entityManager, lo crea si no existe en la unidad de persistencia solicitada
-     * @param persistentUnit        unidad de persistencia
-     * @param threadId  id thread
+     * @param key
      * @return Devuelve un entityManager
      */
-    public EntityManager getEntityManager(String persistentUnit, long threadId);
+    public EntityManager getEntityManager(String key);
     /**
      * Crea un entitymanager dentro de un Map utiliza la unidad de persistencia y el 
      *    threadid como clave
-     * @param persistentUnit unidad de persistencia
-     * @param threadId  id thread
+     * @param key
      * @return          el entity manager creado.
      */
-    public EntityManager createEntityManager(String persistentUnit, long threadId);
+    public EntityManager createEntityManager(String key);
     /**
      *  Ejecuta rollback de una transacción 
      */
