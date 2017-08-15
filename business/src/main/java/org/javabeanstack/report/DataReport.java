@@ -673,7 +673,7 @@ public class DataReport {
             }
             Map<String, Object> params = new HashMap();
             params.put("entity", entity);
-            List<Object> list = getDataLink().getDao().findByNativeQuery(IDBManager.CATALOGO, select, params);
+            List<Object> list = getDataLink().getDao().findByNativeQuery(null, select, params);
             return DataNativeQuery.converToNativeQuery(list, "entity, expr1, expr2, typerela, relation");
         }
     }

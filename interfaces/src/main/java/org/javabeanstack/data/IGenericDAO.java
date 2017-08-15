@@ -18,7 +18,7 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
+ */
 package org.javabeanstack.data;
 
 import java.sql.Connection;
@@ -38,160 +38,166 @@ import org.javabeanstack.security.IUserSession;
 public interface IGenericDAO {
 
     /**
-     * Devuelve un entity manager se crea un entity manager por cada thread o 
+     * Devuelve un entity manager se crea un entity manager por cada thread o
      * sesionid y unidad de persistencia.
      *
-     * @param keyId
+     * @param key
      * @return un entity manager
      */
-    public EntityManager getEntityManager(String keyId);
+    public EntityManager getEntityManager(String key);
 
     /**
      * Sincroniza un ejb con la base de datos.
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param ejb objeto mapeado a un registro de una tabla.
-     * @param sessionId identificador de sesion del usuario
      * @return Devuelve un objeto con el resultado de la grabación
      *
      */
-    public <T extends IDataRow> IDataResult update(String persistentUnit, T ejb, String sessionId);
+    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, T ejb);
 
     /**
      * Sincroniza una lista de ejbs con la base de datos.
      *
      * @param <T>
      * @param ejbs lista de objetos mapeados a los registros de una tabla.
-     * @param persistentUnit unidad de persistencia.
-     * @param sessionId identificador de sesion del usuario
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @return Devuelve un objeto con el resultado de la grabación
      */
-    public <T extends IDataRow> IDataResult update(String persistentUnit, IDataObject ejbs, String sessionId);
+    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, IDataObject ejbs);
 
     /**
      * Sincroniza una lista de ejbs con la base de datos.
      *
      * @param <T>
      * @param ejbs lista de objetos mapeados a los registros de una tabla.
-     * @param persistentUnit unidad de persistencia.
-     * @param sessionId identificador de sesion del usuario
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @return Devuelve un objeto con el resultado de la grabación
      */
-    public <T extends IDataRow> IDataResult update(String persistentUnit, List<T> ejbs, String sessionId);
+    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, List<T> ejbs);
 
     /**
      * Sincroniza una lista de ejbs con la base de datos.
      *
      * @param <T>
      * @param dataSet cada elemento es un objeto mapeado a una tabla
-     * @param persistentUnit unidad de persistencia.
-     * @param sessionId identificador de sesion del usuario
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @return Devuelve un objeto con el resultado de la grabación
      */
-    public <T extends IDataRow> IDataResult update(String persistentUnit, IDataSet dataSet, String sessionId);
+    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, IDataSet dataSet);
 
     /**
      * Agregar,un registro en la tabla
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param ejb el objeto con los valores del registro
-     * @param sessionId id de la sesion del usuario
      * @return
      */
-    public <T extends IDataRow> IDataResult persist(String persistentUnit, T ejb, String sessionId);
+    public <T extends IDataRow> IDataResult persist(IDBLinkInfo dbLinkInfo, T ejb);
 
     /**
      * Modificar un registro en la tabla dada
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param ejb el objeto con los valores del registro
-     * @param sessionId id de sesión del usuario
      * @return
      */
-    public <T extends IDataRow> IDataResult merge(String persistentUnit, T ejb, String sessionId);
+    public <T extends IDataRow> IDataResult merge(IDBLinkInfo dbLinkInfo, T ejb);
 
     /**
      * Borra un registro en la tabla dada
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param ejb el objeto con los valores del registro
-     * @param sessionId id de la sesión del usuario
      * @return
      */
-    public <T extends IDataRow> IDataResult remove(String persistentUnit, T ejb, String sessionId);
+    public <T extends IDataRow> IDataResult remove(IDBLinkInfo dbLinkInfo, T ejb);
 
     /**
      * Recupera todos los registros de una tabla
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @return una list con los registros de una tabla
      * @throws Exception
      */
-    public <T extends Object> List<T> findAll(Class<T> entityClass, String persistentUnit) throws Exception;
+    public <T extends Object> List<T> findAll(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception;
 
     /**
      * Devuelve un registro de una tabla dada
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param id identificador del registro
      * @return un registro solicitado
      * @throws Exception
      */
-    public <T extends IDataRow> T find(Class<T> entityClass, String persistentUnit, Object id) throws Exception;
+    public <T extends IDataRow> T find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, Object id) throws Exception;
 
     /**
      * Devuelve un registro a travéz de su clave unica.
      *
      * @param <T>
      * @param entityClass clase mapeada a una tabla
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param ejb objeto ejb con los datos de la clave unica
      * @return
      * @throws Exception
      */
-    public <T extends IDataRow> T findByUk(Class<T> entityClass, String persistentUnit, T ejb) throws Exception;
+    public <T extends IDataRow> T findByUk(Class<T> entityClass, IDBLinkInfo dbLinkInfo, T ejb) throws Exception;
 
     /**
      * Devuelve un registro a travéz de su clave unica.
      *
      * @param <T>
      * @param entityClass clase mapeada a una tabla
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @return un objeto con valores del registro de la tabla solicitada
      * @throws Exception
      */
-    public <T extends IDataRow> T findByQuery(Class<T> entityClass, String persistentUnit, String queryString, Map<String, Object> parameters) throws Exception;
+    public <T extends IDataRow> T findByQuery(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception;
 
     /**
      * Devuelve una lista de objetos conteniendo los registros de la tabla
      * solicitada
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @return una lista de objetos conteniendo los registros de la tabla
      * solicitada
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findListByQuery(String persistentUnit, String queryString, Map<String, Object> parameters) throws Exception;
+    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception;
 
     /**
      * Devuelve una lista de objetos conteniendo los registros de la tabla
      * solicitada
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia jpql
      * @param first a partir de este nro. de registro se va a traer los datos
      * @param max cantidad maxima de registros
@@ -199,14 +205,15 @@ public interface IGenericDAO {
      * solicitada
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findListByQuery(String persistentUnit, String queryString, int first, int max) throws Exception;
+    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, int first, int max) throws Exception;
 
     /**
      * Devuelve una lista de objetos conteniendo los registros de la tabla
      * solicitada
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -215,41 +222,44 @@ public interface IGenericDAO {
      * solicitada
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findListByQuery(String persistentUnit, String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
+    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
 
     /**
      * Devuelve una lista de objetos conteniendo los registros de la tabla
      * solicitada
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @return un objeto con los datos del registro de la tabla solicitada
      * @throws Exception
      */
-    public <T extends IDataRow> T findByNamedQuery(String persistentUnit, String namedQuery, Map<String, Object> parameters) throws Exception;
+    public <T extends IDataRow> T findByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters) throws Exception;
 
     /**
      * Devuelve una lista de objetos conteniendo los registros de la tabla
      * solicitada
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @return una lista de objetos con los datos de los registros de la tabla
      * solicitada
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findListByNamedQuery(String persistentUnit, String namedQuery, Map<String, Object> parameters) throws Exception;
+    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters) throws Exception;
 
     /**
      * Devuelve una lista de objetos conteniendo los registros de la tabla
      * solicitada
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param namedQuery namedQuery
      * @param first a partir de este nro. de registro se va a traer los datos
      * @param max cantidad maxima de registros
@@ -257,14 +267,15 @@ public interface IGenericDAO {
      * solicitada
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findListByNamedQuery(String persistentUnit, String namedQuery, int first, int max) throws Exception;
+    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, int first, int max) throws Exception;
 
     /**
      * Devuelve una lista de objetos conteniendo los registros de la tabla
      * solicitada
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -272,24 +283,26 @@ public interface IGenericDAO {
      * @return una lista de objetos con los registros de la tabla solicitada
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findListByNamedQuery(String persistentUnit, String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception;
+    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception;
 
     /**
      * Devuelve una lista de objetos conteniendo los registros de la tabla
      * solicitada
      *
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @return una lista de objetos con datos de los registros solicitados
      * @throws Exception
      */
-    public List<Object> findByNativeQuery(String persistentUnit, String queryString, Map<String, Object> parameters) throws Exception;
+    public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception;
 
     /**
      * Selecciona datos de la base de datos a travez de una instrucción nativa
      *
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta.
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -297,31 +310,35 @@ public interface IGenericDAO {
      * @return una lista de objetos con datos de los registros solicitados
      * @throws Exception
      */
-    public List<Object> findByNativeQuery(String persistentUnit, String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
+    public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
 
     /**
-     * Ejecuta una sentencia (select, insert, update, remove) sobre la base de datos
+     * Ejecuta una sentencia (select, insert, update, remove) sobre la base de
+     * datos
      *
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @return un objeto error si no se ejecuto la sentencia con exito
+     * @throws java.lang.Exception
      */
-    public IErrorReg sqlExec(String persistentUnit, String queryString, Map<String, Object> parameters);
+    public IErrorReg sqlExec(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception;
 
     /**
      * Selecciona datos de la base de datos y los convierte en una lista de
      * objetos.
      *
      * @param <T>
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia jpql para seleccionar datos
      * @param maxRows maxima cantidad de registros que debe devolver
      * @param noCache
      * @return lista de objetos con los datos solicitados de la base de datos
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> getData(String persistentUnit, String queryString, int maxRows, boolean noCache) throws Exception;
+    public <T extends IDataRow> List<T> getData(IDBLinkInfo dbLinkInfo, String queryString, int maxRows, boolean noCache) throws Exception;
 
     /**
      * Selecciona datos de la base de datos y los convierte en una lista de
@@ -339,45 +356,49 @@ public interface IGenericDAO {
      * Refresca desde la base de datos los valores de un objeto.
      *
      * @param <T>
-     * @param persistUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param row objeto o registro a refrescar
      * @return objeto con los datos refrescados de la base de datos
      * @throws Exception
      */
-    public <T extends IDataRow> T refreshRow(String persistUnit, T row) throws Exception;
+    public <T extends IDataRow> T refreshRow(IDBLinkInfo dbLinkInfo, T row) throws Exception;
 
     /**
      * Refresca desde la base de datos una lista de objetos.
      *
      * @param <T>
-     * @param persistUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param rows objetos a refrescar
      * @return lista de objetos con los datos refrescados de la base de datos
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> refreshAll(String persistUnit, List<T> rows) throws Exception;
+    public <T extends IDataRow> List<T> refreshAll(IDBLinkInfo dbLinkInfo, List<T> rows) throws Exception;
 
     /**
      * Devuelve la cantidad de registros que debería retornar la sentencia.
      *
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia jpql
      * @param parameters parámetros de la sentencia
      * @return cantidad de registros que debería devolver la sentencia.
      * @throws Exception
      */
-    public Long getCount(String persistentUnit, String queryString, Map<String, Object> parameters) throws Exception;
+    public Long getCount(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception;
 
     /**
      * Devuelve la cantidad de registros que debería retornar la sentencia.
      *
-     * @param persistentUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia
      * @return cantidad de registros que debería devolver la sentencia.
      * @throws Exception
      */
-    public Long getCount2(String persistentUnit, String queryString, Map<String, Object> parameters) throws Exception;
+    public Long getCount2(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception;
 
     /**
      * Busca y devuelve el valor de una propiedad solicitada del entity manager
@@ -416,23 +437,25 @@ public interface IGenericDAO {
      * Devuelve una conexión a la base solo funciona en un ambiente @local no
      * funciona en @Remote
      *
-     * @param persistUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @return una conexión a la base solo funciona en un ambiente @local no
      * funciona en @Remote
      */
-    public Connection getConnection(String persistUnit);
+    public Connection getConnection(IDBLinkInfo dbLinkInfo);
 
     /**
      * Devuelve una conexión del entity manager, solo funciona en un ambiente
      *
      * @local no funciona en @Remote
      *
-     * @param persistUnit unidad de persistencia
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
      * @param conn objeto factory cuya función es devolver una conexión del
      * entity manager
      * @return devuelve una conexión del entity manager
      */
-    public Connection getConnection(String persistUnit, IDBConnectFactory conn);
+    public Connection getConnection(IDBLinkInfo dbLinkInfo, IDBConnectFactory conn);
 
     /**
      * Devuelve el objeto userSession con la información de la sesión

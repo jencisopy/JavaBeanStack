@@ -143,7 +143,7 @@ public class AppGenericConfig implements IAppConfig {
         try {
             appSystemParam
                     = dao.findByQuery(IAppSystemParam.class,
-                            IDBManager.CATALOGO,
+                            null,
                             queryString, null);
             return appSystemParam;
         } catch (Exception ex) {
@@ -167,7 +167,7 @@ public class AppGenericConfig implements IAppConfig {
         try {
             appSystemParam
                     = dao.findByQuery(IAppSystemParam.class,
-                            IDBManager.CATALOGO,
+                            null,
                             queryString, null);
             return appSystemParam;
         } catch (Exception ex) {
@@ -186,7 +186,7 @@ public class AppGenericConfig implements IAppConfig {
                 = "select o from AppSystemParam o";
         try {
             List<IAppSystemParam> appSystemParams
-                    = dao.findListByQuery(IDBManager.CATALOGO, queryString, null);
+                    = dao.findListByQuery(null, queryString, null);
             return appSystemParams;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
