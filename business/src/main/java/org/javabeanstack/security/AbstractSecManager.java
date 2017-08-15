@@ -145,7 +145,7 @@ public class AbstractSecManager  implements ISecManager, Serializable{
         params.put("usuario", userLogin.trim());
         sqlComando = Strings.textMerge(sqlComando, params);
         try {
-            List<Object> result = dao.findByNativeQuery(DBManager.CATALOGO, sqlComando,null);            
+            List<Object> result = dao.findByNativeQuery(null, sqlComando,null);            
             return result.toString();
         }
         catch (Exception exp){
@@ -182,7 +182,7 @@ public class AbstractSecManager  implements ISecManager, Serializable{
         params.put("userGroup", userGroup.trim());        
         sqlComando = Strings.textMerge(sqlComando, params);
         try {
-            List<Object> result = dao.findByNativeQuery(DBManager.CATALOGO, sqlComando, null);            
+            List<Object> result = dao.findByNativeQuery(null, sqlComando, null);            
             return (Integer.parseInt(result.get(0).toString()) > 0);
         }
         catch (Exception exp){

@@ -188,8 +188,8 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult update(T ejb) throws SessionError {
         // Verificar si la sesión es válida
-        String sessionId = checkUserSession();
-        IDataResult dataResult = getDao().update(persistUnit, ejb, sessionId);
+        checkUserSession();
+        IDataResult dataResult = getDao().update(getDBLinkInfo(), ejb);
         dataResult.setRowsUpdated(ejb);
         return dataResult;
     }
@@ -205,9 +205,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult update(List<T> ejbs) throws SessionError {
         // Verificar si la sesión es válida
-        String sessionId = checkUserSession();
+        checkUserSession();
         List<T> ejbs2 = this.getRowsChanged(ejbs);
-        IDataResult dataResult = getDao().update(persistUnit, ejbs2, sessionId);
+        IDataResult dataResult = getDao().update(getDBLinkInfo(), ejbs2);
         dataResult.setRowsUpdated(ejbs);
         // Eliminar registros borrados de la lista
         if (dataResult.isSuccessFul()){
@@ -229,9 +229,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult update(IDataSet dataSet) throws SessionError {
         // Verificar si la sesión es válida
-        String sessionId = checkUserSession();
+        checkUserSession();
         IDataSet dataSetChanged = dataSet.getChanged();
-        IDataResult dataResult = getDao().update(persistUnit, dataSetChanged, sessionId);
+        IDataResult dataResult = getDao().update(getDBLinkInfo(), dataSetChanged);
         dataResult.setRowsUpdated(dataSet);
         // Eliminar registros borrados de la lista        
         if (dataResult.isSuccessFul()){
@@ -260,7 +260,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().find(entityClass, persistUnit, id);
+        return getDao().find(entityClass, getDBLinkInfo(), id);
     }
 
     /**
@@ -278,7 +278,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T findByUk(Class<T> entityClass, T ejb) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findByUk(entityClass, persistUnit, ejb);
+        return getDao().findByUk(entityClass, getDBLinkInfo(), ejb);
     }
 
     /**
@@ -301,7 +301,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findByQuery(entityClass, persistUnit, queryString, parameters);
+        return getDao().findByQuery(entityClass, getDBLinkInfo(), queryString, parameters);
     }
 
     /**
@@ -322,7 +322,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findListByQuery(persistUnit, queryString, parameters);
+        return getDao().findListByQuery(getDBLinkInfo(), queryString, parameters);
     }
 
     /**
@@ -346,7 +346,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findListByQuery(persistUnit, queryString, parameters, first, max);
+        return getDao().findListByQuery(getDBLinkInfo(), queryString, parameters, first, max);
     }
 
     /**
@@ -364,7 +364,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T findByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findByNamedQuery(persistUnit, namedQuery, parameters);
+        return getDao().findByNamedQuery(getDBLinkInfo(), namedQuery, parameters);
     }
 
     /**
@@ -382,7 +382,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findListByNamedQuery(persistUnit, namedQuery, parameters);
+        return getDao().findListByNamedQuery(getDBLinkInfo(), namedQuery, parameters);
     }
 
     /**
@@ -403,7 +403,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findListByNamedQuery(persistUnit, namedQuery, parameters, first, max);
+        return getDao().findListByNamedQuery(getDBLinkInfo(), namedQuery, parameters, first, max);
     }
 
     /**
@@ -421,7 +421,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findByNativeQuery(persistUnit, queryString, parameters);
+        return getDao().findByNativeQuery(getDBLinkInfo(), queryString, parameters);
     }
 
     /**
@@ -442,14 +442,14 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findByNativeQuery(persistUnit, queryString, parameters, first, max);
+        return getDao().findByNativeQuery(getDBLinkInfo(), queryString, parameters, first, max);
     }
 
     @Override
     public <T extends IDataRow> List<T> getData(String queryString, int maxRows, boolean noCache) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().getData(persistUnit, queryString, maxRows, noCache);
+        return getDao().getData(getDBLinkInfo(), queryString, maxRows, noCache);
     }
 
     @Override
@@ -472,7 +472,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T refreshRow(T row) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().refreshRow(persistUnit, row);
+        return getDao().refreshRow(getDBLinkInfo(), row);
     }
 
     /**
@@ -488,7 +488,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> List<T> refreshAll(List<T> rows) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().refreshAll(persistUnit, rows);
+        return getDao().refreshAll(getDBLinkInfo(), rows);
     }
 
     /**
@@ -505,7 +505,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().getCount(persistUnit, queryString, parameters);
+        return getDao().getCount(getDBLinkInfo(), queryString, parameters);
     }
 
     /**
@@ -522,7 +522,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().getCount2(persistUnit, queryString, parameters);
+        return getDao().getCount2(getDBLinkInfo(), queryString, parameters);
     }
 
     /**
@@ -702,12 +702,12 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
 
     @Override
     public Connection getConnection() {
-        return getDao().getConnection(persistUnit);
+        return getDao().getConnection(getDBLinkInfo());
     }
 
     @Override
     public Connection getConnection(IDBConnectFactory conn) {
-        return getDao().getConnection(persistUnit, conn);
+        return getDao().getConnection(getDBLinkInfo(), conn);
     }
 
     /**
@@ -790,5 +790,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
                 i.remove();
             }
         }
+    }
+    
+    private IDBLinkInfo getDBLinkInfo(){
+        IDBLinkInfo dbInfo = new DBLinkInfo();
+        dbInfo.setUserSession(userSession);
+        return dbInfo;
     }
 }

@@ -25,6 +25,8 @@ package org.javabeanstack.security;
 
 
 import java.util.Date;
+import org.javabeanstack.data.DBLinkInfo;
+import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IEmpresa;
 import org.javabeanstack.model.IUser;
@@ -238,5 +240,12 @@ public class UserSession implements IUserSession{
     @Override
     public void setIdleSessionExpireInMinutes(Integer minutes) {
         this.idleSessionExpireInMinutes = minutes;
+    }
+    
+    @Override
+    public IDBLinkInfo getDbLinkInfo(){
+        IDBLinkInfo dbInfo = new DBLinkInfo();
+        dbInfo.setUserSession(this);
+        return dbInfo;
     }
 }

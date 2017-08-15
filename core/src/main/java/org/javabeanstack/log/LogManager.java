@@ -36,7 +36,6 @@ import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.ILogRecord;
 import org.javabeanstack.model.IAppMessage;
-import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.data.IGenericDAO;
 
 /**
@@ -330,7 +329,7 @@ public class LogManager implements ILogManager {
         if (logRecord.getLogTimeOrigin() == null){
             logRecord.setLogTimeOrigin(new Date());            
         }
-        IDataResult dataResult = dao.persist(IDBManager.CATALOGO, logRecord, sessionId);
+        IDataResult dataResult = dao.persist(null, logRecord);
         return dataResult.isSuccessFul();
     }
 
@@ -359,7 +358,7 @@ public class LogManager implements ILogManager {
     public IAppMessage getAppMessage(Integer msgNumber) {
         try {
             IAppMessage message = 
-                    dao.findByQuery(IAppMessage.class, IDBManager.CATALOGO,
+                    dao.findByQuery(IAppMessage.class, null,
                                     "select o from AppMessage o where nro = " + msgNumber.toString(),
                                     null);
 
@@ -381,7 +380,7 @@ public class LogManager implements ILogManager {
     public List<IAppMessage> getAppMessages() {
         try {
             List<IAppMessage> messages = 
-                    dao.findListByQuery(IDBManager.CATALOGO,
+                    dao.findListByQuery(null,
                                         "select o from AppMessage o order by nro",
                                          null);
 

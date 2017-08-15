@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.javabeanstack.data.IGenericDAO;
-import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppResource;
 import org.javabeanstack.util.Fn;
@@ -85,12 +84,12 @@ public class XmlResourceSearcher<V> extends XmlSearcher<V> {
             try {
                 appXmlSource
                         = dao.findByQuery(IAppResource.class,
-                                            IDBManager.CATALOGO,
+                                            null,
                                             queryString1, parameters);
                 if (appXmlSource == null){
                     appXmlSource
                         = dao.findByQuery(IAppResource.class,
-                                            IDBManager.CATALOGO,
+                                            null,
                                             queryString2, parameters);
                 }
                 if (appXmlSource != null) {
@@ -130,12 +129,12 @@ public class XmlResourceSearcher<V> extends XmlSearcher<V> {
             try {
                 appXmlSource
                         = dao.findByQuery(IAppResource.class,
-                                            IDBManager.CATALOGO,
+                                            null,
                                             queryString1, parameters);
                 if (appXmlSource == null){
                     appXmlSource
                         = dao.findByQuery(IAppResource.class,
-                                            IDBManager.CATALOGO,
+                                            null,
                                             queryString2, parameters);
                 }
                 return (appXmlSource != null);
