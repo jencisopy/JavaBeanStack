@@ -22,7 +22,9 @@
 
 package org.javabeanstack.data;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.ejb.Lock;
@@ -32,9 +34,11 @@ import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.util.Dates;
 
 /**
  * Contiene metodos para gestionar el acceso a los datos, es utilizado
@@ -46,10 +50,10 @@ import org.javabeanstack.error.ErrorManager;
 @Lock(LockType.READ)
 public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
     private static final Logger LOGGER = Logger.getLogger(DBManager.class);    
-    
-    private int entityIdStrategic = IDBManager.PERTHREAD;
+    private int entityIdStrategic = IDBManager.PERSESSION;
+    private Date lastPurge=new Date();
             
-    Map<String, EntityManager> entityManagers = new HashMap<>();
+    private final Map<String, Data> entityManagers = new HashMap<>();
 
     @Resource
     SessionContext context;
@@ -74,11 +78,13 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
             }
             EntityManager em;
             if (entityManagers.containsKey(key)) {
-                em = (EntityManager) entityManagers.get(key);
-                LOGGER.debug("--------- EntityManager ya existe --------- " + key);
+                em = (EntityManager) entityManagers.get(key).em;
+                entityManagers.get(key).lastRef = Dates.now();
+                LOGGER.debug("EntityManager ya existe: " + key);
             } else {
                 em = this.createEntityManager(key);
             }
+            purgeEntityManager();
             return em;
         } catch (Exception ex) {
             ErrorManager.showError(ex,LOGGER);            
@@ -100,13 +106,35 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
         try {
             String persistentUnit = key.substring(0,key.indexOf(":")).toLowerCase();
             em = (EntityManager) context.lookup("java:comp/env/persistence/" + persistentUnit);
-            entityManagers.put(key, em);
+            Data data = new Data();
+            data.em = em;
+            entityManagers.put(key, data);
             LOGGER.debug("--------- Se ha creado un nuevo EntityManager --------- " + key);
             return em;
         } catch (Exception ex) {
             ErrorManager.showError(ex,LOGGER);
         }
         return null;
+    }
+    
+    protected void purgeEntityManager(){
+        LOGGER.debug("purgeEntityManager() "+lastPurge);                        
+        Date now = new Date();
+        //Solo procesar si la ultima purga fue hace 5 minutos.
+        if (!lastPurge.before(DateUtils.addMinutes(now, -5))){
+            return;
+        }
+        //Purgar aquellos entityManagers que no fueron referenciados hace 5 minutos
+        now = DateUtils.addMinutes(Dates.now(),-5);
+        for(Iterator<Map.Entry<String, Data>> it = entityManagers.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<String, Data> entry = it.next();
+            if(entry.getValue().lastRef.before(now)) {
+                LOGGER.debug("Se elimino entityManager: " + entry.getKey());                
+                it.remove();
+            }        
+        }
+        lastPurge = new Date();
+        LOGGER.debug("Se proceso purgeEntityManager "+lastPurge);                                
     }
     
     /**
@@ -116,5 +144,10 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
     @Lock(LockType.WRITE)    
     public void rollBack(){
         context.setRollbackOnly();
+    }
+    
+    class Data {
+         EntityManager em;
+         Date lastRef = Dates.now();
     }
 }

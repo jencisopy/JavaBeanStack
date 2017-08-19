@@ -86,11 +86,11 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * @param keyId
      * @return un entity manager
      */
-    @Override
+    @Override 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public EntityManager getEntityManager(String keyId) {
         String persistUnit = keyId.substring(0, keyId.indexOf(":")).toLowerCase();
-        LOGGER.debug("getEntityManager");
+        LOGGER.debug("getEntityManager()");
         LOGGER.debug("pu: " + persistUnit + ", id: " + keyId);
         return dbManager.getEntityManager(keyId);
     }
@@ -109,7 +109,9 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T extends Object> List<T> findAll(Class<T> entityClass,
             IDBLinkInfo dbLinkInfo) throws Exception {
+        LOGGER.debug("---------------------------");        
         LOGGER.debug("findAll");
+        LOGGER.debug(entityClass.toString());                                
 
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
@@ -136,7 +138,10 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     public <T extends IDataRow> T find(Class<T> entityClass,
             IDBLinkInfo dbLinkInfo,
             Object id) throws Exception {
+        LOGGER.debug("---------------------------");        
         LOGGER.debug("find");
+        LOGGER.debug(entityClass.toString());
+        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         T row = em.find(entityClass, id);
         // Si no hay transacción activada
@@ -171,6 +176,10 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public <T extends IDataRow> T findByUk(Class<T> entityClass,
             IDBLinkInfo dbLinkInfo, T ejb) throws Exception {
+        LOGGER.debug("---------------------------");        
+        LOGGER.debug("findByUk");        
+        LOGGER.debug(entityClass.toString());        
+        
         // Verificar que exista manera de generar la sentencia para buscar
         // el registro o de lo contrario va a dar error.
         if (ejb.getQueryUK() == null) {
@@ -221,6 +230,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     public <T extends IDataRow> T findByQuery(Class<T> entityClass, IDBLinkInfo dbLinkInfo,
             String queryString, Map<String, Object> parameters)
             throws Exception {
+        LOGGER.debug("---------------------------");        
         LOGGER.debug("findByQuery");
         LOGGER.debug(queryString);
 
@@ -249,7 +259,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         } catch (NoResultException exp) {
             result = null;
         }
-        LOGGER.debug("-- RESULT --");
+        LOGGER.debug("-RESULT-");
         LOGGER.debug(result);
         return result;
     }
@@ -292,7 +302,10 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             String queryString,
             Map<String, Object> parameters,
             int first, int max) throws Exception {
+        LOGGER.debug("---------------------------");        
         LOGGER.debug("findListByQuery");
+        LOGGER.debug(queryString);        
+        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createQuery(queryString);
@@ -458,9 +471,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString,
             Map<String, Object> parameters) throws Exception {
+        LOGGER.debug("---------------------------");        
         LOGGER.debug("findByNativeQuery");
+        
         String persistUnit = dbLinkInfo.getPersistUnit();
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
+        LOGGER.debug(queryString);        
+        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createNativeQuery(queryString);
@@ -487,9 +504,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString,
             Map<String, Object> parameters,
             int first, int max) throws Exception {
+        LOGGER.debug("---------------------------");        
         LOGGER.debug("findByNativeQuery");
+       
         String persistUnit = dbLinkInfo.getPersistUnit();
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
+        LOGGER.debug(queryString);                        
 
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
@@ -514,11 +534,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @Override
     public IErrorReg sqlExec(IDBLinkInfo dbLinkInfo, String sqlString,
             Map<String, Object> parameters) throws Exception {
-        LOGGER.debug("exec");
+        LOGGER.debug("---------------------------");        
+        LOGGER.debug("sqlExec");
         String persistUnit = dbLinkInfo.getPersistUnit();
         sqlString = Strings.textMerge(sqlString, getQueryConstants(persistUnit));
+        LOGGER.debug(sqlString);                        
+        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
-
         ErrorReg error = null;
         try {
             Query sql = em.createNativeQuery(sqlString);
@@ -788,10 +810,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Long getCount(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+        LOGGER.debug("---------------------------");        
         LOGGER.debug("getCount");
         Long result;
         String persistUnit = dbLinkInfo.getPersistUnit();
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
+        
         int pos = Strings.findString("from ", queryString.toLowerCase());
         int pos2 = Strings.findString(" order by ", queryString.toLowerCase());
         if (pos2 <= 0) {
@@ -799,6 +823,8 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         } else {
             queryString = "select count(*) " + queryString.substring(pos, pos2);
         }
+        LOGGER.debug(queryString);                
+        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         Query query = em.createQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -820,10 +846,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Long getCount2(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+        LOGGER.debug("---------------------------");        
         LOGGER.debug("getCount2");
         String persistUnit = dbLinkInfo.getPersistUnit();
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
         queryString = "select count(*) from (" + queryString + ") x";
+        LOGGER.debug(queryString);                
+        
         List<Object> result = this.findByNativeQuery(dbLinkInfo, queryString, parameters);
         return Long.parseLong(result.get(0).toString());
     }
@@ -942,6 +971,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private Map<String, String> getQueryConstants(String persistUnit) {
+        LOGGER.debug("getQueryConstansts()");                
         Map<String, String> queryConstants = new HashMap<>();
         String schema = (String) this.getPersistUnitProp(persistUnit).get("hibernate.default_schema");
         queryConstants.put("schema", schema);
@@ -994,6 +1024,10 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     }
 
     private String getEntityId(IDBLinkInfo dbLinkInfo) {
+        LOGGER.debug("getEntityId()");                        
+        if (dbLinkInfo != null){
+            LOGGER.debug(dbLinkInfo.getPersistUnit());                                    
+        }
         String persistUnit;
         if (dbLinkInfo == null) {
             persistUnit = IDBManager.CATALOGO;
@@ -1016,10 +1050,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             }
             key += sessionId;
         }
+        LOGGER.debug(key);                                
         return key;
     }
 
     private String getEntityId(String persistUnit) {
+        LOGGER.debug("getEntityId()");
         if (Strings.isNullorEmpty(persistUnit)) {
             persistUnit = IDBManager.CATALOGO;
         }
