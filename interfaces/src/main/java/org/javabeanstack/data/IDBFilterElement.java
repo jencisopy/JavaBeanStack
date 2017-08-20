@@ -18,27 +18,20 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.data;
-
-import java.util.List;
-
 
 /**
  *
  * @author Jorge Enciso
- * @param <E>
  */
-public interface IDBFilter<E extends IDBFilterElement> {
-    void addFilter(String fieldName, Object fieldValue, Integer group);
-    List<E> getFilter();
-    String getFilterExpr(Integer element);
-    String getFilterExpr(Integer element, Integer group);
-    String getFilterExpr(Integer element, String alias);
-    String getFilterExpr(Integer element, Integer group, String alias);    
-    String getAllFilterExpr();
-    String getAllFilterExpr(String alias);
-    String getAllFilterExpr(Integer group);
-    String getAllFilterExpr(Integer group, String alias);
+public interface IDBFilterElement {
+    String getFieldName();
+    void setFieldName(String key);
+    
+    Object getFieldValue();
+    void setFieldValue(Object keyValue);
+
+    Integer getFieldGroup();
+    void setFieldGroup(Integer group);
 }

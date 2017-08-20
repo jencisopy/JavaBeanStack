@@ -22,23 +22,42 @@
 
 package org.javabeanstack.data;
 
-import java.util.List;
-
-
 /**
  *
  * @author Jorge Enciso
- * @param <E>
  */
-public interface IDBFilter<E extends IDBFilterElement> {
-    void addFilter(String fieldName, Object fieldValue, Integer group);
-    List<E> getFilter();
-    String getFilterExpr(Integer element);
-    String getFilterExpr(Integer element, Integer group);
-    String getFilterExpr(Integer element, String alias);
-    String getFilterExpr(Integer element, Integer group, String alias);    
-    String getAllFilterExpr();
-    String getAllFilterExpr(String alias);
-    String getAllFilterExpr(Integer group);
-    String getAllFilterExpr(Integer group, String alias);
+public class DBFilterElement implements IDBFilterElement{
+    private String key;
+    private Object keyValue;
+    private Integer group;
+    
+    @Override
+    public String getFieldName() {
+        return key;
+    }
+
+    @Override
+    public void setFieldName(String key) {
+        this.key = key;
+    }
+
+    @Override
+    public Object getFieldValue() {
+        return keyValue;
+    }
+
+    @Override
+    public void setFieldValue(Object keyValue) {
+        this.keyValue = keyValue;
+    }
+
+    @Override
+    public Integer getFieldGroup() {
+        return group;
+    }
+
+    @Override
+    public void setFieldGroup(Integer group) {
+        this.group = group;
+    }
 }
