@@ -52,6 +52,22 @@ public class Dates {
         SimpleDateFormat formatter = new SimpleDateFormat(format);
         return toDate(dateString, formatter);
     }
+
+    /**
+     * Convierte una fecha hora a una fecha
+     * @param date
+     * @return 
+     */
+    public static Date toDate(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);        
+        calendar.set(Calendar.MILLISECOND,0);        
+
+        return calendar.getTime();
+    }
     
     /**
      * Convierte una cadena a una fecha

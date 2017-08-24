@@ -31,7 +31,6 @@ import org.javabeanstack.util.Strings;
  * @author Jorge Enciso
  */
 public class DBFilter implements IDBFilter<DBFilterElement> {
-
     private final List<DBFilterElement> filter = new ArrayList();
 
     @Override

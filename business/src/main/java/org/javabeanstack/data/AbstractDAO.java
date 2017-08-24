@@ -474,7 +474,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("findByNativeQuery");
         
-        String persistUnit = dbLinkInfo.getPersistUnit();
+        String persistUnit;
+        if (dbLinkInfo != null){
+            persistUnit = dbLinkInfo.getPersistUnit();
+        }
+        else{
+            persistUnit = IDBManager.CATALOGO;
+        }
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
         LOGGER.debug(queryString);        
         
@@ -507,7 +513,14 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("findByNativeQuery");
        
-        String persistUnit = dbLinkInfo.getPersistUnit();
+        String persistUnit;
+        if (dbLinkInfo != null){
+            persistUnit = dbLinkInfo.getPersistUnit();
+        }
+        else{
+            persistUnit = IDBManager.CATALOGO;
+        }
+
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
         LOGGER.debug(queryString);                        
 
