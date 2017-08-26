@@ -22,6 +22,7 @@
 
 package org.javabeanstack.data;
 
+import java.io.Serializable;
 import java.util.List;
 
 
@@ -30,13 +31,14 @@ import java.util.List;
  * @author Jorge Enciso
  * @param <E>
  */
-public interface IDBFilter<E extends IDBFilterElement> {
+public interface IDBFilter<E extends IDBFilterElement> extends Serializable {
     void addFilter(String fieldName, Object fieldValue, Integer group);
     List<E> getFilter();
     String getFilterExpr(Integer element);
     String getFilterExpr(Integer element, Integer group);
     String getFilterExpr(Integer element, String alias);
     String getFilterExpr(Integer element, Integer group, String alias);    
+    <T extends IDataRow> String getFilterExpr(Class<T> clazz, String alias);    
     String getAllFilterExpr();
     String getAllFilterExpr(String alias);
     String getAllFilterExpr(Integer group);

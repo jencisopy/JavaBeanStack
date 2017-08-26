@@ -21,11 +21,13 @@
  */
 package org.javabeanstack.data;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Jorge Enciso
  */
-public interface IDBFilterElement {
+public interface IDBFilterElement extends Serializable{
     String getFieldName();
     void setFieldName(String key);
     

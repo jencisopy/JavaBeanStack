@@ -2,6 +2,8 @@ package org.javabeanstack.security;
 
 import java.io.Serializable;
 import java.util.Date;
+import org.javabeanstack.data.IDBFilter;
+import org.javabeanstack.data.IDBFilterElement;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IEmpresa;
@@ -63,6 +65,7 @@ public interface IUserSession extends Serializable {
     Date getTimeLogin();
     Long getIdEmpresa();
     Integer getIdleSessionExpireInMinutes();
+    <T extends IDBFilter> T getDBFilter();
     /**
      *
      * @return Devuelve el objeto usuario
@@ -80,4 +83,5 @@ public interface IUserSession extends Serializable {
     void setTimeLogin(Date timeLogin);
     void setUser(IUser user);
     void setIdleSessionExpireInMinutes(Integer minutes);
+    <T extends IDBFilter> void setDBFilter(T dbFilter);    
 }

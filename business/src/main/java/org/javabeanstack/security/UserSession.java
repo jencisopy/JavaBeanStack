@@ -25,7 +25,9 @@ package org.javabeanstack.security;
 
 
 import java.util.Date;
+import org.javabeanstack.data.DBFilter;
 import org.javabeanstack.data.DBLinkInfo;
+import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IEmpresa;
@@ -50,6 +52,7 @@ public class UserSession implements IUserSession{
     private String sessionId;
     private IErrorReg error;
     private Integer idleSessionExpireInMinutes;
+    private DBFilter dbFilter;
 
     public UserSession() {
     }
@@ -247,5 +250,15 @@ public class UserSession implements IUserSession{
         IDBLinkInfo dbInfo = new DBLinkInfo();
         dbInfo.setUserSession(this);
         return dbInfo;
+    }
+
+    @Override
+    public IDBFilter getDBFilter() {
+        return dbFilter;
+    }
+
+    @Override
+    public void setDBFilter(IDBFilter dbFilter) {
+        this.dbFilter = (DBFilter)dbFilter;
     }
 }

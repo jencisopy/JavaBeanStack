@@ -71,7 +71,7 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
         // Si el valor es cadena
         if (value instanceof String) {
             result = "(" + alias + field + "='" + value + "'" + ")";
-        } // Si el el valor es una lista
+        } // Si el valor es una lista
         else if (value instanceof List) {
             if (((List) value).isEmpty()) {
                 result = "";
@@ -127,12 +127,31 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
         return result;
     }
 
-    @Override
+    @Override 
     public void addFilter(String fieldName, Object fieldValue, Integer group) {
         DBFilterElement element = new DBFilterElement();
         element.setFieldName(fieldName);
         element.setFieldValue(fieldValue);
         element.setFieldGroup(group);
         filter.add(element);
+    }
+    
+    @Override
+    public <T extends IDataRow> String getFilterExpr(Class<T> clazz, String alias){
+        String result = "";
+        String separador = "";        
+        int c = 0;
+        for (IDBFilterElement element:filter){
+            // Si existe el campo en el ejb se agrega al filtro
+            if (DataInfo.isFieldExist(clazz, element.getFieldName())){
+                String expr = getFilterExpr(c, alias);
+                if (!expr.isEmpty()){
+                    result += separador + expr;
+                    separador = " and ";                                
+                }
+            }
+            c++;
+        }
+        return result;
     }
 }
