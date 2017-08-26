@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.javabeanstack.data.DataNativeQuery;
-import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.data.IDataExpression;
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataNativeQuery;
@@ -54,7 +53,6 @@ import static org.javabeanstack.util.Fn.nvl;
  * @author Jorge Enciso
  */
 public class DataReport {
-
     private static final Logger LOGGER = Logger.getLogger(DataReport.class);
 
     /**
@@ -510,7 +508,7 @@ public class DataReport {
      * @throws Exception
      */
     public List<IDataQueryModel> executeSqlSentence() throws Exception {
-        beforeExecuteSqlSentence();
+        beforeExecuteSqlSentence(); 
         List<IDataQueryModel> result = query.execQuery();
         result = afterExecuteSqlSentence(result);
         return result;
