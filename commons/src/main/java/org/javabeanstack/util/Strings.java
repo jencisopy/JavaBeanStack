@@ -407,6 +407,13 @@ public class Strings {
         }
         return found;
     }
+
+    public static String Capitalize(String text){
+        if (text == null){
+            return null;
+        }
+        return StringUtils.capitalize(text);
+    }
     
     /**
      * Codifica una cadena a base 64

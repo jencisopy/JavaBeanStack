@@ -211,9 +211,16 @@ public interface IDataNativeQuery {
      */
     public String[] getEntityList();
     /**
+     * Expresión FROM de la sentencia
+     * @return expresión FROM.
+     */
+    public String   getFromExpr();
+    
+    /**
      * Devuelve la expresión where
      * @return filtros (expresión where)
      */
+    
     public String   getFilterExpr();
     /**
      * Devuelve la lista de filtros de la expresión where
@@ -272,5 +279,9 @@ public interface IDataNativeQuery {
      * @return 
      * @throws java.lang.Exception 
      */
-    public Long getCount() throws Exception;    
+    public Long getCount() throws Exception; 
+   
+    public boolean getApplyDBFilter();
+    
+    public void setApplyDBFilter(boolean apply);
 }

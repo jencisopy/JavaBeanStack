@@ -32,6 +32,7 @@ import org.javabeanstack.util.Strings;
  */
 public class DBFilter implements IDBFilter<DBFilterElement> {
     private final List<DBFilterElement> filter = new ArrayList();
+    private String modelPackagePath="";
 
     @Override
     public List<DBFilterElement> getFilter() {
@@ -153,5 +154,15 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
             c++;
         }
         return result;
+    }
+
+    @Override
+    public String getModelPackagePath() {
+        return modelPackagePath;
+    }
+
+    @Override
+    public void setModelPackagePath(String modelPath) {
+        this.modelPackagePath = modelPath;
     }
 }
