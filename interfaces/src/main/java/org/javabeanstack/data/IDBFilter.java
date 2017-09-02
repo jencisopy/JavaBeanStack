@@ -43,4 +43,6 @@ public interface IDBFilter<E extends IDBFilterElement> extends Serializable {
     String getAllFilterExpr(String alias);
     String getAllFilterExpr(Integer group);
     String getAllFilterExpr(Integer group, String alias);
+    String getModelPackagePath();
+    void setModelPackagePath(String modelPath);
 }

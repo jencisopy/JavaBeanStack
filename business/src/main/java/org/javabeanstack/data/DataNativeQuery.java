@@ -75,6 +75,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     private IDataNativeQuery subQueryFrom;
     private String subQueryFromSentence;
     private String subQueryAlias;
+    private boolean applyDBQueryFilter = true;
 
     public DataNativeQuery() {
     }
@@ -210,6 +211,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     @Override
     public IDataNativeQuery where(String filterExpr) {
         this.filterExpr = filterExpr;
+        this.filterExpr += getDBFilterExpr();
         this.filterExprList = null;
         queryCreated = false;
         return this;
@@ -225,6 +227,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     @Override
     public IDataNativeQuery where(String filterExpr, Map<String, Object> params) {
         this.filterExpr = filterExpr;
+        this.filterExpr += getDBFilterExpr();        
         this.filterExprList = null;
         queryCreated = false;
         addParams(params);
@@ -240,6 +243,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     @Override
     public IDataNativeQuery where(IDataExpression dataExpr) {
         this.filterExpr = dataExpr.getSentence();
+        this.filterExpr += getDBFilterExpr();        
         this.filterExprList = null;
         queryCreated = false;
         if (!dataExpr.getSentenceParams().isEmpty()) {
@@ -258,12 +262,51 @@ public class DataNativeQuery implements IDataNativeQuery {
     @Override
     public IDataNativeQuery where(IDataExpression dataExpr, Map<String, Object> params) {
         this.filterExpr = dataExpr.getSentence();
+        this.filterExpr += getDBFilterExpr();        
         this.filterExprList = null;
         queryCreated = false;
         addParams(params);
         return this;
     }
 
+    private String getDBFilterExpr(){
+        String result="";
+        if (getApplyDBFilter() 
+                && this.getDataLink() != null
+                && this.getDataLink().getUserSession() != null
+                && !this.getDataLink().getPersistUnit().equals(IDBManager.CATALOGO)){
+            
+            String operador = isNullorEmpty(filterExpr) ? "" : " and ";
+            try {
+                String entityExp = getEntityList()[0];
+                int pos = entityExp.indexOf(" ") > 0 ? entityExp.indexOf(" ") : entityExp.length();
+                
+                String entity = entityExp.substring(0,pos);
+                String entityAlias = Strings.substr(entityExp, pos+1);
+                        
+                IDBFilter dbFilter = getDataLink().getUserSession().getDBFilter();
+                String classpath = getClassPathModel(dbFilter.getModelPackagePath(), entity);
+                Class clazz = Class.forName(classpath);
+                result = operador + dbFilter.getFilterExpr(clazz, entityAlias.trim());
+            }
+            catch (Exception exp){
+                result = "";
+            }
+            
+        }
+        return result;
+    }
+    
+    private String getClassPathModel(String packagePath, String entity){
+        String result = "";
+        String[] partes = entity.split("_");
+        for (String parte : partes) {
+            result += Strings.Capitalize(parte).trim();
+        }
+        packagePath += "." + (result.toLowerCase().endsWith("view") ? "views" : "tables" );
+        result = packagePath + "." + result;
+        return result;
+    }
     /**
      * Asigna la expresión order by
      *
@@ -350,8 +393,11 @@ public class DataNativeQuery implements IDataNativeQuery {
     public void createQuery() {
         querySentence = "SELECT " + columnExpr + " \r\n";
 
-        String fromExpr = getFromExpr();
+        String fromExpr = getFromExpr(); 
         querySentence += " FROM " + fromExpr + "\r\n";
+        if (Strings.isNullorEmpty(filterExpr)){
+            filterExpr = getDBFilterExpr();
+        }
         if (!Strings.isNullorEmpty(filterExpr)) {
             querySentence += " WHERE " + filterExpr + " \r\n";
         }
@@ -370,7 +416,8 @@ public class DataNativeQuery implements IDataNativeQuery {
         queryCreated = true;
     }
 
-    protected final String getFromExpr() {
+    @Override
+    public final String getFromExpr() {
         String fromExpr = "";        
         // Generar from desde un subquery
         if (subQueryFrom != null) {
@@ -846,6 +893,16 @@ public class DataNativeQuery implements IDataNativeQuery {
             devolver = devolver.substring(0, devolver.length() - 1);
         }
         return devolver;
+    }
+
+    @Override
+    public boolean getApplyDBFilter() {
+        return applyDBQueryFilter;
+    }
+
+    @Override
+    public void setApplyDBFilter(boolean apply) {
+        this.applyDBQueryFilter = apply;
     }
 
     class JoinParam {
