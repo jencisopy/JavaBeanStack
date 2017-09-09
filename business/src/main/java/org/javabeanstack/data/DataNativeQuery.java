@@ -285,9 +285,14 @@ public class DataNativeQuery implements IDataNativeQuery {
                 String entityAlias = Strings.substr(entityExp, pos+1);
                         
                 IDBFilter dbFilter = getDataLink().getUserSession().getDBFilter();
-                String classpath = getClassPathModel(dbFilter.getModelPackagePath(), entity);
-                Class clazz = Class.forName(classpath);
-                result = operador + dbFilter.getFilterExpr(clazz, entityAlias.trim());
+
+                Class clazz = getClassModel(dbFilter.getModelPackagePath(), entity);
+                if (clazz != null){
+                    String filter = dbFilter.getFilterExpr(clazz, entityAlias.trim());
+                    if (!isNullorEmpty(filter)){
+                        result = operador + filter;
+                    }
+                }
             }
             catch (Exception exp){
                 result = "";
@@ -297,16 +302,27 @@ public class DataNativeQuery implements IDataNativeQuery {
         return result;
     }
     
-    private String getClassPathModel(String packagePath, String entity){
-        String result = "";
+    private Class getClassModel(String packagePath, String entity){
+        String className = "";
         String[] partes = entity.split("_");
         for (String parte : partes) {
-            result += Strings.Capitalize(parte).trim();
+            className += Strings.Capitalize(parte).trim();
         }
-        packagePath += "." + (result.toLowerCase().endsWith("view") ? "views" : "tables" );
-        result = packagePath + "." + result;
-        return result;
+        String[] path = packagePath.split(";");
+        Class clazz=null;
+        for (String packages : path) {
+            String classPath = packages.trim() + "." + className;
+            try{
+                clazz = Class.forName(classPath);
+                break;
+            }
+            catch (ClassNotFoundException ex){
+                //continua con la busqueda
+            }
+        }
+        return clazz;
     }
+    
     /**
      * Asigna la expresión order by
      *

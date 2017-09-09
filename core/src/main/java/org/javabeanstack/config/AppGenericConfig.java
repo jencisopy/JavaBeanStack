@@ -29,7 +29,6 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
-import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppSystemParam;
