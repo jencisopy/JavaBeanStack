@@ -212,11 +212,11 @@ public class UserSession implements IUserSession{
     @Override
     public Long getIdEmpresa() {
         if (getEmpresa() != null){
-            if (Fn.nvl(getEmpresa().getIdempresamask(),0L) != 0L){
-                return getEmpresa().getIdempresamask();
+            if (Fn.nvl(getEmpresa().getIdcompanymask(),0L) != 0L){
+                return getEmpresa().getIdcompanymask();
             }
             else{
-                return getEmpresa().getIdempresa();
+                return getEmpresa().getIdcompany();
             }
         }
         return idempresa;

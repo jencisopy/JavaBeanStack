@@ -11,34 +11,40 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  */
 public interface IUser extends IDataRow, Serializable {
-    String getClave();
-    String getClave2();
-    String getCodigo();
-    String getDescripcion();
-    List<IAppCompanyAllowed> getDicPermisoEmpresaList();
-    Long getIdempresa();    
+    Long getIduser();    
+    String getLogin();
+    String getFullName();
+    String getDescription();
+    
+    String getPass();
+    String getPassConfirm();
     Boolean getDisable();
-    Date getExpira();
-    Date getFechamodificacion();
-    Long getIdusuario();
-    List<IUserMember> getListaUsuarioMiembro();
-    String getNombre();
+    Date getExpiredDate();
+    
+    Long getIdcompany();        
+    List<IAppCompanyAllowed> getAppCompanyAllowedList();
+    List<IUserMember> getUserMemberList();
+    
     String getRol();
     String getAppRol();    
-    Short getTipo();
-    void setClave(String clave);
-    void setClave2(String clave2);
-    void setCodigo(String codigo);
-    void setDescripcion(String descripcion);
-    void setDicPermisoEmpresaList(List<IAppCompanyAllowed> dicPermisoEmpresaList);
+    Short getType();
+    
+    void setIduser(Long iduser);    
+    void setLogin(String loginName);
+    void setFullName(String name);    
+    void setDescription(String description);    
+    
+    void setPass(String password);
+    void setPassConfirm(String passwordConfirm);
+
+    void setIdcompany(Long idcompany);    
+    void setAppCompanyAllowedList(List<IAppCompanyAllowed> appCompanyAllowedList);
+    void setUserMemberList(List<IUserMember> userMemberList);
+    
     void setDisable(Boolean disable);
-    void setIdempresa(Long idempresa);
-    void setExpira(Date expira);
-    void setFechamodificacion(Date fechamodificacion);
-    void setIdusuario(Long idusuario);
-    void setListaUsuarioMiembro(List<IUserMember> listaUsuarioMiembro);
-    void setNombre(String nombre);
+    void setExpiredDate(Date expira);
+
     void setRol(String rol);
     void setAppRol(String appRol);    
-    void setTipo(Short tipo);
+    void setType(Short tipo);
 }

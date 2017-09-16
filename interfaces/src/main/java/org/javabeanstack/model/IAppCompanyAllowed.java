@@ -3,7 +3,6 @@ package org.javabeanstack.model;
 import java.io.Serializable;
 import org.javabeanstack.data.IDataRow;
 
-//TODO Cambiar el nombre de esta clase
 /**
  *
  * @author Jorge Enciso

@@ -8,10 +8,10 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  */
 public interface IUserMember extends IDataRow, Serializable {
-    Long getIdusuariomiembro();
-    void setIdusuariomiembro(Long idusuariomiembro);    
-    IUser getUsuarioMiembro();
-    void setUsuarioMiembro(IUser usuario);
-    IUser getUsuarioGrupo();
-    void setUsuarioGrupo(IUser usuario);
+    Long getIdusermember();
+    void setIdusermember(Long idUserMember);    
+    IUser getUserMember();
+    void setUserMember(IUser user);
+    IUser getUserGroup();
+    void setUserGroup(IUser user);
 }
