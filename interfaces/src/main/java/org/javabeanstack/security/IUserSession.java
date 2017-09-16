@@ -6,8 +6,8 @@ import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBFilterElement;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.IEmpresa;
 import org.javabeanstack.model.IUser;
+import org.javabeanstack.model.IAppCompany;
 
 /**
  *
@@ -19,7 +19,7 @@ public interface IUserSession extends Serializable {
      *
      * @return Devuelve el objeto empresa a la cual se accedio en esta sesión.
      */
-    IEmpresa getEmpresa();
+    IAppCompany getEmpresa();
 
     /**
      *
@@ -72,7 +72,7 @@ public interface IUserSession extends Serializable {
      */
     IUser getUser();
     IDBLinkInfo getDbLinkInfo();    
-    void setEmpresa(IEmpresa empresa);
+    void setEmpresa(IAppCompany empresa);
     void setIdEmpresa(Long idempresa);    
     void setError(IErrorReg error);
     void setHost(String host);

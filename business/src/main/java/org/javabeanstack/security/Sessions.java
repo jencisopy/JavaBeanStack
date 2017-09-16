@@ -38,12 +38,12 @@ import org.javabeanstack.data.DataLink;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.util.Fn;
-import org.javabeanstack.model.IDicPermisoEmpresa;
-import org.javabeanstack.model.IEmpresa;
 
 import org.javabeanstack.model.IUser;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.util.Dates;
+import org.javabeanstack.model.IAppCompanyAllowed;
+import org.javabeanstack.model.IAppCompany;
 
 
 /**

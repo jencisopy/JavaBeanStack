@@ -30,9 +30,9 @@ import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.IEmpresa;
 import org.javabeanstack.model.IUser;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.model.IAppCompany;
 
 /**
  * Esta clase guarda información de la sesión de un usuario.
@@ -44,7 +44,7 @@ public class UserSession implements IUserSession{
     private IUser user;
     private Date timeLogin = new Date();
     private Date lastReference = new Date();
-    private IEmpresa empresa;
+    private IAppCompany empresa;
     private Long idempresa;
     private String ip;
     private String host;
@@ -119,12 +119,12 @@ public class UserSession implements IUserSession{
      * @return Devuelve el objeto empresa a la cual se accedio en esta sesión.
      */
     @Override
-    public IEmpresa getEmpresa() {
+    public IAppCompany getEmpresa() {
         return empresa;
     }
 
     @Override
-    public void setEmpresa(IEmpresa empresa) {
+    public void setEmpresa(IAppCompany empresa) {
         this.empresa = empresa;
     }
 
