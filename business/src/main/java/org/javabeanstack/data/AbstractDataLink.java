@@ -48,7 +48,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * Unidad de persistencia donde esta configurado los parámetros de la
      * conexión a la base de datos
      */
-    private String persistUnit = DBManager.CATALOGO;
+    private String persistUnit = IDBManager.CATALOGO;
     /**
      * Objeto resultante del login del usuario. Para acceder al esquema de datos
      * de la base el usuario debe estar logeado
@@ -625,7 +625,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         String expresion = schema + "." + entidades[0][0] + " " + entidades[0][1];
         String leftEntidad, leftAlias, rightEntidad, rightAlias;
         IDataNativeQuery nativeQuery;        
-        if (!this.getPersistUnit().equals(DBManager.CATALOGO)){
+        if (!this.getPersistUnit().equals(IDBManager.CATALOGO)){
             IDataLink dataCatalog = new DataLink(this.getDao());                
             nativeQuery = dataCatalog.newDataNativeQuery();
         }

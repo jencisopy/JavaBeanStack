@@ -31,7 +31,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 
-import org.javabeanstack.data.DBManager;
+import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.data.IGenericDAO;
@@ -124,7 +124,7 @@ public class AbstractSecManager  implements ISecManager, Serializable{
      */
     @Override
     public String getUserRol(String userLogin){
-        String motorDatos = dao.getDataEngine(DBManager.CATALOGO);
+        String motorDatos = dao.getDataEngine(IDBManager.CATALOGO);
         String sqlComando="";
         switch (motorDatos) {
             case "SQLSERVER":
@@ -141,7 +141,7 @@ public class AbstractSecManager  implements ISecManager, Serializable{
                 break;
         }
         Map<String, String> params = new HashMap<>();
-        params.put("schema",dao.getSchema(DBManager.CATALOGO));
+        params.put("schema",dao.getSchema(IDBManager.CATALOGO));
         params.put("usuario", userLogin.trim());
         sqlComando = Strings.textMerge(sqlComando, params);
         try {
@@ -177,7 +177,7 @@ public class AbstractSecManager  implements ISecManager, Serializable{
                 + " and   usuariomiembro.codigo = '{user}'";
         
         Map<String, String> params = new HashMap<>();
-        params.put("schema",dao.getSchema(DBManager.CATALOGO));
+        params.put("schema",dao.getSchema(IDBManager.CATALOGO));
         params.put("user", user.trim());
         params.put("userGroup", userGroup.trim());        
         sqlComando = Strings.textMerge(sqlComando, params);
