@@ -12,13 +12,13 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  * 
  */
-public interface IEmpresa extends IDataRow, Serializable {
+public interface IAppCompany extends IDataRow, Serializable {
     String getAppuser();
     String getDatos();
     String getDireccion();
 
     @XmlTransient
-    List<IEmpresa> getEmpresaList();
+    List<IAppCompany> getEmpresaList();
     String getEmpresarubro();
     Date getFechacreacion();
     Date getFechamodificacion();
@@ -40,7 +40,7 @@ public interface IEmpresa extends IDataRow, Serializable {
     void setAppuser(String appuser);
     void setDatos(String datos);
     void setDireccion(String direccion);
-    void setEmpresaList(List<IEmpresa> empresaList);
+    void setEmpresaList(List<IAppCompany> empresaList);
     void setEmpresarubro(String empresarubro);
     void setFechacreacion(Date fechacreacion);
     void setFechamodificacion(Date fechamodificacion);

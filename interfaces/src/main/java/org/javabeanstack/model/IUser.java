@@ -15,7 +15,7 @@ public interface IUser extends IDataRow, Serializable {
     String getClave2();
     String getCodigo();
     String getDescripcion();
-    List<IDicPermisoEmpresa> getDicPermisoEmpresaList();
+    List<IAppCompanyAllowed> getDicPermisoEmpresaList();
     Long getIdempresa();    
     Boolean getDisable();
     Date getExpira();
@@ -30,7 +30,7 @@ public interface IUser extends IDataRow, Serializable {
     void setClave2(String clave2);
     void setCodigo(String codigo);
     void setDescripcion(String descripcion);
-    void setDicPermisoEmpresaList(List<IDicPermisoEmpresa> dicPermisoEmpresaList);
+    void setDicPermisoEmpresaList(List<IAppCompanyAllowed> dicPermisoEmpresaList);
     void setDisable(Boolean disable);
     void setIdempresa(Long idempresa);
     void setExpira(Date expira);
