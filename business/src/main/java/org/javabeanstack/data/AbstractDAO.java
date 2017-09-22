@@ -635,7 +635,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             sessionId = dbLinkInfo.getUserSession().getSessionId();
         }
         if (!Strings.isNullorEmpty(sessionId)) {
-            appUser = getUserSession(sessionId).getUser().getClave();
+            appUser = getUserSession(sessionId).getUser().getPass();
         }
 
         IDataResult dataResult = new DataResult();

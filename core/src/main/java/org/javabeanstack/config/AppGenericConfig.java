@@ -88,8 +88,8 @@ public class AppGenericConfig implements IAppConfig {
     @Override
     public String getProperty(String property, String groupKey, String nodePath) {
         groupKey = groupKey.toUpperCase();
-        Document dom = config.get(groupKey);
-        if (dom == null) {
+        Document dom = config.get(groupKey); 
+        if (dom == null) { 
             return null;
         }
         String propValue;

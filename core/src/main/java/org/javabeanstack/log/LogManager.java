@@ -316,10 +316,10 @@ public class LogManager implements ILogManager {
             IUserSession userSession = sessions.getUserSession(sessionId);
             if (userSession != null) {
                 idempresa = userSession.getIdEmpresa();
-                idusuario = userSession.getUser().getIdusuario();
+                idusuario = userSession.getUser().getIduser();
                 origin = userSession.getIp();
                 sesionId = Strings.dateToString(userSession.getTimeLogin())
-                        + userSession.getUser().getCodigo().trim();
+                        + userSession.getUser().getLogin().trim();
             }
         }
         logRecord.setIdempresa(idempresa);
