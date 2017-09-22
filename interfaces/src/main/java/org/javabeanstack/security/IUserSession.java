@@ -3,7 +3,6 @@ package org.javabeanstack.security;
 import java.io.Serializable;
 import java.util.Date;
 import org.javabeanstack.data.IDBFilter;
-import org.javabeanstack.data.IDBFilterElement;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IUser;

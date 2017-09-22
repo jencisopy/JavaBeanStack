@@ -13,6 +13,7 @@ public interface IAppCompanyAllowed extends IDataRow, Serializable {
     boolean getDeny();
     boolean getAllow();
     String getAppuser();
+    
     void setIdcompany(Long idempresa);
     void setIduser(Long idusuario);
     void setDeny(boolean negar);

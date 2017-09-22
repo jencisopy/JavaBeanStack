@@ -32,7 +32,7 @@ import java.util.Map;
 public interface IXmlSearcher<V> extends Serializable{
     public static final String FILEPATH  = "file";
     public static final String APPXMLPATH = "obj";
-    public static final String OBJECTPATH  = "obj";
+    public static final String OBJECTPATH = "obj";
     public static final String URLPATH = "http";    
     /**
      * Devuelve map con documentos procesados, de tal manera a reutilizarse de

@@ -13,6 +13,7 @@ import org.javabeanstack.data.IDataRow;
 public interface IUser extends IDataRow, Serializable {
     Long getIduser();    
     String getLogin();
+    String getCode();
     String getFullName();
     String getDescription();
     
@@ -31,6 +32,7 @@ public interface IUser extends IDataRow, Serializable {
     
     void setIduser(Long iduser);    
     void setLogin(String loginName);
+    void setCode(String code);
     void setFullName(String name);    
     void setDescription(String description);    
     
