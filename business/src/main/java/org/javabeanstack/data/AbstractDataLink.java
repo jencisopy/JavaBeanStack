@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import javax.persistence.Query;
 import org.javabeanstack.exceptions.SessionError;
+import org.javabeanstack.model.IAppTablesRelation;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.services.IDataService;
 import org.javabeanstack.util.Dates;
@@ -624,14 +625,13 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         }
         String expresion = schema + "." + entidades[0][0] + " " + entidades[0][1];
         String leftEntidad, leftAlias, rightEntidad, rightAlias;
-        IDataNativeQuery nativeQuery;        
+        IDataLink dao;        
         if (!this.getPersistUnit().equals(IDBManager.CATALOGO)){
-            IDataLink dataCatalog = new DataLink(this.getDao());                
-            nativeQuery = dataCatalog.newDataNativeQuery();
+            dao = new DataLink(this.getDao());                
         }
         else{
-            nativeQuery = this.newDataNativeQuery();
-        }
+            dao = this;
+        } 
         
         for (int i = 0; i < analizar.length; i++) {
             if (i + 1 == analizar.length) {
@@ -642,52 +642,46 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
             for (int j = i + 1; j < analizar.length; j++) {
                 rightEntidad = entidades[j][0].toLowerCase();
                 rightAlias = entidades[j][1].toLowerCase();
-                // TODO cambiar sentencia nativa por modelo de objeto ejb.
-                List<IDataQueryModel> data;
-                data
-                        = nativeQuery.select("principal, externa, tiporelacion, expresion_principal, expresion_externa").
-                        from("{schemacatalog}.dic_tablarelacion ").
-                        where("externa = :leftEntidad "
-                                + "and principal = :rightEntidad "
-                                + "and incluir = :verdadero ").addParam("leftEntidad", leftEntidad).addParam("rightEntidad", rightEntidad).addParam("verdadero", true).
-                        execQuery();
-                if (data.isEmpty()) {
-                    data
-                            = nativeQuery.select("principal, externa, tiporelacion, expresion_principal, expresion_externa").
-                            from("{schemacatalog}.dic_tablarelacion ").
-                            where("principal = :leftEntidad "
-                                    + "and externa = :rightEntidad "
-                                    + "and incluir = :verdadero ").addParam("leftEntidad", leftEntidad).addParam("rightEntidad", rightEntidad).addParam("verdadero", true).
-                            execQuery();
+                
+                Map<String, Object> params = new HashMap();
+                params.put("entityPK", rightEntidad );
+                params.put("entityFK", leftEntidad );
+                
+                List<IAppTablesRelation> data = dao.findListByNamedQuery("AppTablesRelation.findByEntity", params);
+                if (data.isEmpty()){
+                    params.put("entityPK", leftEntidad);
+                    params.put("entityFK", rightEntidad);
+                    data = dao.findListByNamedQuery("AppTablesRelation.findByEntity", params);
                 }
+                    
                 if (data.isEmpty()) {
                     continue;
                 }
                 String expr1, expr2;
-                IDataQueryModel row = data.get(0);
-                if (row.getColumn("externa") == leftEntidad) {
-                    expr1 = data.get(0).getColumn("expresion_externa").toString().trim();
-                    expr2 = data.get(0).getColumn("expresion_principal").toString().trim();
+                IAppTablesRelation row = data.get(0);
+                if (row.getFieldsFK().equals(leftEntidad)) {
+                    expr1 = row.getFieldsFK().trim();
+                    expr2 = row.getFieldsPK().trim();
                 } else {
-                    expr1 = row.getColumn("expresion_principal").toString().trim();
-                    expr2 = row.getColumn("expresion_externa").toString().trim();
+                    expr1 = row.getFieldsPK().trim();
+                    expr2 = row.getFieldsFK().trim();
                 }
                 boolean circular = false;
                 String variable = " JOIN " + schema + "." + rightEntidad.trim() + " ";
                 if (expresion.contains(variable)) {
                     circular = true;
                 }
-                switch (row.getColumn("tiporelacion").toString()) {
-                    case "0":
+                switch (row.getRelationType()) {
+                    case 0:
                         typeRela = "INNER";
                         break;
-                    case "1":
+                    case 1:
                         typeRela = "LEFT OUTER";
                         break;
-                    case "2":
+                    case 2:
                         typeRela = "RIGHT OUTER";
                         break;
-                    case "3":
+                    case 3:
                         typeRela = "FULL OUTER";
                         break;
                 }
