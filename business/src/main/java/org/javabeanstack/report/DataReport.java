@@ -448,6 +448,7 @@ public class DataReport {
                 entitiesAlias, sentenceSearch);
 
         query = dataLink.newDataNativeQuery();
+        query.setApplyDBFilter(false);
         query.select(select)
                 .from(entityExpr)
                 .where(whereFilter)
@@ -485,6 +486,7 @@ public class DataReport {
                 entitiesAlias, sentenceSearch);
 
         query = dataLink.newDataNativeQuery();
+        query.setApplyDBFilter(false);        
         query.select(select)
                 .from(entityExpr)
                 .where(whereFilter)
