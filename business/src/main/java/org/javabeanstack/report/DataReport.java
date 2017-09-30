@@ -21,11 +21,12 @@
  */
 package org.javabeanstack.report;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
-import org.javabeanstack.data.DataNativeQuery;
+import org.javabeanstack.data.DataQueryModel;
 import org.javabeanstack.data.IDataExpression;
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataNativeQuery;
@@ -645,39 +646,37 @@ public class DataReport {
     class EntitiesRelation {
 
         List<IDataQueryModel> get(String entity, String relationType) throws Exception {
-            String select = "", select1 = "", select2 = "";
-            if (isNullorEmpty(relationType) || "*-1".equals(relationType)) {
-                select1 = "select principal      as entity,"
-                        + "expresion_principal   as expr1,"
-                        + "expresion_externa     as expr2,"
-                        + "tiporelacion          as typeRela,"
-                        + "'*-1'                 as relation "
-                        + "from {schema}.Dic_TablaRelacion "
-                        + "where externa    = :entity "
-                        + "and   incluir    = {true}";
-            }
-            if (isNullorEmpty(relationType) || "1-*".equals(relationType)) {
-                select2 = "select externa        as entity,"
-                        + "expresion_externa     as expr1,"
-                        + "expresion_principal   as expr2,"
-                        + "tiporelacion          as typeRela,"
-                        + "'1-*'                 as relation "
-                        + "from {schema}.Dic_TablaRelacion "
-                        + "where principal  = :entity "
-                        + "and   incluir    = {true}";
-            }
-            if (!select1.isEmpty() && !select2.isEmpty()) {
-                select = select1 + " union all " + select2;
-            } else {
-                select = select1 + select2;
-            }
             Map<String, Object> params = new HashMap();
             params.put("entity", entity);
-            List<Object> list = getDataLink().getDao().findByNativeQuery(null, select, params);
-            return DataNativeQuery.converToNativeQuery(list, "entity, expr1, expr2, typerela, relation");
+            List<IDataQueryModel> result = new ArrayList();
+            if (isNullorEmpty(relationType) || "*-1".equals(relationType)) {
+                String select1;
+                select1 = "select entityPK as entity,"
+                        + " fieldsPK as expr1,"
+                        + " fieldsFK as expr2 "
+                        + " from AppTablesRelation "
+                        + " where entityFK = :entity"
+                        + " and included = true";
+                List list = 
+                        getDataLink().getDao().findListByQuery(null,select1, params);
+                result.addAll(DataQueryModel.convertToDataQueryModel(list, "entity, expr1, expr2"));
+            } 
+            if (isNullorEmpty(relationType) || "1-*".equals(relationType)) {
+                String select2;                
+                select2 = "select entityFK as entity,"
+                        + " fieldsFK as expr1,"
+                        + " fieldsPK as expr2 "
+                        + " from AppTablesRelation "
+                        + " where entityPK = :entity"
+                        + " and included = true";
+                List list = 
+                        getDataLink().getDao().findListByQuery(null,select2, params);
+                result.addAll(DataQueryModel.convertToDataQueryModel(list, "entity, expr1, expr2"));
+            }
+            return result;
         }
     }
-
+    
 
     public final String createGroupBy(String columns) {
         List<String> campos = stringToList(columns);

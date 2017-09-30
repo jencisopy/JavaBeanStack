@@ -22,9 +22,11 @@
 
 package org.javabeanstack.data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
 
 /**
  * Clase que ofrece funcionalidades para acceder de varias maneras al registro
@@ -266,4 +268,73 @@ public class DataQueryModel implements IDataQueryModel{
         }
         return -1;
     }
+    
+    /**
+     * Convierte una lista de objetos al tipo IDataQueryModel
+     *
+     * @param source lista de registros
+     * @param columns lista de las etiquetas de las columnas
+     * @return devuelve misma lista de registros pero como tipo IDataQueryModel
+     */
+    public static final List<IDataQueryModel> convertToDataQueryModel(List<Object> source, String columns) {
+        if (source == null) {
+            return null;
+        }
+        List<IDataQueryModel> target = new ArrayList<>(source.size());
+        for (int i = 0; i < source.size(); i++) {
+            target.add(convertToDataQueryModel(source.get(i),columns));
+        }
+        return target;
+    }    
+    
+    public static final IDataQueryModel convertToDataQueryModel(Object source, String columns) {
+        if (source == null) {
+            return null;
+        }
+        String[] columnsLabel = setColumnLabel(columns);
+        IDataQueryModel row = new DataQueryModel();
+        row.setRow(source);
+        row.setColumnList(columnsLabel);
+        return row;
+    }    
+    
+    public static String[] setColumnLabel(String columns) {
+        /* Reemplazar texto que se encuentra entre parentesis */
+        String regex = "\\(.*?\\)";
+        String expr = columns;
+        expr = Strings.varReplace(expr, "()");
+        expr = expr.replaceAll(regex, "()");
+        String[] matrix = convertToMatrix(expr, ",");
+        int pos;
+        for (int i = 0; i < matrix.length; i++) {
+            // Buscar nombre de la columna ejemplo fn_iditem() as item, item es el nombre
+            pos = matrix[i].toLowerCase().indexOf(" as ");
+            if (pos >= 0) {
+                matrix[i] = matrix[i].substring(pos + 4).toLowerCase();
+                continue;
+            }
+            // Buscar nombre de la columna ejemplo b.vendedor, vendedor es el nombre
+            pos = matrix[i].toLowerCase().lastIndexOf(".");
+            if (pos >= 0) {
+                matrix[i] = matrix[i].substring(pos + 1);
+            }
+            matrix[i] = matrix[i].toLowerCase();
+        }
+        return matrix;
+    }
+    
+    /**
+     * Convierte una expresión en una matriz
+     *
+     * @param expr expresión
+     * @param separator separadores normalmente comas.
+     * @return devuelve una matriz
+     */
+    protected static String[] convertToMatrix(String expr, String separator) {
+        String[] exprList = expr.split("\\" + separator);
+        for (int i = 0; i < exprList.length; i++) {
+            exprList[i] = exprList[i].trim();
+        }
+        return exprList;
+    }    
 }

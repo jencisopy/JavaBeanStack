@@ -642,15 +642,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         if (source == null) {
             return null;
         }
-        List<IDataQueryModel> target = new ArrayList<>(source.size());
-        String[] columnsLabel = setColumnLabel(columns);
-        for (int i = 0; i < source.size(); i++) {
-            IDataQueryModel row = new DataQueryModel();
-            row.setRow(source.get(i));
-            row.setColumnList(columnsLabel);
-            target.add(row);
-        }
-        return target;
+        return DataQueryModel.convertToDataQueryModel(source, columns);
     }
 
     /**
