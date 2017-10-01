@@ -130,7 +130,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
             // Si encontro un registro
             if (row2 != null) {
                 // Y la operación es agregar 
-                if (row.getOperation() == IDataRow.AGREGAR) {
+                if (row.getAction() == IDataRow.INSERT) {
                     return false;
                 }
                 // Y no son el mismo objeto devolver error
@@ -205,12 +205,12 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
     public <T extends IDataRow> Map<String, IErrorReg> checkDataRow(T row, String sessionId) {
         Map<String, IErrorReg> errors = new HashMap<>();
         String fieldName;
-        int[] operacion = {IDataRow.AGREGAR, IDataRow.MODIFICAR};
+        int[] operacion = {IDataRow.INSERT, IDataRow.UPDATE};
         IErrorReg result;
         CheckMethod anotation;
         try {
             // Chequeo de clave duplicada solo si la operación es agregar o modificar
-            if (Fn.inList(row.getOperation(), IDataRow.AGREGAR, IDataRow.MODIFICAR)) {
+            if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 if (!checkUniqueKey(row, sessionId)) {
                     errors.put("UNIQUEKEY",
                             new ErrorReg("Este registro ya existe",
@@ -221,7 +221,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
             }
             // Ejecutar control de foreignkey
             // Chequeo del foreignkey solo si la operación es agregar o modificar
-            if (Fn.inList(row.getOperation(), IDataRow.AGREGAR, IDataRow.MODIFICAR)) {
+            if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 for (Field field : DataInfo.getDeclareFields(row.getClass())) {
                     fieldName = field.getName();
                     if (!checkForeignKey(row, fieldName, sessionId)) {
@@ -251,7 +251,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
             try {
                 method.setAccessible(true);
                 // La validación se ejecuta dependiendo de la operación (agregar, modificar, borrar)
-                if (Fn.inList(row.getOperation(), operacion)) {
+                if (Fn.inList(row.getAction(), operacion)) {
                     result = (IErrorReg) method.invoke(this, row, sessionId);
                     if (result != null && !"".equals(result.getMessage())) {
                         errors.put(fieldName.toLowerCase(), result);
@@ -356,7 +356,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      */
     @Override
     public <T extends IDataRow> IDataResult create(T row, String sessionId) throws SessionError {
-        row.setOperation(IDataRow.AGREGAR);
+        row.setAction(IDataRow.INSERT);
         return save(row, sessionId);
     }
 
@@ -371,7 +371,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      */
     @Override
     public <T extends IDataRow> IDataResult edit(T row, String sessionId) throws SessionError {
-        row.setOperation(IDataRow.MODIFICAR);
+        row.setAction(IDataRow.UPDATE);
         return save(row, sessionId);
     }
 
@@ -386,7 +386,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      */
     @Override
     public <T extends IDataRow> IDataResult remove(T row, String sessionId) throws SessionError {
-        row.setOperation(IDataRow.BORRAR);
+        row.setAction(IDataRow.DELETE);
         return save(row, sessionId);
     }
 

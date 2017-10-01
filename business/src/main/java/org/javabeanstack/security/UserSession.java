@@ -44,8 +44,8 @@ public class UserSession implements IUserSession{
     private IUser user;
     private Date timeLogin = new Date();
     private Date lastReference = new Date();
-    private IAppCompany empresa;
-    private Long idempresa;
+    private IAppCompany company;
+    private Long idcompany;
     private String ip;
     private String host;
     private String persistenceUnit;
@@ -116,18 +116,31 @@ public class UserSession implements IUserSession{
     
     /**
      * 
-     * @return Devuelve el objeto empresa a la cual se accedio en esta sesión.
+     * @return Devuelve el objeto company a la cual se accedio en esta sesión.
+     */
+    @Override
+    public IAppCompany getCompany() {
+        return company;
+    }
+
+    /**
+     * 
+     * @return Devuelve el objeto company a la cual se accedio en esta sesión.
      */
     @Override
     public IAppCompany getEmpresa() {
-        return empresa;
+        return company;
+    }
+    
+    @Override
+    public void setCompany(IAppCompany company) {
+        this.company = company;
     }
 
     @Override
     public void setEmpresa(IAppCompany empresa) {
-        this.empresa = empresa;
+        this.company = empresa;
     }
-
     
     /**
      * Devuelve el ip de la terminal, desde la cual fue creada la sesión.
@@ -169,7 +182,7 @@ public class UserSession implements IUserSession{
     /**
      * 
      * @return Devuelve la unidad de persistencia donde se encuentra la configuración
-     * para acceso a la base de datos donde esta la información de la empresa logeada
+ para acceso a la base de datos donde esta la información de la company logeada
      */
     @Override
     public String getPersistenceUnit() {
@@ -209,22 +222,33 @@ public class UserSession implements IUserSession{
         this.error = error;
     }
 
+
     @Override
-    public Long getIdEmpresa() {
-        if (getEmpresa() != null){
-            if (Fn.nvl(getEmpresa().getIdcompanymask(),0L) != 0L){
-                return getEmpresa().getIdcompanymask();
+    public Long getIdCompany() {
+        if (getCompany() != null){
+            if (Fn.nvl(getCompany().getIdcompanymask(),0L) != 0L){
+                return getCompany().getIdcompanymask();
             }
             else{
-                return getEmpresa().getIdcompany();
+                return getCompany().getIdcompany();
             }
         }
-        return idempresa;
+        return idcompany;
+    }
+
+    @Override
+    public Long getIdEmpresa() {
+        return getIdCompany();
+    }
+
+    @Override
+    public void setIdCompany(Long idcompany) {
+        this.idcompany = idcompany;
     }
 
     @Override
     public void setIdEmpresa(Long idempresa) {
-        this.idempresa = idempresa;
+        this.idcompany = idempresa;
     }
 
     /**

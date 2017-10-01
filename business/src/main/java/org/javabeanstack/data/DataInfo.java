@@ -340,8 +340,8 @@ public class DataInfo {
             valor = DataInfo.getDefaultValue(ejb, fieldname);
             if (valor != null) {
                 field.set(ejb, valor);
-                if (ejb.getOperation() == 0) {
-                    ejb.setOperation(IDataRow.MODIFICAR);
+                if (ejb.getAction() == 0) {
+                    ejb.setAction(IDataRow.UPDATE);
                 }
             }
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {

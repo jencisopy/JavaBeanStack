@@ -42,7 +42,7 @@ public interface IDataRow extends Serializable{
     public static final int READ     = 4;
     
     public Object    clone();
-    public int       getOperation();
+    public int       getAction();
     public String    getQueryUK();
     public String    getIdFunctionFind();    
     public boolean   isRowChecked();
@@ -57,7 +57,7 @@ public interface IDataRow extends Serializable{
     public Object    getValue(String fieldname);
     public Class     getFieldType(String fieldname);
     public void      setValue(String fieldname, Object value);
-    public void      setOperation(int operation);    
+    public void      setAction(int action);    
     public void      setErrors(Map<String, IErrorReg> errorReg);        
     public void      setErrors(IErrorReg errorReg, String fieldName);    
     public void      setErrors(String errorMsg, String fieldname, int errorNumber);

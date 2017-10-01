@@ -649,18 +649,18 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             try {
                 for (IDataRow ejb : ejbs) {
                     lastEjb = ejb;
-                    switch (ejb.getOperation()) {
-                        case IDataRow.AGREGAR:
+                    switch (ejb.getAction()) {
+                        case IDataRow.INSERT:
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
                             em.persist(ejb);
                             break;
-                        case IDataRow.MODIFICAR:
+                        case IDataRow.UPDATE:
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
                             em.merge(ejb);
                             break;
-                        case IDataRow.BORRAR:
+                        case IDataRow.DELETE:
                             ejbsRes.add(ejb);
                             em.remove(em.merge(ejb));
                             ejbsRes.remove(ejb);
@@ -672,8 +672,8 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
                 }
                 em.flush();
                 for (IDataRow ejb : ejbs) {
-                    if (ejb.getOperation() != IDataRow.BORRAR) {
-                        ejb.setOperation(0);
+                    if (ejb.getAction() != IDataRow.DELETE) {
+                        ejb.setAction(0);
                     }
                 }
                 dataResult.put(entry.getKey(), ejbsRes);
@@ -705,7 +705,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     public <T extends IDataRow> IDataResult persist(IDBLinkInfo dbLinkInfo, T ejb) {
-        ejb.setOperation(IDataRow.AGREGAR);
+        ejb.setAction(IDataRow.INSERT);
         return update(dbLinkInfo, ejb);
     }
 
@@ -720,7 +720,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     public <T extends IDataRow> IDataResult merge(IDBLinkInfo dbLinkInfo, T ejb) {
-        ejb.setOperation(IDataRow.MODIFICAR);
+        ejb.setAction(IDataRow.UPDATE);
         return update(dbLinkInfo, ejb);
     }
 
@@ -735,7 +735,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     public <T extends IDataRow> IDataResult remove(IDBLinkInfo dbLinkInfo, T ejb) {
-        ejb.setOperation(IDataRow.BORRAR);
+        ejb.setAction(IDataRow.DELETE);
         return update(dbLinkInfo, ejb);
     }
 

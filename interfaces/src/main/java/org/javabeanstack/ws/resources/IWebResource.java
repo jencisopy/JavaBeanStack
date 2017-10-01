@@ -12,6 +12,7 @@ public interface IWebResource{
     ISecManager getSecManager();
     ISecManager getSecManager(String jndi);
     Long getIdempresa();
+    Long getIdCompany();    
     Long getIdPerson();
     String getPersonRol();
     String getIpClient();     

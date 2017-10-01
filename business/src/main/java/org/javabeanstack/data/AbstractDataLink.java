@@ -98,7 +98,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      */
     @Override
     public <T extends IDataRow> IDataResult persist(T ejb) throws SessionError{
-        ejb.setOperation(IDataRow.AGREGAR);
+        ejb.setAction(IDataRow.INSERT);
         return update(ejb);
     }    
 
@@ -113,7 +113,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult persist(List<T> ejbs) throws SessionError{
         ejbs.forEach((ejb) -> {
-            ejb.setOperation(IDataRow.AGREGAR);
+            ejb.setAction(IDataRow.INSERT);
         });
         return update(ejbs);
     }
@@ -128,7 +128,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      */
     @Override
     public <T extends IDataRow> IDataResult merge(T ejb) throws SessionError{
-        ejb.setOperation(IDataRow.MODIFICAR);
+        ejb.setAction(IDataRow.UPDATE);
         return update(ejb);
     }
 
@@ -143,7 +143,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult merge(List<T> ejbs) throws SessionError{
         ejbs.forEach((ejb) -> {
-            ejb.setOperation(IDataRow.MODIFICAR);
+            ejb.setAction(IDataRow.UPDATE);
         });
         return update(ejbs);
     }
@@ -158,7 +158,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      */
     @Override
     public <T extends IDataRow> IDataResult remove(T ejb) throws SessionError{
-        ejb.setOperation(IDataRow.BORRAR);
+        ejb.setAction(IDataRow.DELETE);
         return update(ejb);
     }
 
@@ -173,7 +173,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult remove(List<T> ejbs) throws SessionError{
         ejbs.forEach((ejb) -> {
-            ejb.setOperation(IDataRow.BORRAR);
+            ejb.setAction(IDataRow.DELETE);
         });
         return update(ejbs);
     }
@@ -744,6 +744,12 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
                 parameters.put("idempresa", getUserSession().getIdEmpresa());
             }
         }
+        if (Strings.findString(":idcompany", queryString.toLowerCase()) >= 0) {
+            if (getUserSession() != null) {
+                parameters.put("idcompany", getUserSession().getIdCompany());
+            }
+        }
+        
         if (Strings.findString(":today", queryString.toLowerCase()) >= 0) {
             parameters.put("today", Dates.today());
         }
@@ -763,7 +769,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     private <T extends IDataRow> List<T> getRowsChanged(List<T> dataRows) {
         List<T> dataRowsChanged = new LinkedList();
         for (int i = 0; i < dataRows.size(); i++) {
-            if (dataRows.get(i).getOperation() != 0) {
+            if (dataRows.get(i).getAction() != 0) {
                 dataRowsChanged.add(dataRows.get(i));
             }
         }
@@ -780,7 +786,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         Iterator<? extends IDataRow> i = dataRows.iterator();
         while (i.hasNext()) {
             IDataRow r = i.next();
-            if (r.getOperation() == IDataRow.BORRAR) {
+            if (r.getAction() == IDataRow.DELETE) {
                 i.remove();
             }
         }

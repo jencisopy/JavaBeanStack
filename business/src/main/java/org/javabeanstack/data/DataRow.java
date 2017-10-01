@@ -40,7 +40,7 @@ import org.javabeanstack.error.ErrorManager;
 public class DataRow implements IDataRow, Serializable, Cloneable{
     private static final Logger LOGGER = Logger.getLogger(DataRow.class);
     
-    private int     operacion  = 0;
+    private int     action  = 0;
     private String  queryUK    = "";
     private String  idFunctionFind = "";
     private boolean rowChecked = false;    
@@ -49,7 +49,7 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
     
     //TODO implementar parent, beforesetvalue, aftersetvalue
     public DataRow(){
-        this.operacion = 0;
+        this.action = 0;
     }
 
     @Override
@@ -73,8 +73,8 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
      * @return  valor de operación.
      */     
     @Override
-    public int getOperation() {
-        return operacion;
+    public int getAction() {
+        return action;
     }
 
     /**
@@ -221,15 +221,15 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
     
     /**
      * Asigna tipo de operación a realizarse en la base de datos.
-     * @param operation<br><br>
+     * @param action<br><br>
      * 1 Agregar <br>
      * 2 Modificar<br>
      * 3 Borrar<br>
      * 4 Consultar<br>
      */
     @Override
-    public void setOperation(int operation) {
-        this.operacion = operation;
+    public void setAction(int action) {
+        this.action = action;
     }
     
     /**
@@ -309,8 +309,8 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
             field.setAccessible(true);
             field.set(this, value);                
             this.setFieldChecked(fieldname, false);            
-            if (this.operacion == 0){
-                this.operacion = IDataRow.MODIFICAR;
+            if (this.action == 0){
+                this.action = IDataRow.UPDATE;
             }
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
             ErrorManager.showError(ex, LOGGER);            
@@ -329,7 +329,7 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
     public boolean delete(){
         if (this == null)
             return false;
-        this.operacion = IDataRow.BORRAR;
+        this.action = IDataRow.DELETE;
         return true;
     }
     

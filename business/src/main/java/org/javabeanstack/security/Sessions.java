@@ -72,7 +72,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
      * 
      * @param userLogin     usuario
      * @param password      password
-     * @param idempresa     empresa que esta solicitando ingresar
+     * @param idcompany     empresa que esta solicitando ingresar
      * @param idleSessionExpireInMinutes    minutos sin actividad antes de cerrar la sesión.    
      * @return objeto conteniendo datos del login exitoso o rechazado
      */    
@@ -80,7 +80,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
     /* TODO analizar que no pueda ingresar el mismo usuario más de una vez */
     @Override
     @Lock(LockType.WRITE)
-    public IUserSession createSession(String userLogin, String password, Object idempresa, Integer idleSessionExpireInMinutes){
+    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes){
         return null;
     }
     
@@ -115,13 +115,13 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
     /**
      *  Chequea si un usuario tiene permiso a acceder a una empresa determinada
      * 
-     * @param idusuario identificador del usuario
-     * @param idempresa identificador de la empresa
+     * @param iduser identificador del usuario
+     * @param idcompany identificador de la empresa
      * @return verdadero si tiene permiso el usuario y falso si no
      * @throws Exception 
      */
     @Override
-    public Boolean checkEmpresaPermision(Long idusuario, Long idempresa) throws Exception{
+    public Boolean checkCompanyAccess(Long iduser, Long idcompany) throws Exception{
         return true;
     }
     
