@@ -6,8 +6,8 @@ package org.javabeanstack.security;
  * @author Jorge Enciso
  */
 public interface ISecManager {
-    IUserSession createSession(String userLogin, String password, Object idempresa, Integer idleSessionExpireInMinutes);
-    String getListEmpresa();
+    IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes);
+    String getCompanyList();
     String getUserRol(String userLogin);
     Boolean isUserMemberOf(String user, String userGroup);    
     Boolean isSesionIdValid(String sesionId);

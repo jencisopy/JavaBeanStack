@@ -39,13 +39,6 @@ public interface IAppSystemParam extends IDataRow {
     Date getValueDate();
     Long getValueNumber();
 
-    String getAppuser();
-    Date getFechacreacion();
-    Date getFechamodificacion();
-    Date getFechareplicacion();
-    String getFirma();
-    
-
     void setIdsystemparam(Long idsystemparam);
     void setParam(String param);
     void setParamDescrip(String paramDescrip);
@@ -55,8 +48,4 @@ public interface IAppSystemParam extends IDataRow {
     void setValueChar(String valueChar);
     void setValueDate(Date valueDate);
     void setValueNumber(Long valueNumber);
-
-    void setAppuser(String appuser);
-    void setFechareplicacion(Date fechareplicacion);
-    void setFirma(String firma);
 }

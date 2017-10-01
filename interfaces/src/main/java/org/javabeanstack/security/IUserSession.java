@@ -18,6 +18,11 @@ public interface IUserSession extends Serializable {
      *
      * @return Devuelve el objeto empresa a la cual se accedio en esta sesión.
      */
+    IAppCompany getCompany();
+    /**
+     *
+     * @return Devuelve el objeto empresa a la cual se accedio en esta sesión.
+     */
     IAppCompany getEmpresa();
 
     /**
@@ -62,6 +67,7 @@ public interface IUserSession extends Serializable {
      * @return Devuelve la fecha y hora que fue logeada la sesión
      */
     Date getTimeLogin();
+    Long getIdCompany();    
     Long getIdEmpresa();
     Integer getIdleSessionExpireInMinutes();
     <T extends IDBFilter> T getDBFilter();
@@ -71,7 +77,9 @@ public interface IUserSession extends Serializable {
      */
     IUser getUser();
     IDBLinkInfo getDbLinkInfo();    
+    void setCompany(IAppCompany company);    
     void setEmpresa(IAppCompany empresa);
+    void setIdCompany(Long idcompany);        
     void setIdEmpresa(Long idempresa);    
     void setError(IErrorReg error);
     void setHost(String host);

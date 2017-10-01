@@ -67,7 +67,7 @@ public class DataSet implements IDataSet {
         List<IDataRow> rowsChanged = new ArrayList();
         for (int i = 0; i < rows.size(); i++) {
             IDataRow row = rows.get(i);
-            if (row.getOperation() != 0) {
+            if (row.getAction() != 0) {
                 rowsChanged.add(row);
             }
         }

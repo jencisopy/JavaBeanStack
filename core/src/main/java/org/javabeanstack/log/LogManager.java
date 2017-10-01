@@ -309,21 +309,21 @@ public class LogManager implements ILogManager {
     @Override
     public <T extends ILogRecord> boolean dbWrite(T logRecord, String sessionId) {
         String sesionId = "NINGUNA";
-        Long idempresa = null;
-        Long idusuario = null;
+        Long idcompany = null;
+        Long iduser = null;
         String origin = "";
         if (!Strings.isNullorEmpty(sessionId)) {
             IUserSession userSession = sessions.getUserSession(sessionId);
             if (userSession != null) {
-                idempresa = userSession.getIdEmpresa();
-                idusuario = userSession.getUser().getIduser();
+                idcompany = userSession.getIdCompany();
+                iduser = userSession.getUser().getIduser();
                 origin = userSession.getIp();
                 sesionId = Strings.dateToString(userSession.getTimeLogin())
                         + userSession.getUser().getLogin().trim();
             }
         }
-        logRecord.setIdempresa(idempresa);
-        logRecord.setIdusuario(idusuario);        
+        logRecord.setIdcompany(idcompany);
+        logRecord.setIduser(iduser);        
         logRecord.setSessionId(sesionId);        
         logRecord.setOrigin(origin);
         if (logRecord.getLogTimeOrigin() == null){

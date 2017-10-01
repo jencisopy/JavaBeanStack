@@ -38,8 +38,8 @@ public interface ILogRecord extends IDataRow{
     
     Long getIdlog();
     String getSessionId();
-    Long getIdempresa();
-    Long getIdusuario();    
+    Long getIdcompany();
+    Long getIduser();    
     String getLevel();
     String getOrigin();
     String getCategory();
@@ -56,8 +56,8 @@ public interface ILogRecord extends IDataRow{
     
     void setSessionId(String sessionId);
     void setIdlog(Long idlog);    
-    void setIdempresa(Long idempresa);
-    void setIdusuario(Long idusuario);    
+    void setIdcompany(Long idcompany);
+    void setIduser(Long iduser);    
     void setCategory(String category);
     void setLevel(String level);    
     void setLogTime(Date dateTime);
