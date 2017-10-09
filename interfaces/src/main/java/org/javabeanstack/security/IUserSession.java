@@ -71,10 +71,6 @@ public interface IUserSession extends Serializable {
     Long getIdEmpresa();
     Integer getIdleSessionExpireInMinutes();
     <T extends IDBFilter> T getDBFilter();
-    /**
-     *
-     * @return Devuelve el objeto usuario
-     */
     IUser getUser();
     IDBLinkInfo getDbLinkInfo();    
     void setCompany(IAppCompany company);    

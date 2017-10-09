@@ -549,7 +549,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             Map<String, Object> parameters) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("sqlExec");
-        String persistUnit = dbLinkInfo.getPersistUnit();
+        String persistUnit;
+        if (dbLinkInfo == null){
+            persistUnit = IDBManager.CATALOGO;
+        }
+        else {
+            persistUnit = dbLinkInfo.getPersistUnit();
+        }
         sqlString = Strings.textMerge(sqlString, getQueryConstants(persistUnit));
         LOGGER.debug(sqlString);                        
         
