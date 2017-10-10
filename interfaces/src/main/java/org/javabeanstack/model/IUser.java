@@ -52,4 +52,5 @@ public interface IUser extends IDataRow, Serializable {
     void setAppRol(String appRol);    
     void setType(Short tipo);
     void setAvatar(byte[] avatar);
+    void setAvatarAsString(String avatar);
 }
