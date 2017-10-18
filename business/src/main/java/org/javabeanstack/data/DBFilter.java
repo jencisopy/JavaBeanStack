@@ -32,7 +32,7 @@ import org.javabeanstack.util.Strings;
  */
 public class DBFilter implements IDBFilter<DBFilterElement> {
     private final List<DBFilterElement> filter = new ArrayList();
-    private String modelPackagePath="";
+    private String modelPackagePath=""; 
 
     @Override
     public List<DBFilterElement> getFilter() {

@@ -302,14 +302,17 @@ public class DataNativeQuery implements IDataNativeQuery {
         return result;
     }
     
-    private Class getClassModel(String packagePath, String entity){
+    public static Class getClassModel(String packagePath, String entity){
         String className = "";
         String[] partes = entity.split("_");
         for (String parte : partes) {
             className += Strings.Capitalize(parte).trim();
         }
+        if (packagePath == null){
+            return null;
+        }
         String[] path = packagePath.split(";");
-        Class clazz=null;
+        Class clazz=null; 
         for (String packages : path) {
             String classPath = packages.trim() + "." + className;
             try{
@@ -334,7 +337,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         orderExpr = columnOrder;
         queryCreated = false;
         orderList = setColumnLabel(orderExpr);
-        return this;
+        return this; 
     }
 
     /**
@@ -411,6 +414,7 @@ public class DataNativeQuery implements IDataNativeQuery {
 
         String fromExpr = getFromExpr(); 
         querySentence += " FROM " + fromExpr + "\r\n";
+        
         if (Strings.isNullorEmpty(filterExpr)){
             filterExpr = getDBFilterExpr();
         }
@@ -879,7 +883,8 @@ public class DataNativeQuery implements IDataNativeQuery {
 
     protected String getQueryCount() {
         String query;
-        query = "select 1 as xx " + "from   " + entityExpr + " \n";
+        String fromExpr = getFromExpr(); 
+        query = "select 1 as xx " + "from   " + fromExpr + " \n";
         if (!Strings.isNullorEmpty(filterExpr)) {
             query += " where " + filterExpr + " \n";
         }
