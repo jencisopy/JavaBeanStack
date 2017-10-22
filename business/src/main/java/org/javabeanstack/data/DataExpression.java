@@ -243,6 +243,11 @@ public class DataExpression implements IDataExpression{
         addExpression(expr, params);
     }
 
+    /**
+     * Agrega una expresión
+     *
+     * @param dataExpression expresión
+     */
     @Override
     public void addExpressions(IDataExpression dataExpression) {
         ((DataExpression) dataExpression).getExpressionList().forEach((expr) -> {
@@ -296,6 +301,11 @@ public class DataExpression implements IDataExpression{
         return devolver;
     }
     
+    /**
+     * Remueve una expresión 
+     * @param elementNumber nro de elemento en la lista que va a ser eliminada.
+     * @return IDataExpression resultante.
+     */
     @Override
     public IDataExpression removeExpression(int elementNumber) {
         IDataExpression dataExpr = new DataExpression();
@@ -312,6 +322,11 @@ public class DataExpression implements IDataExpression{
         return dataExpr;
     }
 
+    /**
+     * Remueve un grupo de expresiones de la lista.
+     * @param group grupo.
+     * @return IDataExpression resultante.
+     */
     @Override
     public IDataExpression removeExpression(String group) {
         IDataExpression dataExpr = new DataExpression();

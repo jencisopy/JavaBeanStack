@@ -23,7 +23,7 @@
 package org.javabeanstack.data;
 
 /**
- *
+ * Modelo utilizado en la clase DBFilter
  * @author Jorge Enciso
  */
 public class DBFilterElement implements IDBFilterElement{

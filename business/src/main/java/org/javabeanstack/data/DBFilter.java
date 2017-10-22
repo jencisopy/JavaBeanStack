@@ -27,6 +27,8 @@ import java.util.Objects;
 import org.javabeanstack.util.Strings;
 
 /**
+ * Clase con filtros (creado en el login del usuario) que deben ser aplicados 
+ * en los queries con propositos varios (seguridad, acceso solo a la empresa logeada etc)
  *
  * @author Jorge Enciso
  */
@@ -34,26 +36,56 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
     private final List<DBFilterElement> filter = new ArrayList();
     private String modelPackagePath=""; 
 
+    /**
+     * Devuelve lista de filtros.
+     * @return 
+     */
     @Override
     public List<DBFilterElement> getFilter() {
         return filter;
     }
 
+    /**
+     * Devuelve un filtro que se encuentra en una posición dada en la lista de filtros.
+     * @param element  posición o nro. de elemento de la lista de filtros.
+     * @return expresión del filtro.
+     */
     @Override
     public String getFilterExpr(Integer element) {
         return getFilterExpr(element, "");
     }
 
+    /**
+     * Devuelve un filtro que se encuentra en una posición dada en la lista de filtros.
+     * @param element  posición o nro. de elemento de la lista de filtros.
+     * @param group considerar el nro. de elemento solo de un grupo dado.
+     * @return expresión del filtro.
+     */
     @Override
     public String getFilterExpr(Integer element, Integer group) {
         return getFilterExpr(element, group, "");
     }
 
+    /**
+     * Devuelve un filtro que se encuentra en una posición dada en la lista de filtros.
+     * 
+     * @param element  posición o nro. de elemento de la lista de filtros.
+     * @param alias  es una etiqueta que se agrega a la expresión del filtro.
+     * @return expresión del filtro.
+     */
     @Override
     public String getFilterExpr(Integer element, String alias) {
         return getFilterExpr(element,null, alias);
     }
-    
+
+    /**
+     * Devuelve un filtro que se encuentra en una posición dada en la lista de filtros.
+     * 
+     * @param element  posición o nro. de elemento de la lista de filtros.
+     * @param group considerar el nro. de elemento solo de un grupo dado. 
+     * @param alias  es una etiqueta que se agrega a la expresión del filtro.
+     * @return expresión del filtro.
+     */
     @Override
     public String getFilterExpr(Integer element, Integer group, String alias) {
         if (element == null || element >= filter.size()) {
@@ -98,21 +130,41 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
         return result;
     }
 
+    /**
+     * Devuelve una expresión del filtro a partir de una lista
+     * @return expresión del filtro.
+     */
     @Override
     public String getAllFilterExpr() {
         return getAllFilterExpr(null,"");
     }
-    
+
+    /**
+     * Devuelve una expresión del filtro a partir de una lista
+     * @param group  indica que se genere la expresión de un grupo dado. 
+     * @return expresión del filtro.
+     */
     @Override
     public String getAllFilterExpr(Integer group) {
         return getAllFilterExpr(group,"");
     }
 
+    /**
+     * Devuelve una expresión del filtro a partir de una lista
+     * @param alias  es una etiqueta que se agrega a la expresión del filtro.
+     * @return expresión del filtro.
+     */
     @Override
     public String getAllFilterExpr(String alias) {
         return getAllFilterExpr(null, alias);
     }
-    
+
+    /**
+     * Devuelve una expresión del filtro a partir de una lista
+     * @param group  indica que se genere la expresión de un grupo dado. 
+     * @param alias  es una etiqueta que se agrega a la expresión del filtro.
+     * @return expresión del filtro.
+     */
     @Override
     public String getAllFilterExpr(Integer group, String alias) {
         String expr;
@@ -128,6 +180,12 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
         return result;
     }
 
+    /**
+     * Agrega una expresión de filtro a la lista.
+     * @param fieldName  nombre del campo
+     * @param fieldValue valor
+     * @param group  grupo
+     */
     @Override 
     public void addFilter(String fieldName, Object fieldValue, Integer group) {
         DBFilterElement element = new DBFilterElement();
@@ -137,6 +195,14 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
         filter.add(element);
     }
     
+    /**
+     * Devuelve una expresión completa de todos los filtros que pueden ser aplicados
+     * a un modelo dado.
+     * @param <T>
+     * @param clazz modelo.
+     * @param alias etiqueta a agregar en las expresiones.
+     * @return filtro que puede aplicarse al modelo dado.
+     */
     @Override
     public <T extends IDataRow> String getFilterExpr(Class<T> clazz, String alias){
         String result = "";
@@ -156,11 +222,20 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
         return result;
     }
 
+    /**
+     * Devuelve el path de paquetes donde buscar los modelos ejbs.
+     * @return 
+     */
     @Override
     public String getModelPackagePath() {
         return modelPackagePath;
     }
 
+    /**
+     * Asigna el path de paquetes donde buscar el modelo ejb. Normalmente este
+     * valor se asigna en la creacion de sesión del usuario.
+     * @param modelPath 
+     */
     @Override
     public void setModelPackagePath(String modelPath) {
         this.modelPackagePath = modelPath;

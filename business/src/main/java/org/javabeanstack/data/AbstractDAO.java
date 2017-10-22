@@ -634,6 +634,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (dataSet == null || dataSet.size() == 0) {
             return null;
         }
+        //TODO controlar aqui la sesión del usuario
         String appUser = "";
         // Sesión del usuario
         String sessionId = "";
@@ -676,6 +677,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
                     }
                     ejb.setErrors((Map<String, IErrorReg>) null);
                 }
+                //TODO ver flush despues del persist, merge o remove
                 em.flush();
                 for (IDataRow ejb : ejbs) {
                     if (ejb.getAction() != IDataRow.DELETE) {
@@ -691,7 +693,6 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
                 dataResult.put(entry.getKey(), ejbsRes);
                 dataResult.setSuccess(false);
                 dataResult.setErrorMsg(msgError);
-                //dataResult.setException(ex);
                 dbManager.rollBack();
                 ErrorManager.showError(ex, LOGGER);
                 break;
@@ -818,7 +819,8 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     }
 
     /**
-     *
+     * Calcula la cantidad de registros que devolveria una sentencia sql
+     * 
      * @param dbLinkInfo información necesaria para acceder a la conexión de
      * datos correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia jpql
@@ -854,7 +856,8 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     }
 
     /**
-     *
+     * Calcula la cantidad de registros que devolveria una sentencia sql
+     * 
      * @param dbLinkInfo información necesaria para acceder a la conexión de
      * datos correcta (unidad de persistencia, sesión id etc).
      * @param queryString sentencia sql
@@ -924,12 +927,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param persistentUnit unidad de persistencia
-     * @return devuelve el nombre de la base de datos.
+     * @return devuelve el nombre del motor de la base de datos
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getDataEngine(String persistentUnit) {
-        String result = (String) this.getPersistUnitProp(persistentUnit).get("oym.motordatos");
+        String result;
+        result = (String) this.getPersistUnitProp(persistentUnit).get("jbs.dbengine");
         return result;
     }
 
@@ -988,6 +992,11 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         });
     }
 
+    /**
+     * Setea valores predeterminados de ciertas constantes en los queries.
+     * @param persistUnit  unidad de persistencia
+     * @return Map con los valores de las constantes.
+     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private Map<String, String> getQueryConstants(String persistUnit) {
         LOGGER.debug("getQueryConstansts()");                
@@ -997,7 +1006,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         String schemaCat = (String) this.getPersistUnitProp(IDBManager.CATALOGO).get("hibernate.default_schema");
         queryConstants.put("schemacatalog", schemaCat);
 
-        String motordatos = (String) this.getPersistUnitProp(persistUnit).get("oym.motordatos");
+        String motordatos = (String) this.getPersistUnitProp(persistUnit).get("jbs.dbengine");
 
         // Asignar las constantes booleanas
         if ("POSTGRES".equals(motordatos)) {
@@ -1035,6 +1044,11 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         return sessions.getUserSession(sessionId);
     }
 
+    /**
+     * Asigna al ejb el identificador del usuario que realiza la transacción.
+     * @param ejb 
+     * @param appUser identificador del usuario.
+     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private void setAppUser(IDataRow ejb, String appUser) {
         if (DataInfo.isFieldExist(ejb.getClass(), "appuser")) {
@@ -1042,27 +1056,28 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         }
     }
 
+    /**
+     * Busca y devuelve un id o clave para acceder o crear un entity manager.
+     * @param dbLinkInfo información necesaria para acceder a la conexión de
+     * datos correcta (unidad de persistencia, sesión id etc).
+     * @return id o clave para acceder o crear un entity manager.
+     */
     private String getEntityId(IDBLinkInfo dbLinkInfo) {
         LOGGER.debug("getEntityId()");                        
-        if (dbLinkInfo != null){
-            LOGGER.debug(dbLinkInfo.getPersistUnit());                                    
-        }
         String persistUnit;
         if (dbLinkInfo == null) {
             persistUnit = IDBManager.CATALOGO;
         } else {
             persistUnit = dbLinkInfo.getPersistUnit();
+            LOGGER.debug(dbLinkInfo.getPersistUnit());                                                
         }
         String key = persistUnit + ":";
+        // Si la estrategia de acceso/creación del entity manager es por thread
         if (dbManager.getEntityIdStrategic() == IDBManager.PERTHREAD) {
             Long threadId = Thread.currentThread().getId();
             key += threadId.toString();
         } else {
-            if (!persistUnit.equals(IDBManager.CATALOGO)
-                    && dbLinkInfo != null
-                    && dbLinkInfo.getUserSession() == null) {
-                //throw new SessionError();
-            }
+            //Si la estrategia de acceso/creación del entity manager es por sesión del usuario
             String sessionId = "";
             if (dbLinkInfo != null && dbLinkInfo.getUserSession() != null) {
                 sessionId = dbLinkInfo.getUserSession().getSessionId();
@@ -1073,6 +1088,11 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         return key;
     }
 
+    /**
+     * Busca y devuelve un id o clave para acceder o crear un entity manager.
+     * @param persistUnit  unidad de persistencia
+     * @return id o clave para acceder o crear un entity manager.
+     */
     private String getEntityId(String persistUnit) {
         LOGGER.debug("getEntityId()");
         if (Strings.isNullorEmpty(persistUnit)) {

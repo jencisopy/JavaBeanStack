@@ -170,7 +170,7 @@ public class DataInfo {
     }
 
     /**
-     * Devuelve el nombre de la tabla a la que esta mapeada
+     * Devuelve el nombre de la tabla o vista a la que esta mapeada
      *
      * @param <T>
      * @param classType clase DataRow
@@ -248,7 +248,7 @@ public class DataInfo {
      *
      * @param <T>
      * @param classType
-     * @return
+     * @return lista conteniendo los campos que conforman la clave unica.
      */
     public static <T extends IDataRow> String[] getUniqueFields(Class<T> classType) {
         try {
@@ -266,7 +266,7 @@ public class DataInfo {
      * Devuelve el valor de la clave primaria.
      *
      * @param ejb Objeto row.
-     * @return
+     * @return valor de la clave primaria.
      */
     public static Object getIdvalue(IDataRow ejb) {
         try {
@@ -418,6 +418,22 @@ public class DataInfo {
     }
 
     /**
+     * Devuelve la lista de campos/atributos de una clase
+     * @param classType clase DataRow
+     * @return lista de campos
+     */
+    public static Field[] getDeclaredFields(Class classType) {
+        Field[] fields; 
+        try {
+            fields = classType.getDeclaredFields();
+        } catch (SecurityException ex) {
+            return null;
+        }
+        return fields;
+    }
+
+    
+    /**
      * Devuelve el tipo de dato de un campo o atributo solicitado
      * @param classType clase DataRow
      * @param fieldname nombre del campo
@@ -469,20 +485,5 @@ public class DataInfo {
             return null;
         }
         return value;
-    }
-    
-    /**
-     * Devuelve la lista de campos/atributos de una clase
-     * @param classType clase DataRow
-     * @return lista de campos
-     */
-    public static Field[] getDeclareFields(Class classType) {
-        Field[] fields; 
-        try {
-            fields = classType.getDeclaredFields();
-        } catch (SecurityException ex) {
-            return null;
-        }
-        return fields;
     }
 }    

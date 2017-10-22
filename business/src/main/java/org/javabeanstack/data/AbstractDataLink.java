@@ -89,9 +89,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     }
 
     /**
-     * Agregar,un registro en la tabla
+     * Agrega un registro en la tabla
      *
-     * @param <T> tipo de dato generalemente hereda de DataRow
+     * @param <T> tipo de dato generalmente hereda de DataRow
      * @param ejb el objeto con los valores del registro
      * @throws org.javabeanstack.exceptions.SessionError
      * @return dataResult (resultado del persist)
@@ -179,7 +179,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     }
     
     /**
-     * Agregar, actualiza o borra registros de la base de datos
+     * Agrega, actualiza o borra registros de la base de datos
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
      * @param ejb el objeto con los valores del registro
@@ -207,6 +207,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> IDataResult update(List<T> ejbs) throws SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
+        //Procesar solo los registros modificados
         List<T> ejbs2 = this.getRowsChanged(ejbs);
         IDataResult dataResult = getDao().update(getDBLinkInfo(), ejbs2);
         dataResult.setRowsUpdated(ejbs);
@@ -222,8 +223,8 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * Agregar, actualiza o borra registros de la base de datos
      *
      * @param <T> tipo de dato generalmente hereda de DataRow
-     * @param dataSet cada elemento contiene una lista con los objetos mapeados
-     * a los registros de cada tabla
+     * @param dataSet cada elemento del dataSet contiene una lista con los objetos 
+     * mapeados a los registros de cada tabla
      * @return dataResult (resultado del update)
      * @throws org.javabeanstack.exceptions.SessionError
      */
@@ -231,6 +232,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> IDataResult update(IDataSet dataSet) throws SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
+        // Procesar solo registros modificados.
         IDataSet dataSetChanged = dataSet.getChanged();
         IDataResult dataResult = getDao().update(getDBLinkInfo(), dataSetChanged);
         dataResult.setRowsUpdated(dataSet);
@@ -792,6 +794,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         }
     }
     
+    /**
+     * Objeto con la información necesaria para acceder a la base de datos.
+     * (persistunit, session del usuario)
+     * @return DBLinkInfo()
+     */
     private IDBLinkInfo getDBLinkInfo(){
         IDBLinkInfo dbInfo = new DBLinkInfo();
         dbInfo.setUserSession(userSession);

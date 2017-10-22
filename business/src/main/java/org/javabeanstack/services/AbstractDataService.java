@@ -222,7 +222,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
             // Ejecutar control de foreignkey
             // Chequeo del foreignkey solo si la operación es agregar o modificar
             if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
-                for (Field field : DataInfo.getDeclareFields(row.getClass())) {
+                for (Field field : DataInfo.getDeclaredFields(row.getClass())) {
                     fieldName = field.getName();
                     if (!checkForeignKey(row, fieldName, sessionId)) {
                         errors.put(fieldName.toLowerCase(),

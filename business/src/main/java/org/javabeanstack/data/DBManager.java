@@ -58,6 +58,12 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
     @Resource
     SessionContext context;
 
+    /**
+     * Devuelve la estrategia de acceso/creación de los entityManagers.
+     * Los valores posibles son: un entityManager por Thread o un entityManager 
+     * por sesión del usuario.
+     * @return estrategia de acceso/creación de los entityManagers.
+     */
     @Override
     public int getEntityIdStrategic() {
         return entityIdStrategic;
@@ -93,10 +99,11 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
     }
 
     /**
-     * Crea un entitymanager dentro de un Map utiliza la unidad de persistencia y el 
-     *    threadid como clave
-     * @param key  id thread
-     * @return          el entity manager creado.
+     * Crea un entitymanager dentro de un Map utiliza la unidad de persistencia 
+     * y el threadid o sessionid del usuario como clave
+     * 
+     * @param key  id thread o sessionid del usuario
+     * @return el entity manager creado.
      */
     @Override 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
@@ -117,6 +124,10 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
         return null;
     }
     
+    /**
+     * Elimina los entityManagers del map, a aquellos que no se esta utilizando
+     * en un periodo dado.
+     */
     protected void purgeEntityManager(){
         LOGGER.debug("purgeEntityManager() "+lastPurge);                        
         Date now = new Date();
