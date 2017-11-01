@@ -19,9 +19,9 @@
     <developers>
         <developer>
             <name>Jorge Enciso</name>
-            <email>jorge.enciso.r@gmail.com</email>
-            <organization>OyM System Group S.A.</organization>
-            <organizationUrl>http://www.oym.com.py</organizationUrl>
+            <email>jenciso@javabeanstack.org</email>
+            <organization>JavaBeanStack</organization>
+            <organizationUrl>http://javabeanstack.org</organizationUrl>
         </developer>
     </developers>  
 
@@ -63,7 +63,7 @@
         <profile>
             <id>with-all</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>            
             <build>
                 <plugins>
@@ -97,7 +97,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!--
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -112,7 +111,6 @@
                             </execution>
                         </executions>
                     </plugin>                    
-                    -->
                 </plugins>
             </build>
         </profile> 
