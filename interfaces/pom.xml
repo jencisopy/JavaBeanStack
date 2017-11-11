@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.javabeanstack</groupId>
         <artifactId>javabeanstack-parent</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>1.2.0</version>
     </parent>
     <artifactId>interfaces</artifactId>
     <name>JavaBeanStack-Interfaces</name>    
