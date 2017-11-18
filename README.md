@@ -1,5 +1,5 @@
 # JavaBeanStack
-[![Build Status](https://travis-ci.org/jencisopy/JavaBeanStack.svg?branch=master)](https://travis-ci.org/jencisopy/JavaBeanStack)
+[![Build Status](https://travis-ci.org/jencisopy/JavaBeanStack.svg?branch=master)](https://travis-ci.org/jencisopy/JavaBeanStack) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.javabeanstack/javabeanstack-parent/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.javabeanstack%22)
 
 Framework para construcción de aplicaciones Java EE 7
 
