@@ -9,7 +9,7 @@ Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y es
 JAVA JDK 8
 
 ## Módulos ##
-![ALL](https://github.com/jencisopy/JavaBeanStack/blob/master/otros/images/javabeanstack_all.png)
+![ALL](https://github.com/jencisopy/JavaBeanStack/blob/master/miscellaneous/images/javabeanstack_all.png)
 
 
 **BUSINESS:** contiene componentes para acceso, validación y grabación del dato.
