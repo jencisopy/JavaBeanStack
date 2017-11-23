@@ -63,4 +63,5 @@ public interface IDataRow extends Serializable{
     public void      setErrors(String errorMsg, String fieldname, int errorNumber);
     public boolean   delete();
     public boolean   equivalent(Object o);
+    public boolean   isApplyDBFilter();
 }

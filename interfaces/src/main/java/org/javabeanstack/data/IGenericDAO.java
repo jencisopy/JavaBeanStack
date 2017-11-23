@@ -150,6 +150,51 @@ public interface IGenericDAO {
     public <T extends IDataRow> T find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, Object id) throws Exception;
 
     /**
+     * Devuelve un registro de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
+     * @return lista de objetos
+     * @throws Exception
+     */
+    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception;    
+    
+    /**
+     * Devuelve un registro de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
+     * @param order
+     * @param filter
+     * @param params
+     * @return lista de objetos
+     * @throws Exception
+     */
+    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params) throws Exception;
+
+    /**
+     * Devuelve un registro de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
+     * @param order
+     * @param filter
+     * @param params
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return lista de objetos
+     * @throws Exception
+     */
+    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params, int first, int max) throws Exception;
+    
+    
+    /**
      * Devuelve un registro a travéz de su clave unica.
      *
      * @param <T>

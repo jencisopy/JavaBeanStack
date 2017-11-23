@@ -359,4 +359,9 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
         throw new UnsupportedOperationException("Debe implementar el metodo equivalent en "+getClass().getName());
     }
 
+    @Override
+    public boolean isApplyDBFilter() {
+        return false;
+    }
+
 }

@@ -161,6 +161,86 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         return row;
     }
 
+
+
+    /**
+     * Devuelve un registro de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
+     * @return lista de objetos
+     * @throws Exception
+     */
+    @Override
+    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception{
+        return findList(entityClass, dbLinkInfo, null, null, null, 0, 0);
+    }    
+    
+    /**
+     * Devuelve un registro de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
+     * @param order
+     * @param filter
+     * @param params
+     * @return lista de objetos
+     * @throws Exception
+     */
+    @Override
+    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo, 
+                        String order, String filter, Map<String, Object> params) throws Exception{
+        return findList(entityClass, dbLinkInfo, order, filter, params, 0, 0);
+    }
+
+    
+    /**
+     * Devuelve un registro de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
+     * correcta (unidad de persistencia, sesión id etc).
+     * @param order
+     * @param filter
+     * @param params
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return lista de objetos
+     * @throws Exception
+     */
+    @Override
+    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params, int first, int max) throws Exception{
+        String query = "select o from " + entityClass.getSimpleName() + " o ";
+        if (filter == null){
+            filter = "";
+        }
+        T entity = entityClass.newInstance();
+        // Si se va a aplicar el filtro por defecto 
+        if (entity.isApplyDBFilter()){
+            String operator = (filter.isEmpty() ? "" : " and ");
+            String dbFilterExpr = dbLinkInfo.getDBFilter().getFilterExpr(entityClass, "");
+            if (!Strings.isNullorEmpty(dbFilterExpr)){
+                filter = dbFilterExpr + operator + filter;
+            }
+        }
+        //Filtro
+        if (!"".equals(filter)) {
+            query += " where " + filter;
+        }
+        //Orden
+        if (!"".equals(order)) {
+            query += " order by " + filter;
+        }
+        List<T> entityList = this.findListByQuery(dbLinkInfo, query, params, first, max);
+        return entityList;
+    }
+
+    
     /**
      * Devuelve un registro a travéz de su clave unica.
      *
