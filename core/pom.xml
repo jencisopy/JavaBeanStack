@@ -7,18 +7,18 @@
         <version>1.2.1-SNAPSHOT</version>
     </parent>
     <groupId>org.javabeanstack</groupId>    
-    <artifactId>core</artifactId>
+    <artifactId>jbs-core</artifactId>
     <name>JavaBeanStack-Core</name>    
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>interfaces</artifactId>
+            <artifactId>jbs-interfaces</artifactId>
             <version>${project.version}</version>
         </dependency>        
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>commons</artifactId>
+            <artifactId>jbs-commons</artifactId>
             <version>${project.version}</version>
         </dependency>        
     </dependencies>

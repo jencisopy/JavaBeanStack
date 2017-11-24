@@ -6,18 +6,18 @@
         <artifactId>javabeanstack-parent</artifactId>
         <version>1.2.1-SNAPSHOT</version>
     </parent>
-    <artifactId>security</artifactId>
+    <artifactId>jbs-security</artifactId>
     <packaging>jar</packaging>
     <name>JavaBeanStack-Security</name>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>interfaces</artifactId>
+            <artifactId>jbs-interfaces</artifactId>
             <version>${project.version}</version>
         </dependency>        
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>jbs-core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

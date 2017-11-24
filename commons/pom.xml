@@ -6,7 +6,7 @@
         <artifactId>javabeanstack-parent</artifactId>
         <version>1.2.1-SNAPSHOT</version>
     </parent>
-    <artifactId>commons</artifactId>
+    <artifactId>jbs-commons</artifactId>
     <name>JavaBeanStack-Commons</name>    
     <packaging>jar</packaging>
     <dependencies>

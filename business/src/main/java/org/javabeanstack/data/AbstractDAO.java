@@ -229,12 +229,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             }
         }
         //Filtro
-        if (!"".equals(filter)) {
+        if (!Strings.isNullorEmpty(filter)) {
             query += " where " + filter;
         }
         //Orden
-        if (!"".equals(order)) {
-            query += " order by " + filter;
+        if (!Strings.isNullorEmpty(order)) {
+            query += " order by " + order; 
         }
         List<T> entityList = this.findListByQuery(dbLinkInfo, query, params, first, max);
         return entityList;
@@ -392,8 +392,10 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (parameters != null && !parameters.isEmpty()) {
             populateQueryParameters(query, parameters, queryString);
         }
-        query.setFirstResult(first);
-        query.setMaxResults(max);
+        if (max > 0) {
+            query.setFirstResult(first);
+            query.setMaxResults(max);
+        }
         List<T> result = (List<T>) query.getResultList();
         return result;
     }
