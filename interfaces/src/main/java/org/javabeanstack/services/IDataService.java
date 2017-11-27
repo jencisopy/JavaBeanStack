@@ -13,11 +13,11 @@ import org.javabeanstack.error.IErrorReg;
  */
 public interface IDataService extends IGenericDAO, Serializable{
     <T extends IDataRow> T setListFieldCheck(T row); 
-    <T extends IDataRow> boolean checkUniqueKey(T row, String sessionId) throws Exception;        
-    <T extends IDataRow> boolean checkForeignKey(T row, String fieldName, String sessionId) throws Exception;            
-    <T extends IDataRow> Map<String, IErrorReg> checkDataRow(T row, String sessionId) ;    
+    <T extends IDataRow> boolean checkUniqueKey(String sessionId, T row) throws Exception;        
+    <T extends IDataRow> boolean checkForeignKey(String sessionId, T row, String fieldName) throws Exception;            
+    <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row) ;    
 
-    <T extends IDataRow> IDataResult create(T row, String sessionId) throws Exception;
-    <T extends IDataRow> IDataResult edit(T row, String sessionId) throws Exception;
-    <T extends IDataRow> IDataResult remove(T row, String sessionId) throws Exception;
+    <T extends IDataRow> IDataResult create(String sessionId, T row) throws Exception;
+    <T extends IDataRow> IDataResult edit( String sessionId, T row) throws Exception;
+    <T extends IDataRow> IDataResult remove(String sessionId, T row) throws Exception;
 }

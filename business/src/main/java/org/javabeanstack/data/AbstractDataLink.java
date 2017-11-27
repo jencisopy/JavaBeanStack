@@ -23,13 +23,11 @@
 package org.javabeanstack.data;
  
 import java.io.Serializable;
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.Query;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppTablesRelation;
 import org.javabeanstack.security.IUserSession;
@@ -263,7 +261,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().find(entityClass, getDBLinkInfo(), id);
+        return getDao().findById(entityClass, getDBLinkInfo(), id);
     }
 
     /**
@@ -448,20 +446,6 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         return getDao().findByNativeQuery(getDBLinkInfo(), queryString, parameters, first, max);
     }
 
-    @Override
-    public <T extends IDataRow> List<T> getData(String queryString, int maxRows, boolean noCache) throws Exception, SessionError {
-        // Verificar si la sesión es válida
-        checkUserSession();
-        return getDao().getData(getDBLinkInfo(), queryString, maxRows, noCache);
-    }
-
-    @Override
-    public <T extends IDataRow> List<T> getData(Query query) throws Exception, SessionError {
-        // Verificar si la sesión es válida
-        checkUserSession();
-        return getDao().getData(query);
-    }
-
     /**
      * Refresca los datos de un registro en la base de datos.
      *
@@ -478,21 +462,6 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         return getDao().refreshRow(getDBLinkInfo(), row);
     }
 
-    /**
-     * Refresca una lista de registros
-     *
-     * @param <T>
-     * @param rows lista de registros
-     * @return lista de registros con los datos renovados de la base de datos.
-     * @throws Exception
-     * @throws org.javabeanstack.exceptions.SessionError
-     */
-    @Override
-    public <T extends IDataRow> List<T> refreshAll(List<T> rows) throws Exception, SessionError {
-        // Verificar si la sesión es válida
-        checkUserSession();
-        return getDao().refreshAll(getDBLinkInfo(), rows);
-    }
 
     /**
      * Devuelve la cantidad de registros que resultaria de una sentencia JPQL
@@ -694,16 +663,6 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
             }
         }
         return expresion;
-    }
-
-    @Override
-    public Connection getConnection() {
-        return getDao().getConnection(getDBLinkInfo());
-    }
-
-    @Override
-    public Connection getConnection(IDBConnectFactory conn) {
-        return getDao().getConnection(getDBLinkInfo(), conn);
     }
 
     /**

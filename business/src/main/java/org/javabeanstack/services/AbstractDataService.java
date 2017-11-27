@@ -24,13 +24,17 @@ package org.javabeanstack.services;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.ejb.EJB;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
 import javax.persistence.JoinColumn;
+import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
@@ -41,9 +45,12 @@ import org.javabeanstack.data.DataResult;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.annotation.CheckMethod;
-import org.javabeanstack.data.AbstractDAO;
 import org.javabeanstack.data.DBLinkInfo;
+import org.javabeanstack.data.IDBConnectFactory;
 import org.javabeanstack.data.IDBLinkInfo;
+import org.javabeanstack.data.IDataObject;
+import org.javabeanstack.data.IDataSet;
+import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.util.Fn;
 
@@ -57,11 +64,62 @@ import org.javabeanstack.util.Fn;
  *
  * @author Jorge Enciso
  */
-public abstract class AbstractDataService extends AbstractDAO implements IDataService {
-
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+public abstract class AbstractDataService implements IDataService {
     private static final Logger LOGGER = Logger.getLogger(AbstractDataService.class);
     protected List<Method> methodList = this.setListCheckMethods();
+    @EJB
+    protected IGenericDAO dao;
 
+    /**
+     * Devuelve la unidad de persistencia asociado a la empresa en la cual
+     * inicio sesión el usuario.
+     *
+     * @param sessionId identificador de la sesión.
+     * @return unidad de persistencia.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    protected String getPersistentUnit(String sessionId) {
+        IUserSession userSession = getUserSession(sessionId);
+        if (userSession == null || userSession.getUser() == null) {
+            return null;
+        }
+        return userSession.getPersistenceUnit();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)    
+    private IDBLinkInfo getDBLinkInfo(String sessionId) {
+        IDBLinkInfo dbInfo = new DBLinkInfo();
+        dbInfo.setUserSession(getUserSession(sessionId));
+        return dbInfo;
+    }
+    
+    @Override
+    public IUserSession getUserSession(String sessionId) {
+        return dao.getUserSession(sessionId);
+    }    
+
+    @Override
+    public Map<String, Object> getEntityManagerProp(String persistUnit) {
+        return dao.getEntityManagerProp(persistUnit);
+    }
+
+    @Override
+    public Map<String, Object> getPersistUnitProp(String persistUnit) {
+        return dao.getPersistUnitProp(persistUnit);
+    }
+
+    @Override
+    public String getDataEngine(String persistentUnit) {
+        return dao.getDataEngine(persistentUnit);
+    }
+
+    @Override
+    public String getSchema(String persistentUnit) {
+        return dao.getSchema(persistentUnit);
+    }
+    
+    
     /**
      * Genera una lista de los metodos que existen con el proposito de validar
      * datos.
@@ -110,6 +168,74 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
         return row;
     }
 
+    @Override
+    public <T extends IDataRow> T findById(Class<T> entityClass, IDBLinkInfo dbLinkInfo, Object id) throws Exception {
+        return dao.findById(entityClass, dbLinkInfo, id);
+    }
+
+    @Override
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception {
+        return dao.find(entityClass, dbLinkInfo);
+    }
+
+    @Override
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params) throws Exception {
+        return dao.find(entityClass, dbLinkInfo, order, filter, params);        
+    }
+
+    @Override
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params, int first, int max) throws Exception {
+        return dao.find(entityClass, dbLinkInfo, order, filter, params, first, max);
+    }
+
+    @Override
+    public <T extends IDataRow> T findByUk(Class<T> entityClass, IDBLinkInfo dbLinkInfo, T ejb) throws Exception {
+        return dao.findByUk(entityClass, dbLinkInfo, ejb);
+    }
+
+    @Override
+    public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.findByNativeQuery(dbLinkInfo, queryString, parameters);
+    }
+
+    @Override
+    public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
+        return dao.findByNativeQuery(dbLinkInfo, queryString, parameters, first, max);
+    }
+
+
+    @Override
+    public <T extends IDataRow> T refreshRow(IDBLinkInfo dbLinkInfo, T row) throws Exception {
+        return dao.refreshRow(dbLinkInfo, row);
+    }
+
+    @Override
+    public Long getCount(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.getCount(dbLinkInfo, queryString, parameters);
+    }
+
+    @Override
+    public Long getCount2(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.getCount2(dbLinkInfo, queryString, parameters);
+    }
+
+    
+    /**
+     * Verifica que sea valida la sesión de usuario para poder realizar las
+     * operaciones.
+     *
+     * @param sessionId identificador de la sesión.
+     * @throws SessionError error sesión invalida.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    protected final void checkUserSession(String sessionId) throws SessionError {
+        IUserSession userSession = getUserSession(sessionId);
+        if (userSession == null || userSession.getUser() == null) {
+            throw new SessionError("El identificador de la sesión es inválido");
+        }
+    }
+
+    
     /**
      * Válida que la clave del registro no exista en la tabla.
      *
@@ -120,9 +246,9 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      * @return verdadero si no esta duplicado y falso si lo esta.
      */
     @Override
-    public <T extends IDataRow> boolean checkUniqueKey(T row, String sessionId) {
+    public <T extends IDataRow> boolean checkUniqueKey(String sessionId, T row) {
         try {
-            // Buscar registro por la clave unica
+            // Buscar registro por la clave unica 
             if (row.getQueryUK() == null) {
                 return true;
             }
@@ -156,7 +282,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      * @return verdadero si no esta duplicado y falso si lo esta.
      */
     @Override
-    public <T extends IDataRow> boolean checkForeignKey(T row, String fieldName, String sessionId) {
+    public <T extends IDataRow> boolean checkForeignKey(String sessionId, T row, String fieldName) {
         boolean result = true;
         try {
             Class clase = row.getClass();
@@ -176,7 +302,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
                 else if (row.getValue(fieldName) != null) {
                     Class fieldType = row.getFieldType(fieldName);
                     Object id = row.getValue(fieldName);
-                    IDataRow fieldValue = find(fieldType, getDBLinkInfo(sessionId), id);
+                    IDataRow fieldValue = findById(fieldType, getDBLinkInfo(sessionId), id);
                     if (fieldValue == null) {
                         result = false;
                     }
@@ -202,7 +328,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      * campo.
      */
     @Override
-    public <T extends IDataRow> Map<String, IErrorReg> checkDataRow(T row, String sessionId) {
+    public <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row) {
         Map<String, IErrorReg> errors = new HashMap<>();
         String fieldName;
         int[] operacion = {IDataRow.INSERT, IDataRow.UPDATE};
@@ -211,7 +337,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
         try {
             // Chequeo de clave duplicada solo si la operación es agregar o modificar
             if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
-                if (!checkUniqueKey(row, sessionId)) {
+                if (!checkUniqueKey(sessionId, row)) {
                     errors.put("UNIQUEKEY",
                             new ErrorReg("Este registro ya existe",
                                     50001,
@@ -224,7 +350,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
             if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 for (Field field : DataInfo.getDeclaredFields(row.getClass())) {
                     fieldName = field.getName();
-                    if (!checkForeignKey(row, fieldName, sessionId)) {
+                    if (!checkForeignKey(sessionId, row, fieldName)) {
                         errors.put(fieldName.toLowerCase(),
                                 new ErrorReg("Dejo en blanco este dato o no existe el registro",
                                         50013,
@@ -266,36 +392,6 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
         return errors;
     }
 
-    /**
-     * Verifica que sea valida la sesión de usuario para poder realizar las
-     * operaciones.
-     *
-     * @param sessionId identificador de la sesión.
-     * @throws SessionError error sesión invalida.
-     */
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    protected final void checkUserSession(String sessionId) throws SessionError {
-        IUserSession userSession = getUserSession(sessionId);
-        if (userSession == null || userSession.getUser() == null) {
-            throw new SessionError("El identificador de la sesión es inválido");
-        }
-    }
-
-    /**
-     * Devuelve la unidad de persistencia asociado a la empresa en la cual
-     * inicio sesión el usuario.
-     *
-     * @param sessionId identificador de la sesión.
-     * @return unidad de persistencia.
-     */
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    protected String getPersistentUnit(String sessionId) {
-        IUserSession userSession = getUserSession(sessionId);
-        if (userSession == null || userSession.getUser() == null) {
-            return null;
-        }
-        return userSession.getPersistenceUnit();
-    }
 
     /**
      * Se ejecuta en el metodo save, valida los datos del registro
@@ -306,12 +402,12 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      * @param sessionId identificador de la sesión.
      * @return objeto con el resultado del proceso de validación.
      */
-    protected final <T extends IDataRow> IDataResult checkDataResult(T row, String sessionId) {
+    protected final <T extends IDataRow>  IDataResult checkDataResult(String sessionId, T row) {
         IDataResult dataResult = new DataResult();
         dataResult.setSuccess(Boolean.TRUE);
         List<IDataRow> ejbsRes = new ArrayList();
         // Validar el registro
-        Map<String, IErrorReg> errors = this.checkDataRow(row, sessionId);
+        Map<String, IErrorReg> errors = this.checkDataRow(sessionId, row);
         ejbsRes.add(row);
         if (!errors.isEmpty()) {
             // Devolver el error si lo hubo
@@ -335,7 +431,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
         checkUserSession(sessionId);
         IDataResult dataResult;
         // Validar registro
-        dataResult = this.checkDataResult(row, sessionId);
+        dataResult = this.checkDataResult(sessionId, row);
         if (!dataResult.getErrorsMap().isEmpty()) {
             // Devolver el error si lo hubo
             return dataResult;
@@ -355,7 +451,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      * @throws SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult create(T row, String sessionId) throws SessionError {
+    public <T extends IDataRow> IDataResult create(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.INSERT);
         return save(row, sessionId);
     }
@@ -370,7 +466,7 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult edit(T row, String sessionId) throws SessionError {
+    public <T extends IDataRow> IDataResult edit(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.UPDATE);
         return save(row, sessionId);
     }
@@ -385,14 +481,141 @@ public abstract class AbstractDataService extends AbstractDAO implements IDataSe
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult remove(T row, String sessionId) throws SessionError {
+    public <T extends IDataRow> IDataResult remove(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.DELETE);
         return save(row, sessionId);
     }
 
-    private IDBLinkInfo getDBLinkInfo(String sessionId) {
-        IDBLinkInfo dbInfo = new DBLinkInfo();
-        dbInfo.setUserSession(getUserSession(sessionId));
-        return dbInfo;
+
+    @Override
+    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, T ejb) {
+        return dao.update(dbLinkInfo, ejb);
+    }
+
+    @Override
+    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, IDataObject ejbs) {
+        return dao.update(dbLinkInfo,ejbs);
+    }
+
+    @Override
+    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, List<T> ejbs) {
+        return dao.update(dbLinkInfo, ejbs);
+    }
+
+    @Override
+    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, IDataSet dataSet) {
+        return dao.update(dbLinkInfo, dataSet);        
+    }
+
+    @Override
+    public <T extends IDataRow> IDataResult persist(IDBLinkInfo dbLinkInfo, T ejb) {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Override
+    public <T extends IDataRow> IDataResult merge(IDBLinkInfo dbLinkInfo, T ejb) {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Override
+    public <T extends IDataRow> IDataResult remove(IDBLinkInfo dbLinkInfo, T ejb) {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+
+    @Deprecated    
+    @Override
+    public Connection getConnection(IDBLinkInfo dbLinkInfo) {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
+    @Deprecated
+    @Override
+    public Connection getConnection(IDBLinkInfo dbLinkInfo, IDBConnectFactory conn) {
+        throw new UnsupportedOperationException("Not supportedt");
+    }
+    
+    @Deprecated
+    @Override
+    public EntityManager getEntityManager(String key) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Deprecated
+    @Override
+    public <T> List<T> findAll(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+    
+    @Deprecated
+    @Override
+    public <T extends IDataRow> T findByQuery(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Deprecated
+    @Override
+    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Deprecated
+    @Override
+    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, int first, int max) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Deprecated
+    @Override
+    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Deprecated
+    @Override
+    public <T extends IDataRow> T findByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Deprecated    
+    @Override
+    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Deprecated    
+    @Override
+    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, int first, int max) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Deprecated    
+    @Override
+    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception {
+        throw new UnsupportedOperationException("Not supported."); 
+    }
+    
+    @Deprecated
+    @Override
+    public IErrorReg sqlExec(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+        throw new UnsupportedOperationException("Not supported"); 
+    }
+
+    @Deprecated
+    @Override
+    public <T extends IDataRow> List<T> getData(IDBLinkInfo dbLinkInfo, String queryString, int maxRows, boolean noCache) throws Exception {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
+    @Deprecated    
+    @Override
+    public <T extends IDataRow> List<T> getData(Query query) throws Exception {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Deprecated    
+    @Override
+    public <T extends IDataRow> List<T> refreshAll(IDBLinkInfo dbLinkInfo, List<T> rows) throws Exception {
+        throw new UnsupportedOperationException("Not supported.");
     }
 }

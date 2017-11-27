@@ -147,7 +147,7 @@ public interface IGenericDAO {
      * @return un registro solicitado
      * @throws Exception
      */
-    public <T extends IDataRow> T find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, Object id) throws Exception;
+    public <T extends IDataRow> T findById(Class<T> entityClass, IDBLinkInfo dbLinkInfo, Object id) throws Exception;
 
     /**
      * Devuelve un registro de una tabla dada
@@ -159,7 +159,7 @@ public interface IGenericDAO {
      * @return lista de objetos
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception;    
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception;    
     
     /**
      * Devuelve un registro de una tabla dada
@@ -174,7 +174,7 @@ public interface IGenericDAO {
      * @return lista de objetos
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params) throws Exception;
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params) throws Exception;
 
     /**
      * Devuelve un registro de una tabla dada
@@ -191,7 +191,7 @@ public interface IGenericDAO {
      * @return lista de objetos
      * @throws Exception
      */
-    public <T extends IDataRow> List<T> findList(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params, int first, int max) throws Exception;
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params, int first, int max) throws Exception;
     
     
     /**
@@ -363,12 +363,12 @@ public interface IGenericDAO {
      *
      * @param dbLinkInfo información necesaria para acceder a la conexión de datos
      * correcta (unidad de persistencia, sesión id etc).
-     * @param queryString sentencia sql
+     * @param sqlCommand sentencia sql
      * @param parameters parámetros de la sentencia.
      * @return un objeto error si no se ejecuto la sentencia con exito
      * @throws java.lang.Exception
      */
-    public IErrorReg sqlExec(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception;
+    public IErrorReg sqlExec(IDBLinkInfo dbLinkInfo, String sqlCommand, Map<String, Object> parameters) throws Exception;
 
     /**
      * Selecciona datos de la base de datos y los convierte en una lista de
