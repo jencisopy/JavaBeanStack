@@ -32,9 +32,11 @@ import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataNativeQuery;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.error.ErrorManager;
+
 import static org.javabeanstack.util.Strings.*;
 import static org.javabeanstack.util.Fn.iif;
 import static org.javabeanstack.util.Fn.nvl;
+
 
 /**
  * Crea y ejecuta una sentencia sql devolviendo los datos solicitados.<br>
@@ -60,6 +62,7 @@ public class DataReport {
      * Objeto manejador de datos
      */
     private IDataLink dataLink;
+    
     /**
      * Lista de entidades desde donde se buscará la información
      */

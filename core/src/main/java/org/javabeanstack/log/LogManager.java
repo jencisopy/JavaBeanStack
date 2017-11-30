@@ -24,6 +24,7 @@ package org.javabeanstack.log;
 
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import javax.ejb.EJB;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -329,8 +330,14 @@ public class LogManager implements ILogManager {
         if (logRecord.getLogTimeOrigin() == null){
             logRecord.setLogTimeOrigin(new Date());            
         }
-        IDataResult dataResult = dao.persist(null, logRecord);
-        return dataResult.isSuccessFul();
+        IDataResult dataResult;
+        try {
+            dataResult = dao.persist(null, logRecord);
+            return dataResult.isSuccessFul();
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return false;
     }
 
     @Override
@@ -358,7 +365,7 @@ public class LogManager implements ILogManager {
     public IAppMessage getAppMessage(Integer msgNumber) {
         try {
             IAppMessage message = 
-                    dao.findByQuery(IAppMessage.class, null,
+                    dao.findByQuery(null,
                                     "select o from AppMessage o where nro = " + msgNumber.toString(),
                                     null);
 

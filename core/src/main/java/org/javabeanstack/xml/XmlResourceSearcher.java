@@ -83,14 +83,10 @@ public class XmlResourceSearcher<V> extends XmlSearcher<V> {
             IAppResource appXmlSource;
             try {
                 appXmlSource
-                        = dao.findByQuery(IAppResource.class,
-                                            null,
-                                            queryString1, parameters);
+                        = dao.findByQuery(null, queryString1, parameters);
                 if (appXmlSource == null){
                     appXmlSource
-                        = dao.findByQuery(IAppResource.class,
-                                            null,
-                                            queryString2, parameters);
+                        = dao.findByQuery(null, queryString2, parameters);
                 }
                 if (appXmlSource != null) {
                     if (appXmlSource.isValid()) {
@@ -128,14 +124,10 @@ public class XmlResourceSearcher<V> extends XmlSearcher<V> {
             IAppResource appXmlSource;
             try {
                 appXmlSource
-                        = dao.findByQuery(IAppResource.class,
-                                            null,
-                                            queryString1, parameters);
+                        = dao.findByQuery(null, queryString1, parameters);
                 if (appXmlSource == null){
                     appXmlSource
-                        = dao.findByQuery(IAppResource.class,
-                                            null,
-                                            queryString2, parameters);
+                        = dao.findByQuery(null, queryString2, parameters);
                 }
                 return (appXmlSource != null);
             } catch (Exception ex) {

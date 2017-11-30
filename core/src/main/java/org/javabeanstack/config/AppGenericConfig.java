@@ -141,9 +141,7 @@ public class AppGenericConfig implements IAppConfig {
                 = "select o from AppSystemParam o where idsystemparam = " + id;
         try {
             appSystemParam
-                    = dao.findByQuery(IAppSystemParam.class,
-                            null,
-                            queryString, null);
+                    = dao.findByQuery(null, queryString, null);
             return appSystemParam;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -165,9 +163,7 @@ public class AppGenericConfig implements IAppConfig {
         IAppSystemParam appSystemParam;
         try {
             appSystemParam
-                    = dao.findByQuery(IAppSystemParam.class,
-                            null,
-                            queryString, null);
+                    = dao.findByQuery(null, queryString, null);
             return appSystemParam;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);

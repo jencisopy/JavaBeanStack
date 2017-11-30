@@ -22,10 +22,8 @@
 package org.javabeanstack.data;
 
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.Query;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.services.IDataService;
 
@@ -45,22 +43,18 @@ public interface IDataLink  {
     Map<String, Object> getEntityManagerProp();
     Map<String, Object> getPersistUnitProp();
     IDataNativeQuery newDataNativeQuery();
-    Connection getConnection();
-    Connection getConnection(IDBConnectFactory conn);  
     
     <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception;
-    <T extends IDataRow> T findByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception;
+    <T extends IDataRow> T findByUk(T ejb) throws Exception;    
     List<Object> findByNativeQuery(String queryString, Map<String, Object> parameters) throws Exception;
     List<Object> findByNativeQuery(String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
-    <T extends IDataRow> T findByQuery(Class<T> entityClass, String queryString, Map<String, Object> parameters) throws Exception;
-    <T extends IDataRow> T findByUk(Class<T> entityClass, T ejb) throws Exception;
+    <T extends IDataRow> T findByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception;
+    <T extends IDataRow> T findByQuery(String queryString, Map<String, Object> parameters) throws Exception;
     <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception;
     <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception;
     <T extends IDataRow> List<T> findListByQuery(String queryString, Map<String, Object> parameters) throws Exception;
     <T extends IDataRow> List<T> findListByQuery(String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
-    <T extends IDataRow> List<T> getData(String queryString, int maxRows, boolean noCache) throws Exception;
-    <T extends IDataRow> List<T> getData(Query query) throws Exception;
-    <T extends IDataRow> List<T> refreshAll(List<T> rows) throws Exception;
+
     <T extends IDataRow> T refreshRow(T row) throws Exception;
     <T extends IDataRow> IDataResult update(T ejb) throws Exception;
     <T extends IDataRow> IDataResult update(List<T> ejbs) throws Exception;
