@@ -45,11 +45,11 @@ public interface IDataLink  {
     IDataNativeQuery newDataNativeQuery();
     
     <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception;
-    <T extends IDataRow> T findByUk(Class<T> entityClass, T ejb) throws Exception;    
+    <T extends IDataRow> T findByUk(T ejb) throws Exception;    
     List<Object> findByNativeQuery(String queryString, Map<String, Object> parameters) throws Exception;
     List<Object> findByNativeQuery(String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
     <T extends IDataRow> T findByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception;
-    <T extends IDataRow> T findByQuery(Class<T> entityClass, String queryString, Map<String, Object> parameters) throws Exception;
+    <T extends IDataRow> T findByQuery(String queryString, Map<String, Object> parameters) throws Exception;
     <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception;
     <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception;
     <T extends IDataRow> List<T> findListByQuery(String queryString, Map<String, Object> parameters) throws Exception;

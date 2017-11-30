@@ -100,19 +100,19 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @return un list con los registros de una tabla
      * @throws Exception
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T extends Object> List<T> findAll(Class<T> entityClass,
-            IDBLinkInfo dbLinkInfo) throws Exception {
+            String sessionId) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("findAll");
-        LOGGER.debug(entityClass.toString());                                
-
+        LOGGER.debug(entityClass.toString());
+        
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         CriteriaQuery<T> cq = em.getCriteriaBuilder().createQuery(entityClass);
@@ -127,8 +127,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param id identificador del registro
      * @return un registro solicitado
      * @throws Exception
@@ -136,12 +135,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public <T extends IDataRow> T findById(Class<T> entityClass,
-            IDBLinkInfo dbLinkInfo,
+            String sessionId,
             Object id) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("find");
         LOGGER.debug(entityClass.toString());
         
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         T row = em.find(entityClass, id);
         // Si no hay transacción activada
@@ -165,30 +165,27 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Devuelve un registro a travéz de su clave unica.
      *
      * @param <T>
-     * @param entityClass clase mapeada a una tabla
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param ejb objeto ejb con los datos de la clave unica
      * @return
      * @throws Exception
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public <T extends IDataRow> T findByUk(Class<T> entityClass,
-            IDBLinkInfo dbLinkInfo, T ejb) throws Exception {
+    public <T extends IDataRow> T findByUk(String sessionId, T ejb) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("findByUk");        
-        LOGGER.debug(entityClass.toString());        
+        LOGGER.debug(ejb.getClass().getSimpleName());        
         
         // Verificar que exista manera de generar la sentencia para buscar
         // el registro o de lo contrario va a dar error.
         if (ejb.getQueryUK() == null) {
             return null;
         }
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         // Buscar registro por la clave unica
         T row;
-        Query q;
-        q = getEntityManager(getEntityId(dbLinkInfo)).createQuery(ejb.getQueryUK());
+        Query q = getEntityManager(getEntityId(dbLinkInfo)).createQuery(ejb.getQueryUK());
 
         for (Parameter param : q.getParameters()) {
             q.setParameter(param, ejb.getValue(param.getName()));
@@ -222,14 +219,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
-     * correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @return lista de objetos
      * @throws Exception
      */
     @Override
-    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception{
-        return find(entityClass, dbLinkInfo, null, null, null, 0, 0);
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId) throws Exception{
+        return find(entityClass, sessionId, null, null, null, 0, 0);
     }    
     
     /**
@@ -237,8 +233,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
-     * correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param order
      * @param filter
      * @param params
@@ -246,9 +241,9 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * @throws Exception
      */
     @Override
-    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, 
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, 
                         String order, String filter, Map<String, Object> params) throws Exception{
-        return find(entityClass, dbLinkInfo, order, filter, params, 0, 0);
+        return find(entityClass, sessionId, order, filter, params, 0, 0);
     }
 
     
@@ -257,8 +252,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param dbLinkInfo información necesaria para acceder a la conexión de datos
-     * correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param order
      * @param filter
      * @param params
@@ -268,11 +262,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * @throws Exception
      */
     @Override
-    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params, int first, int max) throws Exception{
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params, int first, int max) throws Exception{
         String query = "select o from " + entityClass.getSimpleName() + " o ";
         if (filter == null){
             filter = "";
         }
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         T entity = entityClass.newInstance();
         // Si se va a aplicar el filtro por defecto 
         if (entity.isApplyDBFilter()){
@@ -290,7 +285,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (!Strings.isNullorEmpty(order)) {
             query += " order by " + order; 
         }
-        List<T> entityList = this.findListByQuery(dbLinkInfo, query, params, first, max);
+        List<T> entityList = this.findListByQuery(sessionId, query, params, first, max);
         return entityList;
     }
 
@@ -299,22 +294,21 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param entityClass clase mapeada a una tabla
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @return un objeto con valores del registro de la tabla solicitada
      * @throws Exception
      */
     @Override
-    public <T extends IDataRow> T findByQuery(Class<T> entityClass, IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> T findByQuery(String sessionId,
             String queryString, Map<String, Object> parameters)
             throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("findByQuery");
         LOGGER.debug(queryString);
 
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createQuery(queryString);
@@ -348,8 +342,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @return una lista de objetos conteniendo los registros de la tabla
@@ -358,17 +351,16 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> List<T> findListByQuery(String sessionId,
             String queryString,
             Map<String, Object> parameters) throws Exception {
-        return findListByQuery(dbLinkInfo, queryString, parameters, 0, 0);
+        return findListByQuery(sessionId, queryString, parameters, 0, 0);
     }
 
     /**
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -379,7 +371,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> List<T> findListByQuery(String sessionId,
             String queryString,
             Map<String, Object> parameters,
             int first, int max) throws Exception {
@@ -387,6 +379,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         LOGGER.debug("findListByQuery");
         LOGGER.debug(queryString);        
         
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createQuery(queryString);
@@ -404,8 +397,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param queryString sentencia jpql
      * @param first a partir de este nro. de registro se va a traer los datos
      * @param max cantidad maxima de registros
@@ -415,27 +407,27 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> List<T> findListByQuery(String sessionId,
             String queryString,
             int first, int max) throws Exception {
         Map<String, Object> parameters = new HashMap<>();
-        return findListByQuery(dbLinkInfo, queryString, parameters, first, max);
+        return findListByQuery(sessionId, queryString, parameters, first, max);
     }
 
     /**
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @return un objeto con los datos del registro de la tabla solicitada
      * @throws Exception
      */
     @Override
-    public <T extends IDataRow> T findByNamedQuery(IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> T findByNamedQuery(String sessionId,
             String namedQuery,
             Map<String, Object> parameters) throws Exception {
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createNamedQuery(namedQuery);
@@ -468,8 +460,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @return una lista de objetos con los datos de los registros de la tabla
@@ -478,18 +469,17 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId,
             String namedQuery,
             Map<String, Object> parameters)
             throws Exception {
-        return findListByNamedQuery(dbLinkInfo, namedQuery, parameters, 0, 0);
+        return findListByNamedQuery(sessionId, namedQuery, parameters, 0, 0);
     }
 
     /**
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param namedQuery namedQuery
      * @param first a partir de este nro. de registro se va a traer los datos
      * @param max cantidad maxima de registros
@@ -499,19 +489,18 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId,
             String namedQuery,
             int first, int max)
             throws Exception {
         Map<String, Object> parameters = new HashMap<>();
-        return findListByNamedQuery(dbLinkInfo, namedQuery, parameters, first, max);
+        return findListByNamedQuery(sessionId, namedQuery, parameters, first, max);
     }
 
     /**
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -521,11 +510,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId,
             String namedQuery,
             Map<String, Object> parameters,
             int first, int max) throws Exception {
 
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createNamedQuery(namedQuery);
@@ -543,8 +533,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @return una lista de objetos con datos de los registros solicitados
@@ -552,11 +541,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString,
+    public List<Object> findByNativeQuery(String sessionId, String queryString,
             Map<String, Object> parameters) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("findByNativeQuery");
         
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         String persistUnit;
         if (dbLinkInfo != null){
             persistUnit = dbLinkInfo.getPersistUnit();
@@ -579,8 +569,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -590,12 +579,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString,
+    public List<Object> findByNativeQuery(String sessionId, String queryString,
             Map<String, Object> parameters,
             int first, int max) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("findByNativeQuery");
-       
+        
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);       
         String persistUnit;
         if (dbLinkInfo != null){
             persistUnit = dbLinkInfo.getPersistUnit();
@@ -621,17 +611,18 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param sqlString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @return un objeto error si no se ejecuto la sentencia con exito
      */
     @Override
-    public IErrorReg sqlExec(IDBLinkInfo dbLinkInfo, String sqlString,
+    public IErrorReg sqlExec(String sessionId, String sqlString,
             Map<String, Object> parameters) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("sqlExec");
+        
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         String persistUnit;
         if (dbLinkInfo == null){
             persistUnit = IDBManager.CATALOGO;
@@ -661,17 +652,16 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Sincroniza un ejb con la base de datos.
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param ejb objeto mapeado a un registro de una tabla.
      * @return Devuelve un objeto con el resultado de la grabación
      *
      */
     @Override
-    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, T ejb) {
+    public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
         List<T> ejbs = new ArrayList<>();
         ejbs.add(ejb);
-        return update(dbLinkInfo, ejbs);
+        return update(sessionId, ejbs);
     }
 
     /**
@@ -679,13 +669,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param ejbs lista de objetos mapeados a los registros de una tabla.
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, IDataObject ejbs) {
-        return update(dbLinkInfo, ejbs.getDataRows());
+    public <T extends IDataRow> IDataResult update(String sessionId, IDataObject ejbs) {
+        return update(sessionId, ejbs.getDataRows());
     }
 
     /**
@@ -693,34 +682,32 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param ejbs lista de objetos mapeados a los registros de una tabla.
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, List<T> ejbs) {
+    public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
         IDataSet dataSet = new DataSet();
         dataSet.add("1", (List<IDataRow>) ejbs);
-        return update(dbLinkInfo, dataSet);
+        return update(sessionId, dataSet);
     }
 
     /**
      * Sincroniza una lista de ejbs con la base de datos.
      *
      * @param dataSet set de objetos mapeados a los registros de una tabla.
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(IDBLinkInfo dbLinkInfo, IDataSet dataSet) {
+    public IDataResult update(String sessionId, IDataSet dataSet) {
         if (dataSet == null || dataSet.size() == 0) {
             return null;
         }
         //TODO controlar aqui la sesión del usuario
         String appUser = "";
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         // Sesión del usuario
-        String sessionId = "";
         if (dbLinkInfo.getUserSession() != null) {
             sessionId = dbLinkInfo.getUserSession().getSessionId();
         }
@@ -788,55 +775,53 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Agregar,un registro en la tabla
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param ejb el objeto con los valores del registro
      * @return
      */
     @Override
-    public <T extends IDataRow> IDataResult persist(IDBLinkInfo dbLinkInfo, T ejb) {
+    public <T extends IDataRow> IDataResult persist(String sessionId, T ejb) {
         ejb.setAction(IDataRow.INSERT);
-        return update(dbLinkInfo, ejb);
+        return update(sessionId, ejb);
     }
 
     /**
      * Modificar un registro en la tabla dada
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param ejb el objeto con los valores del registro
      * @return
      */
     @Override
-    public <T extends IDataRow> IDataResult merge(IDBLinkInfo dbLinkInfo, T ejb) {
+    public <T extends IDataRow> IDataResult merge(String sessionId, T ejb) {
         ejb.setAction(IDataRow.UPDATE);
-        return update(dbLinkInfo, ejb);
+        return update(sessionId, ejb);
     }
 
     /**
      * Borra un registro en la tabla dada
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param ejb el objeto con los valores del registro
      * @return
      */
     @Override
-    public <T extends IDataRow> IDataResult remove(IDBLinkInfo dbLinkInfo, T ejb) {
+    public <T extends IDataRow> IDataResult remove(String sessionId, T ejb) {
         ejb.setAction(IDataRow.DELETE);
-        return update(dbLinkInfo, ejb);
+        return update(sessionId, ejb);
     }
 
     @Override
-    public <T extends IDataRow> List<T> getData(IDBLinkInfo dbLinkInfo,
+    public <T extends IDataRow> List<T> getData(String sessionId,
             String queryString,
             int maxRows,
             boolean noCache) throws Exception {
         if (maxRows == 0) {
             return new ArrayList<>();
         }
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         Query q;
         q = em.createQuery(queryString);
@@ -856,15 +841,14 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Refresca desde la base de datos los valores de un objeto.
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param row objeto o registro a refrescar
      * @return objeto con los datos refrescados de la base de datos
      * @throws Exception
      */
     @Override
-    public <T extends IDataRow> T refreshRow(IDBLinkInfo dbLinkInfo, T row) throws Exception {
-        row = this.findById((Class<T>) row.getClass(), dbLinkInfo, DataInfo.getIdvalue(row));
+    public <T extends IDataRow> T refreshRow(String sessionId, T row) throws Exception {
+        row = this.findById((Class<T>) row.getClass(), sessionId, DataInfo.getIdvalue(row));
         // Si no hay transacción activada
         if (Status.STATUS_NO_TRANSACTION == tsr.getTransactionStatus()) {
             return row;
@@ -886,14 +870,14 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Refresca desde la base de datos una lista de objetos.
      *
      * @param <T>
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param rows objetos a refrescar
      * @return lista de objetos con los datos refrescados de la base de datos
      * @throws Exception
      */
     @Override
-    public <T extends IDataRow> List<T> refreshAll(IDBLinkInfo dbLinkInfo, List<T> rows) throws Exception {
+    public <T extends IDataRow> List<T> refreshAll(String sessionId, List<T> rows) throws Exception {
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         for (int i = 0; i <= rows.size(); i++) {
             em.refresh(rows.get(i));
@@ -904,8 +888,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      * Calcula la cantidad de registros que devolveria una sentencia sql
      * 
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param queryString sentencia jpql
      * @param parameters parámetros de la sentencia
      * @return cantidad de registros que debería devolver la sentencia.
@@ -913,9 +896,10 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Long getCount(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+    public Long getCount(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("getCount");
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);                
         Long result;
         String persistUnit = dbLinkInfo.getPersistUnit();
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
@@ -941,8 +925,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      * Calcula la cantidad de registros que devolveria una sentencia sql
      * 
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia
      * @return cantidad de registros que debería devolver la sentencia.
@@ -950,15 +933,16 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Long getCount2(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+    public Long getCount2(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         LOGGER.debug("---------------------------");        
         LOGGER.debug("getCount2");
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);                
         String persistUnit = dbLinkInfo.getPersistUnit();
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
         queryString = "select count(*) from (" + queryString + ") x";
         LOGGER.debug(queryString);                
         
-        List<Object> result = this.findByNativeQuery(dbLinkInfo, queryString, parameters);
+        List<Object> result = this.findByNativeQuery(sessionId, queryString, parameters);
         return Long.parseLong(result.get(0).toString());
     }
 
@@ -1034,13 +1018,13 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @return una conexión a la base solo funciona en un ambiente @local no
      * funciona en @Remote
      */
     @Override
-    public Connection getConnection(IDBLinkInfo dbLinkInfo) {
+    public Connection getConnection(String sessionId) {
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);                
         // Para eclipse link
         Connection connection = getEntityManager(getEntityId(dbLinkInfo))
                 .unwrap(java.sql.Connection.class);
@@ -1049,14 +1033,14 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param dbLinkInfo información necesaria para acceder a la conexión de
-     * datos correcta (unidad de persistencia, sesión id etc).
+     * @param sessionId identificador de la sesión que permite realizar las
      * @param conn objeto factory cuya función es devolver una conexión del
      * entity manager
      * @return devuelve una conexión del entity manager
      */
     @Override
-    public Connection getConnection(IDBLinkInfo dbLinkInfo, IDBConnectFactory conn) {
+    public Connection getConnection(String sessionId, IDBConnectFactory conn) {
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         Connection result = conn.getConnection(em);
         return result;
@@ -1183,5 +1167,12 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         }
         String key = persistUnit + ":";
         return key;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)    
+    protected IDBLinkInfo getDBLinkInfo(String sessionId) {
+        IDBLinkInfo dbInfo = new DBLinkInfo();
+        dbInfo.setUserSession(getUserSession(sessionId));            
+        return dbInfo;
     }
 }

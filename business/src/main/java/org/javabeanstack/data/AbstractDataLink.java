@@ -188,7 +188,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> IDataResult update(T ejb) throws SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        IDataResult dataResult = getDao().update(getDBLinkInfo(), ejb);
+        IDataResult dataResult = getDao().update(getSessionId(), ejb);
         dataResult.setRowsUpdated(ejb);
         return dataResult;
     }
@@ -207,7 +207,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         checkUserSession();
         //Procesar solo los registros modificados
         List<T> ejbs2 = this.getRowsChanged(ejbs);
-        IDataResult dataResult = getDao().update(getDBLinkInfo(), ejbs2);
+        IDataResult dataResult = getDao().update(getSessionId(), ejbs2);
         dataResult.setRowsUpdated(ejbs);
         // Eliminar registros borrados de la lista
         if (dataResult.isSuccessFul()){
@@ -232,7 +232,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         checkUserSession();
         // Procesar solo registros modificados.
         IDataSet dataSetChanged = dataSet.getChanged();
-        IDataResult dataResult = getDao().update(getDBLinkInfo(), dataSetChanged);
+        IDataResult dataResult = getDao().update(getSessionId(), dataSetChanged);
         dataResult.setRowsUpdated(dataSet);
         // Eliminar registros borrados de la lista        
         if (dataResult.isSuccessFul()){
@@ -261,14 +261,13 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findById(entityClass, getDBLinkInfo(), id);
+        return getDao().findById(entityClass, getSessionId(), id);
     }
 
     /**
      * Devuelve un registro de datos.
      *
      * @param <T> tipo de dato generalmente hereda de DataRow
-     * @param entityClass tipo de dato o clase solicitada
      * @param ejb objeto conteniendo datos necesarios para llegar a recuperar el
      * registro a travéz de los campos de la clave unica
      * @return Objeto con los datos del registro
@@ -276,17 +275,16 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> T findByUk(Class<T> entityClass, T ejb) throws Exception, SessionError {
+    public <T extends IDataRow> T findByUk(T ejb) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findByUk(entityClass, getDBLinkInfo(), ejb);
+        return getDao().findByUk(getSessionId(), ejb);
     }
 
     /**
      * Devuelve un registro
      * 
      * @param <T> tipo de dato generalmente hereda de DataRow
-     * @param entityClass tipo de dato o clase solicitada
      * @param queryString sentencia JPQL que se ejecutará para recuperar los
      * datos
      * @param parameters parametros de la sentencia.
@@ -295,14 +293,13 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> T findByQuery(Class<T> entityClass,
-            String queryString,
+    public <T extends IDataRow> T findByQuery(String queryString,
             Map<String, Object> parameters)
             throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findByQuery(entityClass, getDBLinkInfo(), queryString, parameters);
+        return getDao().findByQuery(getSessionId(), queryString, parameters);
     }
 
     /**
@@ -323,7 +320,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findListByQuery(getDBLinkInfo(), queryString, parameters);
+        return getDao().findListByQuery(getSessionId(), queryString, parameters);
     }
 
     /**
@@ -347,7 +344,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findListByQuery(getDBLinkInfo(), queryString, parameters, first, max);
+        return getDao().findListByQuery(getSessionId(), queryString, parameters, first, max);
     }
 
     /**
@@ -365,7 +362,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T findByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findByNamedQuery(getDBLinkInfo(), namedQuery, parameters);
+        return getDao().findByNamedQuery(getSessionId(), namedQuery, parameters);
     }
 
     /**
@@ -383,7 +380,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findListByNamedQuery(getDBLinkInfo(), namedQuery, parameters);
+        return getDao().findListByNamedQuery(getSessionId(), namedQuery, parameters);
     }
 
     /**
@@ -404,7 +401,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().findListByNamedQuery(getDBLinkInfo(), namedQuery, parameters, first, max);
+        return getDao().findListByNamedQuery(getSessionId(), namedQuery, parameters, first, max);
     }
 
     /**
@@ -422,7 +419,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findByNativeQuery(getDBLinkInfo(), queryString, parameters);
+        return getDao().findByNativeQuery(getSessionId(), queryString, parameters);
     }
 
     /**
@@ -443,7 +440,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().findByNativeQuery(getDBLinkInfo(), queryString, parameters, first, max);
+        return getDao().findByNativeQuery(getSessionId(), queryString, parameters, first, max);
     }
 
     /**
@@ -459,7 +456,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T refreshRow(T row) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        return getDao().refreshRow(getDBLinkInfo(), row);
+        return getDao().refreshRow(getSessionId(), row);
     }
 
 
@@ -477,7 +474,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().getCount(getDBLinkInfo(), queryString, parameters);
+        return getDao().getCount(getSessionId(), queryString, parameters);
     }
 
     /**
@@ -494,7 +491,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         parameters = addParams(queryString, parameters);
-        return getDao().getCount2(getDBLinkInfo(), queryString, parameters);
+        return getDao().getCount2(getSessionId(), queryString, parameters);
     }
 
     /**
@@ -758,9 +755,16 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * (persistunit, session del usuario)
      * @return DBLinkInfo()
      */
-    private IDBLinkInfo getDBLinkInfo(){
+    protected final IDBLinkInfo getDBLinkInfo(){
         IDBLinkInfo dbInfo = new DBLinkInfo();
         dbInfo.setUserSession(userSession);
         return dbInfo;
+    }
+    
+    protected final String getSessionId(){
+        if (userSession == null){
+            return null;
+        }
+        return userSession.getSessionId();
     }
 }

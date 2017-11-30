@@ -45,9 +45,7 @@ import org.javabeanstack.data.DataResult;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.annotation.CheckMethod;
-import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBConnectFactory;
-import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.IDataObject;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
@@ -87,13 +85,6 @@ public abstract class AbstractDataService implements IDataService {
         return userSession.getPersistenceUnit();
     }
 
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)    
-    private IDBLinkInfo getDBLinkInfo(String sessionId) {
-        IDBLinkInfo dbInfo = new DBLinkInfo();
-        dbInfo.setUserSession(getUserSession(sessionId));
-        return dbInfo;
-    }
-    
     @Override
     public IUserSession getUserSession(String sessionId) {
         return dao.getUserSession(sessionId);
@@ -169,54 +160,93 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     @Override
-    public <T extends IDataRow> T findById(Class<T> entityClass, IDBLinkInfo dbLinkInfo, Object id) throws Exception {
-        return dao.findById(entityClass, dbLinkInfo, id);
+    public <T extends IDataRow> T findById(Class<T> entityClass, String sessionId, Object id) throws Exception {
+        return dao.findById(entityClass, sessionId, id);
     }
 
     @Override
-    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception {
-        return dao.find(entityClass, dbLinkInfo);
+    public <T extends IDataRow> T findByUk(String sessionId, T ejb) throws Exception {
+        return dao.findByUk(sessionId, ejb);
     }
 
     @Override
-    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params) throws Exception {
-        return dao.find(entityClass, dbLinkInfo, order, filter, params);        
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId) throws Exception {
+        return dao.find(entityClass, sessionId);
     }
 
     @Override
-    public <T extends IDataRow> List<T> find(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String order, String filter, Map<String, Object> params, int first, int max) throws Exception {
-        return dao.find(entityClass, dbLinkInfo, order, filter, params, first, max);
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params) throws Exception {
+        return dao.find(entityClass, sessionId, order, filter, params);        
     }
 
     @Override
-    public <T extends IDataRow> T findByUk(Class<T> entityClass, IDBLinkInfo dbLinkInfo, T ejb) throws Exception {
-        return dao.findByUk(entityClass, dbLinkInfo, ejb);
+    public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params, int first, int max) throws Exception {
+        return dao.find(entityClass, sessionId, order, filter, params, first, max);
     }
 
     @Override
-    public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
-        return dao.findByNativeQuery(dbLinkInfo, queryString, parameters);
+    public List<Object> findByNativeQuery(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.findByNativeQuery(sessionId, queryString, parameters);
     }
 
     @Override
-    public List<Object> findByNativeQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
-        return dao.findByNativeQuery(dbLinkInfo, queryString, parameters, first, max);
-    }
-
-
-    @Override
-    public <T extends IDataRow> T refreshRow(IDBLinkInfo dbLinkInfo, T row) throws Exception {
-        return dao.refreshRow(dbLinkInfo, row);
+    public List<Object> findByNativeQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
+        return dao.findByNativeQuery(sessionId, queryString, parameters, first, max);
     }
 
     @Override
-    public Long getCount(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
-        return dao.getCount(dbLinkInfo, queryString, parameters);
+    public <T extends IDataRow> T findByQuery(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.findByQuery(sessionId, queryString, parameters);
     }
 
     @Override
-    public Long getCount2(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
-        return dao.getCount2(dbLinkInfo, queryString, parameters);
+    public <T extends IDataRow> List<T> findListByQuery(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.findListByQuery(sessionId, queryString, parameters);
+    }
+
+    @Override
+    public <T extends IDataRow> List<T> findListByQuery(String sessionId, String queryString, int first, int max) throws Exception {
+        return dao.findListByQuery(sessionId, queryString, first, max);
+    }
+
+    @Override
+    public <T extends IDataRow> List<T> findListByQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
+        return dao.findListByQuery(sessionId, queryString, parameters, first, max);
+    }
+
+    @Override
+    public <T extends IDataRow> T findByNamedQuery(String sessionId, String namedQuery, Map<String, Object> parameters) throws Exception {
+        return dao.findByNamedQuery(sessionId, namedQuery, parameters);
+    }
+
+    @Override
+    public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId, String namedQuery, Map<String, Object> parameters) throws Exception {
+        return dao.findListByNamedQuery(sessionId, namedQuery, parameters);
+    }
+
+    @Override
+    public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId, String namedQuery, int first, int max) throws Exception {
+        return dao.findListByNamedQuery(sessionId, namedQuery, first, max);
+    }
+
+    @Override
+    public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId, String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception {
+        return dao.findListByNamedQuery(sessionId, namedQuery, parameters, first, max);
+    }
+
+    @Override
+    public <T extends IDataRow> T refreshRow(String sessionId, T row) throws Exception {
+        return dao.refreshRow(sessionId, row);
+    }
+
+    @Override
+    public Long getCount(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.getCount(sessionId, queryString, parameters);
+    }
+
+    @Override
+    public Long getCount2(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.getCount2(sessionId, queryString, parameters);
     }
 
     
@@ -252,7 +282,7 @@ public abstract class AbstractDataService implements IDataService {
             if (row.getQueryUK() == null) {
                 return true;
             }
-            T row2 = (T) findByUk(IDataRow.class, getDBLinkInfo(sessionId), row);
+            T row2 = (T) findByUk(sessionId, row);
             // Si encontro un registro
             if (row2 != null) {
                 // Y la operación es agregar 
@@ -302,7 +332,7 @@ public abstract class AbstractDataService implements IDataService {
                 else if (row.getValue(fieldName) != null) {
                     Class fieldType = row.getFieldType(fieldName);
                     Object id = row.getValue(fieldName);
-                    IDataRow fieldValue = findById(fieldType, getDBLinkInfo(sessionId), id);
+                    IDataRow fieldValue = findById(fieldType, sessionId, id);
                     if (fieldValue == null) {
                         result = false;
                     }
@@ -427,7 +457,7 @@ public abstract class AbstractDataService implements IDataService {
      * @return objeto resultado de la operación.
      * @throws SessionError
      */
-    protected final <T extends IDataRow> IDataResult save(T row, String sessionId) throws SessionError {
+    protected final <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError {
         checkUserSession(sessionId);
         IDataResult dataResult;
         // Validar registro
@@ -437,7 +467,7 @@ public abstract class AbstractDataService implements IDataService {
             return dataResult;
         }
         // Grabar registro en la base de datos.
-        dataResult = update(getDBLinkInfo(sessionId), row);
+        dataResult = update(sessionId, row);
         return dataResult;
     }
 
@@ -451,9 +481,9 @@ public abstract class AbstractDataService implements IDataService {
      * @throws SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult create(String sessionId, T row) throws SessionError {
+    public <T extends IDataRow> IDataResult persist(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.INSERT);
-        return save(row, sessionId);
+        return save(sessionId, row);
     }
 
     /**
@@ -466,9 +496,9 @@ public abstract class AbstractDataService implements IDataService {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult edit(String sessionId, T row) throws SessionError {
+    public <T extends IDataRow> IDataResult merge(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.UPDATE);
-        return save(row, sessionId);
+        return save(sessionId, row);
     }
 
     /**
@@ -478,60 +508,43 @@ public abstract class AbstractDataService implements IDataService {
      * @param row registro de datos.
      * @param sessionId identificador de la sesión.
      * @return objeto resultado de la operación.
-     * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult remove(String sessionId, T row) throws SessionError {
+    public <T extends IDataRow> IDataResult remove(String sessionId, T row) throws SessionError{
         row.setAction(IDataRow.DELETE);
-        return save(row, sessionId);
+        return save(sessionId, row);
     }
 
 
     @Override
-    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, T ejb) {
-        return dao.update(dbLinkInfo, ejb);
+    public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
+        return dao.update(sessionId, ejb);
     }
 
     @Override
-    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, IDataObject ejbs) {
-        return dao.update(dbLinkInfo,ejbs);
+    public <T extends IDataRow> IDataResult update(String sessionId, IDataObject ejbs) {
+        return dao.update(sessionId,ejbs);
     }
 
     @Override
-    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, List<T> ejbs) {
-        return dao.update(dbLinkInfo, ejbs);
+    public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
+        return dao.update(sessionId, ejbs);
     }
 
     @Override
-    public <T extends IDataRow> IDataResult update(IDBLinkInfo dbLinkInfo, IDataSet dataSet) {
-        return dao.update(dbLinkInfo, dataSet);        
+    public <T extends IDataRow> IDataResult update(String sessionId, IDataSet dataSet) {
+        return dao.update(sessionId, dataSet);        
     }
-
-    @Override
-    public <T extends IDataRow> IDataResult persist(IDBLinkInfo dbLinkInfo, T ejb) {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Override
-    public <T extends IDataRow> IDataResult merge(IDBLinkInfo dbLinkInfo, T ejb) {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Override
-    public <T extends IDataRow> IDataResult remove(IDBLinkInfo dbLinkInfo, T ejb) {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
 
     @Deprecated    
     @Override
-    public Connection getConnection(IDBLinkInfo dbLinkInfo) {
+    public Connection getConnection(String sessionId) {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Deprecated
     @Override
-    public Connection getConnection(IDBLinkInfo dbLinkInfo, IDBConnectFactory conn) {
+    public Connection getConnection(String sessionId, IDBConnectFactory conn) {
         throw new UnsupportedOperationException("Not supportedt");
     }
     
@@ -543,67 +556,19 @@ public abstract class AbstractDataService implements IDataService {
     
     @Deprecated
     @Override
-    public <T> List<T> findAll(Class<T> entityClass, IDBLinkInfo dbLinkInfo) throws Exception {
+    public <T> List<T> findAll(Class<T> entityClass, String sessionId) throws Exception {
         throw new UnsupportedOperationException("Not supported."); 
     }
     
     @Deprecated
     @Override
-    public <T extends IDataRow> T findByQuery(Class<T> entityClass, IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Deprecated
-    @Override
-    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Deprecated
-    @Override
-    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, int first, int max) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Deprecated
-    @Override
-    public <T extends IDataRow> List<T> findListByQuery(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Deprecated
-    @Override
-    public <T extends IDataRow> T findByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Deprecated    
-    @Override
-    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Deprecated    
-    @Override
-    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, int first, int max) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Deprecated    
-    @Override
-    public <T extends IDataRow> List<T> findListByNamedQuery(IDBLinkInfo dbLinkInfo, String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-    
-    @Deprecated
-    @Override
-    public IErrorReg sqlExec(IDBLinkInfo dbLinkInfo, String queryString, Map<String, Object> parameters) throws Exception {
+    public IErrorReg sqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported"); 
     }
 
     @Deprecated
     @Override
-    public <T extends IDataRow> List<T> getData(IDBLinkInfo dbLinkInfo, String queryString, int maxRows, boolean noCache) throws Exception {
+    public <T extends IDataRow> List<T> getData(String sessionId, String queryString, int maxRows, boolean noCache) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
 
@@ -615,7 +580,7 @@ public abstract class AbstractDataService implements IDataService {
     
     @Deprecated    
     @Override
-    public <T extends IDataRow> List<T> refreshAll(IDBLinkInfo dbLinkInfo, List<T> rows) throws Exception {
+    public <T extends IDataRow> List<T> refreshAll(String sessionId, List<T> rows) throws Exception {
         throw new UnsupportedOperationException("Not supported.");
     }
 }
