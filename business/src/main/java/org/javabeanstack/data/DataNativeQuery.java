@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.exceptions.SessionError;
+import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
@@ -48,7 +49,6 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
  * @author Jorge Enciso
  */
 public class DataNativeQuery implements IDataNativeQuery {
-
     private static final Logger LOGGER = Logger.getLogger(DataNativeQuery.class);
 
     private boolean queryCreated;
@@ -945,5 +945,33 @@ public class DataNativeQuery implements IDataNativeQuery {
             this.joinExpr = joinExpr;
             this.joinType = joinType;
         }
+    }
+    
+    /**
+     * Crea un objeto DataNativeQuery 
+     * 
+     * @param <T>
+     * @param dao acceso al dato.
+     * @param sessionId identificador de la sesión del usuario
+     * @return objeto DataNativeQuery
+     * @throws Exception 
+     */
+    public static <T extends IGenericDAO> IDataNativeQuery create(T dao, String sessionId) throws Exception{
+        IDataLink data = new DataLink(dao);
+        IUserSession userSession = dao.getUserSession(sessionId);
+        data.setUserSession(userSession);
+        IDataNativeQuery query = data.newDataNativeQuery();
+        return query;
+    }
+    
+    /**
+     * Crea un objeto DataNativeQuery 
+     * 
+     * @param dataLink objeto que implementa el acceso a la base de datos.
+     * @return objeto DataNativeQuery
+     */
+    public static IDataNativeQuery create(IDataLink dataLink){
+        IDataNativeQuery query = dataLink.newDataNativeQuery();
+        return query;
     }
 }
