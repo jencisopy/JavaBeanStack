@@ -24,7 +24,6 @@ package org.javabeanstack.data;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.security.IUserSession;
@@ -37,16 +36,6 @@ import org.javabeanstack.security.IUserSession;
  * @author Jorge Enciso
  */
 public interface IGenericDAO {
-
-    /**
-     * Devuelve un entity manager se crea un entity manager por cada thread o
-     * sesionid y unidad de persistencia.
-     *
-     * @param key
-     * @return un entity manager
-     */
-    public EntityManager getEntityManager(String key);
-
     /**
      * Sincroniza un ejb con la base de datos.
      *

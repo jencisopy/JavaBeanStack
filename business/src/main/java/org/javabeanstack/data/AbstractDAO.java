@@ -86,9 +86,8 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * @param keyId
      * @return un entity manager
      */
-    @Override 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public EntityManager getEntityManager(String keyId) {
+    protected EntityManager getEntityManager(String keyId) {
         String persistUnit = keyId.substring(0, keyId.indexOf(":")).toLowerCase();
         LOGGER.debug("getEntityManager()");
         LOGGER.debug("pu: " + persistUnit + ", id: " + keyId);

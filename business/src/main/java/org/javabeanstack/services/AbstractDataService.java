@@ -32,7 +32,6 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
 import javax.persistence.JoinColumn;
 import javax.persistence.Query;
 import org.apache.log4j.Logger;
@@ -548,12 +547,7 @@ public abstract class AbstractDataService implements IDataService {
         throw new UnsupportedOperationException("Not supportedt");
     }
     
-    @Deprecated
-    @Override
-    public EntityManager getEntityManager(String key) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
+
     @Deprecated
     @Override
     public <T> List<T> findAll(Class<T> entityClass, String sessionId) throws Exception {
