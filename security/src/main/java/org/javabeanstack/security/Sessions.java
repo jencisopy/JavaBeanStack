@@ -54,17 +54,12 @@ import org.javabeanstack.model.IAppCompany;
  */
 //@Singleton
 @Startup
-@Lock(LockType.READ)
-public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
-    private static final Logger   LOGGER = Logger.getLogger(Sessions.class);
-    Map<String, Object> sessionVar = new HashMap<>();    
-    
-    @EJB private IGenericDAO dao;
+@Lock(LockType.READ) 
+public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{ 
+    private static final Logger   LOGGER = Logger.getLogger(Sessions.class); 
+    Map<String, Object> sessionVar = new HashMap<>();     
+    @EJB private IGenericDAO dao; 
             
-    public Sessions(){
-        
-    }
-    
     /**
      * Crea una sesión de usuario para acceso a la app
      * 
