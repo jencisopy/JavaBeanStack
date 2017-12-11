@@ -56,7 +56,37 @@
         <java.version>1.8</java.version>        
     </properties>
 
+
+
+
     <profiles>
+        <profile>
+            <id>javadoc</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>            
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.3</version>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>                
+                        <executions>
+                            <execution>
+                                <id>attach-javadoc</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>                    
+            </build>
+        </profile>        
         <profile>
             <id>release</id>
             <activation>
@@ -69,7 +99,7 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>2.10.3</version>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalparam>-Xdoclint:none -docencoding "UTF-8"</additionalparam>
                         </configuration>                
                         <executions>
                             <execution>
