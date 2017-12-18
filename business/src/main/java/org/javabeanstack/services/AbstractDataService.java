@@ -50,7 +50,6 @@ import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.util.Fn;
-import static org.javabeanstack.util.Strings.*;
 
 /**
  * Esta clase deriva de AbstractDAO, a travéz de ella se recupera, válida y se
@@ -121,11 +120,9 @@ public abstract class AbstractDataService implements IDataService {
     protected final List<Method> setListCheckMethods() {
         List methods = new ArrayList();
         for (Method method : this.getClass().getDeclaredMethods()) {
-            String namePrefix = method.getName().toLowerCase();
-            namePrefix = substr(namePrefix,0,5);
             CheckMethod anotation = method.getAnnotation(CheckMethod.class);
             /* Ejecutar los metodos cuyo nombre inician con check */
-            if ("check".equals(namePrefix) || anotation != null) {
+            if (anotation != null) {
                 methods.add(method);
             }
         }
