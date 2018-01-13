@@ -84,7 +84,7 @@ public interface IGenericDAO {
      * @param <T> tipo de dato generalemente hereda de DataRow
      * @param sessionId identificador de la sesión del usuario
      * @param ejb el objeto con los valores del registro
-     * @return
+     * @return  IDataResult conteniendo los registros actualizados.
      * @throws java.lang.Exception
      */
     public <T extends IDataRow> IDataResult persist(String sessionId, T ejb) throws Exception;
@@ -95,7 +95,7 @@ public interface IGenericDAO {
      * @param <T> tipo de dato generalemente hereda de DataRow
      * @param sessionId identificador de la sesión del usuario
      * @param ejb el objeto con los valores del registro
-     * @return
+     * @return IDataResult conteniendo los registros actualizados.
      * @throws java.lang.Exception
      */
     public <T extends IDataRow> IDataResult merge(String sessionId, T ejb) throws Exception;
@@ -106,7 +106,7 @@ public interface IGenericDAO {
      * @param <T> tipo de dato generalemente hereda de DataRow
      * @param sessionId identificador de la sesión del usuario
      * @param ejb el objeto con los valores del registro
-     * @return
+     * @return IDataResult conteniendo los registros eliminados.
      * @throws java.lang.Exception
      */
     public <T extends IDataRow> IDataResult remove(String sessionId, T ejb) throws Exception;
@@ -182,7 +182,7 @@ public interface IGenericDAO {
      * @param <T>
      * @param sessionId identificador de la sesión del usuario
      * @param ejb objeto ejb con los datos de la clave unica
-     * @return
+     * @return registro que cumple con las condiciones de busqueda.
      * @throws Exception
      */
     public <T extends IDataRow> T findByUk(String sessionId, T ejb) throws Exception;
@@ -359,7 +359,7 @@ public interface IGenericDAO {
      * @param <T>
      * @param query objeto query conteniendo lo necesario para recuperar los
      * datos.
-     * @return
+     * @return lista de registros según parámetros enviados.
      * @throws Exception
      */
     public <T extends IDataRow> List<T> getData(Query query) throws Exception;
@@ -453,8 +453,7 @@ public interface IGenericDAO {
 
     /**
      * Devuelve una conexión del entity manager, solo funciona en un ambiente
-     *
-     * @local no funciona en @Remote
+     * local no funciona en @Remote
      *
      * @param sessionId identificador de la sesión del usuario 
      * @param conn objeto factory cuya función es devolver una conexión del

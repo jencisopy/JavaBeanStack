@@ -34,9 +34,6 @@ import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.data.IGenericDAO;
-import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.security.ISessionsLocal;
-import org.javabeanstack.security.IUserSession;
 
 /**
  * Es un wraper de la clase Sessions. Se encarga de logeo de los usuario, 

@@ -96,7 +96,7 @@ public interface IDataExpression {
     public String getSentence(String group);
     /**
      * Devuelve el objeto params asignado en setSentenceParams()
-     * @return  
+     * @return  objeto params asignado en setSentenceParams()
      */
     public Map<String,Object> getSentenceParams();
     /**
@@ -119,7 +119,7 @@ public interface IDataExpression {
     /**
      * Elimina una expresión
      * @param elementNumber  elimina una expresión que se encuentra en el nro de elemento 
-     * @return  
+     * @return  DataExpression resultante
      * 
      */
     public IDataExpression removeExpression(int elementNumber);
@@ -127,7 +127,7 @@ public interface IDataExpression {
     /**
      * Elimina expresiones 
      * @param group elimina expresiones pertenecientes a un grupo dado.
-     * @return 
+     * @return IDataExpression resultante
      * 
      */
     public IDataExpression removeExpression(String group);

@@ -448,7 +448,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      *
      * @param <T>
      * @param row registro a refrescar de la base
-     * @return
+     * @return registro con los datos actualizados desde la base.
      * @throws Exception
      * @throws org.javabeanstack.exceptions.SessionError
      */
@@ -497,7 +497,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     /**
      * Devuelve un objeto Map con las propiedades del entity manager del dao
      *
-     * @return
+     * @return objeto Map con las propiedades del entity manager
      */
     @Override
     public Map<String, Object> getEntityManagerProp() {
@@ -507,7 +507,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     /**
      * Devuelve un objeto Map con las propiedades de la conexión de datos.
      *
-     * @return
+     * @return objeto Map con las propiedades de la conexión de datos
      */
     @Override
     public Map<String, Object> getPersistUnitProp() {

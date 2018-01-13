@@ -24,7 +24,6 @@ package org.javabeanstack.log;
 
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 import javax.ejb.EJB;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;

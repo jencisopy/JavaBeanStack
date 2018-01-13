@@ -661,7 +661,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      * resultante del query
      *
      * @param columns
-     * @return
+     * @return una matriz conteniendo los nombres de las columnas
      */
     protected static String[] setColumnLabel(String columns) {
         /* Reemplazar texto que se encuentra entre parentesis */
@@ -721,7 +721,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     /**
      * Lista de columnas
      *
-     * @return
+     * @return una matriz conteniendo los nombres de las columnas
      */
     @Override
     public String[] getColumnList() {
@@ -872,7 +872,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      * Retorna la cantidad de registros que resultaria de ejecutar la sentencia
      * SELECT generada por esta clase.
      *
-     * @return
+     * @return cantidad de registros
      * @throws java.lang.Exception
      */
     @Override

@@ -603,6 +603,7 @@ public class StringsTest {
 
     /**
      * Test of streamToString method, of class Strings.
+     * @throws java.lang.Exception
      */
     //@Test
     public void testStreamToString_InputStream() throws Exception {
@@ -616,6 +617,7 @@ public class StringsTest {
 
     /**
      * Test of streamToString method, of class Strings.
+     * @throws java.lang.Exception
      */
     //@Test
     public void testStreamToString_InputStream_String() throws Exception {
@@ -630,6 +632,7 @@ public class StringsTest {
 
     /**
      * Test of streamToString method, of class Strings.
+     * @throws java.lang.Exception
      */
     //@Test
     public void testStreamToString_InputStream_Charset() throws Exception {

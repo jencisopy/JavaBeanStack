@@ -80,7 +80,7 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
     /**
      * Devuelve una sentencia para buscar un registro especifico utilizando 
      * los valores de los campos unicos.
-     * @return 
+     * @return sentencia con la condición de la clave unica.
      */
     @Override
     public String getQueryUK(){
@@ -221,7 +221,8 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
     
     /**
      * Asigna tipo de operación a realizarse en la base de datos.
-     * @param action<br><br>
+     * @param action 
+     * <br><br>
      * 1 Agregar <br>
      * 2 Modificar<br>
      * 3 Borrar<br>

@@ -276,7 +276,7 @@ public interface IDataNativeQuery {
     /**
      * Retorna la cantidad de registros que resultaria de ejecutar la sentencia SELECT generada por esta clase.
      * 
-     * @return 
+     * @return cantidad de registros.
      * @throws java.lang.Exception 
      */
     public Long getCount() throws Exception; 

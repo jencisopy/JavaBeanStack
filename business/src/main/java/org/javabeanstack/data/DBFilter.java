@@ -38,7 +38,7 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
 
     /**
      * Devuelve lista de filtros.
-     * @return 
+     * @return lista de filtros.
      */
     @Override
     public List<DBFilterElement> getFilter() {
@@ -224,7 +224,7 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
 
     /**
      * Devuelve el path de paquetes donde buscar los modelos ejbs.
-     * @return 
+     * @return path de paquetes donde buscar los modelos ejbs
      */
     @Override
     public String getModelPackagePath() {

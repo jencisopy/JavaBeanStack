@@ -162,7 +162,7 @@ public class Fn {
      * @param <T>
      * @param value  valor que devuelve si no es nulo
      * @param alternateValue valor que devuelve si "value" es nulo
-     * @return 
+     * @return valor (value si no es nulo) valor alternativo (alternateValue si value es nulo)
      */
     public static <T> T nvl(T value, T alternateValue) {
         if (value == null) {

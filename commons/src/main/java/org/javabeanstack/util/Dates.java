@@ -35,7 +35,7 @@ public class Dates {
     /**
      * Convierte una cadena a una fecha
      * @param dateString
-     * @return 
+     * @return un dato fecha resultante de los parámetros introducidos.
      */
     public static Date toDate(String dateString) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -46,7 +46,7 @@ public class Dates {
      * Convierte una cadena a una fecha
      * @param dateString
      * @param format ejemplo dd/mm/yyyy
-     * @return 
+     * @return un dato fecha resultante de los parámetros introducidos.
      */
     public static Date toDate(String dateString, String format) {
         SimpleDateFormat formatter = new SimpleDateFormat(format);
@@ -56,7 +56,7 @@ public class Dates {
     /**
      * Convierte una fecha hora a una fecha
      * @param date
-     * @return 
+     * @return un dato fecha resultante de los parámetros introducidos.
      */
     public static Date toDate(Date date) {
         Calendar calendar = Calendar.getInstance();
@@ -73,7 +73,7 @@ public class Dates {
      * Convierte una cadena a una fecha
      * @param dateString
      * @param formatter
-     * @return 
+     * @return un dato fecha resultante de los parámetros introducidos.
      */
     public static Date toDate(String dateString, SimpleDateFormat formatter) {
         Date date = null;

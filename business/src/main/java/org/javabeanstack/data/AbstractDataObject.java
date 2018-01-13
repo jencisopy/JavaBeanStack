@@ -951,7 +951,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Devuelve un valor nuevo para una clave
      *
      * @param fieldname valor nuevo para este campo
-     * @return
+     * @return valor nuevo para una clave.
      */
     @Override
     public Object getNewValue(String fieldname) {
@@ -962,7 +962,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Devuelve el valor por defecto de un campo dado, del registro actual.
      *
      * @param fieldname nombre del campo
-     * @return
+     * @return valor por defecto del campo solicitado
      */
     @Override
     public Object getFieldDefaultValue(String fieldname) {
@@ -976,7 +976,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Devuelve un valor de un campo dado, del registro actual.
      *
      * @param fieldname nombre del campo
-     * @return
+     * @return valor del campo solicitado.
      */
     @Override
     public Object getField(String fieldname) {
@@ -992,7 +992,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      *
      * @param objname nombre del miembro relacionado.
      * @param fieldname nombre del campo
-     * @return
+     * @return valor de un campo solicitado.
      */
     @Override
     public Object getField(String objname, String fieldname) {
@@ -1010,7 +1010,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Devuelve el valor original de un campo dado, del registro actual.
      *
      * @param fieldname nombre del campo
-     * @return
+     * @return valor anterior de un campo solicitado.
      */
     @Override
     public Object getFieldOld(String fieldname) {
@@ -1028,7 +1028,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * posicionado.
      *
      * @param fieldname nombre del campo
-     * @return
+     * @return instancia de un objeto de una clave foranea.
      */
     @Override
     public IDataRow getFieldObjFK(String fieldname) {
@@ -1213,7 +1213,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     /**
      * Devuelve verdadero o falso si es que existe un campo o propiedad en el modelo de dato.
      * @param fieldname nombre del campo
-     * @return
+     * @return verdadero si existe el campo en el modelo o falso si no.
      */
     @Override
     public boolean isFieldExist(String fieldname) {

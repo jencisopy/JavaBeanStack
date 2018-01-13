@@ -81,7 +81,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      * Devuelve un entity manager. Se crea un entity manager por cada thread y
-     * unidad de persistencia.
+     * unidad de persistencia o por cada sesión de usuario y unidad de persistencia.
      *
      * @param keyId
      * @return un entity manager
@@ -99,7 +99,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @return un list con los registros de una tabla
      * @throws Exception
      */
@@ -126,7 +126,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param id identificador del registro
      * @return un registro solicitado
      * @throws Exception
@@ -164,9 +164,9 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Devuelve un registro a travéz de su clave unica.
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param ejb objeto ejb con los datos de la clave unica
-     * @return
+     * @return un registro que cumple la condición de la clave unica solicitada.
      * @throws Exception
      */
     @Override
@@ -214,11 +214,11 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
 
     /**
-     * Devuelve un registro de una tabla dada
+     * Devuelve una lista de registros de una tabla dada
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @return lista de objetos
      * @throws Exception
      */
@@ -228,11 +228,11 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     }    
     
     /**
-     * Devuelve un registro de una tabla dada
+     * Devuelve una lista de registros de una tabla dada
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param order
      * @param filter
      * @param params
@@ -247,11 +247,11 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     
     /**
-     * Devuelve un registro de una tabla dada
+     * Devuelve una lista de registro de una tabla dada
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param order
      * @param filter
      * @param params
@@ -293,7 +293,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @return un objeto con valores del registro de la tabla solicitada
@@ -341,7 +341,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @return una lista de objetos conteniendo los registros de la tabla
@@ -359,7 +359,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param queryString sentencia jpql
      * @param parameters parametros de la sentencia
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -396,7 +396,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param queryString sentencia jpql
      * @param first a partir de este nro. de registro se va a traer los datos
      * @param max cantidad maxima de registros
@@ -416,7 +416,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @return un objeto con los datos del registro de la tabla solicitada
@@ -459,7 +459,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @return una lista de objetos con los datos de los registros de la tabla
@@ -478,7 +478,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param namedQuery namedQuery
      * @param first a partir de este nro. de registro se va a traer los datos
      * @param max cantidad maxima de registros
@@ -499,7 +499,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param namedQuery namedQuery
      * @param parameters parámetros de la sentencia.
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -532,7 +532,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @return una lista de objetos con datos de los registros solicitados
@@ -568,7 +568,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @param first a partir de este nro. de registro se va a traer los datos
@@ -610,7 +610,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param sqlString sentencia sql
      * @param parameters parámetros de la sentencia.
      * @return un objeto error si no se ejecuto la sentencia con exito
@@ -651,7 +651,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Sincroniza un ejb con la base de datos.
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param ejb objeto mapeado a un registro de una tabla.
      * @return Devuelve un objeto con el resultado de la grabación
      *
@@ -668,7 +668,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param ejbs lista de objetos mapeados a los registros de una tabla.
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
@@ -681,7 +681,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      *
      * @param <T>
      * @param ejbs lista de objetos mapeados a los registros de una tabla.
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
@@ -695,7 +695,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Sincroniza una lista de ejbs con la base de datos.
      *
      * @param dataSet set de objetos mapeados a los registros de una tabla.
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
@@ -703,7 +703,6 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (dataSet == null || dataSet.size() == 0) {
             return null;
         }
-        //TODO controlar aqui la sesión del usuario
         String appUser = "";
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
         // Sesión del usuario
@@ -730,24 +729,25 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
                             em.persist(ejb);
+                            em.flush();
                             break;
                         case IDataRow.UPDATE:
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
                             em.merge(ejb);
+                            em.flush();
                             break;
                         case IDataRow.DELETE:
                             ejbsRes.add(ejb);
                             em.remove(em.merge(ejb));
                             ejbsRes.remove(ejb);
+                            em.flush();
                             break;
                         default:
                             break;
                     }
                     ejb.setErrors((Map<String, IErrorReg>) null);
                 }
-                //TODO ver flush despues del persist, merge o remove
-                em.flush();
                 for (IDataRow ejb : ejbs) {
                     if (ejb.getAction() != IDataRow.DELETE) {
                         ejb.setAction(0);
@@ -774,9 +774,9 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Agregar,un registro en la tabla
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param ejb el objeto con los valores del registro
-     * @return
+     * @return IDataResult conteniendo el dato del registro agregado.
      */
     @Override
     public <T extends IDataRow> IDataResult persist(String sessionId, T ejb) {
@@ -788,9 +788,9 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Modificar un registro en la tabla dada
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param ejb el objeto con los valores del registro
-     * @return
+     * @return IDataResult conteniendo el dato del registro modificado.
      */
     @Override
     public <T extends IDataRow> IDataResult merge(String sessionId, T ejb) {
@@ -802,9 +802,9 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Borra un registro en la tabla dada
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
-     * @param sessionId identificador de la sesión que permite realizar las
-     * @param ejb el objeto con los valores del registro
-     * @return
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
+     * @param ejb el objeto con los valores del registro.
+     * @return IDataResult conteniendo el dato del registro eliminado.
      */
     @Override
     public <T extends IDataRow> IDataResult remove(String sessionId, T ejb) {
@@ -840,7 +840,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Refresca desde la base de datos los valores de un objeto.
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param row objeto o registro a refrescar
      * @return objeto con los datos refrescados de la base de datos
      * @throws Exception
@@ -869,7 +869,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Refresca desde la base de datos una lista de objetos.
      *
      * @param <T>
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param rows objetos a refrescar
      * @return lista de objetos con los datos refrescados de la base de datos
      * @throws Exception
@@ -887,7 +887,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      * Calcula la cantidad de registros que devolveria una sentencia sql
      * 
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param queryString sentencia jpql
      * @param parameters parámetros de la sentencia
      * @return cantidad de registros que debería devolver la sentencia.
@@ -924,7 +924,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     /**
      * Calcula la cantidad de registros que devolveria una sentencia sql
      * 
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param queryString sentencia sql
      * @param parameters parámetros de la sentencia
      * @return cantidad de registros que debería devolver la sentencia.
@@ -1032,7 +1032,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     /**
      *
-     * @param sessionId identificador de la sesión que permite realizar las
+     * @param sessionId identificador de la sesión que permite realizar las operaciones
      * @param conn objeto factory cuya función es devolver una conexión del
      * entity manager
      * @return devuelve una conexión del entity manager

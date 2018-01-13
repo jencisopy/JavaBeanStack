@@ -475,7 +475,7 @@ public class DataReport {
      * en executeSqlSentence.
      *
      * @param query
-     * @return
+     * @return instancia de un objeto IDataNativeQuery
      */
     public IDataNativeQuery createDataNativeQuery(IDataNativeQuery query) {
         setProperties();
