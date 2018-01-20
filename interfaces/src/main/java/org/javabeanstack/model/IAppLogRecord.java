@@ -28,7 +28,7 @@ import org.javabeanstack.data.IDataRow;
  *
  * @author Jorge Enciso
  */
-public interface ILogRecord extends IDataRow{
+public interface IAppLogRecord extends IDataRow{
     public static final String CATEGORY_APP = "A";
     public static final String CATEGORY_SECURITY = "S";
     public static final String CATEGORY_DATA = "D";

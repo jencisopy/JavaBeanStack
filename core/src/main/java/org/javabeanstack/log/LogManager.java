@@ -34,9 +34,9 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.security.ISessionsLocal;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Strings;
-import org.javabeanstack.model.ILogRecord;
 import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.model.IAppLogRecord;
 
 /**
  * Su función es gestionar la escritura y lectura del log del sistema.  
@@ -44,7 +44,7 @@ import org.javabeanstack.data.IGenericDAO;
  * @author Jorge Enciso
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)    
-public class LogManager implements ILogManager {
+public class LogManager implements IAppLogManager {
     private static final Logger LOGGER = Logger.getLogger(LogManager.class);
     @EJB private IGenericDAO dao;
     @EJB private ISessionsLocal sessions;
@@ -58,15 +58,15 @@ public class LogManager implements ILogManager {
      * @param messageInfo información adicional del evento producido.
      * @param messageNumber nro de mensaje (ver en AppMessage)
      * @param category    (Aplicación, seguridad, Datos)
-     *                      ILogRecord.CATEGORY_APP, ILogRecord.CATEGORY_SECURITY, ILogRecord.CATEGORY_DATA
+                      IAppLogRecord.CATEGORY_APP, IAppLogRecord.CATEGORY_SECURITY, IAppLogRecord.CATEGORY_DATA
      * @param level       (Error, Informacion, Alerta) 
-     *                      ILogRecord.LEVEL_ERROR, ILogRecord. LEVEL_ALERT, ILogRecord.LEVEL_INFO
+                      IAppLogRecord.LEVEL_ERROR, IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
      * @param object
      * @param objectField
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends ILogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message,
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message,
                                                   String messageInfo, Integer messageNumber, String category, 
                                                   String level, String object, String objectField) {
         Integer lineNumber = 0;
@@ -84,15 +84,15 @@ public class LogManager implements ILogManager {
      * @param messageInfo información adicional del evento producido.
      * @param messageNumber nro de mensaje (ver en AppMessage)
      * @param category    (Aplicación, seguridad, Datos)
-     *                      ILogRecord.CATEGORY_APP, ILogRecord.CATEGORY_SECURITY, ILogRecord.CATEGORY_DATA
+                      IAppLogRecord.CATEGORY_APP, IAppLogRecord.CATEGORY_SECURITY, IAppLogRecord.CATEGORY_DATA
      * @param level       (Error, Informacion, Alerta) 
-     *                      ILogRecord.LEVEL_ERROR, ILogRecord. LEVEL_ALERT, ILogRecord.LEVEL_INFO
+                      IAppLogRecord.LEVEL_ERROR, IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
      * @param object
      * @param objectField
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends ILogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message,
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message,
                                                   String messageInfo, Integer messageNumber, String category, 
                                                   String level, String object, String objectField) {
         String sessionId = "";
@@ -115,9 +115,9 @@ public class LogManager implements ILogManager {
      * @param messageInfo información adicional del evento producido.
      * @param messageNumber nro de mensaje (ver en AppMessage)
      * @param category    (Aplicación, seguridad, Datos)
-     *                      ILogRecord.CATEGORY_APP, ILogRecord.CATEGORY_SECURITY, ILogRecord.CATEGORY_DATA
+                      IAppLogRecord.CATEGORY_APP, IAppLogRecord.CATEGORY_SECURITY, IAppLogRecord.CATEGORY_DATA
      * @param level       (Error, Informacion, Alerta) 
-     *                      ILogRecord.LEVEL_ERROR, ILogRecord. LEVEL_ALERT, ILogRecord.LEVEL_INFO
+                      IAppLogRecord.LEVEL_ERROR, IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
      * @param object
      * @param lineNumber   nro del linea del programa donde se produjo el evento.
      * @param objectField
@@ -125,7 +125,7 @@ public class LogManager implements ILogManager {
      */
     
     @Override
-    public <T extends ILogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message,
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message,
                                                   String messageInfo, Integer messageNumber, String category, String level, 
                                                   String object, String objectField, Integer lineNumber, Integer choose) {
         String sessionId = "";
@@ -146,9 +146,9 @@ public class LogManager implements ILogManager {
      * @param messageInfo información adicional del evento producido.
      * @param messageNumber nro de mensaje (ver en AppMessage)
      * @param category    (Aplicación, seguridad, Datos)
-     *                      ILogRecord.CATEGORY_APP, ILogRecord.CATEGORY_SECURITY, ILogRecord.CATEGORY_DATA
+                      IAppLogRecord.CATEGORY_APP, IAppLogRecord.CATEGORY_SECURITY, IAppLogRecord.CATEGORY_DATA
      * @param level       (Error, Informacion, Alerta) 
-     *                      ILogRecord.LEVEL_ERROR, ILogRecord. LEVEL_ALERT, ILogRecord.LEVEL_INFO
+                      IAppLogRecord.LEVEL_ERROR, IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
      * @param object
      * @param lineNumber   nro del linea del programa donde se produjo el evento.
      * @param objectField
@@ -156,7 +156,7 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends ILogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message, String messageInfo,
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message, String messageInfo,
                                                         Integer messageNumber, String category, String level, String object,
                                                         String objectField, Integer lineNumber, Integer choose) {
         try {
@@ -188,7 +188,7 @@ public class LogManager implements ILogManager {
      */
     
     @Override
-    public <T extends ILogRecord> boolean dbWrite(Class<T> logType,IErrorReg errorReg, IUserSession userSession) {
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType,IErrorReg errorReg, IUserSession userSession) {
         String sessionId = "";
         if (userSession != null) {
             sessionId = userSession.getSessionId();
@@ -205,7 +205,7 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends ILogRecord> boolean dbWrite(Class<T> logType, IErrorReg errorReg, String sessionId) {
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IErrorReg errorReg, String sessionId) {
         try {
             T logRecord = logType.newInstance();
             String messageInfo = "";
@@ -213,12 +213,12 @@ public class LogManager implements ILogManager {
                  messageInfo = ErrorManager.getStackCause(errorReg.getException());
             }
             if (Strings.isNullorEmpty(errorReg.getFieldName())){
-                logRecord.setCategory(ILogRecord.CATEGORY_APP);                
+                logRecord.setCategory(IAppLogRecord.CATEGORY_APP);                
             }
             else {
-                logRecord.setCategory(ILogRecord.CATEGORY_DATA);                                
+                logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);                                
             }
-            logRecord.setLevel(ILogRecord.LEVEL_ERROR);
+            logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
             logRecord.setMessage(errorReg.getMessage());
             logRecord.setMessageInfo(messageInfo);
             logRecord.setMessageNumber(errorReg.getErrorNumber());
@@ -243,7 +243,7 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends ILogRecord> boolean dbWrite(Class<T> logType, Exception exp, IUserSession userSession) {
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, Exception exp, IUserSession userSession) {
         String sessionId = "";
         if (userSession != null) {
             sessionId = userSession.getSessionId();
@@ -260,12 +260,12 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends ILogRecord> boolean dbWrite(Class<T> logType, Exception exp, String sessionId) {
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, Exception exp, String sessionId) {
         try {
             T logRecord = logType.newInstance();
             String messageInfo = ErrorManager.getStackCause(exp);            
-            logRecord.setCategory(ILogRecord.CATEGORY_APP);
-            logRecord.setLevel(ILogRecord.LEVEL_ERROR);
+            logRecord.setCategory(IAppLogRecord.CATEGORY_APP);
+            logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
             logRecord.setMessage(exp.getMessage());
             logRecord.setMessageInfo(messageInfo);
             logRecord.setMessageNumber(0);
@@ -290,7 +290,7 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends ILogRecord> boolean dbWrite(T logRecord, IUserSession userSession) {
+    public <T extends IAppLogRecord> boolean dbWrite(T logRecord, IUserSession userSession) {
         String sessionId = "";
         if (userSession != null) {
             sessionId = userSession.getSessionId();
@@ -307,7 +307,7 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends ILogRecord> boolean dbWrite(T logRecord, String sessionId) {
+    public <T extends IAppLogRecord> boolean dbWrite(T logRecord, String sessionId) {
         String sesionId = "NINGUNA";
         Long idcompany = null;
         Long iduser = null;

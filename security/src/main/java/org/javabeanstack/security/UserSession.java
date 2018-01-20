@@ -28,9 +28,9 @@ import java.util.Date;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.IUser;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.model.IAppUser;
 
 /**
  * Esta clase guarda información de la sesión de un usuario.
@@ -39,7 +39,7 @@ import org.javabeanstack.model.IAppCompany;
  * @author Jorge Enciso
  */
 public class UserSession implements IUserSession{
-    private IUser user;
+    private IAppUser user;
     private Date timeLogin = new Date();
     private Date lastReference = new Date();
     private IAppCompany company;
@@ -61,7 +61,7 @@ public class UserSession implements IUserSession{
      * @return Devuelve el objeto usuario
      */
     @Override
-    public IUser getUser() {
+    public IAppUser getUser() {
         return user;
     }
 
@@ -71,7 +71,7 @@ public class UserSession implements IUserSession{
      * @param user objeto usuario
      */
     @Override
-    public void setUser(IUser user) {
+    public void setUser(IAppUser user) {
         this.user = user;
     }
 

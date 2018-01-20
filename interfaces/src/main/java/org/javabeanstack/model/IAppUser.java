@@ -10,7 +10,7 @@ import org.javabeanstack.data.IDataRow;
  *
  * @author Jorge Enciso
  */
-public interface IUser extends IDataRow, Serializable {
+public interface IAppUser extends IDataRow, Serializable {
     Long getIduser();    
     String getLogin();
     String getCode();
@@ -24,7 +24,7 @@ public interface IUser extends IDataRow, Serializable {
     
     Long getIdcompany();        
     List<IAppCompanyAllowed> getAppCompanyAllowedList();
-    List<IUserMember> getUserMemberList();
+    List<IAppUserMember> getUserMemberList();
     
     String getRol();
     String getAppRol();    
@@ -43,7 +43,7 @@ public interface IUser extends IDataRow, Serializable {
 
     void setIdcompany(Long idcompany);    
     void setAppCompanyAllowedList(List<IAppCompanyAllowed> appCompanyAllowedList);
-    void setUserMemberList(List<IUserMember> userMemberList);
+    void setUserMemberList(List<IAppUserMember> userMemberList);
     
     void setDisable(Boolean disable);
     void setExpiredDate(Date expira);

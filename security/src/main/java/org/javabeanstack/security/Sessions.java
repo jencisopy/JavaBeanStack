@@ -36,11 +36,11 @@ import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.util.Fn;
 
-import org.javabeanstack.model.IUser;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.util.Dates;
 
 import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.model.IAppUser;
 
 
 /**
@@ -127,7 +127,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
         UserSession userSession;
         if (userLogin != null) {
             // Verificar existencia del usuario
-            IUser usuario = dao.findByQuery(null,
+            IAppUser usuario = dao.findByQuery(null,
                         "select o from User o where login = :userLogin",
                         params);
             

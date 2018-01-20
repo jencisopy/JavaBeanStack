@@ -5,8 +5,8 @@ import java.util.Date;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.IUser;
 import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.model.IAppUser;
 
 /**
  *
@@ -71,7 +71,7 @@ public interface IUserSession extends Serializable {
     Long getIdEmpresa();
     Integer getIdleSessionExpireInMinutes();
     <T extends IDBFilter> T getDBFilter();
-    IUser getUser();
+    IAppUser getUser();
     IDBLinkInfo getDbLinkInfo();    
     void setCompany(IAppCompany company);    
     void setEmpresa(IAppCompany empresa);
@@ -84,7 +84,7 @@ public interface IUserSession extends Serializable {
     void setPersistenceUnit(String persistenceUnit);
     void setSessionId(String sessionId);
     void setTimeLogin(Date timeLogin);
-    void setUser(IUser user);
+    void setUser(IAppUser user);
     void setIdleSessionExpireInMinutes(Integer minutes);
     <T extends IDBFilter> void setDBFilter(T dbFilter);    
 }

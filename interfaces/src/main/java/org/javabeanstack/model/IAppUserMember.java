@@ -7,11 +7,11 @@ import org.javabeanstack.data.IDataRow;
  *
  * @author Jorge Enciso
  */
-public interface IUserMember extends IDataRow, Serializable {
+public interface IAppUserMember extends IDataRow, Serializable {
     Long getIdusermember();
     void setIdusermember(Long idUserMember);    
-    IUser getUserMember();
-    void setUserMember(IUser user);
-    IUser getUserGroup();
-    void setUserGroup(IUser user);
+    IAppUser getUserMember();
+    void setUserMember(IAppUser user);
+    IAppUser getUserGroup();
+    void setUserGroup(IAppUser user);
 }
