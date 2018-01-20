@@ -31,7 +31,7 @@ import org.javabeanstack.model.IAppLogRecord;
  *
  * @author Jorge Enciso
  */
-public interface IAppLogManager {
+public interface ILogManager {
     <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message, String messageInfo, Integer messageNumber, String category, String type, String object, String objectField);    
     <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message, String messageInfo, Integer messageNumber, String category, String type, String object, String objectField);
     <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message, String messageInfo, Integer messageNumber, String category, String type, String object, String objectField, Integer lineNumber, Integer choose);

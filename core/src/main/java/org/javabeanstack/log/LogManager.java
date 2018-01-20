@@ -44,7 +44,7 @@ import org.javabeanstack.model.IAppLogRecord;
  * @author Jorge Enciso
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)    
-public class LogManager implements IAppLogManager {
+public class LogManager implements ILogManager {
     private static final Logger LOGGER = Logger.getLogger(LogManager.class);
     @EJB private IGenericDAO dao;
     @EJB private ISessionsLocal sessions;

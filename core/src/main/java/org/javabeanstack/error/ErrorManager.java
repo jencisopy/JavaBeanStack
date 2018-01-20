@@ -27,7 +27,7 @@ import java.io.StringWriter;
 import javax.ejb.EJB;
 import org.apache.log4j.Logger;
 import org.javabeanstack.model.IAppMessage;
-import org.javabeanstack.log.IAppLogManager;
+import org.javabeanstack.log.ILogManager;
 
 /**
  * Su función es la de gestionar los errores del sistema
@@ -37,7 +37,7 @@ import org.javabeanstack.log.IAppLogManager;
 public class ErrorManager {
     private static final Logger LOGGER = Logger.getLogger(ErrorManager.class);
 
-    @EJB private IAppLogManager logManager;
+    @EJB private ILogManager logManager;
 
     /**
      * Se ejecuta al momento de generarse un error en la aplicación <br>
@@ -71,7 +71,7 @@ public class ErrorManager {
      * @param logManager objeto que gestiona el acceso a la base de datos
      * @return Mensaje solicitado
      */
-    public String getErrorMessage(Integer msgNumber, IAppLogManager logManager) {
+    public String getErrorMessage(Integer msgNumber, ILogManager logManager) {
         IAppMessage message = logManager.getAppMessage(msgNumber);
         if (message == null) {
             return null;
@@ -99,7 +99,7 @@ public class ErrorManager {
      * @param logManager objeto que gestiona el acceso a la base de datos
      * @return objeto IErrorReg con el registro del mensaje
      */
-    public IErrorReg getErrorReg(Integer msgNumber, String fieldName, IAppLogManager logManager) {
+    public IErrorReg getErrorReg(Integer msgNumber, String fieldName, ILogManager logManager) {
         IAppMessage message = logManager.getAppMessage(msgNumber);
         if (message == null) {
             return null;
