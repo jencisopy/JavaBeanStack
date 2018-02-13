@@ -140,14 +140,16 @@ public class AppResource implements IAppResource {
 
     /**
      * Devuelve el avatar de un usuario solicitado
+     * @param <T>
+     * @param entityClass
      * @param userId identificador del usuario
      * @return avatar.
      */
     @Override
-    public byte[] getUserAvatar(Long userId) {
+    public <T extends IAppUser> byte[] getUserAvatar(Class<T> entityClass, Long userId) {
         try {
             byte[] avatar;            
-            IAppUser user = dao.findById(IAppUser.class, null, userId);
+            IAppUser user = (IAppUser)dao.findById(entityClass, null, userId);
             avatar = user.getAvatar();
             return avatar;
         } catch (Exception ex) {
@@ -159,14 +161,16 @@ public class AppResource implements IAppResource {
 
     /**
      * Devuelve el logo de una empresa en formato byte
+     * @param <T>
+     * @param entityClass
      * @param companyId identificador de la empresa
      * @return logo de la empresa.
      */
     @Override
-    public byte[] getCompanyLogo(Long companyId) {
+    public <T extends IAppCompany> byte[] getCompanyLogo(Class<T> entityClass, Long companyId) {
         try {
             byte[] logo;            
-            IAppCompany company = dao.findById(IAppCompany.class, null, companyId);
+            IAppCompany company = (IAppCompany)dao.findById(entityClass, null, companyId);
             logo = company.getLogo();
             return logo;
         } catch (Exception ex) {
@@ -174,6 +178,4 @@ public class AppResource implements IAppResource {
         }
         return null;
     }
-    
-    
 }
