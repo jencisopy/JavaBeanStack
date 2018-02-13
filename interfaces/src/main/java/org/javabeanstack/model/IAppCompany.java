@@ -32,7 +32,8 @@ public interface IAppCompany extends IDataRow, Serializable {
     
 
     String getFilesystem();
-    String getLogo();
+    byte[] getLogo();
+    
     String getMenu();
     String getDbengine();
 
@@ -55,7 +56,7 @@ public interface IAppCompany extends IDataRow, Serializable {
     void setPersistentUnit(String persistentUnit);
 
     void setFilesystem(String filesystem);
-    void setLogo(String logo);
+    void setLogo(byte[] logo);
     void setMenu(String menu);
     void setDbengine(String dbEngine);
 }

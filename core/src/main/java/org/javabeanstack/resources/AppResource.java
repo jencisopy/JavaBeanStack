@@ -23,6 +23,11 @@ package org.javabeanstack.resources;
 
 import java.util.Map;
 import javax.ejb.EJB;
+import org.apache.log4j.Logger;
+import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.model.IAppUser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.javabeanstack.security.ISecManager;
@@ -40,11 +45,14 @@ import static org.javabeanstack.util.Fn.nvl;
  * @author Jorge Enciso
  */
 public class AppResource implements IAppResource {
-
+    private static final Logger LOGGER = Logger.getLogger(AppResource.class);
+    
     @EJB
     private IXmlManager xmlManager;
     @EJB
     private ISecManager secManager;
+    @EJB
+    private IGenericDAO dao;
 
     /**
      * Retorna un recurso solicitado que esta guardado en una tabla dentro
@@ -129,4 +137,43 @@ public class AppResource implements IAppResource {
         }
         return jrxml;
     }
+
+    /**
+     * Devuelve el avatar de un usuario solicitado
+     * @param userId identificador del usuario
+     * @return avatar.
+     */
+    @Override
+    public byte[] getUserAvatar(Long userId) {
+        try {
+            byte[] avatar;            
+            IAppUser user = dao.findById(IAppUser.class, null, userId);
+            avatar = user.getAvatar();
+            return avatar;
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
+    }
+
+
+    /**
+     * Devuelve el logo de una empresa en formato byte
+     * @param companyId identificador de la empresa
+     * @return logo de la empresa.
+     */
+    @Override
+    public byte[] getCompanyLogo(Long companyId) {
+        try {
+            byte[] logo;            
+            IAppCompany company = dao.findById(IAppCompany.class, null, companyId);
+            logo = company.getLogo();
+            return logo;
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
+    }
+    
+    
 }

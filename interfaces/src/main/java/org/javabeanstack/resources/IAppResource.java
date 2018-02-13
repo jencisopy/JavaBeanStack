@@ -36,5 +36,7 @@ public interface IAppResource extends Serializable{
     byte[] getResourceAsBytes(IUserSession userSession, String resourcePath);
     byte[] getResourceAsBytes(String sessionId, String resourcePath);
     IXmlDom<Document, Element> getResourceAsXmlDom(String sessionId, String resourcePath, String elementPath, Map<String, String> params);
+    byte[] getUserAvatar(Long userId);
+    byte[] getCompanyLogo(Long companyId);
 }
 
