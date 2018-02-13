@@ -72,7 +72,6 @@ public class UserSession implements IUserSession{
      */
     @Override
     public void setUser(IAppUser user) {
-        user.setAvatar(null);
         this.user = user;
     }
 
@@ -134,13 +133,11 @@ public class UserSession implements IUserSession{
     
     @Override
     public void setCompany(IAppCompany company) {
-        company.setLogo(null);
         this.company = company;
     }
 
     @Override
     public void setEmpresa(IAppCompany empresa) {
-        empresa.setLogo(null);
         this.company = empresa;
     }
     

@@ -23,6 +23,8 @@ package org.javabeanstack.resources;
 
 import java.io.Serializable;
 import java.util.Map;
+import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.model.IAppUser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.javabeanstack.security.IUserSession;
@@ -36,7 +38,7 @@ public interface IAppResource extends Serializable{
     byte[] getResourceAsBytes(IUserSession userSession, String resourcePath);
     byte[] getResourceAsBytes(String sessionId, String resourcePath);
     IXmlDom<Document, Element> getResourceAsXmlDom(String sessionId, String resourcePath, String elementPath, Map<String, String> params);
-    byte[] getUserAvatar(Long userId);
-    byte[] getCompanyLogo(Long companyId);
+    <T extends IAppUser> byte[] getUserAvatar(Class<T> entityClass, Long userId);
+    <T extends IAppCompany> byte[] getCompanyLogo(Class<T> entityClass, Long companyId);
 }
 

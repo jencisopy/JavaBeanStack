@@ -30,7 +30,6 @@ public interface IAppUser extends IDataRow, Serializable {
     String getAppRol();    
     Short getType();
     byte[] getAvatar();
-    String getAvatarAsString();
     
     void setIduser(Long iduser);    
     void setLogin(String loginName);
@@ -52,5 +51,4 @@ public interface IAppUser extends IDataRow, Serializable {
     void setAppRol(String appRol);    
     void setType(Short tipo);
     void setAvatar(byte[] avatar);
-    void setAvatarAsString(String avatar);
 }
