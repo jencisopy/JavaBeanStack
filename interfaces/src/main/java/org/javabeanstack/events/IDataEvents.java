@@ -21,13 +21,17 @@
 */
 package org.javabeanstack.events;
 
+import org.javabeanstack.data.IDataObject;
 import org.javabeanstack.data.IDataRow;
 
 /**
  *
  * @author Jorge Enciso
+ * @param <T>
  */
-public interface IDataEvents {
+public interface IDataEvents<T extends IDataObject> {
+    public T getContext();
+    public void setContext(T context);
     public boolean onAllowOperation();
     public boolean beforeRowMove(IDataRow curRow);
     public void    afterRowMove(IDataRow newRow);

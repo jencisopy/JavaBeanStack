@@ -533,6 +533,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      */
     @Override
     public void setUserSession(IUserSession userSession) throws SessionError {
+        if (userSession ==  null){
+            this.userSession = null;
+            this.persistUnit = IDBManager.CATALOGO;
+            return;
+        }
         checkUserSession();
         this.userSession = userSession;
         this.persistUnit = userSession.getPersistenceUnit();

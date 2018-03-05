@@ -19,7 +19,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-
 package org.javabeanstack.data;
 
 import java.io.Serializable;
@@ -34,21 +33,22 @@ import org.apache.log4j.Logger;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IDataEvents;
+import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Strings;
-
 
 /**
  * Esta clase se encarga de almacenar los registros de datos recuperados de la
- * base de datos a travéz de la clase dataLink(wrapper dao). Provee interfases que permiten
- * la recuperación, busqueda, refresco, y actualización de los registros. A travéz
- * del dataService válida y guarda la información en la base de datos. Esta clase
- * se instancia en la capa de la app cliente.
+ * base de datos a travéz de la clase dataLink(wrapper dao). Provee interfases
+ * que permiten la recuperación, busqueda, refresco, y actualización de los
+ * registros. A travéz del dataService válida y guarda la información en la base
+ * de datos. Esta clase se instancia en la capa de la app cliente.
  *
  * @author Jorge Enciso
  * @param <T> tipo ejb
  */
 public abstract class AbstractDataObject<T extends IDataRow> implements IDataObject, Serializable {
-    private static final Logger LOGGER = Logger.getLogger(AbstractDataObject.class); 
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractDataObject.class);
     /**
      * Puntero del nro de registro o fila
      */
@@ -144,6 +144,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Devuelve el manejador de datos del schema de datos
+     *
      * @return manejador de datos
      */
     @Override
@@ -151,6 +152,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Devuelve el manejador de datos del schema catalogo
+     *
      * @return manejador de datos
      */
     @Override
@@ -158,6 +160,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Devuelve el objeto dataEvents asignado.
+     *
      * @return objeto dataEvents (manejador de eventos)
      */
     @Override
@@ -165,8 +168,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return dataEvents;
     }
 
-    /** 
-     * Asigna un objeto dataEvent 
+    /**
+     * Asigna un objeto dataEvent
+     *
      * @param dtEvents manejador de eventos
      */
     protected void setDataEvents(IDataEvents dtEvents) {
@@ -188,8 +192,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Devuelve un objeto detallando los errores ocurridos posterior a la ejecución
-     * de una validación o grabación de datos.
+     * Devuelve un objeto detallando los errores ocurridos posterior a la
+     * ejecución de una validación o grabación de datos.
+     *
      * @return objeto error.
      */
     @Override
@@ -198,10 +203,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Devuelve una cadena de errores ocurridos posterior a la ejecución
-     * de una validación o grabación de datos.
-     * 
-     * @param all determina si va a devolver todos los errores o solo el primero.
+     * Devuelve una cadena de errores ocurridos posterior a la ejecución de una
+     * validación o grabación de datos.
+     *
+     * @param all determina si va a devolver todos los errores o solo el
+     * primero.
      * @return cadena con los errores.
      */
     @Override
@@ -232,6 +238,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Devuelve el mensaje de error asociado a un campo si lo hubiese
+     *
      * @param fieldName nombre del campo
      * @return mensaje de error.
      */
@@ -269,6 +276,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Devuelve la expresión del filtro extra asignado
+     *
      * @return filtro extra utilizado para recuperar los datos.
      */
     @Override
@@ -278,6 +286,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Devuelve los parametros de la condición del filtro.
+     *
      * @return parametros del filtro.
      */
     @Override
@@ -287,6 +296,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Lista de objetos donde se almacena los registros recuperados de la base
+     *
      * @return lista de objetos
      */
     @Override
@@ -296,6 +306,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Lista de objetos que fueron modificados
+     *
      * @return lista de objetos modificados
      */
     @Override
@@ -311,6 +322,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Registro actual
+     *
      * @return registro actual
      */
     @Override
@@ -320,6 +332,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Sentencia que se ejecutara para recuperar los datos
+     *
      * @return sentencia jpql
      */
     @Override
@@ -329,6 +342,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Es la ultima sentencia ejecutada para la recuperación de los datos.
+     *
      * @return ultima sentencia ejecutada
      */
     @Override
@@ -338,6 +352,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Devuelve el nro de fila actual. (0 es la primera fila)
+     *
      * @return retorna nro de fila o registro.
      */
     @Override
@@ -346,10 +361,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Esta propiedad determina si se puede o no navegar a travéz de los elementos
-     * de la lista de objetos que fuerón marcados para borrase.
-     * @return valor del showDeleteRow que determina si muestra o no los registros
-     * marcados para borrarse.
+     * Esta propiedad determina si se puede o no navegar a travéz de los
+     * elementos de la lista de objetos que fuerón marcados para borrase.
+     *
+     * @return valor del showDeleteRow que determina si muestra o no los
+     * registros marcados para borrarse.
      */
     @Override
     public boolean isShowDeletedRow() {
@@ -357,8 +373,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Asigna la propiedad showDeleteRow determina si se puede o no navegar a 
-     * travéz de los elementos de la lista de objetos que fuerón marcados para borrase.
+     * Asigna la propiedad showDeleteRow determina si se puede o no navegar a
+     * travéz de los elementos de la lista de objetos que fuerón marcados para
+     * borrase.
+     *
      * @param showDeletedRow
      */
     @Override
@@ -368,6 +386,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Devuelve la cantidad de registros de la lista Rows
+     *
      * @return retorna cantidad de filas o registros.
      */
     @Override
@@ -413,7 +432,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     /**
      * Asigna un valor a la propiedad readwrite que determina si puede o no
      * escribirse en la lista de objetos
-     * @param valor 
+     *
+     * @param valor
      */
     @Override
     public void setReadWrite(boolean valor) {
@@ -422,7 +442,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Asigna el tipo o clase del modelo de dato.
-     * @param type 
+     *
+     * @param type
      */
     @Override
     public void setType(Class type) {
@@ -453,7 +474,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Asigna el filtro extra para la selección de datos.
-     * @param filterExtra 
+     *
+     * @param filterExtra
      */
     @Override
     public void setFilterExtra(String filterExtra) {
@@ -462,7 +484,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Asigna un map con los valores de los parámetros del filtro
-     * @param filterParams 
+     *
+     * @param filterParams
      */
     @Override
     public void setFilterParams(Map filterParams) {
@@ -485,15 +508,15 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * los datos
      */
     protected void setSelectcmd() {
-        String sqlComando; 
+        String sqlComando;
         String filtro = "";
         if (filter == null) {
             filter = "";
         }
         sqlComando = "select o from " + getType().getSimpleName() + " o ";
         if (!getDAO().getPersistUnit().equals(IDBManager.CATALOGO)
-                        && getDAO().getUserSession() != null 
-                        && getDAO().getUserSession().getDBFilter() != null){
+                && getDAO().getUserSession() != null
+                && getDAO().getUserSession().getDBFilter() != null) {
             filtro = getDAO().getUserSession().getDBFilter().getFilterExpr(type, "");
             if (!"".equals(filter)) {
                 filtro += " and " + filter;
@@ -521,9 +544,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Se ejecuta antes del metodo open(), recibe los mismos parámetros
-     * que el metodo open().
-     * 
+     * Se ejecuta antes del metodo open(), recibe los mismos parámetros que el
+     * metodo open().
+     *
      * @param order orden de la recuperación.
      * @param filter filtro de la selección.
      * @param readwrite lectura y escritura
@@ -569,7 +592,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             this.filter = filter;
             this.order = order;
             this.maxrows = maxrows;
-            this.setSelectcmd();
+            //
             this.dataFill();
             //
             this.afterOpen(order, filter, readwrite, maxrows);
@@ -583,6 +606,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta posterior al metodo open().
+     *
      * @param order orden de la recuperación.
      * @param filter filtro de la selección.
      * @param readwrite lectura y escritura
@@ -609,32 +633,55 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @throws java.lang.Exception
      */
     protected void dataFill() throws Exception {
-        errorApp = null;
-        String query = selectCmd;
-        // Se agrega el filtro extra 
-        if (!Strings.isNullorEmpty(filterExtra)) {
-            if (!query.contains("where ")) {
-                query += " where " + filterExtra;
-            } else if (query.contains("where ")) {
-                query += " and " + filterExtra;
-            }
-        }
-        //Orden
-        if (order != null && !"".equals(order)) {
-            query += " order by " + order;
-        }
-        lastQuery = query;
         beforeDataFill();
         //
         if (maxrows == -1) {
             maxrows = 999999999;
         }
+        errorApp = null;
         List<T> x;
-        if (maxrows == 0) {
-            x = new ArrayList();
+        // Si existe un dataService utilizarlo parar traer los datos
+        if (this.getDAO().getDataService() != null) {
+            IUserSession userSession = getDAO().getUserSession();
+            String sessionId = null;
+            if (userSession != null) {
+                sessionId = userSession.getSessionId();
+            }
+            //Se agrega el filtro extra (usa lazydatarows)
+            String allFilters = filter;
+            if (!Strings.isNullorEmpty(filterExtra)) {
+                if (!Strings.isNullorEmpty(filter)) {
+                    allFilters += " and " + filterExtra;
+                } else  {
+                    allFilters = filterExtra;
+                }
+            }
+            x = this.getDAO().getDataService().getDataRows(sessionId, type, order, allFilters, filterParams,firstRow, maxrows);
+            selectCmd = this.getDAO().getDataService().getSelectCmd(sessionId, type, order, filter);
+            lastQuery = selectCmd;
         } else {
-            x = (ArrayList<T>) getDAO().findListByQuery(query, filterParams, firstRow, maxrows);
+            setSelectcmd();
+            String query = selectCmd;
+            // Se agrega el filtro extra 
+            if (!Strings.isNullorEmpty(filterExtra)) {
+                if (!query.contains("where ")) {
+                    query += " where " + filterExtra;
+                } else if (query.contains("where ")) {
+                    query += " and " + filterExtra;
+                }
+            }
+            //Orden
+            if (order != null && !"".equals(order)) {
+                query += " order by " + order;
+            }
+            lastQuery = query;
+            if (maxrows == 0) {
+                x = new ArrayList();
+            } else {
+                x = (ArrayList<T>) getDAO().findListByQuery(query, filterParams, firstRow, maxrows);
+            }
         }
+
         this.setDataRows(x);
         this.moveFirst();
         //
@@ -662,8 +709,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     /**
      * Realiza la misma tarea del metodo open(), vuelve a seleccionar los datos
      * de la base de datos utilizando una expresión de filtro diferente.
-     * @param filterExtra   expresión de la condición del filtro.
-     * @param filterParams  parámetros del filtro.
+     *
+     * @param filterExtra expresión de la condición del filtro.
+     * @param filterParams parámetros del filtro.
      * @return verdadero si tu exito, falso si no.
      */
     @Override
@@ -689,7 +737,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             this.dataRowsBak = null;
             this.row = null;
             this.dataRows = null;
-            this.setSelectcmd();
+            //
             this.dataFill();
             //
             this.afterRequery();
@@ -712,7 +760,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta antes del metodo goTo()
-     * @param row   fila o objeto de dato
+     *
+     * @param row fila o objeto de dato
      * @return verdadero si tuvo exito, falso si no.
      */
     protected boolean beforeRowMove(IDataRow row) {
@@ -737,9 +786,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Se posiciona en un registro determinado
      *
      * @param rownumber nro. de fila o registro. (0 es el primer registro)
-     * @param offset si el registro donde se quiere desplazar esta
-     * marcado como borrado, entonces se busca posicionar para abajo (-1) o
-     * arriba (1) de acuerdo al valor del desplazamiento
+     * @param offset si el registro donde se quiere desplazar esta marcado como
+     * borrado, entonces se busca posicionar para abajo (-1) o arriba (1) de
+     * acuerdo al valor del desplazamiento
      *
      * @return verdadero si tu exito, falso si no
      */
@@ -788,7 +837,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta posterior al metodo goTo()
-     * @param row 
+     *
+     * @param row
      */
     protected void afterRowMove(IDataRow row) {
         if (this.dataEvents != null) {
@@ -1068,6 +1118,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Asigna un valor a un campo dado de tipo IDataRow
+     *
      * @param fieldname nombre del campo
      * @param param map con los valores
      * @return Verdadero si tuvo exito o falso si no
@@ -1171,7 +1222,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Asigna una copia del registro o la fila actual
-     * 
+     *
      */
     private void setRowBak() {
         if (dataRowsBak == null) {
@@ -1185,7 +1236,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Asigna una copia del registro o la fila que se pasa como parámetro
-     * @param ejb 
+     *
+     * @param ejb
      */
     private void setRowBak(T ejb) {
         if (dataRowsBak == null) {
@@ -1211,7 +1263,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Devuelve verdadero o falso si es que existe un campo o propiedad en el modelo de dato.
+     * Devuelve verdadero o falso si es que existe un campo o propiedad en el
+     * modelo de dato.
+     *
      * @param fieldname nombre del campo
      * @return verdadero si existe el campo en el modelo o falso si no.
      */
@@ -1245,15 +1299,16 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Devuelve verdadero o falso si es que la operación solicitada (agregar, modificar,borrar)
-     * es permitida o no.
-     * @param operation operación solicitada.<br>     
+     * Devuelve verdadero o falso si es que la operación solicitada (agregar,
+     * modificar,borrar) es permitida o no.
+     *
+     * @param operation operación solicitada.<br>
      * 1 Agregar <br>
      * 2 Modificar<br>
      * 3 Borrar<br>
      * 4 Consultar<br>
-     * @return verdadero o falso si es que la operación (agregar, modificar,borrar)
-     * es permitida o no.
+     * @return verdadero o falso si es que la operación (agregar,
+     * modificar,borrar) es permitida o no.
      */
     @Override
     public boolean allowOperation(int operation) {
@@ -1346,6 +1401,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta antes del metodo insertRow
+     *
      * @param newRow nuevo objeto o registro.
      * @return verdadero si tuvo exito o falso si no.
      */
@@ -1434,6 +1490,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta antes del metodo deleteRow()
+     *
      * @return retorna verdadero si tuvo exito o falso si no
      */
     protected boolean beforeDeleteRow() {
@@ -1488,7 +1545,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public void copyFrom(String cIdempresa, String cEmpresaNombre, String cXmlTag, String cTablaCopy) {
         /* No se puede modificar si es de solo lectura */
         if (!this.readWrite) {
-            
+
         }
     }
 
@@ -1500,8 +1557,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Valida los valores ingresados en el registro.
+     *
      * @return un objeto conteniendo el resultado de la validación.
-     * @throws Exception 
+     * @throws Exception
      */
     @Override
     public Map<String, IErrorReg> checkDataRow() throws Exception {
@@ -1517,19 +1575,23 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             return null;
         }
         // Validar los datos utilizando checkDataRow del DataService del objeto
-        String sessionId = getDAO().getUserSession().getSessionId();
+        String sessionId = null;
+        if (getDAO().getUserSession() != null){
+            sessionId = getDAO().getUserSession().getSessionId();
+        }                
         Map<String, IErrorReg> errorMap = this.getDAO().getDataService().checkDataRow(sessionId, row);
-        if (errorMap == null || errorMap.isEmpty()){
-            this.row.setErrors((Map<String, IErrorReg>) null);            
+        if (errorMap == null || errorMap.isEmpty()) {
+            this.row.setErrors((Map<String, IErrorReg>) null);
             this.row.setRowChecked(true);
             return null;
         }
-        return errorMap;    
+        return errorMap;
     }
 
     /**
-     * Se ejecuta antes del metodo update 
-     * @param allRows 
+     * Se ejecuta antes del metodo update
+     *
+     * @param allRows
      * @return retorna verdadero si tuvo exito o falso si hubo algún error.
      */
     protected boolean beforeUpdate(boolean allRows) {
@@ -1540,8 +1602,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Se ejecuta antes del metodo update 
-     * @param dataSet   set de datos (puede existir más de una lista de objetos en este dataobject)
+     * Se ejecuta antes del metodo update
+     *
+     * @param dataSet set de datos (puede existir más de una lista de objetos en
+     * este dataobject)
      * @return retorna verdadero si tuvo exito o falso si hubo algún error.
      */
     protected boolean beforeUpdate(IDataSet dataSet) {
@@ -1557,6 +1621,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta antes del metodo checkData
+     *
      * @param allRows si se va a validar todos los registros modificados o solo
      * el actual.
      */
@@ -1567,8 +1632,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Valida un registro o todos los registros modificados antes de la grabación 
-     * en la base de datos.
+     * Valida un registro o todos los registros modificados antes de la
+     * grabación en la base de datos.
+     *
      * @param allRows si se va a validar todos los registros modificados o solo
      * @return verdadero si tuvo exito o falso si no.
      */
@@ -1614,13 +1680,15 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             ErrorManager.showError(ex, LOGGER);
             errorApp = ex;
         }
-        return false;        
+        return false;
     }
 
     /**
-     * Valida los registros modificados contenidos en los sets de datos antes de la grabación 
-     * en la base de datos.
-     * @param dataSet   set de datos (puede existir más de una lista de objetos en este dataobject)
+     * Valida los registros modificados contenidos en los sets de datos antes de
+     * la grabación en la base de datos.
+     *
+     * @param dataSet set de datos (puede existir más de una lista de objetos en
+     * este dataobject)
      * @return verdadero si tuvo exito o falso si no.
      */
     protected boolean checkData(IDataSet dataSet) {
@@ -1634,7 +1702,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta posterior al metodo checkData
-     * @param allRows 
+     *
+     * @param allRows
      */
     protected void afterCheckData(boolean allRows) {
         if (this.dataEvents != null) {
@@ -1642,13 +1711,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
     }
 
-    
     /**
      * Actualiza los datos en la base de datos
      *
-     * @param allRows   determina si se graba los datos del registro actual o todos
-     *                  los registros modificados
-     * @return  verdadero si tuvo exito o falso si no.
+     * @param allRows determina si se graba los datos del registro actual o
+     * todos los registros modificados
+     * @return verdadero si tuvo exito o falso si no.
      */
     @Override
     public boolean update(boolean allRows) {
@@ -1703,8 +1771,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     /**
      * Actualiza los datos en la base de datos
      *
-     * @param dataSet   set de datos (puede existir más de una lista de objetos en este dataobject)
-     * @return  verdadero si tuvo exito o falso si no.
+     * @param dataSet set de datos (puede existir más de una lista de objetos en
+     * este dataobject)
+     * @return verdadero si tuvo exito o falso si no.
      */
     @Override
     public boolean update(IDataSet dataSet) {
@@ -1729,12 +1798,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             initDataRowsBak();
             // Eliminar de la lista local el registro actual si esta marcado para ser borrado
-            if (row.getAction() == IDataRow.BORRAR){
-                if (!dataResult.isRemoveDeleted()){
+            if (row.getAction() == IDataRow.BORRAR) {
+                if (!dataResult.isRemoveDeleted()) {
                     removeRow();
-                }
-                else {
-                    movePreviews();                                    
+                } else {
+                    movePreviews();
                 }
             }
             this.afterUpdate(dataSet);
@@ -1748,7 +1816,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta posterior al metodo update()
-     * @param allRows 
+     *
+     * @param allRows
      */
     protected void afterUpdate(boolean allRows) {
         if (this.dataEvents != null) {
@@ -1758,7 +1827,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     /**
      * Se ejecuta posterior al metodo update()
-     * @param dataSet   set de datos (puede existir más de una lista de objetos en este dataobject)
+     *
+     * @param dataSet set de datos (puede existir más de una lista de objetos en
+     * este dataobject)
      * @return verdadero si tuvo exito o falso si no.
      */
     protected boolean afterUpdate(IDataSet dataSet) {
@@ -1782,8 +1853,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Revierte las modificaciones realizadas en el registro actual 
-     * que aún no fuerón actualizadas en la base de datos
+     * Revierte las modificaciones realizadas en el registro actual que aún no
+     * fuerón actualizadas en la base de datos
+     *
      * @return veradero si tuvo exito o falso si no
      */
     @Override
@@ -1808,8 +1880,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Revierte las modificaciones realizadas que aún no fuerón actualizadas en la base de datos
-     * @param allRows verdadero en todos los registros, falso solo en el registro actual.
+     * Revierte las modificaciones realizadas que aún no fuerón actualizadas en
+     * la base de datos
+     *
+     * @param allRows verdadero en todos los registros, falso solo en el
+     * registro actual.
      * @return veradero si tuvo exito o falso si no
      */
     @Override
@@ -1840,8 +1915,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Revierte las modificaciones realizadas que aún no fuerón actualizadas en la base de datos
-     * @param dataSet   set de datos (puede existir más de una lista de objetos en este dataobject)
+     * Revierte las modificaciones realizadas que aún no fuerón actualizadas en
+     * la base de datos
+     *
+     * @param dataSet set de datos (puede existir más de una lista de objetos en
+     * este dataobject)
      * @return veradero si tuvo exito o falso si no
      */
     @Override

@@ -23,15 +23,29 @@
 package org.javabeanstack.events;
 
 import org.apache.log4j.Logger;
+import org.javabeanstack.data.IDataObject;
 import org.javabeanstack.data.IDataRow;
 
 /**
  * Esta clase se encarga de interceptar los eventos producidos en el DataObject
  * 
  * @author Jorge Enciso
+ * @param <T>
  */
-public abstract class AbstractDataEvents implements IDataEvents {
+public abstract class AbstractDataEvents<T extends IDataObject> implements IDataEvents<T> {
     private static final Logger LOGGER = Logger.getLogger(AbstractDataEvents.class);
+    
+    private T context;
+
+    @Override
+    public T getContext() {
+        return context;
+    }
+
+    @Override
+    public void setContext(T context) {
+        this.context = context;
+    }
     
     /**
      * Se ejecuta posterior a la ejecución del metodo allowOperation del DataObject.

@@ -45,6 +45,7 @@ import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.IDBConnectFactory;
+import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.data.IDataObject;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
@@ -506,6 +507,7 @@ public abstract class AbstractDataService implements IDataService {
      * @param row registro de datos.
      * @param sessionId identificador de la sesión.
      * @return objeto resultado de la operación.
+     * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
     public <T extends IDataRow> IDataResult remove(String sessionId, T row) throws SessionError{
@@ -513,6 +515,77 @@ public abstract class AbstractDataService implements IDataService {
         return save(sessionId, row);
     }
 
+    /**
+     * Prepara y envia los registros de una tabla según los parámetros asignados
+     * 
+     * @param <T>
+     * @param sessionId identificador de la sesión.
+     * @param type tipo de registro.
+     * @param order orden de la consulta
+     * @param filter filtro de la consulta
+     * @param params parametros particulares
+     * @param firstRow
+     * @param maxRows maxima cantidad de registros.
+     * @return una lista con los objetos/registros solicitados
+     * @throws Exception 
+     */
+    @Override
+    public <T extends IDataRow> List<T> getDataRows(String sessionId, Class<T> type, 
+            String order, String filter, Map<String, Object> params, int firstRow, int maxRows) throws Exception{
+        String query = getSelectCmd(sessionId, type, order, filter);
+        if (maxRows == -1) {
+            maxRows = 999999999;
+        }
+        List<T> dataRows;
+        if (maxRows == 0) {
+            dataRows = new ArrayList();
+        } else {
+            dataRows = (ArrayList<T>) dao.findListByQuery(sessionId, query, params, firstRow, maxRows);                
+        }
+        return dataRows;
+    }
+    
+    /**
+     * Setea el atributo selectcmd, sentencia que se ejecutara para recuperar
+     * los datos
+     * @param <T>
+     * @param sessionId
+     * @param type
+     * @param order
+     * @param filter
+     * @return 
+     */
+    @Override
+    public <T extends IDataRow> String getSelectCmd(String sessionId, Class<T> type, String order, String filter) {
+        String comando; 
+        String filtro="";
+        
+        filter = Fn.nvl(filter, "");
+        order = Fn.nvl(order, "");
+        
+        IUserSession userSession = getUserSession(sessionId);        
+        comando = "select o from " + type.getSimpleName() + " o ";
+        if (userSession != null 
+                        && !userSession.getPersistenceUnit().equals(IDBManager.CATALOGO)
+                        && userSession.getDBFilter() != null){
+            filtro = userSession.getDBFilter().getFilterExpr(type, "");
+            if (!"".equals(filter)) {
+                filtro += " and " + filter;
+            }
+        } else {
+            filtro = filter;
+        }
+        //Filtro
+        if (!"".equals(filtro)) {
+            comando = comando + " where " + filtro;
+        }
+        //Orden
+        if (!"".equals(order)) {
+            comando = comando + " order by " + order;
+        }
+        return comando;
+    }
+    
 
     @Override
     public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
