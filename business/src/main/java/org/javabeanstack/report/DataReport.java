@@ -325,7 +325,7 @@ public class DataReport {
      *
      * @param whereFilter
      */
-    public final void setWhereFilter(IDataExpression whereFilter) {
+    public void setWhereFilter(IDataExpression whereFilter) {
         this.whereFilter = whereFilter;
     }
 

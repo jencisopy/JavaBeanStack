@@ -29,11 +29,14 @@ import org.apache.log4j.Logger;
 
 /**
  * Funciones wrapper que facilitan el manejo de variables Date
+ *
  * @author Jorge Enciso
  */
 public class Dates {
+
     /**
      * Convierte una cadena a una fecha
+     *
      * @param dateString
      * @return un dato fecha resultante de los parámetros introducidos.
      */
@@ -44,6 +47,7 @@ public class Dates {
 
     /**
      * Convierte una cadena a una fecha
+     *
      * @param dateString
      * @param format ejemplo dd/mm/yyyy
      * @return un dato fecha resultante de los parámetros introducidos.
@@ -55,6 +59,7 @@ public class Dates {
 
     /**
      * Convierte una fecha hora a una fecha
+     *
      * @param date
      * @return un dato fecha resultante de los parámetros introducidos.
      */
@@ -63,14 +68,15 @@ public class Dates {
         calendar.setTime(date);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);        
-        calendar.set(Calendar.MILLISECOND,0);        
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
 
         return calendar.getTime();
     }
-    
+
     /**
      * Convierte una cadena a una fecha
+     *
      * @param dateString
      * @param formatter
      * @return un dato fecha resultante de los parámetros introducidos.
@@ -87,11 +93,11 @@ public class Dates {
 
     /**
      * Convierte una fecha a variable de cadena, según formato deseado.
-     * 
-     * @param date    
-     * @param formater    
-     * @return  string con el formato deseado.   
-    */
+     *
+     * @param date
+     * @param formater
+     * @return string con el formato deseado.
+     */
     public static String toString(Date date, SimpleDateFormat formater) {
         String result = formater.format(date);
         return result;
@@ -99,11 +105,11 @@ public class Dates {
 
     /**
      * Convierte una fecha a variable de cadena, según formato deseado.
-     * 
-     * @param date    
-     * @param format     ejemplo dd/mm/yyyy
-     * @return  string con el formato deseado.   
-    */
+     *
+     * @param date
+     * @param format ejemplo dd/mm/yyyy
+     * @return string con el formato deseado.
+     */
     public static String toString(Date date, String format) {
         SimpleDateFormat formater = new SimpleDateFormat(format);
         String result = formater.format(date);
@@ -112,25 +118,85 @@ public class Dates {
 
     /**
      * Devuelve una variable Date con la fecha y hora del momento
-     * 
-     * @return  fecha y hora de ahora.
-    */
+     *
+     * @return fecha y hora de ahora.
+     */
     public static Date now() {
         return Calendar.getInstance().getTime();
     }
 
     /**
      * Devuelve una variable Date con el valor de la fecha del día
+     *
      * @return fecha de hoy
      */
     public static Date today() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);        
-        calendar.set(Calendar.MILLISECOND,0);        
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
 
         Date today = calendar.getTime();
         return today;
+    }
+    /**
+     * Suma un periodo a una fecha
+     * @param date  fecha
+     * @param quantity  periodo
+     * @param interval  tipo de intervalo (dias, segundos, meses) ejemplo Calendar.DAY_OF_YEAR
+     * @return fecha resultado de la suma del periodo 
+     */
+    public static Date sum(Date date, int quantity, int interval) {
+        if (quantity == 0) {
+            return date;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(interval, quantity);
+        return calendar.getTime();
+    }
+    
+    /**
+     * Suma días a una fecha
+     * @param date fecha
+     * @param days dias a sumar
+     * @return fecha resultante de la suma de los días 
+     */
+    public static Date sumDays(Date date, int days) {
+        if (days == 0) {
+            return date;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_YEAR, days);
+        return calendar.getTime();
+    }
+
+    /**
+     * Suma segundos a una fecha
+     * @param date fecha
+     * @param seconds segundos
+     * @return fecha resultante de la suma de los segundos.
+     */
+    public static Date sumSeconds(Date date, int seconds) {
+        if (seconds == 0) {
+            return date;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.SECOND, seconds);
+        return calendar.getTime();
+    }
+    
+    /**
+     * Devuelve el ultimo momento de una fecha
+     * @param date fecha
+     * @return ultimo momento de una fecha ejemplo 31/12/2017 23:59:59
+     */
+    public static Date getLastTimeOfDay(Date date){
+        date = Dates.sum(date, 1, Calendar.DAY_OF_YEAR);
+        date = Dates.sum(date, -1, Calendar.SECOND);
+        return date;
     }
 }
