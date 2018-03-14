@@ -328,8 +328,6 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
      */
     @Override
     public boolean delete(){
-        if (this == null)
-            return false;
         this.action = IDataRow.DELETE;
         return true;
     }
@@ -348,8 +346,8 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
             return false;
         }
         // Debe ser exactamente del mismo tipo
-        if (!getClass().getName().equals(obj.getClass().getName())) {
-            return false;
+        if (this.getClass() != obj.getClass()){
+            return false;                    
         }
         final IDataRow other = (IDataRow) obj;
         return Objects.equals(this.getId(), other.getId());
