@@ -474,10 +474,10 @@ public class DataReport {
      * en el atributo sqlSentence y en el objeto query que luego será utilizado
      * en executeSqlSentence.
      *
-     * @param query
      * @return instancia de un objeto IDataNativeQuery
      */
-    public IDataNativeQuery createDataNativeQuery(IDataNativeQuery query) {
+    public IDataNativeQuery createDataNativeQuery() {
+        IDataNativeQuery queryResult;
         setProperties();
         String select = iif(!isNullorEmpty(columnsGroup1), columnsGroup1 + ",", "")
                 + iif(!isNullorEmpty(columnsGroup2), columnsGroup2 + ",", "")
@@ -489,17 +489,17 @@ public class DataReport {
         String entityExpr = entityListRelations.get(entityRoot, entitiesToJoin,
                 entitiesAlias, sentenceSearch);
 
-        query = dataLink.newDataNativeQuery();
-        query.setApplyDBFilter(false);        
-        query.select(select)
+        queryResult = dataLink.newDataNativeQuery();
+        queryResult.setApplyDBFilter(false);        
+        queryResult.select(select)
                 .from(entityExpr)
                 .where(whereFilter)
                 .groupBy(groupBy)
                 .orderBy(orderBy);
 
-        query.createQuerySentence();
-        LOGGER.debug(query.getQuerySentence());
-        return query;
+        queryResult.createQuerySentence();
+        LOGGER.debug(queryResult.getQuerySentence());
+        return queryResult;
     }
 
 
@@ -590,9 +590,7 @@ public class DataReport {
                     entity = ((String) row.getColumn("entity")).toLowerCase().trim();
                     String xml = "<TABLA>" + entity + "</TABLA>";
                     // Determinar si ya fue procesado anteriormente
-                    if (findString(entity + ",", track) >= 0) {
-                        continue;
-                    } else if (occurs(xml, processed) > 0) {
+                    if (findString(entity + ",", track) >= 0 || (occurs(xml, processed) > 0)) {
                         continue;
                     }
                     // Si no fue procesado antes (no esta en entityList ni en processed)
@@ -611,9 +609,7 @@ public class DataReport {
                     recorrer = true;
                     String xml = "<TABLA>" + entity + "</TABLA>";
                     // Determinar si ya fue procesado anteriormente
-                    if (findString(entity + ",", track) >= 0) {
-                        recorrer = false;
-                    } else if (occurs(xml, processed) > 0) {
+                    if (findString(entity + ",", track) >= 0 || (occurs(xml, processed) > 0)) {
                         recorrer = false;
                     }
                     // Si no fue procesado antes (no esta en entityList ni en processed)
