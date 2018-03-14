@@ -282,6 +282,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      * @param file archivo dentro del cual se buscará el texto
      * @param element nombre del tag del texto xml
      * @param notInherit Para que no considere las clases derivadas
+     * @param params parámetros para el procesamiento del objeto.
      * @return Verdadero si tuvo exito en la creación y configuración del objeto
      * XMLDOM
      * <br>Falso si no.
@@ -292,6 +293,17 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         return this.config("file://" + file.getPath(), "", element, notInherit);
     }
 
+    /**
+     * Se ejecuta por intrucción explicita del sistema. <br>
+     * Su función es crear el objeto XMLDOM a partir de un archivo XML dado.
+     *
+     * @param file archivo dentro del cual se buscará el texto
+     * @param element nombre del tag del texto xml
+     * @param notInherit Para que no considere las clases derivadas
+     * @return Verdadero si tuvo exito en la creación y configuración del objeto
+     * XMLDOM
+     * <br>Falso si no.
+     */
     @Override
     public boolean config(File file, String element, boolean notInherit) {
         xmlDom = null;
@@ -305,7 +317,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      * @param input archivo dentro del cual se buscará el texto
      * @param element nombre del tag del texto xml
      * @param notInherit Para que no considere las clases derivadas
-     * @param params
+     * @param params parámetros para el procesamiento del objeto.
      * @return Verdadero si tuvo exito en la creación y configuración del objeto
      * XMLDOM
      * <br>Falso si no.
@@ -316,6 +328,17 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         return this.config(input, element, notInherit);
     }
 
+    /**
+     * Se ejecuta por intrucción explicita del sistema. <br>
+     * Su función es crear el objeto XMLDOM a partir de un archivo XML dado.
+     *
+     * @param input archivo dentro del cual se buscará el texto
+     * @param element nombre del tag del texto xml
+     * @param notInherit Para que no considere las clases derivadas
+     * @return Verdadero si tuvo exito en la creación y configuración del objeto
+     * XMLDOM
+     * <br>Falso si no.
+     */
     @Override
     public boolean config(InputStream input, String element, boolean notInherit) {
         String result="";

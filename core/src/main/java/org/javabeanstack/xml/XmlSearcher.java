@@ -31,8 +31,8 @@ import java.util.TreeMap;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
-import static org.javabeanstack.io.IOUtil.getResourceAsStream;
 import org.javabeanstack.util.Dates;
+import static org.javabeanstack.io.IOUtil.getResourceAsStream;
 import static org.javabeanstack.util.Strings.fileToString;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 import static org.javabeanstack.util.Strings.left;
@@ -167,7 +167,7 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
     }
 
     /**
-     * Su función es devolver un objeto DOM almacenado previamente.
+     * Su función es devolver un objeto DOM almacenado previamente en cache.
      *
      * @param documentPath identificador del path del documento
      * @param elementPath identificador del elemento
@@ -289,7 +289,13 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
         return pathType.toLowerCase().trim();
     }
 
-    
+    /**
+     * Devuelve solo el camino de un archivo
+     * @param path dirección del archivo completo.
+     * @return solo path (camino de las carpetas) 
+     * ej. /carpeta/subcarpeta/archivo devuelve /carpeta/subcarpeta
+     * 
+     */
     public static String getJustPath(String path){
         String pathType = getPathType(path);
         // Extraer el path type del inicio del path
@@ -303,6 +309,11 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
         return path.trim();
     }
 
+    /**
+     * Determina si un archivo a través de pasar el camino existo o o
+     * @param xmlPath path del archivo.
+     * @return si existe un archivo.
+     */
     @Override
     public boolean exist(String xmlPath) {
         xmlPath = xmlPath.trim();

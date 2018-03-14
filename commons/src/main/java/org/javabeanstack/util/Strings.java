@@ -46,6 +46,9 @@ import org.apache.log4j.Logger;
 public class Strings {
     private static final Logger LOGGER = Logger.getLogger(Strings.class);    
     
+    private Strings(){
+    }   
+    
     /**
      * Devuelve verdadero si el valor que se pasa como parametro es nulo o vacio
      * @param string valor
@@ -127,6 +130,9 @@ public class Strings {
      * @return posición dentro de "expr" si lo encuentra -1 si no encuentra.
      */
     public static int findLimit(String limit, String expr, int occurs) {
+        if (limit == null){
+            return -1;
+        }
         expr = varReplace(expr, "'");
         expr = varReplace(expr, "\"");
         expr = varReplace(expr, "()");
@@ -159,7 +165,7 @@ public class Strings {
     public static String varReplace(String var, String limit, String replace) {
         String result = var;
         // Si esta vacio la variable       
-        if (Strings.isNullorEmpty(var)) {
+        if (Strings.isNullorEmpty(var) || Strings.isNullorEmpty(limit)) {
             return var;
         }
         String limit1, limit2;

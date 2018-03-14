@@ -31,6 +31,9 @@ import java.security.NoSuchAlgorithmException;
  * @author Jorge Enciso
  */
 public class Fn {
+    private Fn(){
+    }
+    
     /**
      * Verifica si un valor "obj" se encuentra en una lista de variables
      * @param obj   valor buscado

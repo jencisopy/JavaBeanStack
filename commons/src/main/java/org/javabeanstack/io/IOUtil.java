@@ -36,6 +36,9 @@ import org.javabeanstack.util.Strings;
  * @author Jorge Enciso
  */
 public class IOUtil {
+    private IOUtil(){
+    }
+    
     /**
      * Determina la existencia o no de un archivo
      *

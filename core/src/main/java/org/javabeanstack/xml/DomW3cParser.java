@@ -18,11 +18,9 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.xml;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,25 +43,29 @@ import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.*;
 
 /**
- * Esta clase implementa todas las funcionalidades de XDOM. Se agrego algunas variaciones
- * a la misma de tal manera a poder tener textos XML que hereden de otros textos.
- * 
+ * Esta clase implementa todas las funcionalidades de XDOM. Se agrego algunas
+ * variaciones a la misma de tal manera a poder tener textos XML que hereden de
+ * otros textos.
+ *
  * @author Jorge Enciso
  */
 public class DomW3cParser {
+
     private static final Logger LOGGER = Logger.getLogger(DomW3cParser.class);
-    private static final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    private static final XPathFactory xpathFactory = XPathFactory.newInstance();
-    private static final XPath xpath = xpathFactory.newXPath();
+    private static final DocumentBuilderFactory FACTORY = DocumentBuilderFactory.newInstance();
+    private static final XPathFactory XPATHFACTORY = XPathFactory.newInstance();
     private static final String DEFAULTCHARSET = "UTF-8";
+
+    private DomW3cParser() {
+    }
 
     /**
      * Crea un objeto Document
@@ -72,7 +74,7 @@ public class DomW3cParser {
      * @throws ParserConfigurationException
      */
     public static Document newDocument() throws ParserConfigurationException {
-        return factory.newDocumentBuilder().newDocument();
+        return FACTORY.newDocumentBuilder().newDocument();
     }
 
     /**
@@ -87,19 +89,17 @@ public class DomW3cParser {
     public static Document loadXml(String xml)
             throws ParserConfigurationException, SAXException, IOException {
 
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = FACTORY.newDocumentBuilder();
         InputStream stream;
         String charSet = getXmlFileCharSet(xml);
-        if (!charSet.isEmpty()){
-            stream = new ByteArrayInputStream(xml.getBytes(charSet));            
-        }
-        else{
-            stream = new ByteArrayInputStream(xml.getBytes());                        
+        if (!charSet.isEmpty()) {
+            stream = new ByteArrayInputStream(xml.getBytes(charSet));
+        } else {
+            stream = new ByteArrayInputStream(xml.getBytes());
         }
         Document xmlDom = builder.parse(stream);
         return xmlDom;
     }
-
 
     /**
      * Crea y devuelve un documento DOM
@@ -113,7 +113,7 @@ public class DomW3cParser {
     public static Document loadXml(InputStream xml)
             throws ParserConfigurationException, SAXException, IOException {
 
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = FACTORY.newDocumentBuilder();
         Document xmlDom = builder.parse(xml);
         return xmlDom;
     }
@@ -130,13 +130,7 @@ public class DomW3cParser {
     public static Document loadXml(File file) throws
             ParserConfigurationException, FileNotFoundException, IOException, SAXException {
         if (file.exists() && file.isFile() && file.canRead() && file.length() > 0) {
-            BufferedInputStream f;
-
-            byte[] buffer = new byte[(int) file.length()];
-            f = new BufferedInputStream(new FileInputStream(file));
-            f.read(buffer);
-            IOUtils.closeQuietly(f);
-            return loadXml(new String(buffer));
+            return loadXml(Strings.streamToString(new FileInputStream(file)));
         }
         return null;
     }
@@ -364,6 +358,7 @@ public class DomW3cParser {
         if (!nodePath.startsWith("/")) {
             nodePath = "//" + nodePath;
         }
+        XPath xpath = XPATHFACTORY.newXPath();
         xpathExpr = xpath.compile(nodePath);
 
         Node element = (Node) xpathExpr.evaluate(document, XPathConstants.NODE);
@@ -383,6 +378,7 @@ public class DomW3cParser {
         if (!nodePath.startsWith("/")) {
             nodePath = "//" + nodePath;
         }
+        XPath xpath = XPATHFACTORY.newXPath();        
         xpathExpr = xpath.compile(nodePath);
         NodeList nodes = (NodeList) xpathExpr.evaluate(document, XPathConstants.NODESET);
         return nodes;
@@ -431,13 +427,16 @@ public class DomW3cParser {
      */
     public static String getXmlText(Node content, String defaultCharSet) throws TransformerConfigurationException, TransformerException {
         defaultCharSet = Fn.nvl(defaultCharSet, DEFAULTCHARSET);
+        if (content == null){
+            return null;
+        }
         String encoding;
         if (content instanceof Document) {
             encoding = ((Document) content).getInputEncoding();
         } else {
             encoding = content.getOwnerDocument().getInputEncoding();
         }
-        encoding = Fn.nvl(encoding,defaultCharSet);
+        encoding = Fn.nvl(encoding, defaultCharSet);
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
@@ -447,11 +446,17 @@ public class DomW3cParser {
         DOMSource source = new DOMSource(content);
         StreamResult result = new StreamResult(new StringWriter());
         transformer.transform(source, result);
-        
+
         String str = result.getWriter().toString();
         return str;
     }
 
+    /**
+     * Devuelve la lista de hijos de un nodo
+     * @param document document element
+     * @param nodePath path del nodo padre.
+     * @return lista de hijos del nodo solicitado.
+     */
     public static List<Element> getChildren(Document document, String nodePath) {
         try {
             Element nodeParent = getElement(document, nodePath);
@@ -461,7 +466,12 @@ public class DomW3cParser {
         }
         return null;
     }
-
+    
+    /**
+     * Devuelve la lista de hijos de un nodo
+     * @param nodeParent nodo padre.
+     * @return lista de hijos del nodo solicitado.
+     */
     public static List<Element> getChildren(Element nodeParent) {
         if (nodeParent == null) {
             return null;
@@ -477,6 +487,12 @@ public class DomW3cParser {
         return children;
     }
 
+    /**
+     * Devuelve un hijo en particular de un nodo 
+     * @param nodeParent nodo padre.
+     * @param nodeName nombre del nodo hijo.
+     * @return un hijo en particular de un nodo.
+     */
     public static Element getChild(Element nodeParent, String nodeName) {
         try {
             Element result = null;
@@ -494,6 +510,13 @@ public class DomW3cParser {
         return null;
     }
 
+    /**
+     * Reemplaza un nodo hijo por otro nodo.
+     * @param parentNode nodo padre.
+     * @param newNode nuevo nodo.
+     * @param oldNode nodo a reemplazar.
+     * @return nuevo nodo 
+     */
     public static Element replaceChild(Element parentNode, Element newNode, Element oldNode) {
         // Si el elemento a agregar no pertenece al documento a agregar            
         if (newNode.getOwnerDocument() != oldNode.getOwnerDocument()) {

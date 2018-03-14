@@ -33,7 +33,9 @@ import org.apache.log4j.Logger;
  * @author Jorge Enciso
  */
 public class Dates {
-
+    private Dates(){
+    }
+    
     /**
      * Convierte una cadena a una fecha
      *
