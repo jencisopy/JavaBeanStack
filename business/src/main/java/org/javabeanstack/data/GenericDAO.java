@@ -30,5 +30,6 @@ import java.io.Serializable;
  */
 public class GenericDAO extends AbstractDAO implements IGenericDAOLocal, IGenericDAORemote, Serializable {
      public GenericDAO(){
+         //Implementar en las clases heredadas.
     }   
 }

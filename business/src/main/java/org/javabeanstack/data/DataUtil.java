@@ -27,6 +27,9 @@ package org.javabeanstack.data;
  * @author Jorge Enciso
  */
 public class DataUtil {
+    private DataUtil(){
+    }
+    
     public static String getDateTimeType(String engine){
         if (engine.equals("ORACLE")){
             return "DATE";

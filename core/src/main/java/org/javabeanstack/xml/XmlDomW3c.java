@@ -81,6 +81,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     private String documentPath;
 
     public XmlDomW3c() {
+        //Constructor
     }
 
     private void setCharSet(String xmlText) {

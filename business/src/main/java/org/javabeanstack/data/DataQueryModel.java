@@ -314,7 +314,7 @@ public class DataQueryModel implements IDataQueryModel{
                 continue;
             }
             // Buscar nombre de la columna ejemplo b.vendedor, vendedor es el nombre
-            pos = matrix[i].toLowerCase().lastIndexOf(".");
+            pos = matrix[i].toLowerCase().lastIndexOf('.');
             if (pos >= 0) {
                 matrix[i] = matrix[i].substring(pos + 1);
             }

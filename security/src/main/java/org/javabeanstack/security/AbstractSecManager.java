@@ -137,6 +137,9 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
             case "DB2":
                 sqlComando = "select CAST({schema}.fn_GetUserRol('{usuario}') as char(200)) from SYSIBM.SYSDUMMY1";
                 break;
+            default:
+                Exception exp = new Exception("No es soportado este motor de datos");
+                ErrorManager.showError(exp, LOGGER);
         }
         Map<String, String> params = new HashMap<>();
         params.put("schema",getDAO().getSchema(IDBManager.CATALOGO));

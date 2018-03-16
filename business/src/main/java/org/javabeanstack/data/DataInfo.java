@@ -44,6 +44,9 @@ import org.javabeanstack.util.Strings;
 public class DataInfo {
     private static final Logger LOGGER = Logger.getLogger(DataInfo.class);
 
+    private DataInfo(){
+    }
+    
     /**
      * Determina si el campo o miembro dado corresponde a la clave primaria.
      *

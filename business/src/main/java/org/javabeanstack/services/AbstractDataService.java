@@ -593,7 +593,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     @Override
-    public <T extends IDataRow> IDataResult update(String sessionId, IDataObject ejbs) {
+    public IDataResult update(String sessionId, IDataObject ejbs) {
         return dao.update(sessionId,ejbs);
     }
 
@@ -603,7 +603,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     @Override
-    public <T extends IDataRow> IDataResult update(String sessionId, IDataSet dataSet) {
+    public IDataResult update(String sessionId, IDataSet dataSet) {
         return dao.update(sessionId, dataSet);        
     }
 

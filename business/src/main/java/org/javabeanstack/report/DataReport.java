@@ -128,6 +128,7 @@ public class DataReport {
     private int dateGroup = 0; // 0 && Ninguno, 1 año, 2 año y mes
 
     public DataReport() {
+        // Implementar en clases heredadas
     }
 
     public DataReport(IDataLink dao) {
@@ -423,6 +424,7 @@ public class DataReport {
     }
 
     protected void beforeCreateSentence(){
+        // Implementar en clases heredadas
     }
     
     /**
@@ -465,6 +467,7 @@ public class DataReport {
     }
     
     protected void afterCreateSentence(){
+        // Implementar en clases heredadas.
     }
 
     /**
@@ -504,6 +507,7 @@ public class DataReport {
 
 
     protected void beforeExecuteSqlSentence(){
+        // Implementar en clases heredadas
     }
     
     /**
@@ -560,8 +564,8 @@ public class DataReport {
                 List<String> tokenList = convertToList(entityAlias, ",");
                 for (String token : tokenList) {
                     // Determinar valor de la entidad y del alias
-                    String entity = left(token, token.indexOf(" ")).toLowerCase().trim();
-                    String alias = substring(token, token.indexOf(" ") + 1).toLowerCase().trim();
+                    String entity = left(token, token.indexOf(' ')).toLowerCase().trim();
+                    String alias = substring(token, token.indexOf(' ') + 1).toLowerCase().trim();
                     // Ver si existe el alias en la expresion de sentencia
                     if (inString(",( ", alias, ".", sentence)) {
                         // Agregar a la lista de entidades si no se encuentra ya

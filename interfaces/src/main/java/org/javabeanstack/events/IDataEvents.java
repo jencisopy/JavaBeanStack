@@ -21,6 +21,7 @@
 */
 package org.javabeanstack.events;
 
+import java.io.Serializable;
 import org.javabeanstack.data.IDataObject;
 import org.javabeanstack.data.IDataRow;
 
@@ -29,7 +30,7 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  * @param <T>
  */
-public interface IDataEvents<T extends IDataObject> {
+public interface IDataEvents<T extends IDataObject> extends Serializable{
     public T getContext();
     public void setContext(T context);
     public boolean onAllowOperation();

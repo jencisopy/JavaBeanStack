@@ -566,7 +566,7 @@ public class Strings {
         int pos1 = text.indexOf("encoding=");
         if (pos1 > 0 ){
             pos1 += 10;
-            int pos2 = text.indexOf("\"", pos1);
+            int pos2 = text.indexOf('\"', pos1);
             result = text.substring(pos1,pos2);
         }
         return result;

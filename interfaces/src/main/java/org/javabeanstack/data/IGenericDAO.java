@@ -50,12 +50,11 @@ public interface IGenericDAO {
     /**
      * Sincroniza una lista de ejbs con la base de datos.
      *
-     * @param <T>
      * @param ejbs lista de objetos mapeados a los registros de una tabla.
      * @param sessionId identificador de la sesión del usuario
      * @return Devuelve un objeto con el resultado de la grabación
      */
-    public <T extends IDataRow> IDataResult update(String sessionId, IDataObject ejbs);
+    public IDataResult update(String sessionId, IDataObject ejbs);
 
     /**
      * Sincroniza una lista de ejbs con la base de datos.
@@ -70,13 +69,12 @@ public interface IGenericDAO {
     /**
      * Sincroniza una lista de ejbs con la base de datos.
      *
-     * @param <T>
      * @param dataSet cada elemento es un objeto mapeado a una tabla
      * @param sessionId identificador de la sesión del usuario
      * correcta (unidad de persistencia, sesión id etc).
      * @return Devuelve un objeto con el resultado de la grabación
      */
-    public <T extends IDataRow> IDataResult update(String sessionId, IDataSet dataSet);
+    public IDataResult update(String sessionId, IDataSet dataSet);
 
     /**
      * Agregar,un registro en la tabla

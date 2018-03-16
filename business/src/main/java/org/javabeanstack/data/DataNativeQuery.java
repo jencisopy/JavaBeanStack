@@ -77,9 +77,6 @@ public class DataNativeQuery implements IDataNativeQuery {
     private String subQueryAlias;
     private boolean applyDBQueryFilter = true;
 
-    public DataNativeQuery() {
-    }
-
     /**
      * Asigna la lista de columnas
      *
@@ -279,7 +276,7 @@ public class DataNativeQuery implements IDataNativeQuery {
             String operador = isNullorEmpty(filterExpr) ? "" : " and ";
             try {
                 String entityExp = getEntityList()[0];
-                int pos = entityExp.indexOf(" ") > 0 ? entityExp.indexOf(" ") : entityExp.length();
+                int pos = entityExp.indexOf(' ') > 0 ? entityExp.indexOf(' ') : entityExp.length();
                 
                 String entity = entityExp.substring(0,pos);
                 String entityAlias = Strings.substr(entityExp, pos+1);
@@ -388,7 +385,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      */
     @Override
     public IDataNativeQuery addParams(Map<String, Object> params) {
-        queryParams = params;
+        setQueryParams(params);
         return this;
     }
 
@@ -679,7 +676,7 @@ public class DataNativeQuery implements IDataNativeQuery {
                 continue;
             }
             // Buscar nombre de la columna ejemplo b.vendedor, vendedor es el nombre
-            pos = matrix[i].toLowerCase().lastIndexOf(".");
+            pos = matrix[i].toLowerCase().lastIndexOf('.');
             if (pos >= 0) {
                 matrix[i] = matrix[i].substring(pos + 1);
             }
