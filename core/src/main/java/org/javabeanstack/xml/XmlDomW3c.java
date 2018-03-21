@@ -609,7 +609,6 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                     for (Element nodeAdd : childrenNodeClass) {
                         // Ver si existe
                         Element nodeChildFound = DomW3cParser.getChild(nodeFound, nodeAdd.getNodeName());
-                        //Element nodeChildFound = nodeFound.getChild(nodeAdd.getName());
                         if (nodeChildFound == null) {
                             // Insertar antes del primer nodo hijo si existe nodo hijo
                             DomW3cParser.insertElementBefore((Element) nodeAdd.cloneNode(true), nodeFound, firstNodeChild);

@@ -30,9 +30,8 @@ import org.javabeanstack.events.IDataEvents;
  *
  * @author Jorge Enciso
  * @param <T> 
- * @param <S> 
   */
-public interface IDataObject <T extends IDataRow, S extends IGenericDAO>{
+public interface IDataObject <T extends IDataRow>{
     public boolean      isReadwrite();
     public IDataLink    getDAO();
     public IDataLink    getDAOCatalog();

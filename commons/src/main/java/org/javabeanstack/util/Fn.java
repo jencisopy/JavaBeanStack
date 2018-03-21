@@ -23,6 +23,7 @@ package org.javabeanstack.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -144,7 +145,7 @@ public class Fn {
         try {
             md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException ex) {
-            //log.debug("Error al obtener hash MD5. " + ex.getMessage());
+            Logger.getLogger(Fn.class).error(ex.getMessage());            
         }
         if (md != null) {
             md.update(msg.getBytes());
