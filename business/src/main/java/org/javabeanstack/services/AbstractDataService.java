@@ -312,7 +312,7 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Override
     public <T extends IDataRow> boolean checkForeignKey(String sessionId, T row, String fieldName) {
-        boolean result = false;
+        boolean result = true;
         try {
             Class clase = row.getClass();
             Field field = DataInfo.getDeclaredField(clase, fieldName);

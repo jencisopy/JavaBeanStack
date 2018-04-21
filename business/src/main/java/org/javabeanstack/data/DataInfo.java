@@ -169,7 +169,7 @@ public class DataInfo {
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
-        return null;
+        return new ArrayList();
     }
 
     /**
@@ -430,7 +430,7 @@ public class DataInfo {
         try {
             fields = classType.getDeclaredFields();
         } catch (SecurityException ex) {
-            return null;
+            return new Field[0];
         }
         return fields;
     }

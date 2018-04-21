@@ -648,7 +648,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      */
     public static final List<IDataQueryModel> converToNativeQuery(List<Object> source, String columns) {
         if (source == null) {
-            return null;
+            return new ArrayList();
         }
         return DataQueryModel.convertToDataQueryModel(source, columns);
     }

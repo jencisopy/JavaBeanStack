@@ -1045,7 +1045,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private void populateQueryParameters(Query query, Map<String, Object> parameters, String queryString) {
-        parameters.entrySet().forEach((entry) -> {
+        parameters.entrySet().forEach( entry -> {
             if (queryString != null) {
                 if (Strings.findString(":" + entry.getKey(), queryString) >= 0) {
                     query.setParameter(entry.getKey(), entry.getValue());

@@ -232,7 +232,7 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
             }
             IXmlCache<V> cacheObj;
             // Almacenar como texto si existe llaves ( {reemplazar} )
-            if (context.isAllowChangeAttrWithParam() && context.getXmlTextRaw(document).indexOf('{') > 0) {
+            if (context.isAllowChangeAttrWithParam() && context.getXmlTextRaw(document).indexOf('{') >= 0) {
                 cacheObj = new XmlCache(context.getXmlTextRaw(document));
             } else {
                 cacheObj = new XmlCache(document);

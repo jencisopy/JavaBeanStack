@@ -24,6 +24,7 @@ package org.javabeanstack.xml;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -819,7 +820,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             ErrorManager.showError(ex, LOGGER);
             exception = ex;
         }
-        return null;
+        return new ArrayList();
     }
 
     /**
