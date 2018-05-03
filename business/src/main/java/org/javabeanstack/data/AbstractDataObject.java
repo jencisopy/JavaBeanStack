@@ -383,6 +383,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public int getRowCount() {
+        if (dataRows == null){
+            return 0;
+        }
         return dataRows.size();
     }
 
