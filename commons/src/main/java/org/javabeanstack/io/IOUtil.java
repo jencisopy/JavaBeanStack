@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.javabeanstack.util.Strings;
 
@@ -150,5 +151,29 @@ public class IOUtil {
             Logger.getLogger(IOUtil.class).error(ex.getMessage());
         }
         return null;
+    }
+    
+    public static String getPath(String file){
+        return FilenameUtils.getPath(file);
+    }
+
+    public static String getFullPath(String file){
+        return FilenameUtils.getFullPath(file);
+    }
+    
+    public static String getFullPathNoEndSeparator(String file){
+        return FilenameUtils.getFullPathNoEndSeparator(file);
+    }
+    
+    public static String getFileBaseName(String file){
+        return FilenameUtils.getBaseName(file);
+    }
+
+    public static String getFileName(String file){
+        return FilenameUtils.getName(file);
+    }
+    
+    public static String getFileExtension(String file){
+        return FilenameUtils.getExtension(file);
     }
 }
