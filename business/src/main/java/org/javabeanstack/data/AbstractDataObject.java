@@ -818,6 +818,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             recno = rownumber;
             row = dataRows.get(recno);
             setRowBak();
+            refreshRow();
             //After move
             this.afterRowMove(row);
             return true;
@@ -848,11 +849,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean moveFirst() {
-        boolean exito = this.goTo(0, 1);
-        if (exito) {
-            refreshRow();
-        }
-        return exito;
+        return this.goTo(0, 1);
     }
 
     /**
@@ -897,12 +894,15 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return el puntero de un registro, el cual cumple con las condiciones de
      * la busqueda
      */
-    public static int findRow(List<IDataRow> rowList, String field, Object value, int begin, int end) {
+    public static int findRow(List<? extends IDataRow> rowList, String field, Object value, int begin, int end) {
         if (rowList == null) {
             return -1;
         }
+        if (end >= rowList.size()){
+            end = rowList.size() - 1;
+        }
         //Determinar que el rango de busqueda sea valido
-        if (begin < 0 || end >= rowList.size() || begin > end) {
+        if (begin < 0 || begin > end) {
             return -1;
         }
         //Si el campo es nulo buscar en campo anterior
@@ -1882,7 +1882,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                         continue;
                     } else {
                         goTo(i);
-                        refreshRow();
                     }
                 }
                 i++;
