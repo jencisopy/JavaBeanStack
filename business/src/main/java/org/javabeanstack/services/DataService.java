@@ -22,14 +22,10 @@
 
 package org.javabeanstack.services;
 
-
-import org.apache.log4j.Logger;
-
 /**
  *
  * @author Jorge Enciso
  */
   
 public class DataService extends AbstractDataService { 
-    private static final Logger LOGGER = Logger.getLogger(DataService.class);
 }

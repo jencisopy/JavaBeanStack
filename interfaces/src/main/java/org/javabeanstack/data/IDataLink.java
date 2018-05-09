@@ -58,7 +58,7 @@ public interface IDataLink  {
     <T extends IDataRow> T refreshRow(T row) throws Exception;
     <T extends IDataRow> IDataResult update(T ejb) throws Exception;
     <T extends IDataRow> IDataResult update(List<T> ejbs) throws Exception;
-    <T extends IDataRow> IDataResult update(IDataSet dataSet) throws Exception;    
+    IDataResult update(IDataSet dataSet) throws Exception;    
     
     <T extends IDataRow> IDataResult persist(T ejb) throws Exception;    
     <T extends IDataRow> IDataResult persist(List<T> ejbs) throws Exception;

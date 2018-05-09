@@ -22,6 +22,7 @@
 
 package org.javabeanstack.log;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -394,6 +395,6 @@ public class LogManager implements ILogManager {
         } catch (Exception exp) {
             ErrorManager.showError(exp, LOGGER);
         }
-        return null;
+        return new ArrayList();
     }
 }

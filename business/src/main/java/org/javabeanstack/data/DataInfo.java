@@ -44,6 +44,9 @@ import org.javabeanstack.util.Strings;
 public class DataInfo {
     private static final Logger LOGGER = Logger.getLogger(DataInfo.class);
 
+    private DataInfo(){
+    }
+    
     /**
      * Determina si el campo o miembro dado corresponde a la clave primaria.
      *
@@ -166,7 +169,7 @@ public class DataInfo {
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
-        return null;
+        return new ArrayList();
     }
 
     /**
@@ -427,7 +430,7 @@ public class DataInfo {
         try {
             fields = classType.getDeclaredFields();
         } catch (SecurityException ex) {
-            return null;
+            return new Field[0];
         }
         return fields;
     }

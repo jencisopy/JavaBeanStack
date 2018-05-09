@@ -124,10 +124,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     private Exception errorApp;
     /**
-     * Si se crear dentro de un entity manager con cache o sin cache
-     */
-    private boolean noCache = false;
-    /**
      * Es el objeto responsable de los eventos
      */
     private IDataEvents dataEvents;
@@ -175,10 +171,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     protected void setDataEvents(IDataEvents dtEvents) {
         dataEvents = dtEvents;
-    }
-
-    protected void setNoCache(boolean noCache) {
-        this.noCache = noCache;
     }
 
     /**
@@ -391,6 +383,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public int getRowCount() {
+        if (dataRows == null){
+            return 0;
+        }
         return dataRows.size();
     }
 
@@ -652,11 +647,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (!Strings.isNullorEmpty(filterExtra)) {
                 if (!Strings.isNullorEmpty(filter)) {
                     allFilters += " and " + filterExtra;
-                } else  {
+                } else {
                     allFilters = filterExtra;
                 }
             }
-            x = this.getDAO().getDataService().getDataRows(sessionId, type, order, allFilters, filterParams,firstRow, maxrows);
+            x = this.getDAO().getDataService().getDataRows(sessionId, type, order, allFilters, filterParams, firstRow, maxrows);
             selectCmd = this.getDAO().getDataService().getSelectCmd(sessionId, type, order, filter);
             lastQuery = selectCmd;
         } else {
@@ -823,6 +818,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             recno = rownumber;
             row = dataRows.get(recno);
             setRowBak();
+            refreshRow();
             //After move
             this.afterRowMove(row);
             return true;
@@ -853,11 +849,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean moveFirst() {
-        boolean exito = this.goTo(0, 1);
-        if (exito) {
-            refreshRow();
-        }
-        return exito;
+        return this.goTo(0, 1);
     }
 
     /**
@@ -902,12 +894,15 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return el puntero de un registro, el cual cumple con las condiciones de
      * la busqueda
      */
-    public static int findRow(List<IDataRow> rowList, String field, Object value, int begin, int end) {
+    public static int findRow(List<? extends IDataRow> rowList, String field, Object value, int begin, int end) {
         if (rowList == null) {
             return -1;
         }
+        if (end >= rowList.size()){
+            end = rowList.size() - 1;
+        }
         //Determinar que el rango de busqueda sea valido
-        if (begin < 0 || end >= rowList.size() || begin > end) {
+        if (begin < 0 || begin > end) {
             return -1;
         }
         //Si el campo es nulo buscar en campo anterior
@@ -1234,21 +1229,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
     }
 
-    /**
-     * Asigna una copia del registro o la fila que se pasa como parámetro
-     *
-     * @param ejb
-     */
-    private void setRowBak(T ejb) {
-        if (dataRowsBak == null) {
-            initDataRowsBak();
-        }
-        // Copiar fila actual a la matriz backup
-        if (dataRowsBak.get(recno) == null) {
-            dataRowsBak.put(recno, (T) ejb.clone());
-        }
-    }
-
     private void initDataRowsBak() {
         dataRowsBak = new HashMap<>();
     }
@@ -1540,7 +1520,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
     }
 
-    //XXX Implementar copyFrom
+    //TODO Implementar copyFrom
     @Override
     public void copyFrom(String cIdempresa, String cEmpresaNombre, String cXmlTag, String cTablaCopy) {
         /* No se puede modificar si es de solo lectura */
@@ -1549,7 +1529,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
     }
 
-    //XXX Implementar isExists()
+    //TODO Implementar isExists()
     @Override
     public boolean isExists() {
         return false;
@@ -1576,9 +1556,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         // Validar los datos utilizando checkDataRow del DataService del objeto
         String sessionId = null;
-        if (getDAO().getUserSession() != null){
+        if (getDAO().getUserSession() != null) {
             sessionId = getDAO().getUserSession().getSessionId();
-        }                
+        }
         Map<String, IErrorReg> errorMap = this.getDAO().getDataService().checkDataRow(sessionId, row);
         if (errorMap == null || errorMap.isEmpty()) {
             this.row.setErrors((Map<String, IErrorReg>) null);
@@ -1902,7 +1882,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                         continue;
                     } else {
                         goTo(i);
-                        refreshRow();
                     }
                 }
                 i++;
@@ -1964,11 +1943,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     private void removeRow() {
         // Eliminar de la lista local el registro actual si esta marcado para ser borrado
-        if (row.getAction() == IDataRow.BORRAR) {
-            if (dataRows.size() > recno) {
-                dataRows.remove(recno);
-                movePreviews();
-            }
+        if (row.getAction() == IDataRow.BORRAR && dataRows.size() > recno) {
+            dataRows.remove(recno);
+            movePreviews();
         }
     }
 }

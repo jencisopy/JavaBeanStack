@@ -464,7 +464,7 @@ public class DomW3cParser {
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
-        return null;
+        return new ArrayList();
     }
     
     /**
@@ -474,7 +474,7 @@ public class DomW3cParser {
      */
     public static List<Element> getChildren(Element nodeParent) {
         if (nodeParent == null) {
-            return null;
+            return new ArrayList();
         }
         List<Element> children = new ArrayList();
         int childCount = nodeParent.getChildNodes().getLength();

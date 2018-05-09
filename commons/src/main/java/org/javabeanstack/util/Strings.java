@@ -44,8 +44,6 @@ import org.apache.log4j.Logger;
  * @author Jorge Enciso
  */
 public class Strings {
-    private static final Logger LOGGER = Logger.getLogger(Strings.class);    
-    
     private Strings(){
     }   
     
@@ -470,9 +468,7 @@ public class Strings {
             String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line);
-                if (line != null) {
-                    sb.append(System.lineSeparator());
-                }
+                sb.append(System.lineSeparator());
             }
         }
         catch (Exception ex) {
@@ -566,7 +562,7 @@ public class Strings {
         int pos1 = text.indexOf("encoding=");
         if (pos1 > 0 ){
             pos1 += 10;
-            int pos2 = text.indexOf("\"", pos1);
+            int pos2 = text.indexOf('\"', pos1);
             result = text.substring(pos1,pos2);
         }
         return result;
@@ -592,7 +588,7 @@ public class Strings {
         int pos1 = text.indexOf("encoding=");
         if (pos1 > 0 ){
             pos1 += 10;
-            int pos2 = text.indexOf("\"", pos1);
+            int pos2 = text.indexOf('\"', pos1);
             result = text.substring(pos1,pos2);
         }
         return result;

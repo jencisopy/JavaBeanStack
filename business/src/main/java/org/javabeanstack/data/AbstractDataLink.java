@@ -220,14 +220,13 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     /**
      * Agregar, actualiza o borra registros de la base de datos
      *
-     * @param <T> tipo de dato generalmente hereda de DataRow
      * @param dataSet cada elemento del dataSet contiene una lista con los objetos 
      * mapeados a los registros de cada tabla
      * @return dataResult (resultado del update)
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult update(IDataSet dataSet) throws SessionError {
+    public IDataResult update(IDataSet dataSet) throws SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
         // Procesar solo registros modificados.
@@ -587,7 +586,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         String[][] entidades = new String[len][3];
         for (int i = 0; i < analizar.length; i++) {
             String expr = analizar[i].trim();
-            int xSpace = expr.indexOf(" ");
+            int xSpace = expr.indexOf(' ');
             if (xSpace >= 0) {
                 entidades[i][0] = expr.substring(0, xSpace).trim();
                 entidades[i][1] = expr.substring(xSpace).trim();
@@ -657,6 +656,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
                     case 3:
                         typeRela = "FULL OUTER";
                         break;
+                    default:
+                        typeRela = "INNER";
+                        break;
                 }
                 if (!circular) {
                     expresion += " " + typeRela + " JOIN " + schema + "." + rightEntidad + " " + rightAlias
@@ -702,17 +704,14 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         if (Strings.findString(":false", queryString.toLowerCase()) >= 0) {
             parameters.put("false", false);
         }
-        if (Strings.findString(":idempresa", queryString.toLowerCase()) >= 0) {
-            if (getUserSession() != null) {
-                parameters.put("idempresa", getUserSession().getIdEmpresa());
-            }
+        if (Strings.findString(":idempresa", queryString.toLowerCase()) >= 0 
+                && getUserSession() != null) {
+            parameters.put("idempresa", getUserSession().getIdEmpresa());
         }
-        if (Strings.findString(":idcompany", queryString.toLowerCase()) >= 0) {
-            if (getUserSession() != null) {
-                parameters.put("idcompany", getUserSession().getIdCompany());
-            }
+        if (Strings.findString(":idcompany", queryString.toLowerCase()) >= 0
+                && getUserSession() != null) {                
+            parameters.put("idcompany", getUserSession().getIdCompany());
         }
-        
         if (Strings.findString(":today", queryString.toLowerCase()) >= 0) {
             parameters.put("today", Dates.today());
         }

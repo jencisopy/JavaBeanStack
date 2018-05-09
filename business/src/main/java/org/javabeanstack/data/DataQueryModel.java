@@ -278,7 +278,7 @@ public class DataQueryModel implements IDataQueryModel{
      */
     public static final List<IDataQueryModel> convertToDataQueryModel(List<Object> source, String columns) {
         if (source == null) {
-            return null;
+            return new ArrayList();
         }
         List<IDataQueryModel> target = new ArrayList<>(source.size());
         for (int i = 0; i < source.size(); i++) {
@@ -314,7 +314,7 @@ public class DataQueryModel implements IDataQueryModel{
                 continue;
             }
             // Buscar nombre de la columna ejemplo b.vendedor, vendedor es el nombre
-            pos = matrix[i].toLowerCase().lastIndexOf(".");
+            pos = matrix[i].toLowerCase().lastIndexOf('.');
             if (pos >= 0) {
                 matrix[i] = matrix[i].substring(pos + 1);
             }

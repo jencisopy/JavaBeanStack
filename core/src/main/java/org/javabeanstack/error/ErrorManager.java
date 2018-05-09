@@ -35,8 +35,6 @@ import org.javabeanstack.log.ILogManager;
  * @author Jorge Enciso
  */
 public class ErrorManager {
-    private static final Logger LOGGER = Logger.getLogger(ErrorManager.class);
-
     @EJB private ILogManager logManager;
 
     /**
@@ -51,7 +49,7 @@ public class ErrorManager {
      * error
      */
     public void ErrorLog(Exception error, boolean view) {
-
+        //TODO implementar codigo o eliminar metodo
     }
 
     /**

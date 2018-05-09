@@ -111,7 +111,7 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
     public EntityManager createEntityManager(String key) {      
         EntityManager em;
         try {
-            String persistentUnit = key.substring(0,key.indexOf(":")).toLowerCase();
+            String persistentUnit = key.substring(0,key.indexOf(':')).toLowerCase();
             em = (EntityManager) context.lookup("java:comp/env/persistence/" + persistentUnit);
             Data data = new Data();
             data.em = em;

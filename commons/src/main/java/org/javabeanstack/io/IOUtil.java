@@ -26,7 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.javabeanstack.util.Strings;
 
@@ -100,19 +100,15 @@ public class IOUtil {
      */
     public static Properties getPropertiesFrom(String filePath) {
         // load a properties file
-        InputStream input = null;
         Properties properties = new Properties();
         if (!isFileExist(filePath)) {
             return null;
         }
-        try {
-            input = new FileInputStream(filePath);
+        try (InputStream input = new FileInputStream(filePath)) {
             properties.load(input);
             return properties;
         } catch (IOException ex) {
             Logger.getLogger(IOUtil.class).error(ex.getMessage());
-        } finally {
-            IOUtils.closeQuietly(input);
         }
         return null;
     }
@@ -124,19 +120,15 @@ public class IOUtil {
      */
     public static Properties getPropertiesFrom(File file) {
         // load a properties file
-        InputStream input = null;
         Properties properties = new Properties();
         if (file == null || !file.isFile() || file.canRead()) {
             return null;
         }
-        try {
-            input = new FileInputStream(file);
+        try (InputStream input = new FileInputStream(file)){
             properties.load(input);
             return properties;
         } catch (IOException ex) {
             Logger.getLogger(IOUtil.class).error(ex.getMessage());
-        } finally {
-            IOUtils.closeQuietly(input);
         }
         return null;
     }
@@ -151,17 +143,37 @@ public class IOUtil {
      * @return un archivo en formato properties.
      */
     public static Properties getPropertiesFromResource(Class clazz, String filePath) {
-        InputStream input = null;
         Properties properties = new Properties();
-        try {
-            input = getResourceAsStream(clazz, filePath);
+        try (InputStream input = getResourceAsStream(clazz, filePath)){
             properties.load(input);
             return properties;
         } catch (IOException ex) {
             Logger.getLogger(IOUtil.class).error(ex.getMessage());
-        } finally {
-            IOUtils.closeQuietly(input);
         }
         return null;
+    }
+    
+    public static String getPath(String file){
+        return FilenameUtils.getPath(file);
+    }
+
+    public static String getFullPath(String file){
+        return FilenameUtils.getFullPath(file);
+    }
+    
+    public static String getFullPathNoEndSeparator(String file){
+        return FilenameUtils.getFullPathNoEndSeparator(file);
+    }
+    
+    public static String getFileBaseName(String file){
+        return FilenameUtils.getBaseName(file);
+    }
+
+    public static String getFileName(String file){
+        return FilenameUtils.getName(file);
+    }
+    
+    public static String getFileExtension(String file){
+        return FilenameUtils.getExtension(file);
     }
 }

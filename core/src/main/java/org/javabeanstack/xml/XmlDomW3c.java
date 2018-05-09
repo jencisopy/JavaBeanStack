@@ -18,12 +18,13 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
+ */
 package org.javabeanstack.xml;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,9 +43,9 @@ import static org.javabeanstack.util.Strings.*;
 
 /**
  * Procesa textos xmls de distintos origenes, los parsea y los convierte en
- * objeto DOM, puede heredar o fusionar cadenas xmls. Proporciona metodos
- * para facilitar la manipulación del objeto DOM.
- * 
+ * objeto DOM, puede heredar o fusionar cadenas xmls. Proporciona metodos para
+ * facilitar la manipulación del objeto DOM.
+ *
  * @author Jorge Enciso
  */
 public class XmlDomW3c implements IXmlDom<Document, Element> {
@@ -75,12 +76,13 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     private IXmlSearcher<Document> xmlSearcher = new XmlSearcher();
 
     private String charSet;
-    
-    private boolean alreadyInCache=false;
-    
+
+    private boolean alreadyInCache = false;
+
     private String documentPath;
 
     public XmlDomW3c() {
+        //Constructor
     }
 
     private void setCharSet(String xmlText) {
@@ -341,7 +343,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
      */
     @Override
     public boolean config(InputStream input, String element, boolean notInherit) {
-        String result="";
+        String result = "";
         try {
             String encoding = getConfigParam().get("encoding");
             encoding = (isNullorEmpty(encoding)) ? "UTF-8" : encoding;
@@ -350,13 +352,13 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             ErrorManager.showError(ex, LOGGER);
             exception = ex;
         }
-        if (exception != null){
+        if (exception != null) {
             return false;
         }
         xmlDom = null;
         return this.config("", result, element, notInherit);
     }
-    
+
     /**
      * Se ejecuta por intrucción explicita del sistema. <br>
      * Su función es crear el objeto XMLDOM a partir de un objeto DOM dado.
@@ -385,8 +387,8 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             if (xmlDom == null) {
                 return false;
             }
-            if (alreadyInCache != true){
-                getXmlSearcher().addToCache(this, documentPath, elementPath, xmlDom, true);                
+            if (alreadyInCache != true) {
+                getXmlSearcher().addToCache(this, documentPath, elementPath, xmlDom, true);
             }
             replaceAttrWithParamValues();
             return true;
@@ -436,10 +438,8 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                     processed = true;
                 } else {
                     document = cache.getDom();
-                    if (document != null) {
-                        if (cache.isCompiled()) {
-                            return document;
-                        }
+                    if (document != null && cache.isCompiled()) {
+                        return document;
                     }
                     processed = true;
                 }
@@ -455,18 +455,17 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                 if (cache == null) {
                     cache = xmlSearcher.getFromCache(documentPath);
                     check = true;
-                    if (this.documentPath.equals(documentPath)){
-                        alreadyInCache = true;                        
+                    if (this.documentPath.equals(documentPath)) {
+                        alreadyInCache = true;
                     }
                 }
                 document = (cache != null) ? cache.getDom() : null;
                 // Si existe en cache
                 if (document != null) {
-                    if (cache.isCompiled()){ 
-                        // Si el cache corresponde el elementPath
-                        if (!check || elementPath.equals(document.getDocumentElement().getNodeName())) {
-                            return document;
-                        }    
+                    // Si el cache corresponde el elementPath
+                    if (cache.isCompiled()
+                            && (!check || elementPath.equals(document.getDocumentElement().getNodeName()))) {
+                        return document;
                     }
                     // Traer solo del elementpath
                     if (!document.getDocumentElement().getNodeName().equals(elementPath)) {
@@ -474,7 +473,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                         Document document2 = DomW3cParser.newDocument();
                         document2.appendChild(document2.adoptNode(root.cloneNode(true)));
                         document = document2;
-                        if (cache.isCompiled()){
+                        if (cache.isCompiled()) {
                             return document;
                         }
                     }
@@ -608,7 +607,6 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
                     for (Element nodeAdd : childrenNodeClass) {
                         // Ver si existe
                         Element nodeChildFound = DomW3cParser.getChild(nodeFound, nodeAdd.getNodeName());
-                        //Element nodeChildFound = nodeFound.getChild(nodeAdd.getName());
                         if (nodeChildFound == null) {
                             // Insertar antes del primer nodo hijo si existe nodo hijo
                             DomW3cParser.insertElementBefore((Element) nodeAdd.cloneNode(true), nodeFound, firstNodeChild);
@@ -667,13 +665,12 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             document = DomW3cParser.loadXml(xml);
         }
         String encoding = null;
-        if (!isNullorEmpty(elementPath) && document != null) {
-            if (!document.getDocumentElement().getNodeName().equals(elementPath)) {
-                Element root = DomW3cParser.getElement(document, elementPath);
-                Document document2 = DomW3cParser.newDocument();
-                document2.appendChild(document2.adoptNode(root.cloneNode(true)));
-                document = document2;
-            }
+        if (!isNullorEmpty(elementPath) && document != null
+                && (!document.getDocumentElement().getNodeName().equals(elementPath))) {
+            Element root = DomW3cParser.getElement(document, elementPath);
+            Document document2 = DomW3cParser.newDocument();
+            document2.appendChild(document2.adoptNode(root.cloneNode(true)));
+            document = document2;
         }
         encoding = Fn.nvl(encoding, this.getConfigParam().get("encoding"));
         String xmlText = DomW3cParser.getXmlText(document, encoding);
@@ -823,7 +820,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             ErrorManager.showError(ex, LOGGER);
             exception = ex;
         }
-        return null;
+        return new ArrayList();
     }
 
     /**

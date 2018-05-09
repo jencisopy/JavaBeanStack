@@ -52,9 +52,6 @@ public class UserSession implements IUserSession{
     private Integer idleSessionExpireInMinutes;
     private IDBFilter dbFilter;
 
-    public UserSession() {
-    }
-
     /**
      * Devuelve el objeto usuario
      * 
@@ -128,7 +125,7 @@ public class UserSession implements IUserSession{
      */
     @Override
     public IAppCompany getEmpresa() {
-        return company;
+        return getCompany();
     }
     
     @Override

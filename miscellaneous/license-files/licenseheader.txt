@@ -1,8 +1,9 @@
 /*
 * JavaBeanStack FrameWork
 *
-* Copyright (C) 2017 Jorge Enciso
+* Copyright (C) 2017 - 2018 Jorge Enciso
 * Email: jorge.enciso.r@gmail.com
+*        jenciso@javabeanstack.org
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public

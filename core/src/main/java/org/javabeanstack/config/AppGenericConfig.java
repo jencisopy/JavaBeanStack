@@ -21,6 +21,7 @@
 */
 package org.javabeanstack.config;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -186,6 +187,6 @@ public class AppGenericConfig implements IAppConfig {
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
-        return null;
+        return new ArrayList();
     }
 }
