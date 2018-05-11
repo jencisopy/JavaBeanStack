@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Funciones que facilitan el manejo de las variables String.
- * @author Jorge Enciso
+ * @author Jorge Andres Enciso Rios
  */
 public class Strings {
     private Strings(){
