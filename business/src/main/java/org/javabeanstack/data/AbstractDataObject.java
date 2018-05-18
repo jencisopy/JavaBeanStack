@@ -116,10 +116,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     private Object lastvalfounded;
     /**
-     * Objeto con datos sobre el error de validación
-     */
-    private IErrorReg checkerror;
-    /**
      * Guarda los errores por alguna excepción de la aplicación
      */
     private Exception errorApp;
@@ -240,8 +236,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             return "";
         }
         if (this.row.getErrors() != null && this.row.getErrors().size() > 0) {
-            String msgError = this.row.getErrors().get(fieldName.toLowerCase()).getMessage();
-            return msgError;
+            return this.row.getErrors().get(fieldName.toLowerCase()).getMessage();
         }
         return "";
     }
@@ -319,7 +314,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public T getRow() {
-        return (T) row;
+        return row;
     }
 
     /**
@@ -530,12 +525,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Setea el objeto Rows, que es una lista donde se almacena los registros
      * recuperados de la base
      *
-     * @param DataRows
+     * @param dataRows
      */
-    public void setDataRows(List<T> DataRows) {
-        dataRows = DataRows;
-        dataRowsBak = new HashMap<>();
-        recno = 0;
+    public void setDataRows(List<T> dataRows) {
+        this.dataRows = dataRows;
+        this.dataRowsBak = new HashMap<>();
+        this.recno = 0;
     }
 
     /**
@@ -1014,7 +1009,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (row == null) {
             return null;
         }
-        return (Object) DataInfo.getDefaultValue(row, fieldname);
+        return DataInfo.getDefaultValue(row, fieldname);
     }
 
     /**
@@ -1028,7 +1023,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (row == null) {
             return null;
         }
-        return (Object) row.getValue(fieldname);
+        return row.getValue(fieldname);
     }
 
     /**
@@ -1048,7 +1043,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (obj == null) {
             return null;
         }
-        return (Object) obj.getValue(fieldname);
+        return obj.getValue(fieldname);
     }
 
     /**
@@ -1062,10 +1057,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         /* Buscar la fila backup del puntero actual */
         if (dataRowsBak != null && dataRowsBak.get(recno) != null) {
             //Devolver valor de la matriz backup
-            T rowbak = (T) dataRowsBak.get(recno);
+            T rowbak = dataRowsBak.get(recno);
             return (Object) rowbak.getValue(fieldname);
         }
-        return (Object) row.getValue(fieldname);
+        return row.getValue(fieldname);
     }
 
     /**
@@ -1089,10 +1084,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @param fieldname nombre del campo
      * @param oldValue
      * @param newValue
-     * @param dataobj
      * @return Verdadero si tuvo exito o falso si no
      */
-    protected boolean beforeSetField(String fieldname, Object oldValue, Object newValue, IDataObject dataobj) {
+    protected boolean beforeSetField(String fieldname, Object oldValue, Object newValue) {
         if (this.dataEvents != null) {
             return this.dataEvents.beforeSetField(row, fieldname, oldValue, newValue);
         }
@@ -1108,7 +1102,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean setField(String fieldname, Object value) {
-        return this.setField(fieldname, value, false, "", null);
+        return this.setField(fieldname, value, false, "");
     }
 
     /**
@@ -1150,12 +1144,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * AfterSetfield.
      * @param range Se utiliza para asignar el valor a un grupo de registros
      * segun el criterio de rango.
-     * @param dataobj Se utiliza en beforesetfield y aftersetfield.
      * @return Verdadero si tuvo exito o falso si no
      */
     //XXX ver, tema range
     @Override
-    public boolean setField(String fieldname, Object newValue, boolean noAfterSetField, String range, IDataObject dataobj) {
+    public boolean setField(String fieldname, Object newValue, boolean noAfterSetField, String range) {
         /* No se puede modificar si es de solo lectura */
         if (!this.readWrite) {
             return false;
@@ -1164,10 +1157,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             return false;
         }
 
-        Object oldValue = (Object) row.getValue(fieldname);
+        Object oldValue = row.getValue(fieldname);
         try {
             errorApp = null;
-            if (!this.beforeSetField(fieldname, oldValue, newValue, dataobj)) {
+            if (!this.beforeSetField(fieldname, oldValue, newValue)) {
                 return false;
             }
             //
@@ -1188,7 +1181,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             //
             if (!noAfterSetField) {
-                return this.afterSetField(fieldname, oldValue, newValue, dataobj);
+                return this.afterSetField(fieldname, oldValue, newValue);
             }
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -1204,10 +1197,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @param fieldname nombre del campo
      * @param newValue valor a asignar
      * @param oldValue Valor anterior a la asignación del nuevo valor.
-     * @param dataobj
      * @return Verdadero si tuvo exito o falso si no
      */
-    protected boolean afterSetField(String fieldname, Object oldValue, Object newValue, IDataObject dataobj) {
+    protected boolean afterSetField(String fieldname, Object oldValue, Object newValue) {
         //Ejecutar aftersetfield si existe objeto datalogic
         if (this.dataEvents != null) {
             return this.dataEvents.afterSetField(row, fieldname, oldValue, newValue);
@@ -1358,7 +1350,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             errorApp = null;
             this.beforeRefreshRow();
             //
-            row = (T) getDAO().refreshRow(row);
+            row = getDAO().refreshRow(row);
             this.getDataRows().set(recno, row);
             //
             this.afterRefreshRow();
@@ -1522,10 +1514,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     //TODO Implementar copyFrom
     @Override
-    public void copyFrom(String cIdempresa, String cEmpresaNombre, String cXmlTag, String cTablaCopy) {
+    public void copyFrom(String idcompany, String companyName, String xmlTag, String tableCopy) {
         /* No se puede modificar si es de solo lectura */
         if (!this.readWrite) {
-
+                
         }
     }
 
@@ -1674,7 +1666,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     protected boolean checkData(IDataSet dataSet) {
         boolean result = true;
         Map<String, IDataObject> map = dataSet.getMapDataObject();
-        map.entrySet().forEach((entry) -> {
+        map.entrySet().forEach( entry -> {
             entry.getValue().checkData(true);
         });
         return result;

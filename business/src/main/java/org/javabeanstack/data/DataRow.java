@@ -56,7 +56,7 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
     public Object clone(){
         Object obj=null;
         try{
-            obj=(DataRow)super.clone();
+            obj= super.clone();
         }catch(CloneNotSupportedException ex){
             ErrorManager.showError(ex, LOGGER);            
         }
@@ -239,8 +239,7 @@ public class DataRow implements IDataRow, Serializable, Cloneable{
      */
     @Override
     public Object getId(){
-        Object obj = DataInfo.getIdvalue(this);
-        return obj;
+        return DataInfo.getIdvalue(this);
     }
 
     /**

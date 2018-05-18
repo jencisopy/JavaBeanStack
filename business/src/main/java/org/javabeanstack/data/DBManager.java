@@ -84,7 +84,7 @@ public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
             }
             EntityManager em;
             if (entityManagers.containsKey(key)) {
-                em = (EntityManager) entityManagers.get(key).em;
+                em = entityManagers.get(key).em;
                 entityManagers.get(key).lastRef = Dates.now();
                 LOGGER.debug("EntityManager ya existe: " + key);
             } else {

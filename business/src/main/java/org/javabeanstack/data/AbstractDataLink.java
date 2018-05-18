@@ -110,7 +110,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      */
     @Override
     public <T extends IDataRow> IDataResult persist(List<T> ejbs) throws SessionError{
-        ejbs.forEach((ejb) -> {
+        ejbs.forEach( ejb -> {
             ejb.setAction(IDataRow.INSERT);
         });
         return update(ejbs);

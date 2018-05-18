@@ -175,7 +175,7 @@ public class DataResult implements IDataResult {
      */
     @Override
     public <T extends IDataRow> void setRowsUpdated(IDataSet dataSetLocal) {
-        dataSetLocal.getMapListSet().entrySet().forEach((mapLocal) -> {
+        dataSetLocal.getMapListSet().entrySet().forEach( mapLocal -> {
             List<T> rowsLocal  = (List<T>)mapLocal.getValue();
             List<T> rowsRemote = (List<T>)mapResult.get(mapLocal.getKey());
             if (rowsRemote != null) {

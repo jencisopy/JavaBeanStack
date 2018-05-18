@@ -250,10 +250,10 @@ public class DataExpression implements IDataExpression{
      */
     @Override
     public void addExpressions(IDataExpression dataExpression) {
-        ((DataExpression) dataExpression).getExpressionList().forEach((expr) -> {
+        ((DataExpression) dataExpression).getExpressionList().forEach( expr -> {
             exprList.add(expr);
         });
-        dataExpression.getSentenceParams().entrySet().forEach((element) -> {
+        dataExpression.getSentenceParams().entrySet().forEach( element -> {
             this.getSentenceParams().put(element.getKey(), element.getValue());
         });
     }

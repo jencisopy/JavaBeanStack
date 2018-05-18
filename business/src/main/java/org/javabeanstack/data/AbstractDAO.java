@@ -115,8 +115,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         CriteriaQuery<T> cq = em.getCriteriaBuilder().createQuery(entityClass);
         cq.select(cq.from(entityClass));
 
-        List<T> result = em.createQuery(cq).getResultList();
-        return result;
+        return em.createQuery(cq).getResultList();
     }
 
     /**
@@ -276,8 +275,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (!Strings.isNullorEmpty(order)) {
             query += " order by " + order;
         }
-        List<T> entityList = this.findListByQuery(sessionId, query, params, first, max);
-        return entityList;
+        return this.findListByQuery(sessionId, query, params, first, max);
     }
 
     /**
@@ -379,8 +377,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             query.setFirstResult(first);
             query.setMaxResults(max);
         }
-        List<T> result = (List<T>) query.getResultList();
-        return result;
+        return (List<T>) query.getResultList();
     }
 
     /**
@@ -517,9 +514,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
             query.setFirstResult(first);
             query.setMaxResults(max);
         }
-        List<T> result = (List<T>) query.getResultList();
-
-        return result;
+        return (List<T>) query.getResultList();
     }
 
     /**
@@ -554,8 +549,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (parameters != null && !parameters.isEmpty()) {
             populateQueryParameters(query, parameters, queryString);
         }
-        List<Object> result = query.getResultList();
-        return result;
+        return query.getResultList();
     }
 
     /**
@@ -596,8 +590,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         }
         query.setFirstResult(first);
         query.setMaxResults(max);
-        List<Object> result = query.getResultList();
-        return result;
+        return query.getResultList();
     }
 
     /**
@@ -825,8 +818,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (maxRows >= 0) {
             q.setMaxResults(maxRows);
         }
-        List<T> devolver = (List<T>) q.getResultList();
-        return devolver;
+        return (List<T>) q.getResultList();
     }
 
     @Override
@@ -978,7 +970,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
                 return null;
             }
             Map<String, Object> result2 = em.getEntityManagerFactory().getProperties();
-            result2.entrySet().forEach((e) -> {
+            result2.entrySet().forEach( e -> {
                 Object object = e.getValue().toString();
                 result.put(e.getKey(), object);
             });
@@ -1166,8 +1158,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         if (Strings.isNullorEmpty(persistUnit)) {
             persistUnit = IDBManager.CATALOGO;
         }
-        String key = persistUnit + ":";
-        return key;
+        return persistUnit + ":";
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)

@@ -76,66 +76,6 @@ public class LogManager implements ILogManager {
                             level, object, objectField, lineNumber, choose);
     }
 
-    /**
-     * Escribe información de un evento en una tabla de la base de datos.
-     * @param <T>
-     * @param logType    
-     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
-     * @param message     mensaje
-     * @param messageInfo información adicional del evento producido.
-     * @param messageNumber nro de mensaje (ver en AppMessage)
-     * @param category    (Aplicación, seguridad, Datos)
-                      IAppLogRecord.CATEGORY_APP, IAppLogRecord.CATEGORY_SECURITY, IAppLogRecord.CATEGORY_DATA
-     * @param level       (Error, Informacion, Alerta) 
-                      IAppLogRecord.LEVEL_ERROR, IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
-     * @param object
-     * @param objectField
-     * @return verdadero si tuvo exito y falso si no.
-     */
-    @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message,
-                                                  String messageInfo, Integer messageNumber, String category, 
-                                                  String level, String object, String objectField) {
-        String sessionId = "";
-        if (userSession != null) {
-            sessionId = userSession.getSessionId();
-        }
-        Integer lineNumber = 0;
-        Integer choose = 0;
-        return dbWrite(logType, sessionId, message, messageInfo, messageNumber, 
-                        category, level, object, objectField, lineNumber, choose);
-    }
-
-    
-    /**
-     * Escribe información de un evento en una tabla de la base de datos.
-     * @param <T>
-     * @param logType    
-     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
-     * @param message     mensaje
-     * @param messageInfo información adicional del evento producido.
-     * @param messageNumber nro de mensaje (ver en AppMessage)
-     * @param category    (Aplicación, seguridad, Datos)
-                      IAppLogRecord.CATEGORY_APP, IAppLogRecord.CATEGORY_SECURITY, IAppLogRecord.CATEGORY_DATA
-     * @param level       (Error, Informacion, Alerta) 
-                      IAppLogRecord.LEVEL_ERROR, IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
-     * @param object
-     * @param lineNumber   nro del linea del programa donde se produjo el evento.
-     * @param objectField
-     * @return verdadero si tuvo exito y falso si no.
-     */
-    
-    @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message,
-                                                  String messageInfo, Integer messageNumber, String category, String level, 
-                                                  String object, String objectField, Integer lineNumber, Integer choose) {
-        String sessionId = "";
-        if (userSession != null) {
-            sessionId = userSession.getSessionId();
-        }
-        return dbWrite(logType, sessionId, message, messageInfo, messageNumber, 
-                        category, level, object, objectField, lineNumber, choose);
-    }
 
     
     /**
@@ -179,23 +119,6 @@ public class LogManager implements ILogManager {
         return false;
     }
 
-    /**
-     * Escribe información de un evento en una tabla de la base de datos.
-     * @param <T>
-     * @param logType    
-     * @param errorReg    objeto error conteniendo la información del evento.
-     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
-     * @return verdadero si tuvo exito y falso si no.
-     */
-    
-    @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType,IErrorReg errorReg, IUserSession userSession) {
-        String sessionId = "";
-        if (userSession != null) {
-            sessionId = userSession.getSessionId();
-        }
-        return dbWrite(logType, errorReg, sessionId);
-    }
 
     /**
      * Escribe información de un evento en una tabla de la base de datos.
@@ -206,7 +129,7 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IErrorReg errorReg, String sessionId) {
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg errorReg) {
         try {
             T logRecord = logType.newInstance();
             String messageInfo = "";
@@ -235,22 +158,6 @@ public class LogManager implements ILogManager {
         return false;
     }
 
-    /**
-     * Escribe información de un evento en una tabla de la base de datos.
-     * @param <T>
-     * @param logType    
-     * @param exp    objeto error conteniendo información del evento.
-     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
-     * @return verdadero si tuvo exito y falso si no.
-     */
-    @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, Exception exp, IUserSession userSession) {
-        String sessionId = "";
-        if (userSession != null) {
-            sessionId = userSession.getSessionId();
-        }
-        return dbWrite(logType, exp, sessionId);
-    }
 
     /**
      * Escribe información de un evento en una tabla de la base de datos.
@@ -261,7 +168,7 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, Exception exp, String sessionId) {
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, Exception exp) {
         try {
             T logRecord = logType.newInstance();
             String messageInfo = ErrorManager.getStackCause(exp);            
@@ -282,22 +189,6 @@ public class LogManager implements ILogManager {
         return false;
     }
 
-    /**
-     * Escribe información de un evento en una tabla de la base de datos.
-     * 
-     * @param <T>
-     * @param logRecord     registro del evento.
-     * @param userSession objeto conteniendo información de la sesión del usuario que produjo el evento.   
-     * @return verdadero si tuvo exito y falso si no.
-     */
-    @Override
-    public <T extends IAppLogRecord> boolean dbWrite(T logRecord, IUserSession userSession) {
-        String sessionId = "";
-        if (userSession != null) {
-            sessionId = userSession.getSessionId();
-        }
-        return dbWrite(logRecord, sessionId);
-    }
 
     /**
      * Escribe información de un evento en una tabla de la base de datos.
