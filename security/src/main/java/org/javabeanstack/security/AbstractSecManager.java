@@ -88,8 +88,7 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
      */
     @Override
     public IUserSession login2(String userLogin, String password) throws Exception {
-        IUserSession sesion = getSessions().login(userLogin, password);
-        return sesion;
+        return getSessions().login(userLogin, password);
     }    
     
 

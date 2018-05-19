@@ -97,8 +97,7 @@ public class DomW3cParser {
         } else {
             stream = new ByteArrayInputStream(xml.getBytes());
         }
-        Document xmlDom = builder.parse(stream);
-        return xmlDom;
+        return builder.parse(stream);
     }
 
     /**
@@ -114,8 +113,7 @@ public class DomW3cParser {
             throws ParserConfigurationException, SAXException, IOException {
 
         DocumentBuilder builder = FACTORY.newDocumentBuilder();
-        Document xmlDom = builder.parse(xml);
-        return xmlDom;
+        return builder.parse(xml);
     }
 
     /**
@@ -361,8 +359,7 @@ public class DomW3cParser {
         XPath xpath = XPATHFACTORY.newXPath();
         xpathExpr = xpath.compile(nodePath);
 
-        Node element = (Node) xpathExpr.evaluate(document, XPathConstants.NODE);
-        return element;
+        return (Node) xpathExpr.evaluate(document, XPathConstants.NODE);
     }
 
     /**
@@ -380,8 +377,7 @@ public class DomW3cParser {
         }
         XPath xpath = XPATHFACTORY.newXPath();        
         xpathExpr = xpath.compile(nodePath);
-        NodeList nodes = (NodeList) xpathExpr.evaluate(document, XPathConstants.NODESET);
-        return nodes;
+        return (NodeList) xpathExpr.evaluate(document, XPathConstants.NODESET);
     }
 
     /**
@@ -447,8 +443,7 @@ public class DomW3cParser {
         StreamResult result = new StreamResult(new StringWriter());
         transformer.transform(source, result);
 
-        String str = result.getWriter().toString();
-        return str;
+        return result.getWriter().toString();
     }
 
     /**

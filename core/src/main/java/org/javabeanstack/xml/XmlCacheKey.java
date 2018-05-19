@@ -124,10 +124,7 @@ public class XmlCacheKey implements IXmlCacheKey {
         if (!Objects.equals(this.documentPath, other.documentPath)) {
             return false;
         }
-        if (!Objects.equals(this.elementPath, other.elementPath)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.elementPath, other.elementPath);
     }
 
     @Override

@@ -303,7 +303,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         String className = "";
         String[] partes = entity.split("_");
         for (String parte : partes) {
-            className += Strings.Capitalize(parte).trim();
+            className += Strings.capitalize(parte).trim();
         }
         if (packagePath == null){
             return null;

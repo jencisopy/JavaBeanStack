@@ -412,7 +412,7 @@ public class Strings {
         return found;
     }
 
-    public static String Capitalize(String text){
+    public static String capitalize(String text){
         if (text == null){
             return null;
         }
@@ -513,8 +513,7 @@ public class Strings {
         if (input == null){
             return null;
         }
-        String result = IOUtils.toString(input);
-        return result;
+        return IOUtils.toString(input);
     }    
 
     /**
@@ -528,8 +527,7 @@ public class Strings {
         if (input == null){
             return null;
         }
-        String result = IOUtils.toString(input,charSet);
-        return result;
+        return IOUtils.toString(input,charSet);
     }    
 
     /**
@@ -543,8 +541,7 @@ public class Strings {
         if (input == null){
             return null;
         }
-        String result = IOUtils.toString(input,charSet);
-        return result;
+        return IOUtils.toString(input,charSet);
     }    
 
     /**

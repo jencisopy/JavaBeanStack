@@ -1058,7 +1058,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (dataRowsBak != null && dataRowsBak.get(recno) != null) {
             //Devolver valor de la matriz backup
             T rowbak = dataRowsBak.get(recno);
-            return (Object) rowbak.getValue(fieldname);
+            return rowbak.getValue(fieldname);
         }
         return row.getValue(fieldname);
     }
