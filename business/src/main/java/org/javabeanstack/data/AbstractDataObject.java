@@ -1516,9 +1516,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public void copyFrom(String idcompany, String companyName, String xmlTag, String tableCopy) {
         /* No se puede modificar si es de solo lectura */
-        if (!this.readWrite) {
-                
-        }
     }
 
     //TODO Implementar isExists()
