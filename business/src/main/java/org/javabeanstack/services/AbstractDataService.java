@@ -281,7 +281,7 @@ public abstract class AbstractDataService implements IDataService {
             if (row.getQueryUK() == null) {
                 return true;
             }
-            T row2 = (T) findByUk(sessionId, row);
+            T row2 = findByUk(sessionId, row);
             // Si encontro un registro
             if (row2 != null) {
                 // Y la operación es agregar 

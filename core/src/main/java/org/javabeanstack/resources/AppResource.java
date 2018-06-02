@@ -149,7 +149,7 @@ public class AppResource implements IAppResource {
     public <T extends IAppUser> byte[] getUserAvatar(Class<T> entityClass, Long userId) {
         try {
             byte[] avatar;            
-            IAppUser user = (IAppUser)dao.findById(entityClass, null, userId);
+            IAppUser user = dao.findById(entityClass, null, userId);
             avatar = user.getAvatar();
             return avatar;
         } catch (Exception ex) {
@@ -170,7 +170,7 @@ public class AppResource implements IAppResource {
     public <T extends IAppCompany> byte[] getCompanyLogo(Class<T> entityClass, Long companyId) {
         try {
             byte[] logo;            
-            IAppCompany company = (IAppCompany)dao.findById(entityClass, null, companyId);
+            IAppCompany company = dao.findById(entityClass, null, companyId);
             logo = company.getLogo();
             return logo;
         } catch (Exception ex) {

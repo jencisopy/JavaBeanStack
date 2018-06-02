@@ -89,8 +89,7 @@ public class IOUtil {
      * @return un archivo en formato inputStream.
      */
     public static InputStream getResourceAsStream(Class clazz, String filePath){
-        InputStream input = clazz.getResourceAsStream(filePath);
-        return input;
+        return clazz.getResourceAsStream(filePath);
     }
 
     /**

@@ -51,7 +51,7 @@ public class DataSet implements IDataSet {
     @Override
     public IDataSet getChanged() {
         IDataSet dataSet = new DataSet();
-        mapSet.entrySet().forEach((entry) -> {
+        mapSet.entrySet().forEach( entry -> {
             dataSet.add(entry.getKey(), getRowsChanged((List<IDataRow>)entry.getValue()));
         });
         return dataSet;
@@ -183,7 +183,7 @@ public class DataSet implements IDataSet {
     
     private void reCreateList(){
         listSet = new LinkedList();
-        mapSet.entrySet().forEach((entry) -> {
+        mapSet.entrySet().forEach( entry -> {
             listSet.add(entry.getValue());
         });
     }

@@ -73,8 +73,7 @@ public class AppGenericConfig implements IAppConfig {
     @Override
     public Document getConfigDOM(String groupKey){
         groupKey = groupKey.toUpperCase();
-        Document dom = config.get(groupKey);
-        return dom;
+        return config.get(groupKey);
     }
 
     /**
@@ -181,9 +180,7 @@ public class AppGenericConfig implements IAppConfig {
         String queryString
                 = "select o from AppSystemParam o";
         try {
-            List<IAppSystemParam> appSystemParams
-                    = dao.findListByQuery(null, queryString, null);
-            return appSystemParams;
+            return dao.findListByQuery(null, queryString, null);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }

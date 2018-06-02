@@ -101,8 +101,7 @@ public class Dates {
      * @return string con el formato deseado.
      */
     public static String toString(Date date, SimpleDateFormat formater) {
-        String result = formater.format(date);
-        return result;
+        return formater.format(date);
     }
 
     /**
@@ -114,8 +113,7 @@ public class Dates {
      */
     public static String toString(Date date, String format) {
         SimpleDateFormat formater = new SimpleDateFormat(format);
-        String result = formater.format(date);
-        return result;
+        return formater.format(date);
     }
 
     /**
@@ -139,8 +137,7 @@ public class Dates {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        Date today = calendar.getTime();
-        return today;
+        return calendar.getTime();
     }
     /**
      * Suma un periodo a una fecha

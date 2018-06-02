@@ -23,7 +23,6 @@ package org.javabeanstack.log;
 
 import java.util.List;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.model.IAppLogRecord;
 
@@ -33,15 +32,10 @@ import org.javabeanstack.model.IAppLogRecord;
  */
 public interface ILogManager {
     <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message, String messageInfo, Integer messageNumber, String category, String type, String object, String objectField);    
-    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message, String messageInfo, Integer messageNumber, String category, String type, String object, String objectField);
     <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message, String messageInfo, Integer messageNumber, String category, String type, String object, String objectField, Integer lineNumber, Integer choose);
-    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IUserSession userSession, String message, String mensajeInfo, Integer messageNumber, String category, String type, String object, String objectField, Integer lineNumber, Integer choose);
-    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IErrorReg errorReg, String sessionId);
-    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, IErrorReg errorReg, IUserSession userSession);    
-    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, Exception exp, String sessionId);
-    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, Exception exp, IUserSession userSession);
+    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg errorReg);
+    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, Exception exp);
     <T extends IAppLogRecord> boolean dbWrite(T logRecord, String sessionId);
-    <T extends IAppLogRecord> boolean dbWrite(T logRecord, IUserSession userSession);    
 
     boolean fWrite(String message, String file, boolean flag);
     boolean logSend();

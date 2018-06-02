@@ -86,7 +86,7 @@ public interface IDataObject <T extends IDataRow>{
     public Map<String, Object> getFilterParams(); 
     public boolean      setField(String fieldname, Object value);
     public boolean      setField(String fieldname, Map<String, Object> param);    
-    public boolean      setField(String fieldname, Object value, boolean noAfterSetField, String range, IDataObject dataobj);
+    public boolean      setField(String fieldname, Object value, boolean noAfterSetField, String range);
     public void         setFilterExtra(String filterExtra);     
     public void         setFilterParams(Map<String, Object> filterParams); 
     public boolean      isFieldExist(String fieldname);
@@ -99,7 +99,7 @@ public interface IDataObject <T extends IDataRow>{
     public boolean      insertRow();
     public boolean      insertRowFrom();
     public boolean      deleteRow();
-    public void         copyFrom(String cIdempresa, String cEmpresaNombre, String cXmlTag, String cTablaCopy);
+    public void         copyFrom(String idcompany, String companyName, String xmlTag, String tableCopy);
     public boolean      isExists();
     public Map<String, IErrorReg> checkDataRow() throws Exception;
     public boolean      checkData(boolean allRows);   

@@ -77,6 +77,6 @@ public class DataLink extends AbstractDataLink {
      */
     @Override
     public <T extends IGenericDAO> void setDao(T dao) {
-        this.dao = (T)dao;
+        this.dao = dao;
     }
 }

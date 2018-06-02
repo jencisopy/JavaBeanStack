@@ -303,7 +303,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         String className = "";
         String[] partes = entity.split("_");
         for (String parte : partes) {
-            className += Strings.Capitalize(parte).trim();
+            className += Strings.capitalize(parte).trim();
         }
         if (packagePath == null){
             return null;
@@ -701,7 +701,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     protected void populateQueryParams(Map<String, Object> params) {
-        params.entrySet().forEach((param) -> {
+        params.entrySet().forEach( param -> {
             queryParams.put(param.getKey(), param.getValue());
         });
     }
@@ -957,8 +957,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         IDataLink data = new DataLink(dao);
         IUserSession userSession = dao.getUserSession(sessionId);
         data.setUserSession(userSession);
-        IDataNativeQuery query = data.newDataNativeQuery();
-        return query;
+        return data.newDataNativeQuery();
     }
     
     /**
@@ -968,7 +967,6 @@ public class DataNativeQuery implements IDataNativeQuery {
      * @return objeto DataNativeQuery
      */
     public static IDataNativeQuery create(IDataLink dataLink){
-        IDataNativeQuery query = dataLink.newDataNativeQuery();
-        return query;
+        return dataLink.newDataNativeQuery();
     }
 }

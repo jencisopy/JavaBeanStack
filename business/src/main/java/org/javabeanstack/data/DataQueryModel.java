@@ -85,7 +85,7 @@ public class DataQueryModel implements IDataQueryModel{
      */
     @Override
     public Object getColumn(String columnName) {
-        if (!IsColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()){
             return null;
         }
         // Buscar un nombre de columna en la matriz
@@ -103,7 +103,7 @@ public class DataQueryModel implements IDataQueryModel{
      */
     @Override
     public String getColumnStr(String columnName) {
-        if (!IsColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()){
             return null;
         }
         // Buscar un nombre de columna en la matriz
@@ -121,7 +121,7 @@ public class DataQueryModel implements IDataQueryModel{
      */
     @Override
     public String getColumnName(int index) {
-        if (!IsColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()){
             return null;
         }
         if (columnList.length <= index){
@@ -191,7 +191,7 @@ public class DataQueryModel implements IDataQueryModel{
 
     @Override
     public void setColumn(String columnName, Object value) {
-        if (!IsColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()){
             return;
         }
         // Buscar un nombre de columna en la matriz
@@ -204,14 +204,11 @@ public class DataQueryModel implements IDataQueryModel{
     
     
     
-    protected Boolean IsColumnMetaDataExist(){
+    protected Boolean isColumnMetaDataExist(){
         if (columnList == null){
             return false;
         }
-        if (columnList.length == 0){
-            return false;
-        }
-        return true;
+        return columnList.length != 0;
     }
 
     @Override

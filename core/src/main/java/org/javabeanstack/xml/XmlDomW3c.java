@@ -248,9 +248,9 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         if (params == null) {
             return;
         }
-        params.entrySet().forEach((element) -> {
-            configParam.put(element.getKey(), element.getValue());
-        });
+        params.entrySet().forEach( element -> 
+            configParam.put(element.getKey(), element.getValue())
+        );
     }
 
     /**
@@ -387,7 +387,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             if (xmlDom == null) {
                 return false;
             }
-            if (alreadyInCache != true) {
+            if (!alreadyInCache) {
                 getXmlSearcher().addToCache(this, documentPath, elementPath, xmlDom, true);
             }
             replaceAttrWithParamValues();
@@ -673,8 +673,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
             document = document2;
         }
         encoding = Fn.nvl(encoding, this.getConfigParam().get("encoding"));
-        String xmlText = DomW3cParser.getXmlText(document, encoding);
-        return xmlText;
+        return DomW3cParser.getXmlText(document, encoding);
     }
 
     /**
@@ -814,8 +813,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     @Override
     public List<Element> getChildren(String nodePath) throws Exception {
         try {
-            List<Element> children = DomW3cParser.getChildren(xmlDom, nodePath);
-            return children;
+            return DomW3cParser.getChildren(xmlDom, nodePath);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
             exception = ex;
@@ -832,8 +830,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     @Override
     public boolean removeElement(String nodePath) {
         try {
-            boolean result = DomW3cParser.removeElement(xmlDom, nodePath);
-            return result;
+            return DomW3cParser.removeElement(xmlDom, nodePath);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
             exception = ex;
@@ -874,8 +871,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     @Override
     public String getPropertyValue(String property, String nodePath) {
         try {
-            String attributeValue = DomW3cParser.getPropertyValue(xmlDom, property, nodePath);
-            return attributeValue;
+            return DomW3cParser.getPropertyValue(xmlDom, property, nodePath);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
             exception = ex;

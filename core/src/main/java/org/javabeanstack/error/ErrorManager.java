@@ -37,20 +37,6 @@ import org.javabeanstack.log.ILogManager;
 public class ErrorManager {
     @EJB private ILogManager logManager;
 
-    /**
-     * Se ejecuta al momento de generarse un error en la aplicación <br>
-     * Su función es: <br>
-     * 1- Recibir información del error ocurrido.<br>
-     * 2- Mostrar el error en pantalla al usuario.<br>
-     * 3- Grabar el error en el log del sistema.<br>
-     *
-     * @param error Objeto conteniendo la excepción
-     * @param view Si va a mostrar o no una pantalla con la descripción del
-     * error
-     */
-    public void ErrorLog(Exception error, boolean view) {
-        //TODO implementar codigo o eliminar metodo
-    }
 
     /**
      * Busca en "AppMessage" el nro. de mensaje y devuelve el texto.

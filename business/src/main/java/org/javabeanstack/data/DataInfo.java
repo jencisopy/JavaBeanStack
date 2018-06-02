@@ -80,7 +80,7 @@ public class DataInfo {
                 return false;
             }
             for (String field : fields) {
-                if (field.toLowerCase().equals(fieldname.toLowerCase())) {
+                if (field.equalsIgnoreCase(fieldname.toLowerCase())) {
                     return true;
                 }
             }
@@ -413,7 +413,7 @@ public class DataInfo {
         }
         Field[] fields = classType.getDeclaredFields();
         for (Field field1 : fields) {
-            if (field1.getName().toLowerCase().equals(fieldname.toLowerCase())) {
+            if (field1.getName().equalsIgnoreCase(fieldname.toLowerCase())) {
                 return field1;
             }
         }
