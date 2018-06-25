@@ -812,8 +812,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (dataRows.size() > rownumber) {
             recno = rownumber;
             row = dataRows.get(recno);
-            setRowBak();
-            refreshRow();
+            // Si no esta en proceso de modificación o borrado
+            if (row.getAction() == 0){
+                setRowBak();
+                refreshRow();
+            }
             //After move
             this.afterRowMove(row);
             return true;
