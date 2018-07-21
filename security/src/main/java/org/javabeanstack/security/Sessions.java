@@ -40,6 +40,7 @@ import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.util.Dates;
 
 import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 
 
@@ -82,12 +83,20 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
                 Date fecha = new Date();
                 String usuarioCod = userLogin.toUpperCase().trim();
                 String md5   = usuarioCod + ":" + password.trim() + ":" +  idcompany + ":" +  fecha;
+                // Verificar si tiene permiso para acceder a los datos de la empresa
+                if (!checkCompanyAccess(((IAppUser)session.getUser()).getIduser(),(Long)idcompany)){
+                    session.setUser(null);
+                    String mensaje = "No tiene autorización para acceder a esta empresa";
+                    LOGGER.debug(mensaje);
+                    session.setError(new ErrorReg(mensaje,4,""));
+                    return session;
+                }
                 
                 Map<String, Object> parameters = new HashMap();
                 parameters.put("idcompany", idcompany);
                 
                 IAppCompany company = dao.findByQuery(null,
-                                  "select o from Company o "
+                                  "select o from AppCompanyLight o "
                                 + " where idcompany = :idcompany",parameters);
 
                 String token = idcompany + "-" + Fn.getMD5(md5);
@@ -128,7 +137,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
         if (userLogin != null) {
             // Verificar existencia del usuario
             IAppUser usuario = dao.findByQuery(null,
-                        "select o from User o where login = :userLogin",
+                        "select o from AppUserLight o where code = :userLogin",
                         params);
             
             userSession = new UserSession();
@@ -185,13 +194,23 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
     /**
      *  Chequea si un usuario tiene permiso a acceder a una empresa determinada
      * 
-     * @param idusuario identificador del usuario
-     * @param idempresa identificador de la empresa
+     * @param iduser identificador del usuario
+     * @param idcompany identificador de la empresa
      * @return verdadero si tiene permiso el usuario y falso si no
      * @throws Exception 
      */
     @Override
-    public Boolean checkCompanyAccess(Long idusuario, Long idempresa) throws Exception{
+    public Boolean checkCompanyAccess(Long iduser, Long idcompany) throws Exception{
+        Map<String, Object> params = new HashMap<>();
+        params.put("iduser", iduser);
+        params.put("idcompany", idcompany);  
+        IAppCompanyAllowed row = dao.findByQuery(null, 
+                                                "select o from AppCompanyAllowed o "
+                                              + "where iduser = :iduser  and idcompany = :idcompany", 
+                                                params);
+        if (row != null){
+            return !row.getDeny();
+        }
         return true;
     }
     
