@@ -19,7 +19,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-package org.javabeanstack.data;
+package org.javabeanstack.datactrl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,6 +29,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import org.javabeanstack.data.DataInfo;
+import org.javabeanstack.data.IDBManager;
+import org.javabeanstack.data.IDataLink;
+import org.javabeanstack.data.IDataObject;
+import org.javabeanstack.data.IDataResult;
+import org.javabeanstack.data.IDataRow;
+import org.javabeanstack.data.IDataSet;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
