@@ -19,9 +19,8 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-
 package org.javabeanstack.web.controller;
- 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,35 +37,37 @@ import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.services.IAppCompanySrv;
 
-
 /**
- * Clase controller de autenticación, recibe peticiones de logeo del usuario
- * lo procesa utilizando los componentes necesarios
- * 
+ * Clase controller de autenticación, recibe peticiones de logeo del usuario lo
+ * procesa utilizando los componentes necesarios
+ *
  * @author Jorge Enciso
  */
 public abstract class AbstractAuthController extends AbstractController {
+
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = Logger.getLogger(AbstractAuthController.class);
-    
+
     private String username;
     private String usernameold;
     private String password;
     private boolean logged;
     private String originalURL;
-    private IAppCompany lastEmpresaSession;
-    private IAppCompany empresa;
-    private List<IAppCompany> userEmpresaList;
-    private boolean userControlBlur=false;
+    private IAppCompany lastCompanySession;
+    private IAppCompany company;
+    private List<IAppCompany> userCompanyList;
+    private boolean userControlBlur = false;
 
-    public abstract IDataLink   getDataLink();
+    public abstract IDataLink getDataLink();
+
     public abstract ISecManager getSecManager();
+
     public abstract IAppCompanySrv getAppCompanySrv();
 
     @PostConstruct
     public void init() {
         logged = false;
-        userEmpresaList = new ArrayList<>();
+        userCompanyList = new ArrayList<>();
         originalURL = (String) getFacesCtx().getRequestMap().get(RequestDispatcher.FORWARD_REQUEST_URI);
 
         if (originalURL == null) {
@@ -82,17 +83,19 @@ public abstract class AbstractAuthController extends AbstractController {
     public String getUsername() {
         return username;
     }
-    
-    public void onUserBlur(){
+
+    /**
+     * Se ejecuta de la página del login en el evento blur del campo username
+     */
+    public void onUserBlur() {
         userControlBlur = true;
-        if (!username.equals(usernameold)){
-            this.logged = false; 
-            this.empresa = null;
+        if (!username.equals(usernameold)) {
+            this.logged = false;
+            this.company = null;
         }
         usernameold = username;
     }
 
-    
     public void setUsername(String username) {
         this.username = username;
     }
@@ -107,12 +110,12 @@ public abstract class AbstractAuthController extends AbstractController {
 
     public boolean isLogged() {
         return logged;
-    } 
+    }
 
     public void setLogged(boolean logged) {
         this.logged = logged;
     }
-    
+
     public String getOriginalURL() {
         return originalURL;
     }
@@ -121,60 +124,73 @@ public abstract class AbstractAuthController extends AbstractController {
         this.originalURL = originalURL;
     }
 
-    public IAppCompany getEmpresa() {
-        return empresa;
+    public IAppCompany getCompany() {
+        return company;
     }
 
-    public void setEmpresa(IAppCompany empresa) {
-        this.empresa = empresa;
+    public void setCompany(IAppCompany company) {
+        this.company = company;
     }
 
-    public List<IAppCompany> getUserEmpresaList() {
-        return userEmpresaList;
+    public List<IAppCompany> getUserCompanyList() {
+        return userCompanyList;
     }
 
-    public void setUserEmpresaList(List<IAppCompany> userEmpresaList) {
-        this.userEmpresaList = userEmpresaList;
+    public void setUserCompanyList(List<IAppCompany> userCompanyList) {
+        this.userCompanyList = userCompanyList;
     }
 
-    public IAppCompany getLastEmpresaSession() {
-        return this.lastEmpresaSession;
+    public IAppCompany getLastCompanySession() {
+        return this.lastCompanySession;
     }
-    
-    protected void setLastEmpresaSession(Long idempresa){
-        if (!userControlBlur){
+
+    /**
+     * Asigna en un atributo de la instancia la empresa que se esta ingresando
+     * @param idempresa identificador de la empresa
+     */
+    protected void setLastCompanySession(Long idempresa) {
+        if (!userControlBlur) {
             return;
         }
-        Map<String,Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         params.put("idempresa", idempresa);
         IAppCompany emp;
         try {
             emp = getDataLink().findByQuery(
                     "select o from AppCompanyLight o where idcompany = :idempresa",
                     params);
-            this.lastEmpresaSession = emp;            
-            this.empresa = lastEmpresaSession;
+            this.lastCompanySession = emp;
+            this.company = lastCompanySession;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
     }
-    
+
+    /**
+     * Verifica si el usuario y contraseña proveida para ingresar al sistema es 
+     * válida.
+     * @return verdadero o falso si el usuario y contraseña son válidos. 
+     */
     public Boolean login() {
-        if (!userControlBlur){
+        if (!userControlBlur) {
             return false;
         }
         boolean result = false;
-        if (!Strings.isNullorEmpty(username)) { 
+        if (!Strings.isNullorEmpty(username)) {
             try {
-               IUserSession userSession = getSecManager().login2(username, password);
+                // Chequea válidez de los datos ingresados.
+                IUserSession userSession = getSecManager().login2(username, password);
                 if (userSession.getUser() != null) {
                     result = true;
                     userSession.setIp(getFacesCtx().getIp());
                     userSession.setHost(getFacesCtx().getHost());
                     getFacesCtx().getSessionMap().put("userSession", userSession);
-                    if (empresa == null) {
-                        loadEmpresaList(userSession);
-                        setLastEmpresaSession(userSession.getUser().getIdcompany());
+                    if (company == null) {
+                        // Traer lista de empresas a la que el usuario esta permitido ingresar
+                        loadCompanyList(userSession);
+                        // Asignar idempresa por defecto al que el usuario se logeo en su
+                        // sesión anterior
+                        setLastCompanySession(userSession.getUser().getIdcompany());
                     }
                     logged = true;
                     getFacesCtx().showInfo("", "Usuario activo: " + userSession.getUser().getFullName());
@@ -191,26 +207,34 @@ public abstract class AbstractAuthController extends AbstractController {
         return result;
     }
 
-    public Boolean onSubmit(){
+    /**
+     * Se ejecuta en el evento submit del formulario de logeo
+     * @return verdadero o falso si tuvo exito o no al crear la sesión de entrada.
+     */
+    public Boolean onSubmit() {
         return createSession();
     }
-    
+
+    /**
+     * Verifica los datos del usuario, contraseña y empresa para luego crear
+     * la sesión de entrada si los datos proveidos fuerón correctos.
+     * @return verdadero o falso si tuvo exito o no al crear la sesión de entrada.
+     */
     public Boolean createSession() {
         boolean result = false;
-        if (!userControlBlur){
-            return false; 
+        if (!userControlBlur) {
+            return false;
         }
-        if (empresa != null) {
+        if (company != null) {
             result = true;
-            IUserSession userSession = getSecManager().createSession(username, password, empresa.getIdcompany(),null);
-            if (userSession.getError() != null){
+            IUserSession userSession = getSecManager().createSession(username, password, company.getIdcompany(), null);
+            if (userSession.getError() != null) {
                 result = false;
                 getFacesCtx().showError("", userSession.getError().getMessage());
-            }
-            else {
+            } else {
                 getFacesCtx().getSessionMap().put("userSession", userSession);
             }
-            userSession.setCompany(empresa);
+            userSession.setCompany(company);
         } else {
             getFacesCtx().showError("", "Empresa no válida.");
         }
@@ -221,33 +245,36 @@ public abstract class AbstractAuthController extends AbstractController {
         return result;
     }
 
-    private void loadEmpresaList(IUserSession userSession) {
-        if (userEmpresaList.size() > 0) {
-            userEmpresaList.clear();
+    /**
+     * Puebla un array con la lista de empresas a la que el usuario puede ingresar
+     * @param userSession datos del usuario.
+     */
+    private void loadCompanyList(IUserSession userSession) {
+        if (userCompanyList.size() > 0) {
+            userCompanyList.clear();
         }
         try {
             List<IAppCompany> query = getAppCompanySrv().getAppCompanyLight(userSession);
-            query.forEach((company) -> {
-                userEmpresaList.add(company);
+            query.forEach((empresa) -> {
+                userCompanyList.add(empresa);
             });
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
     }
-    
 
-    public List<IAppCompany> getEmpresaList() {
+    public List<IAppCompany> getCompanyList() {
         IUserSession userSession = getUserSession();
-        if (userSession == null){
+        if (userSession == null) {
             return null;
         }
-        loadEmpresaList(userSession);
-        return userEmpresaList;
+        loadCompanyList(userSession);
+        return userCompanyList;
     }
-           
+
     @Override
     public String logout() {
         logged = false;
         return super.logout();
-    }       
+    }
 }

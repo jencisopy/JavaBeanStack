@@ -22,18 +22,24 @@
 
 package org.javabeanstack.web.controller;
 
+import org.javabeanstack.web.util.FacesContextUtil;
 import java.io.Serializable;
-
 import org.javabeanstack.security.IUserSession;
 
-
+/**
+  * @author Jorge Enciso
+ */
 public abstract class AbstractController implements Serializable{
     private FacesContextUtil facesCtx;
             
     public AbstractController(){
         facesCtx = new FacesContextUtil();
     }
-    
+ 
+    /**
+     * Devuelve la instancia de FacesContext
+     * @return la instancia de FacesContext
+     */
     public FacesContextUtil getFacesCtx(){
         if (facesCtx == null){
             facesCtx = new FacesContextUtil();
@@ -47,11 +53,20 @@ public abstract class AbstractController implements Serializable{
     }
 
     
+    /**
+     * Devuelve el objeto UserSession conteniendo información sobre la sesión
+     * del usuario actual
+     * @return usersession.
+     */
     public IUserSession getUserSession() {
         IUserSession userSession = (IUserSession)facesCtx.getSessionMap().get("userSession");
         return userSession;
     }
     
+    /**
+     * Devuelve el id del usuario actual.
+     * @return id del usuario actual.
+     */
     public Long getUserId() {
         IUserSession userSession = (IUserSession)facesCtx.getSessionMap().get("userSession");
         return userSession.getUser().getIduser();

@@ -1,4 +1,4 @@
-package org.javabeanstack.web.controller;
+package org.javabeanstack.web.listeners;
 
 import javax.faces.event.PhaseEvent;
 import javax.faces.event.PhaseId;
@@ -6,7 +6,6 @@ import javax.faces.event.PhaseListener;
 import org.apache.log4j.Logger;
 
 public class LifeCycleListener implements PhaseListener {
-
     private static final Logger LOGGER = Logger.getLogger(LifeCycleListener.class);
 
     @Override

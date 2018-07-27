@@ -56,6 +56,7 @@ public abstract class AbstractUserEnvironment extends AbstractController {
 
     @PostConstruct
     public void init() {
+        //TODO analizar este código
         modelPackagePath = getAppConfig().getProperty("packagepathmodel",
                 "SYSTEM", "/Configuration/SystemSetting/ClassInfo");
     }

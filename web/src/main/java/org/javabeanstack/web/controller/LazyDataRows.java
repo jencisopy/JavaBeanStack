@@ -41,7 +41,6 @@ import org.javabeanstack.error.ErrorManager;
  * @param <T>
  */
 public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
-
     private static final Logger LOGGER = Logger.getLogger(LazyDataRows.class);
     public AbstractDataController context; 
 

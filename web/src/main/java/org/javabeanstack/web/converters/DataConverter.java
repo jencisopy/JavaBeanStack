@@ -20,7 +20,7 @@
 * MA 02110-1301  USA
  */
 
-package org.javabeanstack.web.controller;
+package org.javabeanstack.web.converters;
 
 import javax.inject.Inject;
 import org.javabeanstack.data.DataLink;
