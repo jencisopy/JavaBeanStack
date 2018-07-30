@@ -20,7 +20,7 @@
 * MA 02110-1301  USA
  */
 
-package org.javabeanstack.web.controller;
+package org.javabeanstack.web.jsf.controller;
 
 import java.util.HashMap;
 import java.util.List;

@@ -19,7 +19,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-package org.javabeanstack.web.controller;
+package org.javabeanstack.web.jsf.controller;
 
 import org.javabeanstack.web.util.FacesContextUtil;
 import com.google.common.base.Strings;
@@ -48,19 +48,19 @@ import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.web.model.ColumnModel;
 
 /**
- * Controller para los ABMs en las tablas, hereda funcionalidades de AbstractDataObject
+ * Controller para los ABMs de las tablas, hereda funcionalidades de AbstractDataObject
  *
  * @author Jorge Enciso
  * @param <T>
  */
 public abstract class AbstractDataController<T extends IDataRow> extends AbstractDataObject<T> {
-    /** Lista de columnas del UIDataTable/grilla con los datos */
+    /** Lista de columnas de la grilla con los datos */
     private List<UIColumn> tableUIColumns;
-    /** Registros de la selección de datos en un proceso que trae registros por bloque (pagina a pagina)*/
+    /** Lista de registros de la selección de datos en un proceso que trae los datos por bloque (pagina a pagina)*/
     private LazyDataRows<T> lazyDataRows;
     /** Guarda los registros seleccionados en el UIDataTable o grilla de datos */
     private T[] rowsSelected;
-    /** Se asigna cuando se selecciona un registro en el UIDataTable */
+    /** Se asigna cuando se selecciona un registro en la grilla de datos */
     private T rowSelected;
     /** Registros resultante de la aplicación de un proceso de filtrado */
     private List<T> rowsFiltered;
@@ -70,6 +70,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     private Object id;
     /** Operación a ejecutar, (agregar, modificar, borrar, consultar etc) */
     private String action = "";
+    /** Si se activa este atributo, se anula el proceso de recuperar registros (LazyDataRows.load) */
     private Boolean noLazyRowsLoad = false;
     private String refreshUIComponent;
     private String formViewSelected = "DEFAULT";
@@ -87,17 +88,26 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /** 
-     * Operación a ejecutar o en ejecución, (agregar, modificar, borrar, consultar etc) 
+     * Acción a realizar o en ejecución, (agregar, modificar, borrar, consultar etc) 
      * @return valor de action (agregar, modificar, borrar, consultar etc)
      */
     public String getAction() {
         return action;
     }
 
+    /** 
+     * Devuelve el identificador del registro de la tabla normalmente se pasa 
+     * desde otro proceso para realizar una operación sobre el mismo 
+     * @return identificador del registro de la tabla
+     */
     public Object getId() {
         return id;
     }
 
+    /**
+     * Asigna el identificador del registro de la tabla para realizar alguna operación sobre el registro
+     * @param id el identificador del registro de la tabla 
+     */
     public void setId(Object id) {
         this.id = id;
     }

@@ -19,13 +19,16 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
+package org.javabeanstack.web.jsf.controller;
 
-package org.javabeanstack.web.converters;
-
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
 import org.javabeanstack.data.DataLink;
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataRow;
+import org.javabeanstack.exceptions.SessionError;
+import org.javabeanstack.security.IUserSession;
 
 
 /**
@@ -33,19 +36,45 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  * @param <T>
  */
-public class DataConverter<T extends IDataRow> extends AbstractDataConverter<T> {
+public abstract class DataController<T extends IDataRow> extends AbstractDataController<T> {
+
     @Inject
     private DataLink dao;
 
-    public DataConverter(){
-    }
+    @Inject
+    private DataLink daoCatalog;
     
-    public DataConverter(Class<T> clase){
-        super(clase);
+    public DataController(){
+    }  
+    
+    public DataController(Class<T> type){
+        this.setType(type);
+    }
+
+    @PostConstruct
+    public void init() {
+        IUserSession userSession = (IUserSession)getFacesCtx().getSession().getAttribute("userSession"); 
+        try {
+            getDAO().setUserSession(userSession);
+            open(getOrder(), getFilter(), true, getMaxRows());
+            if (getErrorApp() != null){
+                getFacesCtx().showError(getErrorApp().getMessage());
+            }
+        } catch (SessionError ex) {
+            getFacesCtx().showError(ex.getMessage());
+            logout();
+        } catch (Exception ex) {
+            getFacesCtx().showError(ex.getMessage());
+        }
     }
 
     @Override
     public IDataLink getDAO() {
         return dao;
+    }
+
+    @Override
+    public IDataLink getDAOCatalog() {
+        return daoCatalog;
     }
 }

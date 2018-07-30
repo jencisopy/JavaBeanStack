@@ -64,6 +64,18 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
         return getSessions().createSession(userLogin,  password, idcompany, idleSessionExpireInMinutes);
     }
     
+    
+    /**
+     * Vuelve a crear la sesión con el acceso a una nueva empresa
+     * 
+     * @param sessionId identificador de la sesión.
+     * @param idcompany identificador de la empresa a la que se solicita el nuevo acceso.
+     * @return objeto sesión
+     */
+    @Override
+    public IUserSession reCreateSession(String sessionId, Object idcompany) {
+        return getSessions().reCreateSession(sessionId,  idcompany);
+    }
 
     /**
      * Devuelve verdadero si sus credenciales para el logeo son válidas o falso si no

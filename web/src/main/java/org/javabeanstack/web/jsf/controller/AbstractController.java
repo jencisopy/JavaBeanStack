@@ -20,14 +20,15 @@
 * MA 02110-1301  USA
  */
 
-package org.javabeanstack.web.controller;
+package org.javabeanstack.web.jsf.controller;
 
 import org.javabeanstack.web.util.FacesContextUtil;
 import java.io.Serializable;
 import org.javabeanstack.security.IUserSession;
 
 /**
-  * @author Jorge Enciso
+ * Clase base controller.
+ * @author Jorge Enciso
  */
 public abstract class AbstractController implements Serializable{
     private FacesContextUtil facesCtx;
@@ -47,11 +48,22 @@ public abstract class AbstractController implements Serializable{
         return facesCtx;
     }
     
-    
+
+    /**
+     * Identificador de la empresa a la que el usuario se logeo
+     * @return Identificador de la empresa a la que el usuario se logeo
+     */
     public Long getIdEmpresa() {
         return this.getUserSession().getIdEmpresa();
     }
 
+    /**
+     * Identificador de la empresa a la que el usuario se logeo
+     * @return Identificador de la empresa a la que el usuario se logeo
+     */
+    public Long getIdCompany() {
+        return this.getUserSession().getIdCompany();
+    }
     
     /**
      * Devuelve el objeto UserSession conteniendo información sobre la sesión
@@ -72,6 +84,10 @@ public abstract class AbstractController implements Serializable{
         return userSession.getUser().getIduser();
     }
 
+    /**
+     * Cierra la sesión del usuario.
+     * @return link para redireccionar a la página de logeo
+     */
     public String logout() {
         facesCtx.getSessionMap().put("userSession", null);
         return "login.xhtml?faces-redirect=true";

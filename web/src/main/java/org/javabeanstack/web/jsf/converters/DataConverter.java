@@ -19,32 +19,33 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-package org.javabeanstack.web.controller;
 
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
-import org.javabeanstack.config.IAppConfig;
-import org.javabeanstack.resources.IAppResource;
+package org.javabeanstack.web.jsf.converters;
+
+import javax.inject.Inject;
+import org.javabeanstack.data.DataLink;
+import org.javabeanstack.data.IDataLink;
+import org.javabeanstack.data.IDataRow;
+
 
 /**
  *
  * @author Jorge Enciso
+ * @param <T>
  */
+public class DataConverter<T extends IDataRow> extends AbstractDataConverter<T> {
+    @Inject
+    private DataLink dao;
 
-@Named(value = "userEnvironment")
-@SessionScoped
-public class UserEnvironment extends AbstractUserEnvironment{
-    @EJB private IAppResource appResource;
-    @EJB private IAppConfig appConfig;
-
-    @Override
-    public IAppResource getAppResource() {
-        return appResource;
+    public DataConverter(){
+    }
+    
+    public DataConverter(Class<T> clase){
+        super(clase);
     }
 
     @Override
-    public IAppConfig getAppConfig() {
-        return appConfig;
+    public IDataLink getDAO() {
+        return dao;
     }
 }

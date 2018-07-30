@@ -20,7 +20,7 @@
 * MA 02110-1301  USA
  */
 
-package org.javabeanstack.web.controller;
+package org.javabeanstack.web.jsf.controller;
 
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -32,13 +32,22 @@ import org.javabeanstack.data.DataLink;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.services.IAppCompanySrv;
 
+/**
+ * Clase controller de autenticación, recibe peticiones de logeo del usuario lo
+ * procesa utilizando los componentes necesarios
+ *
+ * @author Jorge Enciso
+ */
 @Named(value = "authBean")
 @ViewScoped
 public class AuthController extends AbstractAuthController{
     private static final long serialVersionUID = 1L;
-    
+
+    /** Objeto que abstrae las funcionalidades de la capa de seguridad */
     @EJB    private ISecManager secManager;
+    /** Servicio de la instancia AppCompany */
     @EJB    private IAppCompanySrv appCompanySrv;
+    /** Objeto que abstrae el acceso a los datos */
     @Inject private DataLink dataLink;
 
     public AuthController(){ 

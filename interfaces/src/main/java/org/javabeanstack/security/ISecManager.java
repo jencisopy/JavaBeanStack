@@ -7,6 +7,7 @@ package org.javabeanstack.security;
  */
 public interface ISecManager {
     IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes);
+    IUserSession reCreateSession(String sessionId, Object idcompany);
     String getCompanyList();
     String getUserRol(String userLogin);
     Boolean isUserMemberOf(String user, String userGroup);    

@@ -18,8 +18,7 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.security;
 
 import java.util.Calendar;
@@ -43,131 +42,190 @@ import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 
-
 /**
- * Es la clase encargada de todas las sesiones de usuarios.
- * Guarda información de cada sesión y gestión la creación y expiración de la sesión.
- * 
+ * Es la clase encargada de todas las sesiones de usuarios. Guarda información
+ * de cada sesión y gestión la creación y expiración de la sesión.
+ *
  * El test unitario se encuentra en TestProjects clase
- *     py.com.oym.test.data.TestSesiones
- * 
+ * py.com.oym.test.data.TestSesiones
+ *
  * @author Jorge Enciso
  */
 //@Singleton
 @Startup
-@Lock(LockType.READ) 
-public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{ 
-    private static final Logger   LOGGER = Logger.getLogger(Sessions.class); 
-    Map<String, Object> sessionVar = new HashMap<>();     
-    @EJB private IGenericDAO dao; 
-            
+@Lock(LockType.READ)
+public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
+    private static final Logger LOGGER = Logger.getLogger(Sessions.class);
+    private final Map<String, Object> sessionVar = new HashMap<>();
+    
+    @EJB
+    private IGenericDAO dao;
+
     /**
      * Crea una sesión de usuario para acceso a la app
-     * 
-     * @param userLogin     usuario
-     * @param password      password
-     * @param idcompany     empresa que esta solicitando ingresar
-     * @param idleSessionExpireInMinutes    minutos sin actividad antes de cerrar la sesión.    
+     *
+     * @param userLogin usuario
+     * @param password password
+     * @param idcompany empresa que esta solicitando ingresar
+     * @param idleSessionExpireInMinutes minutos sin actividad antes de cerrar
+     * la sesión.
      * @return objeto conteniendo datos del login exitoso o rechazado
-     */    
+     */
 
     /* TODO analizar que no pueda ingresar el mismo usuario más de una vez */
     @Override
     @Lock(LockType.WRITE)
-    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes){
-        try{
-            IUserSession session;        
+    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes) {
+        try {
+            IUserSession session;
             // Verifcar si coincide usuario y contraseña, si esta o no activo
             session = login(userLogin, password);
-            if (session != null && session.getUser() != null){
+            if (session != null && session.getUser() != null) {
                 Date fecha = new Date();
                 String usuarioCod = userLogin.toUpperCase().trim();
-                String md5   = usuarioCod + ":" + password.trim() + ":" +  idcompany + ":" +  fecha;
+                String md5 = session.getUser().getId() + ":" + usuarioCod + ":" + idcompany + ":" + fecha;
                 // Verificar si tiene permiso para acceder a los datos de la empresa
-                if (!checkCompanyAccess(((IAppUser)session.getUser()).getIduser(),(Long)idcompany)){
+                if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
                     session.setUser(null);
                     String mensaje = "No tiene autorización para acceder a esta empresa";
                     LOGGER.debug(mensaje);
-                    session.setError(new ErrorReg(mensaje,4,""));
+                    session.setError(new ErrorReg(mensaje, 4, ""));
                     return session;
                 }
-                
+
                 Map<String, Object> parameters = new HashMap();
                 parameters.put("idcompany", idcompany);
-                
+
                 IAppCompany company = dao.findByQuery(null,
-                                  "select o from AppCompanyLight o "
-                                + " where idcompany = :idcompany",parameters);
+                        "select o from AppCompanyLight o "
+                        + " where idcompany = :idcompany", parameters);
 
                 String token = idcompany + "-" + Fn.getMD5(md5);
-                
-                String persistUnit = company .getPersistentUnit().trim();
+
+                String persistUnit = company.getPersistentUnit().trim();
                 session.setPersistenceUnit(persistUnit);
                 session.setCompany(company);
 
                 session.setSessionId(token);
                 session.setIdleSessionExpireInMinutes(idleSessionExpireInMinutes);
-                
+
                 // Agregar sesión al pool de sesiones
-                sessionVar.put(token, session);                
+                sessionVar.put(token, session);
             }
             return session;
-        }
-        catch (Exception exp){
+        } catch (Exception exp) {
             ErrorManager.showError(exp, LOGGER);
         }
         return null;
     }
-    
+
     /**
-     * Devuelve verdadero si sus credenciales para el logeo son válidas o falso si no
+     * Vuelve a crear la sesión con el acceso a una nueva empresa
      * 
+     * @param sessionId identificador de la sesión.
+     * @param idcompany identificador de la empresa a la que se solicita el nuevo acceso.
+     * @return objeto sesión
+     */
+    @Override    
+    @Lock(LockType.WRITE)
+    public IUserSession reCreateSession(String sessionId, Object idcompany) {
+        UserSession session = getUserSession(sessionId);
+        if (session == null || session.getError() != null) {
+            if (session == null){
+                return null;
+            }
+            LOGGER.debug(session.getError().getMessage());
+            return session;
+        }
+        try {
+            Date fecha = new Date();
+            String usuarioCod = session.getUser().getCode().trim().toUpperCase();
+            String md5 = session.getUser().getId() + ":" + usuarioCod + ":" + idcompany + ":" + fecha;
+            // Verificar si tiene permiso para acceder a los datos de la empresa
+            if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
+                session.setUser(null);
+                String mensaje = "No tiene autorización para acceder a esta empresa";
+                LOGGER.debug(mensaje);
+                session.setError(new ErrorReg(mensaje, 4, ""));
+                return session;
+            }
+            // Eliminar sesión anterior
+            sessionVar.remove(sessionId);
+            
+            // Preparar nueva sesión
+            Map<String, Object> parameters = new HashMap();
+            parameters.put("idcompany", idcompany);
+
+            IAppCompany company = dao.findByQuery(null,
+                    "select o from AppCompanyLight o "
+                    + " where idcompany = :idcompany", parameters);
+
+            String token = idcompany + "-" + Fn.getMD5(md5);
+
+            String persistUnit = company.getPersistentUnit().trim();
+            session.setPersistenceUnit(persistUnit);
+            session.setCompany(company);
+            session.setSessionId(token);
+            
+            // Agregar sesión al pool de sesiones
+            sessionVar.put(token, session);
+            return session;
+        } catch (Exception exp) {
+            ErrorManager.showError(exp, LOGGER);
+        }
+        return null;
+    }
+
+    /**
+     * Devuelve verdadero si sus credenciales para el logeo son válidas o falso
+     * si no
+     *
      * @param userLogin usuario
-     * @param password  contraseña.
-     * @return  userSession conteniendo información de la sesión del usuario
-     * @throws Exception 
+     * @param password contraseña.
+     * @return userSession conteniendo información de la sesión del usuario
+     * @throws Exception
      */
     @Override
     public IUserSession login(String userLogin, String password) throws Exception {
         LOGGER.debug("LOGIN IN");
         String mensaje;
-        Map<String,Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         params.put("userLogin", userLogin);
         UserSession userSession;
         if (userLogin != null) {
             // Verificar existencia del usuario
             IAppUser usuario = dao.findByQuery(null,
-                        "select o from AppUserLight o where code = :userLogin",
-                        params);
-            
+                    "select o from AppUserLight o where code = :userLogin",
+                    params);
+
             userSession = new UserSession();
             // Verificar que exista el usuario
             if (usuario == null) {
-                mensaje = "Este usuario "+userLogin+" no existe";
-                LOGGER.debug(mensaje);                
-                userSession.setError(new ErrorReg(mensaje,1,""));
+                mensaje = "Este usuario " + userLogin + " no existe";
+                LOGGER.debug(mensaje);
+                userSession.setError(new ErrorReg(mensaje, 1, ""));
                 return userSession;
             }
             // Verificar que el usuario este activo.
-            if (usuario.getDisable()){
-                mensaje = "La cuenta "+usuario.getLogin().trim()+" esta inactivo";                
+            if (usuario.getDisable()) {
+                mensaje = "La cuenta " + usuario.getLogin().trim() + " esta inactivo";
                 LOGGER.info(mensaje);
-                userSession.setError(new ErrorReg(mensaje,2,""));
+                userSession.setError(new ErrorReg(mensaje, 2, ""));
                 return userSession;
             }
             // Verificar que no expiro la cuenta
-            if (usuario.getExpiredDate().before(Dates.now())){
-                mensaje = "La cuenta "+usuario.getLogin()+" expiro";
+            if (usuario.getExpiredDate().before(Dates.now())) {
+                mensaje = "La cuenta " + usuario.getLogin() + " expiro";
                 LOGGER.debug(mensaje);
-                userSession.setError(new ErrorReg(mensaje,2,""));
+                userSession.setError(new ErrorReg(mensaje, 2, ""));
                 return userSession;
             }
             // Verificar que la contraseña sea correcta
             String md5 = usuario.getLogin().toUpperCase().trim() + ":" + password.trim();
-                
+
             String claveEncriptada = Fn.getMD5(md5);
-            if (!claveEncriptada.equals(usuario.getPass())){
-                userSession.setError(new ErrorReg("Contraseña incorrecta",3,""));
+            if (!claveEncriptada.equals(usuario.getPass())) {
+                userSession.setError(new ErrorReg("Contraseña incorrecta", 3, ""));
                 return userSession;
             }
             userSession.setUser(usuario);
@@ -178,54 +236,54 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
 
     /**
      * Cierra una sesión
-     * @param sessionId  identificador de la sesión a cerrar
+     *
+     * @param sessionId identificador de la sesión a cerrar
      */
     @Override
     @Lock(LockType.WRITE)
-    public void logout(String sessionId){
+    public void logout(String sessionId) {
         try {
             sessionVar.remove(sessionId);
-        }
-        catch (Exception exp){
+        } catch (Exception exp) {
             //
         }
     }
-    
+
     /**
-     *  Chequea si un usuario tiene permiso a acceder a una empresa determinada
-     * 
+     * Chequea si un usuario tiene permiso a acceder a una empresa determinada
+     *
      * @param iduser identificador del usuario
      * @param idcompany identificador de la empresa
      * @return verdadero si tiene permiso el usuario y falso si no
-     * @throws Exception 
+     * @throws Exception
      */
     @Override
-    public Boolean checkCompanyAccess(Long iduser, Long idcompany) throws Exception{
+    public Boolean checkCompanyAccess(Long iduser, Long idcompany) throws Exception {
         Map<String, Object> params = new HashMap<>();
         params.put("iduser", iduser);
-        params.put("idcompany", idcompany);  
-        IAppCompanyAllowed row = dao.findByQuery(null, 
-                                                "select o from AppCompanyAllowed o "
-                                              + "where iduser = :iduser  and idcompany = :idcompany", 
-                                                params);
-        if (row != null){
+        params.put("idcompany", idcompany);
+        IAppCompanyAllowed row = dao.findByQuery(null,
+                "select o from AppCompanyAllowed o "
+                + "where iduser = :iduser  and idcompany = :idcompany",
+                params);
+        if (row != null) {
             return !row.getDeny();
         }
         return true;
     }
-    
-    
+
     /**
      * Devuelve un objeto sesión correspondiente a una sesión solicitada
-     * @param sessionId   identificador de la sesión.
+     *
+     * @param sessionId identificador de la sesión.
      * @return objeto con los datos de la sesión solicitada
      */
     @Override
-    public UserSession getUserSession(String sessionId){
-        UserSession sesion = (UserSession)sessionVar.get(sessionId);
-        if (sesion != null){
+    public UserSession getUserSession(String sessionId) {
+        UserSession sesion = (UserSession) sessionVar.get(sessionId);
+        if (sesion != null) {
             Integer expireInMinutes = sesion.getIdleSessionExpireInMinutes();
-            if (expireInMinutes == null){
+            if (expireInMinutes == null) {
                 expireInMinutes = 30;
             }
             // Verificar si ya expiro su sesión
@@ -236,8 +294,8 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote{
             long time1 = cal1.getTimeInMillis();
             long time2 = cal2.getTimeInMillis();
             // Diferencias en minutos desde la ultima vez que se hizo referencia a esta sesión.        
-            long idleInMinutes = (time2 - time1)/(60 * 1000);
-            if (idleInMinutes >= expireInMinutes){
+            long idleInMinutes = (time2 - time1) / (60 * 1000);
+            if (idleInMinutes >= expireInMinutes) {
                 sessionVar.remove(sessionId);
                 sesion.setUser(null);
                 String mensaje = "La sesión expiro";

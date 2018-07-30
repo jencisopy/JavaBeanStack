@@ -1,4 +1,4 @@
-package org.javabeanstack.web.listeners;
+package org.javabeanstack.web.jsf.listeners;
 
 import javax.faces.event.PhaseEvent;
 import javax.faces.event.PhaseId;
