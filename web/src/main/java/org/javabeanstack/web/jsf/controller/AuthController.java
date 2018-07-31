@@ -19,14 +19,12 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-
 package org.javabeanstack.web.jsf.controller;
 
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 
 import org.javabeanstack.data.DataLink;
 import org.javabeanstack.security.ISecManager;
@@ -40,17 +38,27 @@ import org.javabeanstack.services.IAppCompanySrv;
  */
 @Named(value = "authBean")
 @ViewScoped
-public class AuthController extends AbstractAuthController{
+public class AuthController extends AbstractAuthController {
+
     private static final long serialVersionUID = 1L;
 
-    /** Objeto que abstrae las funcionalidades de la capa de seguridad */
-    @EJB    private ISecManager secManager;
-    /** Servicio de la instancia AppCompany */
-    @EJB    private IAppCompanySrv appCompanySrv;
-    /** Objeto que abstrae el acceso a los datos */
-    @Inject private DataLink dataLink;
+    /**
+     * Objeto que abstrae las funcionalidades de la capa de seguridad
+     */
+    @EJB
+    private ISecManager secManager;
+    /**
+     * Servicio de la instancia AppCompany
+     */
+    @EJB
+    private IAppCompanySrv appCompanySrv;
+    /**
+     * Objeto que abstrae el acceso a los datos
+     */
+    @Inject
+    private DataLink dataLink;
 
-    public AuthController(){ 
+    public AuthController() {
     }
 
     @Override
@@ -62,7 +70,7 @@ public class AuthController extends AbstractAuthController{
     public ISecManager getSecManager() {
         return secManager;
     }
-    
+
     @Override
     public IAppCompanySrv getAppCompanySrv() {
         return appCompanySrv;

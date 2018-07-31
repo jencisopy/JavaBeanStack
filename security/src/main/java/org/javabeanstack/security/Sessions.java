@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
@@ -57,10 +58,15 @@ import org.javabeanstack.model.IAppUser;
 public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
     private static final Logger LOGGER = Logger.getLogger(Sessions.class);
     private final Map<String, Object> sessionVar = new HashMap<>();
+    private boolean oneSessionPerUser = false;
     
     @EJB
     private IGenericDAO dao;
 
+    @PostConstruct
+    private void init(){
+        
+    }
     /**
      * Crea una sesión de usuario para acceso a la app
      *
@@ -82,8 +88,11 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
             session = login(userLogin, password);
             if (session != null && session.getUser() != null) {
                 Date fecha = new Date();
-                String usuarioCod = userLogin.toUpperCase().trim();
-                String md5 = session.getUser().getId() + ":" + usuarioCod + ":" + idcompany + ":" + fecha;
+                String pass = session.getUser().getPass().toUpperCase().trim();
+                String md5 = session.getUser().getId() + ":" + pass;
+                if (!oneSessionPerUser){
+                    md5 += ":" + fecha.getTime();
+                }
                 // Verificar si tiene permiso para acceder a los datos de la empresa
                 if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
                     session.setUser(null);
@@ -139,8 +148,11 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
         }
         try {
             Date fecha = new Date();
-            String usuarioCod = session.getUser().getCode().trim().toUpperCase();
-            String md5 = session.getUser().getId() + ":" + usuarioCod + ":" + idcompany + ":" + fecha;
+            String pass = session.getUser().getPass().toUpperCase().trim();
+            String md5 = session.getUser().getId() + ":" + pass;
+            if (!oneSessionPerUser){
+                md5 += ":" + fecha.getTime();
+            }
             // Verificar si tiene permiso para acceder a los datos de la empresa
             if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
                 session.setUser(null);

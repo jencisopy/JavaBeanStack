@@ -44,40 +44,67 @@ import org.javabeanstack.services.IAppCompanySrv;
  * @author Jorge Enciso
  */
 public abstract class AbstractAuthController extends AbstractController {
+
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = Logger.getLogger(AbstractAuthController.class);
 
-    /** Login o identificador del usuario  */
+    /**
+     * Login o identificador del usuario
+     */
     private String userLogin;
-    /** Variable utilizada para propósitos internos */
+    /**
+     * Variable utilizada para propósitos internos
+     */
     private String userLoginOld;
-    /** Password */
+    /**
+     * Password
+     */
     private String password;
-    /** Si el usuario actual esta logeado */
+    /**
+     * Si el usuario actual esta logeado
+     */
     private boolean logged;
-    /** Petición URL original antes de que el filtro detectara que el peticionante no estaba logeado */
+    /**
+     * Petición URL original antes de que el filtro detectara que el
+     * peticionante no estaba logeado
+     */
     private String originalURL;
-    /** Ultima empresa a la que el usuario actual se logeo */
+    /**
+     * Ultima empresa a la que el usuario actual se logeo
+     */
     private IAppCompany lastCompanySession;
-    /** Empresa seleccionada */
+    /**
+     * Empresa seleccionada
+     */
     private IAppCompany company;
-    /** Lista de empresas a la que el usuario tiene acceso */
+    /**
+     * Lista de empresas a la que el usuario tiene acceso
+     */
     private List<IAppCompany> userCompanyAllowedList;
-    /** Indica si el usuario paso por el control del login */
+    /**
+     * Indica si el usuario paso por el control del login
+     */
     private boolean userControlBlur = false;
-    /** Objeto acceso a los datos
-     * @return  instancia del objeto acceso a la capa de datos 
+
+    /**
+     * Objeto acceso a los datos
+     *
+     * @return instancia del objeto acceso a la capa de datos
      */
     public abstract IDataLink getDataLink();
+
     /**
      * Objeto para acceder a la capa de seguridad donde se crea las sesiones
      * entre otras funcionalidades
+     *
      * @return objeto para acceder a la capa de seguridad.
      */
     public abstract ISecManager getSecManager();
+
     /**
-     * Objeto servicio de la empresa, donde esta las válidaciones y la 
-     * lógica de las funcionalides de la instancia AppCompany.
+     * Objeto servicio de la empresa, donde esta las válidaciones y la lógica de
+     * las funcionalides de la instancia AppCompany.
+     *
      * @return objeto con la lógica de las funcionalidas de AppCompany
      */
     public abstract IAppCompanySrv getAppCompanySrv();
@@ -99,8 +126,9 @@ public abstract class AbstractAuthController extends AbstractController {
     }
 
     /**
-     * Identificador o login del usuario 
-     * @return Identificador o login del usuario 
+     * Identificador o login del usuario
+     *
+     * @return Identificador o login del usuario
      */
     public String getUserLogin() {
         return userLogin;
@@ -120,6 +148,7 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Asigna la variable user login
+     *
      * @param userLogin identificador del login del usuario.
      */
     public void setUserLogin(String userLogin) {
@@ -135,7 +164,8 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Asigna el password ingresado por el usuario.
-     * @param password 
+     *
+     * @param password
      */
     public void setPassword(String password) {
         this.password = password;
@@ -143,6 +173,7 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Retorna si esta logeado o no el usuario
+     *
      * @return verdadero o falso si esta o no logeado el usuario
      */
     public boolean isLogged() {
@@ -151,16 +182,18 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Asigna la variable logged.
+     *
      * @param logged verdadero o falso si se logeo o no el usuario.
      */
     protected void setLogged(boolean logged) {
         this.logged = logged;
     }
 
-    
-    /** 
-     * Petición URL original antes de que el filtro detectara que el peticionante no estaba logeado 
-     * @return petición URL original 
+    /**
+     * Petición URL original antes de que el filtro detectara que el
+     * peticionante no estaba logeado
+     *
+     * @return petición URL original
      */
     public String getOriginalURL() {
         return originalURL;
@@ -168,14 +201,16 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Asigna la petición original URL.
-     * @param originalURL petición URL original 
+     *
+     * @param originalURL petición URL original
      */
     public void setOriginalURL(String originalURL) {
         this.originalURL = originalURL;
     }
 
-    /** 
-     * Empresa seleccionada 
+    /**
+     * Empresa seleccionada
+     *
      * @return objeto o registro de empresa seleccionada.
      */
     public IAppCompany getCompany() {
@@ -184,18 +219,20 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Asigna la empresa que fue seleccionada por el usuario.
+     *
      * @param company objeto empresa
      */
     public void setCompany(IAppCompany company) {
         this.company = company;
     }
 
-    /** 
-     * Devuelve la Lista de empresas a la que el usuario tiene acceso 
-     * @return Lista de empresas a la que el usuario tiene acceso 
+    /**
+     * Devuelve la Lista de empresas a la que el usuario tiene acceso
+     *
+     * @return Lista de empresas a la que el usuario tiene acceso
      */
     public List<IAppCompany> getUserCompanyAllowedList() {
-        if (userCompanyAllowedList == null && userCompanyAllowedList.isEmpty()){
+        if (userCompanyAllowedList == null && userCompanyAllowedList.isEmpty()) {
             IUserSession userSession = getUserSession();
             if (userSession == null) {
                 return null;
@@ -205,9 +242,11 @@ public abstract class AbstractAuthController extends AbstractController {
         return userCompanyAllowedList;
     }
 
-    /** 
+    /**
      * Asigna la lista de empresas a la que el usuario tiene acceso
-     * @param userCompanyAllowedList lista de empresas a la que el usuario tiene acceso
+     *
+     * @param userCompanyAllowedList lista de empresas a la que el usuario tiene
+     * acceso
      */
     public void setUserCompanyAllowedList(List<IAppCompany> userCompanyAllowedList) {
         this.userCompanyAllowedList = userCompanyAllowedList;
@@ -215,6 +254,7 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Ultima empresa a la que acceso el usuario actual.
+     *
      * @return ultima empresa accesada.
      */
     public IAppCompany getLastCompanySession() {
@@ -223,6 +263,7 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Asigna en un atributo de la instancia la empresa que se esta ingresando
+     *
      * @param idempresa identificador de la empresa
      */
     protected void setLastCompanySession(Long idempresa) {
@@ -244,9 +285,10 @@ public abstract class AbstractAuthController extends AbstractController {
     }
 
     /**
-     * Verifica si el usuario y contraseña proveida para ingresar al sistema es 
+     * Verifica si el usuario y contraseña proveida para ingresar al sistema es
      * válida.
-     * @return verdadero o falso si el usuario y contraseña son válidos. 
+     *
+     * @return verdadero o falso si el usuario y contraseña son válidos.
      */
     public Boolean login() {
         if (!userControlBlur) {
@@ -286,16 +328,20 @@ public abstract class AbstractAuthController extends AbstractController {
 
     /**
      * Se ejecuta en el evento submit del formulario de logeo
-     * @return verdadero o falso si tuvo exito o no al crear la sesión de entrada.
+     *
+     * @return verdadero o falso si tuvo exito o no al crear la sesión de
+     * entrada.
      */
     public Boolean onSubmit() {
         return createSession();
     }
 
     /**
-     * Verifica los datos del usuario, contraseña y empresa para luego crear
-     * la sesión de entrada si los datos proveidos fuerón correctos.
-     * @return verdadero o falso si tuvo exito o no al crear la sesión de entrada.
+     * Verifica los datos del usuario, contraseña y empresa para luego crear la
+     * sesión de entrada si los datos proveidos fuerón correctos.
+     *
+     * @return verdadero o falso si tuvo exito o no al crear la sesión de
+     * entrada.
      */
     public Boolean createSession() {
         boolean result = false;
@@ -323,7 +369,9 @@ public abstract class AbstractAuthController extends AbstractController {
     }
 
     /**
-     * Puebla un array con la lista de empresas a la que el usuario puede ingresar
+     * Puebla un array con la lista de empresas a la que el usuario puede
+     * ingresar
+     *
      * @param userSession datos del usuario.
      */
     private void loadCompanyList(IUserSession userSession) {
@@ -341,7 +389,23 @@ public abstract class AbstractAuthController extends AbstractController {
     }
 
     /**
+     * Este metodo gestiona el cambio de la empresa en la sesión del usuario
+     *
+     * @param idcompany
+     * @return nueva instancia del objeto sesión.
+     */
+    public IUserSession reCreateSession(Long idcompany) {
+        IUserSession sessionOld = getUserSession();
+        if (sessionOld != null) {
+            IUserSession session = getSecManager().reCreateSession(sessionOld.getSessionId(), idcompany);
+            return session;
+        }
+        return null;
+    }
+
+    /**
      * Cierra la sesión del usuario
+     *
      * @return link para redireccionar a la página de logeo
      */
     @Override
