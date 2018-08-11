@@ -82,6 +82,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
     @Override
     @Lock(LockType.WRITE)
     public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes) {
+        LOGGER.debug("CREATESESSION IN");
         try {
             IUserSession session;
             // Verifcar si coincide usuario y contraseña, si esta o no activo
@@ -89,9 +90,20 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
             if (session != null && session.getUser() != null) {
                 Date fecha = new Date();
                 String pass = session.getUser().getPass().toUpperCase().trim();
-                String md5 = session.getUser().getId() + ":" + pass;
+                String sessionId = session.getUser().getId() + ":" + pass;
                 if (!oneSessionPerUser){
-                    md5 += ":" + fecha.getTime();
+                    sessionId += ":" + fecha.getTime();
+                }
+                else{
+                    // Válidar que no este ya logueado                    
+                    IUserSession sessionCtrl = getUserSession(sessionId);
+                    if (sessionCtrl != null && sessionCtrl.getUser() != null){
+                        session.setUser(null);
+                        String mensaje = "Este usuario tiene una sesión activa";
+                        LOGGER.debug(mensaje);
+                        session.setError(new ErrorReg(mensaje, 4, ""));
+                        return session;
+                    }
                 }
                 // Verificar si tiene permiso para acceder a los datos de la empresa
                 if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
@@ -109,17 +121,15 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
                         "select o from AppCompanyLight o "
                         + " where idcompany = :idcompany", parameters);
 
-                String token = idcompany + "-" + Fn.getMD5(md5);
-
                 String persistUnit = company.getPersistentUnit().trim();
                 session.setPersistenceUnit(persistUnit);
                 session.setCompany(company);
 
-                session.setSessionId(token);
+                session.setSessionId(sessionId);
                 session.setIdleSessionExpireInMinutes(idleSessionExpireInMinutes);
 
                 // Agregar sesión al pool de sesiones
-                sessionVar.put(token, session);
+                sessionVar.put(sessionId, session);
             }
             return session;
         } catch (Exception exp) {
@@ -138,6 +148,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
     @Override    
     @Lock(LockType.WRITE)
     public IUserSession reCreateSession(String sessionId, Object idcompany) {
+        LOGGER.debug("RECREATESESSION IN");
         UserSession session = getUserSession(sessionId);
         if (session == null || session.getError() != null) {
             if (session == null){
@@ -149,9 +160,9 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
         try {
             Date fecha = new Date();
             String pass = session.getUser().getPass().toUpperCase().trim();
-            String md5 = session.getUser().getId() + ":" + pass;
+            String sessionIdnew = session.getUser().getId() + ":" + pass;
             if (!oneSessionPerUser){
-                md5 += ":" + fecha.getTime();
+                sessionIdnew += ":" + fecha.getTime();
             }
             // Verificar si tiene permiso para acceder a los datos de la empresa
             if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
@@ -172,15 +183,13 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
                     "select o from AppCompanyLight o "
                     + " where idcompany = :idcompany", parameters);
 
-            String token = idcompany + "-" + Fn.getMD5(md5);
-
             String persistUnit = company.getPersistentUnit().trim();
             session.setPersistenceUnit(persistUnit);
             session.setCompany(company);
-            session.setSessionId(token);
+            session.setSessionId(sessionIdnew);
             
             // Agregar sesión al pool de sesiones
-            sessionVar.put(token, session);
+            sessionVar.put(sessionIdnew, session);
             return session;
         } catch (Exception exp) {
             ErrorManager.showError(exp, LOGGER);
@@ -254,6 +263,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
     @Override
     @Lock(LockType.WRITE)
     public void logout(String sessionId) {
+        LOGGER.debug("LOGOUT IN");
         try {
             sessionVar.remove(sessionId);
         } catch (Exception exp) {
@@ -271,6 +281,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
      */
     @Override
     public Boolean checkCompanyAccess(Long iduser, Long idcompany) throws Exception {
+        LOGGER.debug("CHECKCOMPANYACCESS IN");                    
         Map<String, Object> params = new HashMap<>();
         params.put("iduser", iduser);
         params.put("idcompany", idcompany);
@@ -292,6 +303,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
      */
     @Override
     public UserSession getUserSession(String sessionId) {
+        LOGGER.debug("GETUSERSESSION IN");
         UserSession sesion = (UserSession) sessionVar.get(sessionId);
         if (sesion != null) {
             Integer expireInMinutes = sesion.getIdleSessionExpireInMinutes();

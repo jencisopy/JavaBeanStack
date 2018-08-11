@@ -23,6 +23,7 @@ package org.javabeanstack.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import org.apache.log4j.Logger;
 
 
@@ -173,5 +174,51 @@ public class Fn {
             return alternateValue;
         }
         return value;
+    }
+
+    /**
+     * Convierte de un array tipo byte a un string hexadecimal
+     * @param bytes valor a traducir.
+     * @return array tipo byte a un string hexadecimal
+     */
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte byt : bytes) {
+            result.append(Integer.toString((byt & 0xff) + 0x100, 16).substring(1));
+        }
+        return result.toString();
+    }
+    
+    /**
+     * Convierte un texto hexadecimal a un array tipo bytes
+     * @param hexText texto hexadecimal
+     * @return texto hexadecimal a un array tipo bytes
+     */
+    public static byte[] hexToByte(String hexText) {
+        int len = hexText.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hexText.charAt(i), 16) << 4)
+                                 + Character.digit(hexText.charAt(i+1), 16));
+        }
+        return data;
+    }    
+    
+    /**
+     * Convierte un datos codificado en base 64 a otro equivalente de tipo byte
+     * @param encrypted64
+     * @return 
+     */
+    public static byte[] base64ToBytes(String encrypted64){
+        return Base64.getDecoder().decode(encrypted64);
+    }
+
+    /**
+     * Códifica un dato tipo byte[] a base 64
+     * @param text datos tipo byte[]
+     * @return tipo byte[] a base 64
+     */
+    public static String bytesToBase64(byte[] text){
+        return Base64.getEncoder().encodeToString(text);
     }
 }
