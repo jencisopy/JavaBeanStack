@@ -36,37 +36,6 @@ public class CipherUtilTest {
     public CipherUtilTest() {
     }
 
-    /**
-     * Test of encryptBlowfish method, of class CipherUtil.
-     * @throws java.lang.Exception
-     */
-    @Test
-    public void testEncryptBlowfish() throws Exception {
-        System.out.println("encryptBlowfish");
-        String clearText = "abcdefghijklmnñopqrstuvwxyzáéíóú";
-        String key = "123456";
-        String expResult = clearText;
-        String encrypted = CipherUtil.encryptBlowfish(clearText, key);
-        String decrypted = CipherUtil.decryptBlowfish(encrypted, key);
-        assertEquals(expResult, decrypted);
-    }
-
-    /**
-     * Test of decryptBlowfish method, of class CipherUtil.
-     * @throws java.lang.Exception
-     */
-    @Test
-    public void testDecryptBlowfish() throws Exception{
-        System.out.println("decryptBlowfish");
-        byte[] text = "abcdefghijklmnñopqrstuvwxyzáéíóú".getBytes("UTF-8");
-        String clearText = new String(text,"UTF-8");
-        String key = "123456";
-        String expResult = clearText;
-        String encrypted = CipherUtil.encryptBlowfish(clearText, key);
-        String decrypted = CipherUtil.decryptBlowfish(encrypted, key);
-        assertEquals(expResult, decrypted);
-    }
-
    /**
      * Test of encryptBlowfishToHex method, of class CipherUtil.
      * @throws java.lang.Exception

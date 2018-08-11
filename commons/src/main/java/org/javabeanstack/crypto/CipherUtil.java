@@ -47,21 +47,6 @@ public class CipherUtil {
     public static final String BLOWFISH = "Blowfish";
     public static final String AES_CBC = "AES/CBC/PKCS5Padding";
 
-    /**
-     * Encripta un texto utilizando el algoritmo Blowfish
-     *
-     * @param clearText texto a encriptar
-     * @param key clave de encriptación
-     * @return texto encriptado
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
-     * @throws InvalidKeyException
-     * @throws IllegalBlockSizeException
-     * @throws BadPaddingException
-     */
-    public static String encryptBlowfish(String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        return encrypt(CipherUtil.BLOWFISH, clearText, key);
-    }
 
     /**
      * Encripta un texto utilizando el algoritmo Blowfish y devuelve el
@@ -76,7 +61,7 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    public static String encryptBlowfishToHex(String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static String encryptBlowfishToHex(String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         return encryptToHex(CipherUtil.BLOWFISH, clearText, key);
     }
 
@@ -93,25 +78,10 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    public static String encryptBlowfishToBase64(String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static String encryptBlowfishToBase64(String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         return encryptToBase64(CipherUtil.BLOWFISH, clearText, key);
     }
 
-    /**
-     * Desencripta un mensaje cifrado con el algoritmo blowfish
-     *
-     * @param encrypted mensaje encriptado
-     * @param key clave de encriptación
-     * @return mensaje descifrado.
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
-     * @throws InvalidKeyException
-     * @throws IllegalBlockSizeException
-     * @throws BadPaddingException
-     */
-    public static String decryptBlowfish(String encrypted, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        return decrypt(CipherUtil.BLOWFISH, encrypted, key);
-    }
 
     /**
      * Desencripta un mensaje cifrado con el algoritmo blowfish, el mensaje esta
@@ -251,29 +221,13 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    private static byte[] encryptToByte(String algorithm, String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        SecretKeySpec keyspec = new SecretKeySpec(key.getBytes(), algorithm);
+    private static byte[] encryptToByte(String algorithm, String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
+        SecretKeySpec keyspec = new SecretKeySpec(key.getBytes("UTF-8"), algorithm);
         Cipher cipher = Cipher.getInstance(algorithm);
         cipher.init(Cipher.ENCRYPT_MODE, keyspec);
         return cipher.doFinal(clearText.getBytes());
     }
 
-    /**
-     * Encripta un mensaje
-     *
-     * @param algorithm tipo de algoritmo a utilizar
-     * @param clearText mensaje
-     * @param key clave de encriptación
-     * @return mensaje cifrado en formato string
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
-     * @throws InvalidKeyException
-     * @throws IllegalBlockSizeException
-     * @throws BadPaddingException
-     */
-    private static String encrypt(String algorithm, String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        return new String(encryptToByte(algorithm, clearText, key));
-    }
 
     /**
      * Encripta un mensaje
@@ -288,7 +242,7 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    private static String encryptToHex(String algorithm, String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    private static String encryptToHex(String algorithm, String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         byte[] encrypted = encryptToByte(algorithm, clearText, key);
         return Fn.bytesToHex(encrypted);
     }
@@ -306,7 +260,7 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    private static String encryptToBase64(String algorithm, String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    private static String encryptToBase64(String algorithm, String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         byte[] encrypted = encryptToByte(algorithm, clearText, key);
         return Fn.bytesToBase64(encrypted);
     }
@@ -331,22 +285,6 @@ public class CipherUtil {
         return cipher.doFinal(encryptedText);
     }
 
-    /**
-     * Descifra un mensaje
-     *
-     * @param algorithm tipo de algoritmo a utilizar
-     * @param encriptedText mensaje
-     * @param key clave de encriptación
-     * @return mensaje descifrado en formato string
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
-     * @throws InvalidKeyException
-     * @throws IllegalBlockSizeException
-     * @throws BadPaddingException
-     */
-    private static String decrypt(String algorithm, String encryptedText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        return new String(decryptFromByte(algorithm, encryptedText.getBytes(), key));
-    }
 
     /**
      * Descifra un mensaje
