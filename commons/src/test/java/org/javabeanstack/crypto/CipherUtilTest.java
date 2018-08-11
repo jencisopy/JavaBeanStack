@@ -38,6 +38,7 @@ public class CipherUtilTest {
 
     /**
      * Test of encryptBlowfish method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testEncryptBlowfish() throws Exception {
@@ -52,6 +53,7 @@ public class CipherUtilTest {
 
     /**
      * Test of decryptBlowfish method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testDecryptBlowfish() throws Exception{
@@ -67,6 +69,7 @@ public class CipherUtilTest {
 
    /**
      * Test of encryptBlowfishToHex method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testEncryptBlowfishToHex() throws Exception {
@@ -81,6 +84,7 @@ public class CipherUtilTest {
 
     /**
      * Test of decryptBlowfishFromHex method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testDecryptBlowfishFromHex() throws Exception {
@@ -95,6 +99,7 @@ public class CipherUtilTest {
 
     /**
      * Test of encryptBlowfishToBase64 method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testEncryptBlowfishToBase64() throws Exception {
@@ -111,6 +116,7 @@ public class CipherUtilTest {
 
     /**
      * Test of decryptBlowfishFromBase64 method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testDecryptBlowfishFromBase64() throws Exception {
@@ -125,6 +131,7 @@ public class CipherUtilTest {
     
     /**
      * Test of encryptAES method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testEncryptAES() throws Exception{
@@ -143,6 +150,7 @@ public class CipherUtilTest {
     
     /**
      * Test of decryptAES method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testDecryptAES() throws Exception{
@@ -163,6 +171,7 @@ public class CipherUtilTest {
  
     /**
      * Test of encryptAES_ToHex method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testEncryptAES_ToHex() throws Exception {
@@ -176,7 +185,23 @@ public class CipherUtilTest {
     }
 
     /**
+     * Test of encryptAES_ToBase64 method, of class CipherUtil.
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testEncryptAES_ToBase64() throws Exception {
+        System.out.println("encryptAES_ToBase64");
+        String clearText = "abcdefghijklmnñopqrstuvwxyzáéíóú";
+        String key = "012345678901234567890123456789";
+        String expResult = clearText;
+        String encrypted = CipherUtil.encryptAES_ToBase64(clearText, key);
+        String decrypted = CipherUtil.decryptAES(Fn.base64ToBytes(encrypted), key);
+        assertEquals(expResult, decrypted);
+    }
+    
+    /**
      * Test of decryptAES_FromHex method, of class CipherUtil.
+     * @throws java.lang.Exception
      */
     @Test
     public void testDecryptAES_FromHex() throws Exception {
