@@ -44,7 +44,7 @@ public class CipherUtilTest {
     public void testEncryptBlowfishToHex() throws Exception {
         System.out.println("encryptBlowfishToHex");
         String clearText = "abcdefghijklmnñopqrstuvwxyzáéíóú";
-        String key = "123456";
+        String key = "123456á";
         String expResult = clearText;
         String encrypted = CipherUtil.encryptBlowfishToHex(clearText, key);
         String decrypted = CipherUtil.decryptBlowfishFromHex(encrypted, key);
@@ -59,7 +59,7 @@ public class CipherUtilTest {
     public void testDecryptBlowfishFromHex() throws Exception {
         System.out.println("decryptBlowfishFromHex");
         String clearText = "abcdefghijklmnñopqrstuvwxyzáéíóú";
-        String key = "123456"; 
+        String key = "123456Á"; 
         String expResult = clearText;
         String encrypted = CipherUtil.encryptBlowfishToHex(clearText, key);
         String decrypted = CipherUtil.decryptBlowfishFromHex(encrypted, key);
@@ -74,7 +74,7 @@ public class CipherUtilTest {
     public void testEncryptBlowfishToBase64() throws Exception {
         System.out.println("encryptBlowfishToBase64");
         String clearText = "abcdefghijklmnñopqrstuvwxyzáéíóú";
-        String key = "123456";
+        String key = "123456á";
         String expResult = clearText;
         String encrypted = CipherUtil.encryptBlowfishToBase64(clearText, key);
         System.out.println(encrypted);        
@@ -91,7 +91,7 @@ public class CipherUtilTest {
     public void testDecryptBlowfishFromBase64() throws Exception {
         System.out.println("decryptBlowfishFromBase64");
         String clearText = "abcdefghijklmnñopqrstuvwxyzáéíóú";
-        String key = "123456";
+        String key = "123456á";
         String expResult = clearText;
         String encrypted = CipherUtil.encryptBlowfishToBase64(clearText, key);
         String decrypted = CipherUtil.decryptBlowfishFromBase64(encrypted, key);
@@ -106,7 +106,7 @@ public class CipherUtilTest {
     public void testEncryptAES() throws Exception{
         System.out.println("encryptAES");
         String clearText = "abcdefghijklmnñopqrstuvwxyzáéíóú";
-        String key = "012345678901234567890123456789";
+        String key = "012345678901234567890123456789á";
         String expResult = clearText;
         byte[] encrypted = CipherUtil.encryptAES(clearText, key);
         String decrypted = CipherUtil.decryptAES(encrypted, key);
@@ -126,7 +126,7 @@ public class CipherUtilTest {
         System.out.println("decryptAES");
         byte[] text = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZabcdefghijklmnñopqrstuvwxyzáéíóú".getBytes();
         String clearText = new String(text);
-        String key = "012345678901234567890123456789";
+        String key = "012345678901234567890123456789á";
         String expResult = clearText;
         byte[] encrypted = CipherUtil.encryptAES(clearText, key);
 

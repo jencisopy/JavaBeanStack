@@ -96,7 +96,7 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    public static String decryptBlowfishFromHex(String encrypted, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public static String decryptBlowfishFromHex(String encrypted, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
         return decryptFromHex(CipherUtil.BLOWFISH, encrypted, key);
     }
 
@@ -113,7 +113,7 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    public static String decryptBlowfishFromBase64(String encrypted, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public static String decryptBlowfishFromBase64(String encrypted, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
         return decryptFromBase64(CipherUtil.BLOWFISH, encrypted, key);
     }
 
@@ -222,7 +222,7 @@ public class CipherUtil {
      * @throws BadPaddingException
      */
     private static byte[] encryptToByte(String algorithm, String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
-        SecretKeySpec keyspec = new SecretKeySpec(key.getBytes("UTF-8"), algorithm);
+        SecretKeySpec keyspec = new SecretKeySpec(key.getBytes(), algorithm);
         Cipher cipher = Cipher.getInstance(algorithm);
         cipher.init(Cipher.ENCRYPT_MODE, keyspec);
         return cipher.doFinal(clearText.getBytes());
@@ -278,7 +278,7 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    private static byte[] decryptFromByte(String algorithm, byte[] encryptedText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    private static byte[] decryptFromByte(String algorithm, byte[] encryptedText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
         SecretKeySpec keyspec = new SecretKeySpec(key.getBytes(), algorithm);
         Cipher cipher = Cipher.getInstance(algorithm);
         cipher.init(Cipher.DECRYPT_MODE, keyspec);
@@ -299,7 +299,7 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    private static String decryptFromHex(String algorithm, String encryptedHexText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    private static String decryptFromHex(String algorithm, String encryptedHexText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
         byte[] encrypted = Fn.hexToByte(encryptedHexText);
         byte[] result = decryptFromByte(algorithm, encrypted, key);
         return new String(result);
@@ -318,7 +318,7 @@ public class CipherUtil {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-    private static String decryptFromBase64(String algorithm, String encryptedText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    private static String decryptFromBase64(String algorithm, String encryptedText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
         byte[] encrypted = Fn.base64ToBytes(encryptedText);
         byte[] result = decryptFromByte(algorithm, encrypted, key);
         return new String(result);
@@ -350,7 +350,7 @@ public class CipherUtil {
 
         // Hashing key.
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        digest.update(key.getBytes("UTF-8"));
+        digest.update(key.getBytes());
         byte[] keyBytes = new byte[16];
         System.arraycopy(digest.digest(), 0, keyBytes, 0, keyBytes.length);
         SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES");
