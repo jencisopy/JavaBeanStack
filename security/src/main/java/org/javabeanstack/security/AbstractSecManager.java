@@ -30,7 +30,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 
-import org.javabeanstack.data.IDBManager;
+import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.data.IGenericDAO;
@@ -133,36 +133,6 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
      */
     @Override
     public String getUserRol(String userLogin){
-        String motorDatos = getDAO().getDataEngine(IDBManager.CATALOGO);
-        String sqlComando="";
-        switch (motorDatos) {
-            case "SQLSERVER":
-                sqlComando = "select {schema}.fn_GetUserRol('{usuario}')";
-                break;
-            case "POSTGRES":
-                sqlComando = "select CAST({schema}.fn_GetUserRol('{usuario}') as char(200))";
-                break;
-            case "ORACLE":
-                sqlComando = "select CAST({schema}.fn_GetUserRol('{usuario}') as char(200)) from dual";
-                break;
-            case "DB2":
-                sqlComando = "select CAST({schema}.fn_GetUserRol('{usuario}') as char(200)) from SYSIBM.SYSDUMMY1";
-                break;
-            default:
-                Exception exp = new Exception("No es soportado este motor de datos");
-                ErrorManager.showError(exp, LOGGER);
-        }
-        Map<String, String> params = new HashMap<>();
-        params.put("schema",getDAO().getSchema(IDBManager.CATALOGO));
-        params.put("usuario", userLogin.trim());
-        sqlComando = Strings.textMerge(sqlComando, params);
-        try {
-            List<Object> result = getDAO().findByNativeQuery(null, sqlComando,null);            
-            return result.toString();
-        }
-        catch (Exception exp){
-            ErrorManager.showError(exp, LOGGER);
-        }
         return "";
     }
     
@@ -180,22 +150,20 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
      */
     @Override
     public Boolean isUserMemberOf(String user, String userGroup){
+        LOGGER.debug("isUserMemberOf");
         String sqlComando;
-        sqlComando = "select count(*) "
-                + " from {schema}.usuariomiembro a"
-                + " inner join {schema}.usuario usuario        on a.idusuario = usuario.idusuario  "
-                + " inner join {schema}.usuario usuariomiembro on a.idmiembro = usuariomiembro.idusuario "
-                + " where usuario.codigo = '{userGroup}' "
-                + " and   usuariomiembro.codigo = '{user}'";
+        sqlComando = "select a "
+                + " from AppUserMember a"
+                + " where a.usergroup.code  = '{userGroup}' "
+                + " and   a.usermember.code = '{user}'";
         
         Map<String, String> params = new HashMap<>();
-        params.put("schema",getDAO().getSchema(IDBManager.CATALOGO));
         params.put("user", user.trim());
         params.put("userGroup", userGroup.trim());        
         sqlComando = Strings.textMerge(sqlComando, params);
         try {
-            List<Object> result = getDAO().findByNativeQuery(null, sqlComando, null);            
-            return (Integer.parseInt(result.get(0).toString()) > 0);
+            List<IDataRow> result = getDAO().findListByQuery("", sqlComando, null);
+            return !result.isEmpty();
         }
         catch (Exception exp){
             ErrorManager.showError(exp, LOGGER);

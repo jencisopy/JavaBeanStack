@@ -113,18 +113,6 @@ public class FnTest {
     }
 
 
-    /**
-     * Test of getMD5 method, of class Fn.
-     */
-    //@Test
-    public void testGetMD5_String() {
-        System.out.println("getMD5");
-        String msg = "";
-        String expResult = "";
-        String result = Fn.getMD5(msg);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
-    }
 
 
     /**

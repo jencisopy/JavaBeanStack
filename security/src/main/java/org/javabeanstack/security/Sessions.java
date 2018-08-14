@@ -31,10 +31,10 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Startup;
 import org.apache.log4j.Logger;
+import org.javabeanstack.crypto.DigestUtil;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.util.Fn;
 
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.util.Dates;
@@ -244,7 +244,7 @@ public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
             // Verificar que la contraseña sea correcta
             String md5 = usuario.getLogin().toUpperCase().trim() + ":" + password.trim();
 
-            String claveEncriptada = Fn.getMD5(md5);
+            String claveEncriptada = DigestUtil.md5(md5).toUpperCase();
             if (!claveEncriptada.equals(usuario.getPass())) {
                 userSession.setError(new ErrorReg("Contraseña incorrecta", 3, ""));
                 return userSession;

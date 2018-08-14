@@ -21,10 +21,7 @@
 */
 package org.javabeanstack.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -136,30 +133,6 @@ public class Fn {
     }
 
 
-    /**
-     * Devuelve el resultante md5 de un texto dado.
-     * @param msg texto dado.
-     * @return md5 del texto dado.
-     */
-    public static String getMD5(String msg) {
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Fn.class).error(ex.getMessage());            
-        }
-        if (md != null) {
-            md.update(msg.getBytes());
-            byte byteData[] = md.digest();
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < byteData.length; i++) {
-                sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            return (sb.toString()).toUpperCase();
-        }
-        return null;
-    }
 
     /**
      * Devuelve un valor alternativo (alternateValue) si el valor dado (value)

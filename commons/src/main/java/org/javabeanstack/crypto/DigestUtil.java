@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.javabeanstack.util.Fn;
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -38,38 +39,46 @@ public class DigestUtil {
     public static final String SHA384 = "SHA-384";
     public static final String SHA512 = "SHA-512";
     
-    
     /**
      * Devuelve la firma md5 en formato String hexadecimal
      * @param msg mensaje
      * @return firma md5 en formato String hexadecimal
-     * @throws NoSuchAlgorithmException
-     * @throws UnsupportedEncodingException 
      */
-    public static String md5(String msg) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        return digestToHex("MD5", msg);
+    public static String md5(String msg)  {
+        try {
+            return digestToHex("MD5", msg);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());                        
+        }
+        return null;
     }
 
     /**
      * Devuelve la firma sha256 en formato String hexadecimal
      * @param msg mensaje
      * @return firma 256 en formato String hexadecimal
-     * @throws NoSuchAlgorithmException
-     * @throws UnsupportedEncodingException 
      */
-    public static String sha256(String msg) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        return digestToHex("SHA-256", msg);
+    public static String sha256(String msg){
+        try {
+            return digestToHex("SHA-256", msg);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
     }
 
     /**
      * Devuelve la firma sha-512 en formato String hexadecimal
      * @param msg mensaje
      * @return firma sha-512 en formato String hexadecimal
-     * @throws NoSuchAlgorithmException
-     * @throws UnsupportedEncodingException 
      */
-    public static String sha512(String msg) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        return digestToHex("SHA-512", msg);
+    public static String sha512(String msg) {
+        try {
+            return digestToHex("SHA-512", msg);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
     }
 
     /**
