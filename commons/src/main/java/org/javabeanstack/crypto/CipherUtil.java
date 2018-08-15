@@ -31,7 +31,9 @@ import java.security.SecureRandom;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import org.javabeanstack.util.Fn;
@@ -46,7 +48,6 @@ public class CipherUtil {
 
     public static final String BLOWFISH = "Blowfish";
     public static final String AES_CBC = "AES/CBC/PKCS5Padding";
-
 
     /**
      * Encripta un texto utilizando el algoritmo Blowfish y devuelve el
@@ -82,7 +83,6 @@ public class CipherUtil {
         return encryptToBase64(CipherUtil.BLOWFISH, clearText, key);
     }
 
-
     /**
      * Desencripta un mensaje cifrado con el algoritmo blowfish, el mensaje esta
      * en formato string hexadecimal.
@@ -100,6 +100,7 @@ public class CipherUtil {
         return decryptFromHex(CipherUtil.BLOWFISH, encrypted, key);
     }
 
+   
     /**
      * Desencripta un mensaje cifrado con el algoritmo blowfish, el mensaje esta
      * en formato string base 64.
@@ -285,7 +286,6 @@ public class CipherUtil {
         return cipher.doFinal(encryptedText);
     }
 
-
     /**
      * Descifra un mensaje
      *
@@ -409,5 +409,29 @@ public class CipherUtil {
         byte[] decrypted = cipherDecrypt.doFinal(encryptedBytes);
 
         return decrypted;
+    }
+
+    /**
+     * Devuelve una clave simetrica aleatoria a ser utilizada en un proceso de cifrado
+     * @param algoritm algoritmo (blowfish, aes etc)
+     * @param keyBitSize tamaño de la clave
+     * @return clave simetrica aleatoria
+     * @throws NoSuchAlgorithmException 
+     */
+    public static SecretKey getSecureRandomKey(String algoritm, int keyBitSize) throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(algoritm);
+        SecureRandom secureRandom = new SecureRandom();
+        keyGenerator.init(keyBitSize, secureRandom);
+        return keyGenerator.generateKey();
+    }
+    
+    /**
+     * Devuelve una clave simetrica aleatoria a ser utilizada en un proceso de cifrado
+     * @param algoritm algoritmo (blowfish, aes etc)
+     * @return clave simetrica aleatoria
+     * @throws NoSuchAlgorithmException 
+     */
+    public static SecretKey getSecureRandomKey(String algoritm) throws NoSuchAlgorithmException {
+        return getSecureRandomKey(algoritm, 256);
     }
 }

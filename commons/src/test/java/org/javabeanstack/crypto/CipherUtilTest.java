@@ -22,6 +22,7 @@
  */
 package org.javabeanstack.crypto;
 
+import javax.crypto.SecretKey;
 import org.javabeanstack.util.Fn;
 import org.junit.Assert;
 import org.junit.Test;
@@ -181,5 +182,28 @@ public class CipherUtilTest {
         String encrypted = CipherUtil.encryptAES_ToHex(clearText, key);
         String decrypted = CipherUtil.decryptAES_FromHex(encrypted, key);
         assertEquals(expResult, decrypted);
+    }
+
+    /**
+     * Test of getSecureRandomKey method, of class CipherUtil.
+     */
+    @Test
+    public void testGetSecureRandomKey_String_int() throws Exception {
+        System.out.println("getSecureRandomKey");
+        String algoritm = "AES";
+        int keyBitSize = 256;
+        SecretKey result = CipherUtil.getSecureRandomKey(algoritm, keyBitSize);
+        assertNotNull(result);
+    }
+
+    /**
+     * Test of getSecureRandomKey method, of class CipherUtil.
+     */
+    @Test
+    public void testGetSecureRandomKey_String() throws Exception {
+        System.out.println("getSecureRandomKey");
+        String algoritm = "Blowfish";
+        SecretKey result = CipherUtil.getSecureRandomKey(algoritm);
+        assertNotNull(result);
     }
 }
