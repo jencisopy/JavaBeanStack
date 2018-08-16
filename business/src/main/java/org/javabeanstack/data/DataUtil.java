@@ -32,85 +32,119 @@ import static org.javabeanstack.util.Strings.textMerge;
 
 
 /**
- *
+ * Clases utiles para filtrado de datos y otros.
+ * 
  * @author Jorge Enciso
  */
 public class DataUtil {
     private DataUtil(){
     }
-    
+   
+    /**
+     * Devuelve un filtro correspondiente a la empresa logueada que será utilizado
+     * en los selects de datos.
+     * 
+     * @param userSession sesión del usuario
+     * @return un filtro correspondiente a la empresa logueada
+     */
     public static String getCompanyFilter(IUserSession userSession) {
         return getCompanyFilter(userSession, "");
     }
     
+    /**
+     * Devuelve un filtro correspondiente a la empresa logueada que será utilizado
+     * en los selects de datos.
+     * 
+     * @param userSession sesión del usuario
+     * @param alias alias de la tabla
+     * @return un filtro correspondiente a la empresa logueada
+     */
     public static String getCompanyFilter(IUserSession userSession,String alias) {
         alias = (isNullorEmpty(alias)) ? "" : alias + ".";        
         String result = "";
-        Long idempresa = userSession.getIdCompany();
-        if (nvl(idempresa, 0L) == 0L) {
+        Long idcompany = userSession.getIdCompany();
+        if (nvl(idcompany, 0L) == 0L) {
             return "";
         }
         if (userSession.getCompany() != null && !userSession.getCompany().getCompanyList().isEmpty()) {
-            Long idempresaChild;
-            for (IAppCompany empresa : userSession.getCompany().getCompanyList()) {
-                idempresaChild = empresa.getIdcompany();
-                // Si existe una mascara cambiando el idempresa
-                if (nvl(empresa.getIdcompanymask(),0L) != 0L){
-                    idempresaChild = empresa.getIdcompanymask();
+            Long idcompanyChild;
+            for (IAppCompany company : userSession.getCompany().getCompanyList()) {
+                idcompanyChild = company.getIdcompany();
+                // Si existe una mascara cambiando el idcompany
+                if (nvl(company.getIdcompanymask(),0L) != 0L){
+                    idcompanyChild = company.getIdcompanymask();
                 }
-                result += "," + idempresaChild;
+                result += "," + idcompanyChild;
             }
             if (!"".equals(nvl(result, ""))) {
-                result = alias+"idcompany in (" + idempresa + result + ")";
+                result = alias+"idcompany in (" + idcompany + result + ")";
             }
         } else {
-            result = alias+"idcompany = " + idempresa;
+            result = alias+"idcompany = " + idcompany;
         }
         return result;
     }
 
+    /**
+     * En caso de que la empresa a la que se logueo el usuario sea el padre
+     * de un grupo de empresas, devuelve una lista de empresas pertenecientes a
+     * ese grupo.
+     * @param userSession sesión del usuario.
+     * @return lista de empresas pertenecientes al grupo
+     */
     public static List<Long> getCompanyList(IUserSession userSession) {
         List<Long> result = new ArrayList();
-        Long idempresa = userSession.getIdCompany();
-        if (nvl(idempresa, 0L) == 0L) {
+        Long idcompany = userSession.getIdCompany();
+        if (nvl(idcompany, 0L) == 0L) {
             return null;
         }
-        result.add(idempresa);
+        result.add(idcompany);
         if (userSession.getCompany() != null && !userSession.getCompany().getCompanyList().isEmpty()) {
-            Long idempresaChild;
-            for (IAppCompany empresa : userSession.getCompany().getCompanyList()) {
-                idempresaChild = empresa.getIdcompany();
-                // Si existe una mascara cambiando el idempresa
-                if (nvl(empresa.getIdcompanymask(),0L) != 0L){
-                    idempresaChild = empresa.getIdcompanymask();
+            Long idcompanyChild;
+            for (IAppCompany company : userSession.getCompany().getCompanyList()) {
+                idcompanyChild = company.getIdcompany();
+                // Si existe una mascara cambiando el idcompany
+                if (nvl(company.getIdcompanymask(),0L) != 0L){
+                    idcompanyChild = company.getIdcompanymask();
                 }
-                result.add(idempresaChild);
+                result.add(idcompanyChild);
             }
         }
         return result;
     }
 
+    /**
+     * Filtro de empresa logueada más el periodo activo, datos a ser utilizado en los selects
+     * @param userSession sesión del usuario.
+     * @return Filtro de empresa logueada más el periodo activo
+     */
     public static String getCompanyAndPeriodFilter(IUserSession userSession) {    
         return getCompanyAndPeriodFilter(userSession,"");
     }
     
+    /**
+     * Filtro de empresa logueada más el periodo activo, datos a ser utilizado en los selects
+     * @param userSession sesión del usuario.
+     * @param alias alias de la tabla
+     * @return Filtro de empresa logueada más el periodo activo
+     */
     public static String getCompanyAndPeriodFilter(IUserSession userSession, String alias) {
         String result = "";
         alias = (isNullorEmpty(alias)) ? "" : alias + ".";
-        Long idempresa = userSession.getIdCompany();
+        Long idcompany = userSession.getIdCompany();
         Long idperiodo = userSession.getCompany().getIdperiod();
-        if (nvl(idempresa, 0L) == 0L) {
+        if (nvl(idcompany, 0L) == 0L) {
             return "";
         }
-        result = "(" + alias + "idcompany = " + idempresa + ")";
+        result = "(" + alias + "idcompany = " + idcompany + ")";
         if (userSession.getCompany() != null && !userSession.getCompany().getCompanyList().isEmpty()) {
             String separador = " or ";
-            for (IAppCompany empresa : userSession.getCompany().getCompanyList()) {
+            for (IAppCompany company : userSession.getCompany().getCompanyList()) {
                 result += separador;
 
-                idempresa = (nvl(empresa.getIdcompanymask(),0L) != 0L ? empresa.getIdcompanymask() : empresa.getIdcompany());
+                idcompany = (nvl(company.getIdcompanymask(),0L) != 0L ? company.getIdcompanymask() : company.getIdcompany());
                 // Agregar filtro de empresa si no los tiene
-                result += textMerge("({alias}idcompany = {idempresa}", "alias", alias, "idempresa", idempresa);
+                result += textMerge("({alias}idcompany = {idempresa}", "alias", alias, "idempresa", idcompany);
                 result += ")";
             }
             result = "(" + result + ")";
@@ -121,10 +155,21 @@ public class DataUtil {
         return result;
     }
 
+    /**
+     * Devuelve filtro del periodo activo de la empresa logueada
+     * @param userSession sesión del usuario
+     * @return filtro del periodo activo de la empresa logueada
+     */
     public static String getPeriodFilter(IUserSession userSession) {
         return getPeriodFilter(userSession,"");
     }
-    
+
+    /**
+     * Devuelve filtro del periodo activo de la empresa logueada
+     * @param userSession sesión del usuario
+     * @param alias alias de la tabla
+     * @return filtro del periodo activo de la empresa logueada
+     */
     public static String getPeriodFilter(IUserSession userSession, String alias) {
         String result;
         alias = (isNullorEmpty(alias)) ? "" : alias + ".";
@@ -136,6 +181,11 @@ public class DataUtil {
         return result;
     }
 
+    /**
+     * Devuelve el id de periodo activo de la empresa logueada.
+     * @param userSession sesión del usuario.
+     * @return id de periodo activo de la empresa logueada.
+     */
     public static Long getCompanyIdPeriod(IUserSession userSession) {
         Long result = 1L;
         Long idperiodo = userSession.getCompany().getIdperiod();

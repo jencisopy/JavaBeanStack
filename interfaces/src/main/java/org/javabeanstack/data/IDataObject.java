@@ -53,6 +53,7 @@ public interface IDataObject <T extends IDataRow>{
     public int          getMaxRows();    
     public int          getRowCount();
     public int          getRecStatus();
+    public Long         getIdcompany();
     public Long         getIdempresa();    
     public IDataEvents  getDataEvents();        
     public boolean      isShowDeletedRow();

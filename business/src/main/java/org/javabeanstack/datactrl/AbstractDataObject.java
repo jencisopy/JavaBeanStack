@@ -417,11 +417,21 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return maxrows;
     }
 
+
+    @Override
+    public Long getIdcompany() {
+        Long idempresa = 0L;
+        if (getDAO().getUserSession() != null) {
+            idempresa = getDAO().getUserSession().getIdCompany();
+        }
+        return idempresa;
+    }
+
     @Override
     public Long getIdempresa() {
         Long idempresa = 0L;
         if (getDAO().getUserSession() != null) {
-            idempresa = getDAO().getUserSession().getIdEmpresa();
+            idempresa = getDAO().getUserSession().getIdCompany();
         }
         return idempresa;
     }

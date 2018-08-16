@@ -62,7 +62,7 @@ import org.javabeanstack.util.Fn;
 //@Singleton
 @Startup
 @Lock(LockType.READ)
-public class Sessions implements ISessions, ISessionsLocal, ISessionsRemote {
+public class Sessions implements ISessions{
 
     private static final Logger LOGGER = Logger.getLogger(Sessions.class);
     protected final Map<String, Object> sessionVar = new HashMap<>();

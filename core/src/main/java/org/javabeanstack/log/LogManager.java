@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.security.ISessionsLocal;
+import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppMessage;
@@ -48,7 +48,7 @@ import org.javabeanstack.model.IAppLogRecord;
 public class LogManager implements ILogManager {
     private static final Logger LOGGER = Logger.getLogger(LogManager.class);
     @EJB private IGenericDAO dao;
-    @EJB private ISessionsLocal sessions;
+    @EJB private ISessions sessions;
 
     /**
      * Escribe información de un evento en una tabla de la base de datos.

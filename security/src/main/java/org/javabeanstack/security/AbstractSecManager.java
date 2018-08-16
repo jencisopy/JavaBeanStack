@@ -49,7 +49,7 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
     private static final Logger LOGGER = Logger.getLogger(AbstractSecManager.class);    
 
     protected abstract IGenericDAO getDAO();
-    protected abstract ISessionsLocal getSessions();
+    protected abstract ISessions getSessions();
     /**
      *  Crea una sesión de usuario para acceso a la app
      * 

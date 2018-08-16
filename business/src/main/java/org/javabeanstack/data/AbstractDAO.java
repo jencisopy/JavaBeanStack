@@ -41,7 +41,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.security.ISessionsLocal;
+import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
@@ -70,7 +70,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
      * Es el objeto responsable gestión de las sesiones de usuarios
      */
     @EJB
-    private ISessionsLocal sessions;
+    private ISessions sessions;
 
     public AbstractDAO() {
     }
