@@ -20,5 +20,25 @@
             <artifactId>jbs-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jbs-security</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>            
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ejb-client-bom</artifactId>
+            <version>10.1.0.Final</version>            
+            <scope>test</scope>
+            <type>pom</type>
+        </dependency>
+        <!-- Hibernate -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.2.5.Final</version>
+            <scope>test</scope>            
+        </dependency>
     </dependencies>      
 </project>

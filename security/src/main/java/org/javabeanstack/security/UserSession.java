@@ -25,6 +25,7 @@ package org.javabeanstack.security;
 
 
 import java.util.Date;
+import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
