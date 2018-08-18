@@ -41,10 +41,9 @@ public class TestClass {
             String user = (System.getenv("SECURITY_PRINCIPAL") != null) ? System.getenv("SECURITY_PRINCIPAL") : "";
             String password = (System.getenv("SECURITY_CREDENTIALS") != null) ? System.getenv("SECURITY_CREDENTIALS") : "";
             
-            System.out.println(server);
-            System.out.println(port);
-            System.out.println(user);
-            System.out.println(password);
+            String appuser_login = (System.getenv("APP_USER_LOGIN") != null) ? System.getenv("APP_USER_LOGIN") : "J";
+            String appuser_pass = (System.getenv("APP_USER_PASS") != null) ? System.getenv("APP_USER_PASS") : "";
+            Long app_idcompany = Long.parseLong((System.getenv("APP_IDCOMPANY") != null) ? System.getenv("APP_IDCOMPANY") : "2");
             
             Properties p = new Properties();
             p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
@@ -57,9 +56,7 @@ public class TestClass {
             context = new InitialContext(p);
 
             ISecManager secMngr = (ISecManager) context.lookup(jndiProject + "SecManager!org.javabeanstack.security.ISecManagerRemote");
-            //TODO cambiar a empresas tests
-            //IUserSession userSession = secMngr.createSession("test1", "test1", 2L, null);        
-            IUserSession userSession = secMngr.createSession("J", "", 2L, null);
+            IUserSession userSession = secMngr.createSession(appuser_login, appuser_pass, app_idcompany, null);        
             sessionId = userSession.getSessionId();
 
             IGenericDAO dao = (IGenericDAO) context.lookup(jndiProject + "GenericDAO!org.javabeanstack.data.IGenericDAORemote");
