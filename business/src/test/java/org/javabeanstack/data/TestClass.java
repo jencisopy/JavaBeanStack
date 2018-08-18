@@ -6,7 +6,6 @@
 package org.javabeanstack.data;
 
 import java.util.Properties;
-import java.util.logging.Logger;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -37,13 +36,23 @@ public class TestClass {
     @BeforeClass
     public static void setUpClass() throws NamingException, Exception {
         try {
+            String server = (System.getenv("SERVER_TEST") != null) ? System.getenv("SERVER_TEST") : "localhost";
+            String port = (System.getenv("SERVER_TEST_PORT") != null) ? System.getenv("SERVER_TEST_PORT") : "8080";
+            String user = (System.getenv("SECURITY_PRINCIPAL") != null) ? System.getenv("SECURITY_PRINCIPAL") : "";
+            String password = (System.getenv("SECURITY_CREDENTIALS") != null) ? System.getenv("SECURITY_CREDENTIALS") : "";
+            
+            System.out.println(server);
+            System.out.println(port);
+            System.out.println(user);
+            System.out.println(password);
+            
             Properties p = new Properties();
             p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-            p.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
-            //p.put(Context.PROVIDER_URL, "http-remoting://52.179.164.3:8080");
-            //TODO cambiar credenciales
-            //p.put(Context.SECURITY_PRINCIPAL, "test");
-            //p.put(Context.SECURITY_CREDENTIALS, "test");
+            p.put(Context.PROVIDER_URL, "http-remoting://"+server+":"+port);
+            if (!user.isEmpty()){
+                p.put(Context.SECURITY_PRINCIPAL, user);
+                p.put(Context.SECURITY_CREDENTIALS, password);
+            }
             p.put("jboss.naming.client.ejb.context", true);
             context = new InitialContext(p);
 
@@ -64,7 +73,6 @@ public class TestClass {
             error = e.getMessage();
         }
     }
-    private static final Logger LOG = Logger.getLogger(TestClass.class.getName());
 
     @AfterClass
     public static void tearDownClass() {

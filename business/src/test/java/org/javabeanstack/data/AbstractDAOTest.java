@@ -42,6 +42,7 @@ public class AbstractDAOTest extends TestClass{
     @Test
     public void testFindAll() throws Exception {
         System.out.println("findAll");
+        
     }
 
     /**
