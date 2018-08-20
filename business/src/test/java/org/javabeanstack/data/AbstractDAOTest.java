@@ -22,38 +22,61 @@
  */
 package org.javabeanstack.data;
 
+import java.util.List;
+import org.javabeanstack.model.tables.AppUser;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
 /**
  *
  * @author JORGE
  */
-public class AbstractDAOTest extends TestClass{
-    
+public class AbstractDAOTest extends TestClass {
+
+    private static IGenericDAORemote dao;
+
     public AbstractDAOTest() {
     }
 
+    @BeforeClass
+    public static void setUpClass2() {
+        try {
+            dao = (IGenericDAORemote) context.lookup(jndiProject + "GenericDAO!org.javabeanstack.data.IGenericDAORemote");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        
+    }
 
     /**
      * Test of findAll method, of class AbstractDAO.
+     *
      * @throws java.lang.Exception
      */
     @Test
     public void testFindAll() throws Exception {
         System.out.println("findAll");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        List<AppUser> users = dao.findAll(AppUser.class, sessionId);
+        assertTrue(users.size() > 0);
         
     }
 
     /**
      * Test of findById method, of class AbstractDAO.
+     *
      * @throws java.lang.Exception
      */
     @Test
     public void testFindById() throws Exception {
         System.out.println("findById");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -62,13 +85,14 @@ public class AbstractDAOTest extends TestClass{
 
     /**
      * Test of findByUk method, of class AbstractDAO.
+     *
      * @throws java.lang.Exception
      */
     @Test
     public void testFindByUk() throws Exception {
         System.out.println("findByUk");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -78,33 +102,33 @@ public class AbstractDAOTest extends TestClass{
 
     /**
      * Test of find method, of class AbstractDAO.
+     *
      * @throws java.lang.Exception
      */
     @Test
     public void testFind() throws Exception {
         System.out.println("find");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
     }
 
-
     /**
      * Test of findByQuery method, of class AbstractDAO.
+     *
      * @throws java.lang.Exception
      */
     @Test
     public void testFindByQuery() throws Exception {
         System.out.println("findByQuery");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
     }
-
 
     /**
      * Test of findListByQuery method, of class AbstractDAO.
@@ -113,7 +137,7 @@ public class AbstractDAOTest extends TestClass{
     public void testFindListByQuery_4args() throws Exception {
         System.out.println("findListByQuery");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -126,13 +150,11 @@ public class AbstractDAOTest extends TestClass{
     public void testFindByNamedQuery() throws Exception {
         System.out.println("findByNamedQuery");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
     }
-
-
 
     /**
      * Test of findByNativeQuery method, of class AbstractDAO.
@@ -141,12 +163,11 @@ public class AbstractDAOTest extends TestClass{
     public void testFindByNativeQuery() throws Exception {
         System.out.println("findByNativeQuery");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
     }
-
 
     /**
      * Test of sqlExec method, of class AbstractDAO.
@@ -155,7 +176,7 @@ public class AbstractDAOTest extends TestClass{
     public void testSqlExec() throws Exception {
         System.out.println("sqlExec");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -168,12 +189,11 @@ public class AbstractDAOTest extends TestClass{
     public void testUpdate() {
         System.out.println("update");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
     }
-
 
     /**
      * Test of persist method, of class AbstractDAO.
@@ -182,7 +202,7 @@ public class AbstractDAOTest extends TestClass{
     public void testPersist() {
         System.out.println("persist");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -195,7 +215,7 @@ public class AbstractDAOTest extends TestClass{
     public void testMerge() {
         System.out.println("merge");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -208,12 +228,11 @@ public class AbstractDAOTest extends TestClass{
     public void testRemove() {
         System.out.println("remove");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
     }
-
 
     /**
      * Test of refreshRow method, of class AbstractDAO.
@@ -222,7 +241,7 @@ public class AbstractDAOTest extends TestClass{
     public void testRefreshRow() throws Exception {
         System.out.println("refreshRow");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -235,7 +254,7 @@ public class AbstractDAOTest extends TestClass{
     public void testRefreshAll() throws Exception {
         System.out.println("refreshAll");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -248,7 +267,7 @@ public class AbstractDAOTest extends TestClass{
     public void testGetCount() throws Exception {
         System.out.println("getCount");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -261,7 +280,7 @@ public class AbstractDAOTest extends TestClass{
     public void testGetCount2() throws Exception {
         System.out.println("getCount2");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -274,7 +293,7 @@ public class AbstractDAOTest extends TestClass{
     public void testGetEntityManagerProp() {
         System.out.println("getEntityManagerProp");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -287,7 +306,7 @@ public class AbstractDAOTest extends TestClass{
     public void testGetPersistUnitProp() {
         System.out.println("getPersistUnitProp");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -295,19 +314,17 @@ public class AbstractDAOTest extends TestClass{
 
     /**
      * Test of getDataEngine method, of class AbstractDAO.
+     *
      * @throws java.lang.Exception
      */
     @Test
-    public void testGetDataEngine() throws Exception{
+    public void testGetDataEngine() throws Exception {
         System.out.println("getDataEngine");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
-        
-        IGenericDAORemote dao  = 
-                (IGenericDAORemote) context.lookup(jndiProject+"GenericDAO!org.javabeanstack.data.IGenericDAORemote");
         System.out.println(dao.getDataEngine("PU1"));
 
         String expResult = dao.getDataEngine("PU1");
@@ -316,19 +333,20 @@ public class AbstractDAOTest extends TestClass{
 
     /**
      * Test of getSchema method, of class AbstractDAO.
+     *
      * @throws java.lang.Exception
      */
     @Test
-    public void testGetSchema() throws Exception{
+    public void testGetSchema() throws Exception {
         System.out.println("getSchema");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
-        
-        IGenericDAORemote dao  = 
-                (IGenericDAORemote) context.lookup(jndiProject+"GenericDAO!org.javabeanstack.data.IGenericDAORemote");
+
+        IGenericDAORemote dao
+                = (IGenericDAORemote) context.lookup(jndiProject + "GenericDAO!org.javabeanstack.data.IGenericDAORemote");
         System.out.println(dao.getSchema("PU1"));
 
         String expResult = dao.getSchema("PU1");
@@ -342,12 +360,11 @@ public class AbstractDAOTest extends TestClass{
     public void testGetConnection_String() {
         System.out.println("getConnection");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
     }
-
 
     /**
      * Test of getUserSession method, of class AbstractDAO.
@@ -356,7 +373,7 @@ public class AbstractDAOTest extends TestClass{
     public void testGetUserSession() {
         System.out.println("getUserSession");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
@@ -369,7 +386,7 @@ public class AbstractDAOTest extends TestClass{
     public void testGetDBLinkInfo() {
         System.out.println("getDBLinkInfo");
         //No hubo conexión con el servidor de aplicaciones
-        if (error != null){
+        if (error != null) {
             System.out.println(error);
             return;
         }
