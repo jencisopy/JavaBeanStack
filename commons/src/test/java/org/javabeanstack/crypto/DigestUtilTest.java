@@ -22,9 +22,10 @@
  */
 package org.javabeanstack.crypto;
 
-import java.util.UUID;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
+
 
 
 /**
@@ -119,38 +120,47 @@ public class DigestUtilTest {
         String expResult = "e99498dd8f94775f92dffdebd06496b3";
         assertEquals(expResult, response);
     }
-    
+    @Test
+    public void testDigestAuth_MD5_auth() throws Exception{
+        String nonce = "";
+        String cnonce = "";
+        String nonceCount="";//Contador de request en hexadecimal en donde el usuario realiza la petición
+        String response = "";
+        String method = "POST";
+        //realm = ldap, username = admin, password = password
+        //HA1=MD5(username:realm:password) md5 HA2=MD5(METHOD:URI)
+        String ha1 = DigestUtil.md5("admin:ldap:password");
+        String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti");
+        response = functionResponse(ha1,nonce,nonceCount,cnonce,"auth",ha2);
+        String expResult = "f2d5b80937bc0c8ed717a75ca537572e";
+        assertEquals(expResult,response);
+    }
+
     @Test
     public void testDigestAuth_MD5_sess_auth() throws Exception{
         String nonce = "";
         String cnonce = "";
         String nonceCount="";//Contador de request en hexadecimal en donde el usuario realiza la petición
-        String entityBody="";
         String response = "";
-        String method = "GET";
+        String method = "POST";
         //HA1=MD5(MD5(username:realm:password):nonce:cnonce)  md5-sess
         //realm es una frase que hace que intente entrar
         //realm = ldap, username = admin, password = password
         String ha1 = DigestUtil.md5(DigestUtil.md5("admin:ldap:password")+":"+nonce+":"+cnonce);
-        String ha2 = DigestUtil.md5(method+":/rest/v2/all");
+        String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti");
         response = functionResponse(ha1,nonce,nonceCount,cnonce,"auth",ha2);
-        //9eb6e22f778e0a2c80cda1ec726f3282
-        //String expResult = "4d186321c1a7f0f354b297e8914ab240";
-        //String expResult = "eb1ca869332a87b50d665dbc458f3cf2";
-        //String expResult = "fd83ee41d5a34a754a106139f0fc3635"; //con auth
-        String expResult = "d3a8fb5bb9ed6923a48bf32f8d6a3683"; //auth
+        String expResult = "f71297f4eb46e443d301a101f12e4400";
         assertEquals(expResult,response);
     }
     @Test
     public void testDigestAuth_MD5_sess_auth_int() throws Exception{
         //https://restcountries.eu/rest/v2/all
+        //https://restcountries.eu/rest/v2/name/eesti
         String nonce = "";
         String cnonce = "";
-        String nonceCount="";//Contador de request en hexadecimal en donde el usuario realiza la petición
-        String entityBody="hola";
-        String response = "{\n" +
-"	\"name\":\"julio\"\n" +
-"}";
+        Integer nonceCount=1;//Contador de request en hexadecimal en donde el usuario realiza la petición
+        String entityBody="";
+        String response = "";
         String method = "POST";
         //HA1=MD5(MD5(username:realm:password):nonce:cnonce)  md5-sess
         //realm es una frase que hace que intente entrar
@@ -158,26 +168,26 @@ public class DigestUtilTest {
         String ha1 = DigestUtil.md5(DigestUtil.md5("admin:ldap:password")+":"+nonce+":"+cnonce);
         if (method.equals("GET")) {
              //en caso de ser de mètodo get y que no se pueda usar el entity body
-            String ha2 = DigestUtil.md5(method+":/rest/v2/all");
-            response = functionResponse(ha1,nonce,nonceCount,cnonce,"auth-int",ha2);
+            String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti");
+            response = functionResponse(ha1,nonce,nonceCount.toString(),cnonce,"auth-int",ha2);
         }
         else{//en caso que use post por ejemplo
             //HA2=MD5(method:digestURI:MD5(entityBody))
-            String ha2 = DigestUtil.md5(method+":/rest/v2/all"+":"+DigestUtil.md5(entityBody));
-            response = functionResponse(ha1,nonce,nonceCount,cnonce,"auth-int",ha2);
+            //String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti"+":"+DigestUtil.md5(entityBody));
+            String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti"+":"+DigestUtil.md5(entityBody));
+            response = functionResponse(ha1,nonce,nonceCount.toString(),cnonce,"auth-int",ha2);
         }
-        //String expResult = "fd83ee41d5a34a754a106139f0fc3635"; //con auth
-        //String expResult = "0f3b24befadef5a08e1b800f872508b6";//con auth-int sin body y con get
-       
-       // String expResult = "83a34e7b2c7c9a796782e86d157cdf23"; //auth-int
-        //String expResult = "543991a9dd4ee255f14f6a6bb904394e";
-        //String expResult = "3f58f76f7a1b2f0af2adef7b6863a853";
-        String expResult = "086ef7cce1542edfda3a3b2c90a57976";
-         assertEquals(expResult,response);
+        
+        String expResult="0333c838e4efba3588b3a9b6db05b73b";
+        //String expResult = "086ef7cce1542edfda3a3b2c90a57976";
+        assertEquals(expResult,response);
+        
     }
+    
     private String functionResponse(String ha1, String nonce, String nonceCount, String cnonce, String qop, String ha2) {
         //response=MD5(HA1:nonce:nonceCount:cnonce:qop:HA2)
         String response =  DigestUtil.md5(ha1+":"+nonce+":"+nonceCount+":"+cnonce+":"+qop+":"+ha2);
         return response;
     }
+    
 }
