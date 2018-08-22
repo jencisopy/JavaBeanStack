@@ -22,8 +22,10 @@
  */
 package org.javabeanstack.crypto;
 
+import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
 
 /**
  *
@@ -117,5 +119,67 @@ public class DigestUtilTest {
         
         String expResult = "e99498dd8f94775f92dffdebd06496b3";
         assertEquals(expResult, response);
+    }
+    @Test
+    public void testDigestAuth_MD5_sess() throws Exception{
+        
+        //String nonce = UUID.randomUUID().toString();//valor ùnico generado por el servidor
+        String nonce = "";
+        //String cnonce = UUID.randomUUID().toString();
+        String cnonce = "";
+        String qop="auth";//quality of protection, calidad de protecciòn en donde pueden contener valores como
+        //auth o auth-int
+        String nonceCount="";//Contador de request en hexadecimal en donde el usuario realiza la petición
+        String entityBody="";
+        String response = "";
+        String method = "GET";
+        //HA1=MD5(MD5(username:realm:password):nonce:cnonce)  md5-sess
+        //realm es una frase que hace que intente entrar
+        //realm = ldap, username = admin, password = password
+        String ha1 = DigestUtil.md5(DigestUtil.md5("admin:ldap:password")+":"+nonce+":"+cnonce);
+        switch (qop) {
+            case "auth":
+                {
+                    String ha2 = DigestUtil.md5(method+":/rest/v2/all");
+                    response = functionResponse(ha1,nonce,nonceCount,cnonce,qop,ha2);
+                    break;
+                }
+            case "auth-int": //es en el caso que el entitybody funcione con el metodo post distinto de get
+                {
+                    if (method.equals("GET")) {
+                         //en caso de ser de mètodo get y que no se pueda usar el entity body
+                        String ha2 = DigestUtil.md5(method+":/rest/v2/all");
+                        response = functionResponse(ha1,nonce,nonceCount,cnonce,qop,ha2);
+                    }
+                    else{
+                        //HA2=MD5(method:digestURI:MD5(entityBody))
+                        String ha2 = DigestUtil.md5(method+":/rest/v2/all"+":"+DigestUtil.md5(entityBody));
+                        response = functionResponse(ha1,nonce,nonceCount,cnonce,qop,ha2);
+                    }
+                    break;
+                }
+            default:
+                {
+                    //En caso que el qop no se especifique auth-int o auth
+                    String ha2 = DigestUtil.md5(method+":/rest/v2/all");
+                    response = DigestUtil.md5(ha1+":"+nonce+":"+ha2);
+                    break;
+                }
+        }
+        //9eb6e22f778e0a2c80cda1ec726f3282
+        //String expResult = "4d186321c1a7f0f354b297e8914ab240";
+        // String expResult = "eb1ca869332a87b50d665dbc458f3cf2";
+        //String expResult = "fd83ee41d5a34a754a106139f0fc3635"; //con auth
+        //String expResult = "0f3b24befadef5a08e1b800f872508b6";//con auth-int sin body y con get
+       
+        //String expResult = "83a34e7b2c7c9a796782e86d157cdf23"; //auth-int
+         String expResult = "d3a8fb5bb9ed6923a48bf32f8d6a3683"; //auth
+         assertEquals(expResult,response);
+    }
+
+    private String functionResponse(String ha1, String nonce, String nonceCount, String cnonce, String qop, String ha2) {
+        //response=MD5(HA1:nonce:nonceCount:cnonce:qop:HA2)
+        String response =  DigestUtil.md5(ha1+":"+nonce+":"+nonceCount+":"+cnonce+":"+qop+":"+ha2);
+        return response;
     }
 }
