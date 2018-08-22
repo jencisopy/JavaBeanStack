@@ -107,7 +107,6 @@ public class DigestUtilTest {
     public void testDigestAuth_MD5() throws Exception{
         System.out.println("DIGEST AUTH");
         //HA1=MD5(username:realm:password) md5
-        //HA1=MD5(MD5(username:realm:password):nonce:cnonce)  md5-sess
         //HA2=MD5(method:digestURI)   
         //response=MD5(HA1:nonce:HA2)
         String nonce = "";
@@ -120,12 +119,10 @@ public class DigestUtilTest {
         String expResult = "e99498dd8f94775f92dffdebd06496b3";
         assertEquals(expResult, response);
     }
+    
     @Test
     public void testDigestAuth_MD5_sess() throws Exception{
-        
-        //String nonce = UUID.randomUUID().toString();//valor ùnico generado por el servidor
         String nonce = "";
-        //String cnonce = UUID.randomUUID().toString();
         String cnonce = "";
         String qop="auth";//quality of protection, calidad de protecciòn en donde pueden contener valores como
         //auth o auth-int
