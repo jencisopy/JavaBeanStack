@@ -22,7 +22,10 @@
  */
 package org.javabeanstack.data;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.javabeanstack.model.tables.AppResource;
 import org.javabeanstack.model.tables.AppUser;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -62,9 +65,8 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
-        List<AppUser> users = dao.findAll(AppUser.class, sessionId);
+        List<AppUser> users = dao.findAll(AppUser.class, null);
         assertTrue(users.size() > 0);
-        
     }
 
     /**
@@ -80,7 +82,11 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
-
+        AppUser user = dao.findById(AppUser.class, null, 1L);
+        assertNotNull(user);
+        
+        user = dao.findById(AppUser.class, null, 0L);
+        assertNull(user);
     }
 
     /**
@@ -96,8 +102,15 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
-        // TODO review the generated test code and remove the default call to fail.
-        //fail("The test case is a prototype.");
+        AppResource appResource = new AppResource();
+        appResource.setCode("no se encuentra");
+        appResource = dao.findByUk(null, appResource);
+        assertNull(appResource);
+        
+        appResource = new AppResource();
+        appResource.setCode("clasemaker.xml");
+        appResource = dao.findByUk(null, appResource);
+        assertNotNull(appResource);
     }
 
     /**
@@ -113,6 +126,26 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
+        List<AppUser> users = dao.find(AppUser.class, null);
+        assertTrue(users.size() > 0);
+        
+        String order = "code desc";
+        String filter = "";
+        users = dao.find(AppUser.class, null, order, filter, null);
+        assertTrue(users.size() > 0);
+        
+        filter = "code = 'Administrador'";
+        users = dao.find(AppUser.class, null, order, filter, null);
+        assertTrue(users.size() == 1);
+        
+        filter = "code = :code";
+        Map<String, Object> params = new HashMap();
+        params.put("code", "Administrador");
+        users = dao.find(AppUser.class, null, order, filter, params);
+        assertTrue(users.size() == 1);
+        
+        users = dao.find(AppUser.class, null, null, "", null, 0, 4);        
+        assertTrue(users.size() == 4);
     }
 
     /**
@@ -128,19 +161,40 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
+        
+        AppUser user = dao.findByQuery(null, "select o from AppUser o where iduser = 1L", null);
+        assertNotNull(user);
+
+        user = dao.findByQuery(null, "select o from AppUser o where iduser = 0L", null);
+        assertNull(user);
+        
+        Map<String, Object> params = new HashMap();
+        params.put("iduser", 1L);
+        user = dao.findByQuery(null, "select o from AppUser o where iduser = :iduser", params);
+        assertNotNull(user);
     }
 
     /**
      * Test of findListByQuery method, of class AbstractDAO.
      */
     @Test
-    public void testFindListByQuery_4args() throws Exception {
+    public void testFindListByQuery() throws Exception {
         System.out.println("findListByQuery");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
             return;
         }
+        List<AppUser> users = dao.findListByQuery(null, "select o from AppUser o where iduser = 1L", null);
+        assertNotNull(users);
+
+        users = dao.findListByQuery(null, "select o from AppUser o where iduser = 0L", null);
+        assertTrue(users.isEmpty());
+        
+        Map<String, Object> params = new HashMap();
+        params.put("iduser", 1L);
+        users = dao.findListByQuery(null, "select o from AppUser o where iduser = :iduser", params);
+        assertNotNull(users);
     }
 
     /**
@@ -169,18 +223,6 @@ public class AbstractDAOTest extends TestClass {
         }
     }
 
-    /**
-     * Test of sqlExec method, of class AbstractDAO.
-     */
-    @Test
-    public void testSqlExec() throws Exception {
-        System.out.println("sqlExec");
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-    }
 
     /**
      * Test of update method, of class AbstractDAO.
@@ -245,20 +287,11 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
+        AppResource resource = dao.findByQuery(null, "select o from AppResource o where code = 'clasemaker.xml'", null);
+        resource = dao.refreshRow(null, resource);
+        assertNotNull(resource);
     }
 
-    /**
-     * Test of refreshAll method, of class AbstractDAO.
-     */
-    @Test
-    public void testRefreshAll() throws Exception {
-        System.out.println("refreshAll");
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-    }
 
     /**
      * Test of getCount method, of class AbstractDAO.
@@ -271,10 +304,13 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
+        Long rec = dao.getCount(null, "select o FROM AppCompany o", null);
+        assertTrue(rec > 0L);
     }
 
     /**
      * Test of getCount2 method, of class AbstractDAO.
+     * 
      */
     @Test
     public void testGetCount2() throws Exception {
@@ -284,7 +320,10 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
+        Long rec = dao.getCount2(null, "select * FROM catalogo.empresa", null);
+        assertTrue(rec > 0L);
     }
+
 
     /**
      * Test of getEntityManagerProp method, of class AbstractDAO.
@@ -297,6 +336,8 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
+        Map<String, Object> props = dao.getEntityManagerProp("PU1");
+        assertNotNull(props);
     }
 
     /**
@@ -310,6 +351,8 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
+        Map<String, Object> props = dao.getPersistUnitProp("PU1");
+        assertNotNull(props);        
     }
 
     /**
@@ -345,26 +388,12 @@ public class AbstractDAOTest extends TestClass {
             return;
         }
 
-        IGenericDAORemote dao
-                = (IGenericDAORemote) context.lookup(jndiProject + "GenericDAO!org.javabeanstack.data.IGenericDAORemote");
         System.out.println(dao.getSchema("PU1"));
 
         String expResult = dao.getSchema("PU1");
         assertNotNull(expResult);
     }
 
-    /**
-     * Test of getConnection method, of class AbstractDAO.
-     */
-    @Test
-    public void testGetConnection_String() {
-        System.out.println("getConnection");
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-    }
 
     /**
      * Test of getUserSession method, of class AbstractDAO.
@@ -377,6 +406,7 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
+        assertNotNull(dao.getUserSession(sessionId));
     }
 
     /**
@@ -390,9 +420,8 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
-    }
-
-    public class AbstractDAOImpl extends AbstractDAO {
+        IDBLinkInfo info = dao.getUserSession(sessionId).getDbLinkInfo();
+        assertNotNull(info);
     }
 
 }

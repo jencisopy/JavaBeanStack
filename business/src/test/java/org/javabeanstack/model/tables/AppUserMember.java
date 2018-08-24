@@ -18,8 +18,7 @@ import org.javabeanstack.model.IAppUserMember;
 @Entity
 @Table(name = "usuariomiembro")
 public class AppUserMember extends DataRow implements IAppUserMember {
-    
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -558553967080513790L;
     
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -141,6 +141,9 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         T row = em.find(entityClass, id);
+        if (row == null){
+            return null;
+        }
         // Refrescar lazy members
         List<Field> fields = DataInfo.getLazyMembers(row.getClass());
         if (!fields.isEmpty()) {
@@ -839,6 +842,9 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @Override
     public <T extends IDataRow> T refreshRow(String sessionId, T row) throws Exception {
         row = this.findById((Class<T>) row.getClass(), sessionId, DataInfo.getIdvalue(row));
+        if (row == null){
+            return null;
+        }
         // Refrescar lazy members
         List<Field> fields = DataInfo.getLazyMembers(row.getClass());
         if (!fields.isEmpty()) {
