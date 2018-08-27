@@ -115,7 +115,7 @@ public class DigestUtil {
      */
     public static String hmacSHA256(String msg, String key) {
         try {
-            return digestHmacToHex("HmacSHA256", msg, key.getBytes());
+            return digestHmacToHex("HmacSHA256", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
             Logger.getLogger(DigestUtil.class).error(ex.getMessage());
         }
