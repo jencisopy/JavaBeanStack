@@ -398,7 +398,7 @@ public class AbstractDAOTest extends TestClass {
     /**
      * Test of getUserSession method, of class AbstractDAO.
      */
-    //@Test
+    @Test
     public void testGetUserSession() {
         System.out.println("getUserSession");
         //No hubo conexión con el servidor de aplicaciones
@@ -412,7 +412,7 @@ public class AbstractDAOTest extends TestClass {
     /**
      * Test of getDBLinkInfo method, of class AbstractDAO.
      */
-    //@Test
+    @Test
     public void testGetDBLinkInfo() {
         System.out.println("getDBLinkInfo");
         //No hubo conexión con el servidor de aplicaciones

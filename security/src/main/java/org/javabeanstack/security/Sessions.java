@@ -171,6 +171,7 @@ public class Sessions implements ISessions{
         afterCreateSession(session);
         // Agregar sesión al pool de sesiones
         sessionVar.put(sessionId, session);
+        LOGGER.debug("Sesión creada: "+sessionId);                
         return true;
     }
 
@@ -316,11 +317,13 @@ public class Sessions implements ISessions{
      */
     @Override
     public UserSession getUserSession(String sessionIdEncrypted) {
-        LOGGER.debug("GETUSERSESSION IN");
+        LOGGER.debug("GETUSERSESSION IN ");
         if (sessionIdEncrypted == null) {
             return null;
         }
         String sessionId = decrypt(sessionIdEncrypted);
+        LOGGER.debug("SESSION ENCRYPTADA: "+sessionIdEncrypted);                
+        LOGGER.debug("SESSION : "+sessionId);                
         UserSession sesion = (UserSession) sessionVar.get(sessionId);
         if (sesion != null) {
             Integer expireInMinutes = sesion.getIdleSessionExpireInMinutes();
