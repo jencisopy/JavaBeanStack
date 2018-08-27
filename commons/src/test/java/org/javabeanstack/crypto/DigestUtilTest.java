@@ -185,19 +185,7 @@ public class DigestUtilTest {
         
     }*/
     
-    /**
-     * Test of sha256 method, of class DigestUtil.
      
-    @Test
-    public void testHmacSha256() throws Exception {
-        System.out.println("sha256");
-        String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
-        String key = "añ";
-        String expResult = "efbc7d9e22c2e7063b929003a7e3b5469259175072c9e115636a86d5c7f198a6";
-        String result = DigestUtil.hmacSHA256(msg,key);
-        System.out.println(result);
-        assertEquals(expResult, result);
-    }
 
     /**
      * Test of sha256 method, of class DigestUtil.
@@ -209,6 +197,20 @@ public class DigestUtilTest {
         String key = "añ";
         String expResult = "766efadbefecb8313cdd42f3d983b60707e019f7";
         String result = DigestUtil.hmacSHA1(msg, key);
+        System.out.println(result);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of sha256 method, of class DigestUtil.
+    */    
+    @Test
+    public void testHmacSha256() throws Exception {
+        System.out.println("sha256");
+        String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
+        String key = "añ";
+        String expResult = "efbc7d9e22c2e7063b929003a7e3b5469259175072c9e115636a86d5c7f198a6";
+        String result = DigestUtil.hmacSHA256(msg,key);
         System.out.println(result);
         assertEquals(expResult, result);
     }
