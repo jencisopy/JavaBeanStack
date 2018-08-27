@@ -113,9 +113,33 @@ public class DigestUtil {
      * @param key
      * @return firma 256 en formato String hexadecimal
      */
+    public static String hmacSHA1(String msg, String key) {
+        try {
+            return digestHmacToHex("HmacSHA1", msg, key.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
+    }
     public static String hmacSHA256(String msg, String key) {
         try {
             return digestHmacToHex("HmacSHA256", msg, key.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
+    }
+    public static String hmacSHA512(String msg, String key) {
+        try {
+            return digestHmacToHex("HmacSHA512", msg, key.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
+    }
+    public static String hmacMD5(String msg, String key) {
+        try {
+            return digestHmacToHex("HmacMD5", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
             Logger.getLogger(DigestUtil.class).error(ex.getMessage());
         }
