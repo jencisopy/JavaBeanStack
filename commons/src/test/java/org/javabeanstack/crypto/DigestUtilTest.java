@@ -22,8 +22,11 @@
  */
 package org.javabeanstack.crypto;
 
+
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+
 
 /**
  *
@@ -105,7 +108,6 @@ public class DigestUtilTest {
     public void testDigestAuth_MD5() throws Exception{
         System.out.println("DIGEST AUTH");
         //HA1=MD5(username:realm:password) md5
-        //HA1=MD5(MD5(username:realm:password):nonce:cnonce)  md5-sess
         //HA2=MD5(method:digestURI)   
         //response=MD5(HA1:nonce:HA2)
         String nonce = "";
@@ -118,4 +120,74 @@ public class DigestUtilTest {
         String expResult = "e99498dd8f94775f92dffdebd06496b3";
         assertEquals(expResult, response);
     }
+    @Test
+    public void testDigestAuth_MD5_auth() throws Exception{
+        String nonce = "";
+        String cnonce = "";
+        String nonceCount="";//Contador de request en hexadecimal en donde el usuario realiza la petición
+        String response = "";
+        String method = "POST";
+        //realm = ldap, username = admin, password = password
+        //HA1=MD5(username:realm:password) md5 HA2=MD5(METHOD:URI)
+        String ha1 = DigestUtil.md5("admin:ldap:password");
+        String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti");
+        response = functionResponse(ha1,nonce,nonceCount,cnonce,"auth",ha2);
+        String expResult = "f2d5b80937bc0c8ed717a75ca537572e";
+        assertEquals(expResult,response);
+    }
+
+    @Test
+    public void testDigestAuth_MD5_sess_auth() throws Exception{
+        String nonce = "";
+        String cnonce = "";
+        String nonceCount="";//Contador de request en hexadecimal en donde el usuario realiza la petición
+        String response = "";
+        String method = "POST";
+        //HA1=MD5(MD5(username:realm:password):nonce:cnonce)  md5-sess
+        //realm es una frase que hace que intente entrar
+        //realm = ldap, username = admin, password = password
+        String ha1 = DigestUtil.md5(DigestUtil.md5("admin:ldap:password")+":"+nonce+":"+cnonce);
+        String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti");
+        response = functionResponse(ha1,nonce,nonceCount,cnonce,"auth",ha2);
+        String expResult = "f71297f4eb46e443d301a101f12e4400";
+        assertEquals(expResult,response);
+    }
+    @Test
+    public void testDigestAuth_MD5_sess_auth_int() throws Exception{
+        //https://restcountries.eu/rest/v2/all
+        //https://restcountries.eu/rest/v2/name/eesti
+        String nonce = "";
+        String cnonce = "";
+        Integer nonceCount=1;//Contador de request en hexadecimal en donde el usuario realiza la petición
+        String entityBody="";
+        String response = "";
+        String method = "POST";
+        //HA1=MD5(MD5(username:realm:password):nonce:cnonce)  md5-sess
+        //realm es una frase que hace que intente entrar
+        //realm = ldap, username = admin, password = password
+        String ha1 = DigestUtil.md5(DigestUtil.md5("admin:ldap:password")+":"+nonce+":"+cnonce);
+        if (method.equals("GET")) {
+             //en caso de ser de mètodo get y que no se pueda usar el entity body
+            String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti");
+            response = functionResponse(ha1,nonce,nonceCount.toString(),cnonce,"auth-int",ha2);
+        }
+        else{//en caso que use post por ejemplo
+            //HA2=MD5(method:digestURI:MD5(entityBody))
+            //String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti"+":"+DigestUtil.md5(entityBody));
+            String ha2 = DigestUtil.md5(method+":/rest/v2/name/eesti"+":"+DigestUtil.md5(entityBody));
+            response = functionResponse(ha1,nonce,nonceCount.toString(),cnonce,"auth-int",ha2);
+        }
+        
+        String expResult="0333c838e4efba3588b3a9b6db05b73b";
+        //String expResult = "086ef7cce1542edfda3a3b2c90a57976";
+        assertEquals(expResult,response);
+        
+    }
+    
+    private String functionResponse(String ha1, String nonce, String nonceCount, String cnonce, String qop, String ha2) {
+        //response=MD5(HA1:nonce:nonceCount:cnonce:qop:HA2)
+        String response =  DigestUtil.md5(ha1+":"+nonce+":"+nonceCount+":"+cnonce+":"+qop+":"+ha2);
+        return response;
+    }
+    
 }
