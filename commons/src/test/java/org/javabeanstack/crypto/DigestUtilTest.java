@@ -224,7 +224,7 @@ public class DigestUtilTest {
         String key = "secretkey";
         //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
         String unToken = bHeader + '.' + bPayload;
-        String expToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
+        String expToken = "gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
         String signature = DigestUtil.hmacSHA256(unToken, key);
         //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
         String token = bHeader + "." + bPayload + "." + signature;
@@ -259,4 +259,59 @@ public class DigestUtilTest {
         System.out.println(result);
         assertEquals(expResult, result);
     }
+    
+    @Test
+    public void testJWT_HMACSha256() throws Exception {
+        System.out.println("sha256");
+        String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+        String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
+        String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
+        String bPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
+        String key = "secretkey";
+        //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
+        String unToken = bHeader + '.' + bPayload;
+        String expToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
+        String signature = DigestUtil.hmacSHA256(unToken, key);
+        //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
+        String token = bHeader + "." + bPayload + "." + signature;
+        System.out.println(token);
+        assertEquals(token, expToken);
+    }
+
+    @Test
+    public void testJWT_HMACSha384() throws Exception {
+        System.out.println("sha256");
+        String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+        String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
+        String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
+        String bPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
+        String key = "secretkey";
+        //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
+        String unToken = bHeader + '.' + bPayload;
+        String expToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
+        String signature = DigestUtil.hmacSHA256(unToken, key);
+        //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
+        String token = bHeader + "." + bPayload + "." + signature;
+        System.out.println(token);
+        assertEquals(token, expToken);
+    }
+
+    @Test
+    public void testJWT_HMACSha512() throws Exception {
+        System.out.println("sha256");
+        String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+        String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
+        String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
+        String bPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
+        String key = "secretkey";
+        //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
+        String unToken = bHeader + '.' + bPayload;
+        String expToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
+        String signature = DigestUtil.hmacSHA256(unToken, key);
+        //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
+        String token = bHeader + "." + bPayload + "." + signature;
+        System.out.println(token);
+        assertEquals(token, expToken);
+    }
+    
 }

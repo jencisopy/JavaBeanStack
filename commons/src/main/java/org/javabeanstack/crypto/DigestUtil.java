@@ -165,6 +165,24 @@ public class DigestUtil {
         return null;
     }
 
+    
+    /**
+     * Devuelve la firma sha256 en formato String base 64
+     * @param msg mensaje
+     * @param key clave privada
+     * @return firma en formato String base 64
+     */
+    public static String hmacSHA384(String msg, String key) {
+        try {
+           
+            return digestHmacToBase64("HmacSHA384", msg, key.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
+    }
+    
+    
     /**
      * Devuelve la firma sha512 en formato String base 64
      * @param msg mensaje
