@@ -24,7 +24,7 @@ package org.javabeanstack.crypto;
 
 //import io.jsonwebtoken.impl.crypto.MacProvider;
 //import com.sun.org.apache.xml.internal.security.utils.Base64;
-import org.apache.commons.codec.binary.Base64;
+import java.util.Base64;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -219,8 +219,8 @@ public class DigestUtilTest {
         System.out.println("sha256");
         String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
         String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
-        String bHeader = Base64.encodeBase64URLSafeString(header.getBytes());
-        String bPayload = Base64.encodeBase64URLSafeString(payload.getBytes());
+        String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
+        String bPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
         String key = "secretkey";
         //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
         String unToken = bHeader + '.' + bPayload;
