@@ -237,7 +237,7 @@ public class DigestUtilTest {
      */
     @Test
     public void testHmacSha512() throws Exception {
-        System.out.println("sha256");
+        System.out.println("sha512");
         String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
         String key = "añ";
         String expResult = "873e13ff8d5a20104b2d6ddfbd1de7372f065e7a344cffa729f30b71c54df944416ced9cd7d62e2dad0b87806ed57d230487e5a492c67a5034ee3d4dd900cd5f";
@@ -280,34 +280,35 @@ public class DigestUtilTest {
 
     @Test
     public void testJWT_HMACSha384() throws Exception {
-        System.out.println("sha256");
-        String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+        System.out.println("sha384");
+        String header = "{\"alg\":\"HS384\",\"typ\":\"JWT\"}";
         String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
         String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
         String bPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
         String key = "secretkey";
         //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
         String unToken = bHeader + '.' + bPayload;
-        String expToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
-        String signature = DigestUtil.hmacSHA256(unToken, key);
+        String expToken = "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.SbBeAQYScnnlZg0G9U4xalP-ykDWG8zJA1S54vqlZTaxNancEO7JONbf47mVKyLc";
+        String signature = DigestUtil.hmacSHA384(unToken, key);
         //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
         String token = bHeader + "." + bPayload + "." + signature;
         System.out.println(token);
+        System.out.println(expToken);
         assertEquals(token, expToken);
     }
 
     @Test
     public void testJWT_HMACSha512() throws Exception {
-        System.out.println("sha256");
-        String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+        System.out.println("sha512");
+        String header = "{\"alg\":\"HS512\",\"typ\":\"JWT\"}";
         String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
         String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
         String bPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
         String key = "secretkey";
         //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
         String unToken = bHeader + '.' + bPayload;
-        String expToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
-        String signature = DigestUtil.hmacSHA256(unToken, key);
+        String expToken = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.bIEyflH8TxnEWdFmwuCvxL6D7FXHgYESBBZN21NeoYQSe-vLbc4io4KKOQFZq8LsWQYqtZlH7GTUMTWKtX1AuQ";
+        String signature = DigestUtil.hmacSHA512(unToken, key);
         //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
         String token = bHeader + "." + bPayload + "." + signature;
         System.out.println(token);

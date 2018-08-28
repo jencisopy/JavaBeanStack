@@ -126,6 +126,7 @@ public class DigestUtil {
      * @throws UnsupportedEncodingException
      * @throws InvalidKeyException 
      */
+    
     public static String digestHmacToBase64(String algorithm, String msg, byte[] privateKey) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
         Mac mac = Mac.getInstance(algorithm);
         SecretKeySpec key = new SecretKeySpec(privateKey, algorithm);
