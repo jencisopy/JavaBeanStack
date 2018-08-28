@@ -23,9 +23,16 @@
 package org.javabeanstack.crypto;
 
 
-import java.util.Arrays;
+//import io.jsonwebtoken.impl.crypto.MacProvider;
+
+
+//import com.sun.org.apache.xml.internal.security.utils.Base64;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+
+
 
 
 
@@ -183,7 +190,7 @@ public class DigestUtilTest {
         //String expResult = "086ef7cce1542edfda3a3b2c90a57976";
         assertEquals(expResult,response);
         
-    }*/
+    }
     
      
 
@@ -207,14 +214,20 @@ public class DigestUtilTest {
     @Test
     public void testHmacSha256() throws Exception {
         System.out.println("sha256");
-        String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
-        String key = "añ";
-        String expResult = "efbc7d9e22c2e7063b929003a7e3b5469259175072c9e115636a86d5c7f198a6";
-        String result = DigestUtil.hmacSHA256(msg,key);
-        System.out.println(result);
-        assertEquals(expResult, result);
+        String header="{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+        String payload="{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
+        String bHeader = Base64.encodeBase64URLSafeString(header.getBytes());
+        String bPayload = Base64.encodeBase64URLSafeString(payload.getBytes());
+        String key = "secretkey";
+        //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
+        String unToken = bHeader+ '.' + bPayload;
+        String expToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
+        String signature = DigestUtil.hmacSHA256(unToken, key);
+        //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
+        String token = bHeader + "." + bPayload + "." + signature;
+        System.out.println(token);
+        assertEquals(token, expToken);
     }
-    
     /**
      * Test of sha256 method, of class DigestUtil.
      */

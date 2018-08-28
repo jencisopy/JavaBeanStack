@@ -21,7 +21,7 @@
 * MA 02110-1301  USA
  */
 package org.javabeanstack.crypto;
-
+import org.apache.commons.codec.binary.Base64;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -105,7 +105,14 @@ public class DigestUtil {
         byte[] macBytes = mac.doFinal(msg.getBytes("UTF-8"));
         return Fn.bytesToHex(macBytes);
     }
-    
+    public static String digestHmacToBase64(String algorithm, String msg, byte[] privateKey) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
+        Mac mac = Mac.getInstance(algorithm);
+        SecretKeySpec key = new SecretKeySpec(privateKey, algorithm);
+        mac.init(key);
+        byte[] macBytes = mac.doFinal(msg.getBytes("UTF-8"));
+        return Base64.encodeBase64URLSafeString(macBytes);
+       // return Fn.bytesToBase64(macBytes);
+    }
     
     /**
      * Devuelve la firma sha256 en formato String hexadecimal
@@ -123,7 +130,8 @@ public class DigestUtil {
     }
     public static String hmacSHA256(String msg, String key) {
         try {
-            return digestHmacToHex("HmacSHA256", msg, key.getBytes("UTF-8"));
+           
+            return digestHmacToBase64("HmacSHA256", msg, key.getBytes());
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
             Logger.getLogger(DigestUtil.class).error(ex.getMessage());
         }
