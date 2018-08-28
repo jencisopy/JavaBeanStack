@@ -217,19 +217,12 @@ public class DigestUtilTest {
     @Test
     public void testHmacSha256() throws Exception {
         System.out.println("sha256");
-        String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
-        String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
-        String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
-        String bPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
-        String key = "secretkey";
-        //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
-        String unToken = bHeader + '.' + bPayload;
-        String expToken = "gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
-        String signature = DigestUtil.hmacSHA256(unToken, key);
-        //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
-        String token = bHeader + "." + bPayload + "." + signature;
-        System.out.println(token);
-        assertEquals(token, expToken);
+        String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
+        String key = "añ";
+        String expResult = "efbc7d9e22c2e7063b929003a7e3b5469259175072c9e115636a86d5c7f198a6";
+        String result = DigestUtil.hmacSHA256(msg, key);
+        System.out.println(result);
+        assertEquals(expResult, result);
     }
 
     /**
@@ -262,7 +255,7 @@ public class DigestUtilTest {
     
     @Test
     public void testJWT_HMACSha256() throws Exception {
-        System.out.println("sha256");
+        System.out.println("JWT HS256");
         String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
         String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
         String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
@@ -271,7 +264,7 @@ public class DigestUtilTest {
         //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
         String unToken = bHeader + '.' + bPayload;
         String expToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
-        String signature = DigestUtil.hmacSHA256(unToken, key);
+        String signature = DigestUtil.digestHmacToBase64Url(DigestUtil.HMACSHA256, unToken, key.getBytes());
         //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
         String token = bHeader + "." + bPayload + "." + signature;
         System.out.println(token);
@@ -280,7 +273,7 @@ public class DigestUtilTest {
 
     @Test
     public void testJWT_HMACSha384() throws Exception {
-        System.out.println("sha384");
+        System.out.println("JWT HS384");
         String header = "{\"alg\":\"HS384\",\"typ\":\"JWT\"}";
         String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
         String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
@@ -289,7 +282,7 @@ public class DigestUtilTest {
         //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
         String unToken = bHeader + '.' + bPayload;
         String expToken = "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.SbBeAQYScnnlZg0G9U4xalP-ykDWG8zJA1S54vqlZTaxNancEO7JONbf47mVKyLc";
-        String signature = DigestUtil.hmacSHA384(unToken, key);
+        String signature = DigestUtil.digestHmacToBase64Url(DigestUtil.HMACSHA384, unToken, key.getBytes());        
         //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
         String token = bHeader + "." + bPayload + "." + signature;
         System.out.println(token);
@@ -299,7 +292,7 @@ public class DigestUtilTest {
 
     @Test
     public void testJWT_HMACSha512() throws Exception {
-        System.out.println("sha512");
+        System.out.println("JWT HS512");
         String header = "{\"alg\":\"HS512\",\"typ\":\"JWT\"}";
         String payload = "{\"loggedInAs\":\"admin\",\"iat\":1422779638}";
         String bHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes());
@@ -308,11 +301,10 @@ public class DigestUtilTest {
         //unsignedToken = encodeBase64Url(header) + '.' + encodeBase64Url(payload)
         String unToken = bHeader + '.' + bPayload;
         String expToken = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.bIEyflH8TxnEWdFmwuCvxL6D7FXHgYESBBZN21NeoYQSe-vLbc4io4KKOQFZq8LsWQYqtZlH7GTUMTWKtX1AuQ";
-        String signature = DigestUtil.hmacSHA512(unToken, key);
+        String signature = DigestUtil.digestHmacToBase64Url(DigestUtil.HMACSHA512, unToken, key.getBytes());                
         //token = encodeBase64Url(header) + '.' + encodeBase64Url(payload) + '.' + encodeBase64Url(signature)
         String token = bHeader + "." + bPayload + "." + signature;
         System.out.println(token);
         assertEquals(token, expToken);
     }
-    
 }

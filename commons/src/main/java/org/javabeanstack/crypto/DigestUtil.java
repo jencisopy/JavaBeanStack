@@ -41,6 +41,12 @@ public class DigestUtil {
     public static final String SHA256 = "SHA-256";
     public static final String SHA384 = "SHA-384";
     public static final String SHA512 = "SHA-512";
+
+    public static final String HMACMD5 = "HmacMD5";
+    public static final String HMACSHA1 = "HmacSHA1";
+    public static final String HMACSHA256 = "HmacSHA256";
+    public static final String HMACSHA384 = "HmacSHA384";
+    public static final String HMACSHA512 = "HmacSHA512";
     
     /**
      * Devuelve la firma md5 en formato String hexadecimal
@@ -100,7 +106,7 @@ public class DigestUtil {
 
     /**
      * Firma un mensaje y devuelve la firma en formato string hexadecimal
-     * @param algorithm tipo de algoritmo.(HmacSHA1,HmacSHA256,HmacSHA512,HmacMD5)
+     * @param algorithm tipo de algoritmo.(HmacSHA1,HmacSHA256,HmacSHA384,HmacSHA512,HmacMD5)
      * @param msg mensaje a firmar
      * @param privateKey clave privada
      * @return firma en formato string hexadecimal.
@@ -117,8 +123,26 @@ public class DigestUtil {
     }
     
     /**
+     * Firma un mensaje y devuelve la firma en formato string base 64 url
+     * @param algorithm tipo de algoritmo.(HmacSHA1,HmacSHA256, HmacSHA384, HmacSHA512,HmacMD5)
+     * @param msg mensaje a firmar
+     * @param privateKey clave privada
+     * @return firma en formato string base 64 url.
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException
+     * @throws InvalidKeyException 
+     */
+    public static String digestHmacToBase64Url(String algorithm, String msg, byte[] privateKey) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
+        Mac mac = Mac.getInstance(algorithm);
+        SecretKeySpec key = new SecretKeySpec(privateKey, algorithm);
+        mac.init(key);
+        byte[] macBytes = mac.doFinal(msg.getBytes("UTF-8"));
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(macBytes);
+    }
+
+    /**
      * Firma un mensaje y devuelve la firma en formato string base 64
-     * @param algorithm tipo de algoritmo.(HmacSHA1,HmacSHA256,HmacSHA512,HmacMD5)
+     * @param algorithm tipo de algoritmo.(HmacSHA1,HmacSHA256,HmacSHA384, HmacSHA512,HmacMD5)
      * @param msg mensaje a firmar
      * @param privateKey clave privada
      * @return firma en formato string base 64.
@@ -126,22 +150,53 @@ public class DigestUtil {
      * @throws UnsupportedEncodingException
      * @throws InvalidKeyException 
      */
-    
     public static String digestHmacToBase64(String algorithm, String msg, byte[] privateKey) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
         Mac mac = Mac.getInstance(algorithm);
         SecretKeySpec key = new SecretKeySpec(privateKey, algorithm);
         mac.init(key);
         byte[] macBytes = mac.doFinal(msg.getBytes("UTF-8"));
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(macBytes);
+        return Base64.getEncoder().encodeToString(macBytes);
     }
+
+
+    /**
+     * Devuelve la firma md5 en formato String hexadecimal
+     * @param msg mensaje
+     * @param key clave privada
+     * @return firma en formato String hexadecimal
+     */
+    public static String hmacMD5(String msg, String key) {
+        try {
+            return digestHmacToHex("HmacMD5", msg, key.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
+    }
+
     
+    /**
+     * Devuelve la firma sha1 en formato String hexadecimal
+     * @param msg mensaje
+     * @param key clave privada
+     * @return firma en formato String hexadecimal
+     */
+    public static String hmacSHA1(String msg, String key) {
+        try {
+            return digestHmacToHex("HmacSHA1", msg, key.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
+    }
+
     /**
      * Devuelve la firma sha1 en formato String base 64
      * @param msg mensaje
      * @param key clave privada
      * @return firma en formato String base 64
      */
-    public static String hmacSHA1(String msg, String key) {
+    public static String hmacSHA1ToBase64(String msg, String key) {
         try {
             return digestHmacToBase64("HmacSHA1", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
@@ -151,15 +206,44 @@ public class DigestUtil {
     }
 
     /**
+     * Devuelve la firma sha256 en formato String hexadecimal
+     * @param msg mensaje
+     * @param key clave privada
+     * @return firma en formato String hexadecimal
+     */
+    public static String hmacSHA256(String msg, String key) {
+        try {
+            return digestHmacToHex("HmacSHA256", msg, key.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
+    }
+
+    /**
      * Devuelve la firma sha256 en formato String base 64
      * @param msg mensaje
      * @param key clave privada
      * @return firma en formato String base 64
      */
-    public static String hmacSHA256(String msg, String key) {
+    public static String hmacSHA256ToBase64(String msg, String key) {
         try {
-           
             return digestHmacToBase64("HmacSHA256", msg, key.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Devuelve la firma sha384 en formato String hexadecimal
+     * @param msg mensaje
+     * @param key clave privada
+     * @return firma en formato String hexadecimal
+     */
+    public static String hmacSHA384(String msg, String key) {
+        try {
+            return digestHmacToHex("HmacSHA384", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
             Logger.getLogger(DigestUtil.class).error(ex.getMessage());
         }
@@ -168,14 +252,13 @@ public class DigestUtil {
 
     
     /**
-     * Devuelve la firma sha256 en formato String base 64
+     * Devuelve la firma sha384 en formato String base 64
      * @param msg mensaje
      * @param key clave privada
      * @return firma en formato String base 64
      */
-    public static String hmacSHA384(String msg, String key) {
+    public static String hmacSHA384ToBase64(String msg, String key) {
         try {
-           
             return digestHmacToBase64("HmacSHA384", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
             Logger.getLogger(DigestUtil.class).error(ex.getMessage());
@@ -183,16 +266,15 @@ public class DigestUtil {
         return null;
     }
     
-    
     /**
-     * Devuelve la firma sha512 en formato String base 64
+     * Devuelve la firma sha512 en formato String hexadecimal
      * @param msg mensaje
      * @param key clave privada
-     * @return firma en formato String base 64
+     * @return firma en formato String hexadecimal
      */
     public static String hmacSHA512(String msg, String key) {
         try {
-            return digestHmacToBase64("HmacSHA512", msg, key.getBytes("UTF-8"));
+            return digestHmacToHex("HmacSHA512", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
             Logger.getLogger(DigestUtil.class).error(ex.getMessage());
         }
@@ -200,18 +282,17 @@ public class DigestUtil {
     }
 
     /**
-     * Devuelve la firma md5 en formato String base 64
+     * Devuelve la firma sha512 en formato String base 64
      * @param msg mensaje
      * @param key clave privada
      * @return firma en formato String base 64
      */
-    public static String hmacMD5(String msg, String key) {
+    public static String hmacSHA512ToBase64(String msg, String key) {
         try {
-            return digestHmacToBase64("HmacMD5", msg, key.getBytes("UTF-8"));
+            return digestHmacToBase64("HmacSHA512", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
             Logger.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
-    
 }
