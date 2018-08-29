@@ -22,7 +22,7 @@
  */
 package org.javabeanstack.security;
 
-import org.javabeanstack.crypto.DigestUtil;
+//import org.javabeanstack.crypto.DigestUtil;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -41,10 +41,10 @@ public class DigestAuthTest {
     @Test
     public void testCheck() {
         System.out.println("check");
-        DigestAuth instance = new DigestAuth();
+       // DigestAuth instance = new DigestAuth();
         boolean expResult = false;
-        boolean result = instance.check();
-        assertEquals(expResult, result);
+        //boolean result = instance.check();
+        //assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
@@ -54,20 +54,20 @@ public class DigestAuthTest {
      */
     @Test
     public void testCheckMD5() {
-        System.out.println("checkMD5");
-        String header = "username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/all\", qop=auth-int, nc=, cnonce=\"\", response=\"b81f6922b4282bbe24620a4800cb3f08\", opaque=\"\"";
+        //System.out.println("checkMD5");
+        String header = "username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", qop=auth,"
+                + " nc=, cnonce=\"\","
+                + " response=\"959346459acf46fe3671a60a297e5e35\", opaque=\"\"";
         DigestAuth instance = new DigestAuth(header);
-        String expResult = header.split(",")[7].split("=")[1]; //guarda el response esperado
-        //String result = ;
-         //HA1=MD5(username:realm:password) md5 HA2=MD5(METHOD:URI)
-        String ha1 = DigestUtil.md5(instance.getUsername() + ":" + instance.getRealm() + ":password");
-        String ha2 = DigestUtil.md5(instance.getMethod()+":"+instance.getUri());
-        String result = DigestUtil.md5(ha1 + ":" + instance.getNonce() + ":" + instance.getNonceCount() + ":" +
-                instance.getCnonce() + ":" + instance.getQop() + ":"+ha2);
+        String[] partHeader = header.split(",");
+        String expResult = partHeader[7].split("=",2)[1].replace("\"", "");
+        //guarda el response esperado
+        String result = instance.getResponse();
+        
         System.out.println(expResult);
         System.out.println(result);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
+       
     }
     /**
      * Test of checkMD5_Sess method, of class DigestAuth.
@@ -75,10 +75,10 @@ public class DigestAuthTest {
     @Test
     public void testCheckMD5_Sess() {
         System.out.println("checkMD5_Sess");
-        DigestAuth instance = new DigestAuth();
+        //DigestAuth instance = new DigestAuth();
         boolean expResult = false;
-        boolean result = instance.checkMD5_Sess();
-        assertEquals(expResult, result);
+        //boolean result = instance.checkMD5_Sess();
+        //assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
