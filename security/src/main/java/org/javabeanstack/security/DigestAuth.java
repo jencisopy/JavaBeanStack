@@ -49,14 +49,14 @@ public class DigestAuth {
         // y luego se quita el las comillas dobles de cada valor con replace
         String[] pHeader = header.split(",");
    
-        this.username = pHeader[0].split("=", 2)[1].replace("\"", "");
-        this.realm = pHeader[1].split("=", 2)[1].replace("\"", "");
-        this.nonce = pHeader[2].split("=", 2)[1].replace("\"", "");       
-        this.cnonce = pHeader[6].split("=", 2)[1].replace("\"", "");    
+        this.username = pHeader[0].split("=", 2)[1];
+        this.realm = pHeader[1].split("=", 2)[1];
+        this.nonce = pHeader[2].split("=", 2)[1];       
+        this.cnonce = pHeader[6].split("=", 2)[1];    
         //el nonceCount no se quita la comilla porque no posee ninguna al ser entero
         this.nonceCount = pHeader[5].split("=", 2)[1]; 
-        this.uri = pHeader[3].split("=", 2)[1].replace("\"", "");
-        this.opaque = pHeader[8].split("=", 2)[1].replace("\"", "");
+        this.uri = pHeader[3].split("=", 2)[1];
+        this.opaque = pHeader[8].split("=", 2)[1];
 
         //HA1=MD5(username:realm:password) md5 HA2=MD5(METHOD:URI)
         String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":password");

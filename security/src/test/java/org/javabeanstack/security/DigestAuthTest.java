@@ -58,6 +58,7 @@ public class DigestAuthTest {
         String header = "username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", qop=auth,"
                 + " nc=, cnonce=\"\","
                 + " response=\"959346459acf46fe3671a60a297e5e35\", opaque=\"\"";
+        header = header.replace("\"", "");
         DigestAuth instance = new DigestAuth(header);
         String[] partHeader = header.split(",");
         String expResult = partHeader[7].split("=",2)[1].replace("\"", "");
