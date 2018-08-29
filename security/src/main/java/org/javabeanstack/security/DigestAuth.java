@@ -37,12 +37,44 @@ public class DigestAuth {
     private String qop = "auth";
     private String opaque = "";
     private String password = "";
-    
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String[] getpHeader() {
+        return pHeader;
+    }
+
+    public void setpHeader(String[] pHeader) {
+        this.pHeader = pHeader;
+    }
+
+    public DigestAuth(String[] pHeader) {
+        this.pHeader = pHeader;
+    }
+    private String[] pHeader;
     public DigestAuth() {
     }
     
     public DigestAuth(String header) {
         //Procesar header y asignar en los atributos.
+        
+        //Corta la mitad en vectores con una ","
+        this.pHeader = header.split(",");
+        //Obtiene los valores del vector cortando la mitad en el "="
+        this.username = this.pHeader[0].split("=")[1];
+        this.realm = this.pHeader[1].split("=")[1];
+        this.nonce = this.pHeader[2].split("=")[1];
+        this.uri= this.pHeader[3].split("=")[1];
+        this.nonceCount = this.pHeader[5].split("=")[1];
+        this.cnonce = this.pHeader[6].split("=")[1];
+        this.opaque= this.pHeader[8].split("=")[1];
+        
     }
 
     public boolean check(){

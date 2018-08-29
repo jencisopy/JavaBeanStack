@@ -22,6 +22,7 @@
  */
 package org.javabeanstack.security;
 
+import org.javabeanstack.crypto.DigestUtil;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -54,15 +55,20 @@ public class DigestAuthTest {
     @Test
     public void testCheckMD5() {
         System.out.println("checkMD5");
-        String header = "username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/all\", qop=auth-int, nc=, cnonce=\"\", response=\"0b81376cdc50c54e3240db9bd9b20f79\", opaque=\"\"";
+        String header = "username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/all\", qop=auth-int, nc=, cnonce=\"\", response=\"b81f6922b4282bbe24620a4800cb3f08\", opaque=\"\"";
         DigestAuth instance = new DigestAuth(header);
-        boolean expResult = false;
-        boolean result = instance.checkMD5();
+        String expResult = header.split(",")[7].split("=")[1]; //guarda el response esperado
+        //String result = ;
+         //HA1=MD5(username:realm:password) md5 HA2=MD5(METHOD:URI)
+        String ha1 = DigestUtil.md5(instance.getUsername() + ":" + instance.getRealm() + ":password");
+        String ha2 = DigestUtil.md5(instance.getMethod()+":"+instance.getUri());
+        String result = DigestUtil.md5(ha1 + ":" + instance.getNonce() + ":" + instance.getNonceCount() + ":" +
+                instance.getCnonce() + ":" + instance.getQop() + ":"+ha2);
+        System.out.println(expResult);
+        System.out.println(result);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
-
     /**
      * Test of checkMD5_Sess method, of class DigestAuth.
      */
