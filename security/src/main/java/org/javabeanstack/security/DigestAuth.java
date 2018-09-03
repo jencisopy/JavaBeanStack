@@ -22,7 +22,6 @@
  */
 package org.javabeanstack.security;
 
-import java.util.Arrays;
 import java.util.Base64;
 import org.javabeanstack.crypto.DigestUtil;
 import static org.javabeanstack.util.Strings.*;
@@ -69,8 +68,9 @@ public class DigestAuth {
             this.username = getPropertyValue("username");
         } else if (type.equalsIgnoreCase("Basic")) {
             //Implementar
-            this.response= Base64.getDecoder().decode(header).toString();
-            
+            this.response = new String(Base64.getDecoder().decode(this.header));
+            this.username = "";
+            this.password = "";
         }
     }
 
