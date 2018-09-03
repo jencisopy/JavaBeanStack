@@ -68,7 +68,15 @@ public class DigestAuthTest {
         expected = "";
         assertEquals(expected, instance.getOpaque());
     }
+    @Test
+    public void testProperties_aux() {
+        
+        String header = "Basic YWRtaW46cGFzc3dvcmQ=";
+        DigestAuth instance = new DigestAuth(header);
 
+        String expected = "admin:password";
+        assertEquals(expected, instance.getResponse());
+    }
     /**
      * Test of check method, of class DigestAuth.
      */
@@ -77,13 +85,15 @@ public class DigestAuthTest {
         System.out.println("check");
         
         // Basic 
-        String header = "basic xxxxxxxxxxxxxxxxxxxxxxxxx";
+        String header = "Basic YWRtaW46cGFzc3dvcmQ=";
         DigestAuth instance = new DigestAuth(header);
         
-        instance.setUsername("usuario");
+        instance.setUsername("admin");
         instance.setPassword("password");
         boolean expResult = true;
         boolean result = instance.check();
+        /*String response = instance.getResponse();
+        System.out.print(response);*/
         assertEquals(expResult, result);
         
         // MD5

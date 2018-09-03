@@ -22,6 +22,8 @@
  */
 package org.javabeanstack.security;
 
+import java.util.Arrays;
+import java.util.Base64;
 import org.javabeanstack.crypto.DigestUtil;
 import static org.javabeanstack.util.Strings.*;
 
@@ -65,8 +67,10 @@ public class DigestAuth {
             this.response = getPropertyValue("response");
             this.uri = getPropertyValue("uri");
             this.username = getPropertyValue("username");
-        } else if (type.equalsIgnoreCase("basic")) {
+        } else if (type.equalsIgnoreCase("Basic")) {
             //Implementar
+            this.response= Base64.getDecoder().decode(header).toString();
+            
         }
     }
 
@@ -97,7 +101,14 @@ public class DigestAuth {
 
     public boolean checkBasic() {
         // Implementar
-        return true;
+        //String result = Base64.getEncoder().encode(this.username.getBytes()+":".getBytes()+this.password.getBytes());
+        //byte[] bPassword = Base64.getEncoder().encode(this.password.getBytes());
+        //String result = Arrays.toString(bUser) + Arrays.toString(Base64.getEncoder().encode(":".getBytes())) + Arrays.toString(bPassword);
+               // +":"+this.password).getBytes()));
+        //String user = "password";
+        //return user.equals(this.password);
+        String result = this.username +":"+ this.password;
+        return this.response.equals(result);
     }
 
     public boolean checkMD5() {
