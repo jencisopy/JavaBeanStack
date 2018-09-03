@@ -62,7 +62,6 @@ public class DigestAuth {
        String[] pHeader = header.split(",");
 
         //Ordenar el header 
-       @SuppressWarnings("UseOfObsoleteCollectionType")
        ArrayList<String> arrayHeader = new ArrayList<>();
        arrayHeader.addAll(Arrays.asList(pHeader));
        Collections.sort(arrayHeader);
