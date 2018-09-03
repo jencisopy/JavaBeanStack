@@ -48,7 +48,7 @@ public class DigestAuth {
 
     
 
-    public DigestAuth(String header) {
+    public DigestAuth(String header, String algoritmo) {
         //Procesar header y asignar en los atributos.
         
         //Corta la mitad en vectores con una ",". Luego de la mitad se corta la mitad de = con split 
@@ -61,19 +61,29 @@ public class DigestAuth {
        ArrayList<String> arrayHeader = new ArrayList<>();
        arrayHeader.addAll(Arrays.asList(pHeader));
        Collections.sort(arrayHeader);
+       
+       
       
-       //Guarda los valores de cada uno
-       
-       this.cnonce = arrayHeader.get(0).split("=",2)[1];
-       this.nonceCount = arrayHeader.get(1).split("=",2)[1];
-       this.nonce = arrayHeader.get(2).split("=",2)[1];
-       this.opaque = arrayHeader.get(3).split("=",2)[1];
-       this.qop = arrayHeader.get(4).split("=",2)[1];
-       this.realm = arrayHeader.get(5).split("=",2)[1];
-       this.response = arrayHeader.get(6).split("=",2)[1];
-       this.uri = arrayHeader.get(7).split("=",2)[1];
-       this.username = arrayHeader.get(8).split("=",2)[1];
-       
+       //Guarda los valores de cada uno en MD5 auth
+        if (algoritmo.equals("MD5")) {
+            this.nonce = arrayHeader.get(0).split("=",2)[1];
+            this.opaque = arrayHeader.get(1).split("=",2)[1];
+            this.realm = arrayHeader.get(2).split("=",2)[1];
+            this.response = arrayHeader.get(3).split("=",2)[1];
+            this.uri = arrayHeader.get(4).split("=",2)[1];
+            this.username = arrayHeader.get(5).split("=",2)[1];
+        }
+        else{
+            this.cnonce = arrayHeader.get(0).split("=",2)[1];
+            this.nonceCount = arrayHeader.get(1).split("=",2)[1];
+            this.nonce = arrayHeader.get(2).split("=",2)[1];
+            this.opaque = arrayHeader.get(3).split("=",2)[1];
+            this.qop = arrayHeader.get(4).split("=",2)[1];
+            this.realm = arrayHeader.get(5).split("=",2)[1];
+            this.response = arrayHeader.get(6).split("=",2)[1];
+            this.uri = arrayHeader.get(7).split("=",2)[1];
+            this.username = arrayHeader.get(8).split("=",2)[1];
+        }
     }
 
     public boolean check() {
@@ -84,7 +94,7 @@ public class DigestAuth {
         String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":password");
         String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
         String result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + ha2);
-        return result.equals(this.response);
+        return this.response.equals(result);
     }
     public boolean checkMD5_auth(){
         //Algoritmo MD5 + qop = auth
@@ -95,18 +105,13 @@ public class DigestAuth {
         return result.equals(this.response);
     }
      public boolean checkMD5_sess_auth(){
+         
         //Algoritmo MD5-sess + qop = auth
-        String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":password");
+        String ha1 = DigestUtil.md5(DigestUtil.md5(this.username + ":" + this.realm + ":password")+":" + this.nonce + ":" + this.cnonce);
         String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
         String result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
          + this.cnonce + ":" + this.qop + ":" + ha2);
-        return result.equals(this.response);
-    }
-
-    public boolean checkMD5_Sess() {
-        //Verificar los siguientes casos
-
-        return true;
+        return result.equals(this.response);   
     }
 
     public String getUsername() {
