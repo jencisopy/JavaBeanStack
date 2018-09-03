@@ -39,7 +39,7 @@ public class DigestAuthTest {
     public void testProperties(){
        String header = "username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", "
                 + "qop=auth, nc=, cnonce=\"\", response=\"e2d568923b2cf97cc782e66f0049af6f\", opaque=\"\"";
-        DigestAuth instance = new DigestAuth(header,"");
+        DigestAuth instance = new DigestAuth(header);
         
         String expected = "admin";
         assertEquals(expected, instance.getUsername());
@@ -66,8 +66,7 @@ public class DigestAuthTest {
         assertEquals(expected, instance.getResponse());
         
         expected = "";
-        assertEquals(expected, instance.getOpaque());
-        
+        assertEquals(expected, instance.getOpaque());   
     }
     
     /**
@@ -83,8 +82,6 @@ public class DigestAuthTest {
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
-
-    
             
     /**
      * Test of checkMD5 method, of class DigestAuth.
@@ -93,7 +90,7 @@ public class DigestAuthTest {
     public void testCheckMD5() {
        String header = "username=\"admin\", realm=\"ldap\", nonce=\"\","
                + " uri=\"/rest/v2/name/eesti\", response=\"f09cecf114d72dcb1ba99e02ac448687\", opaque=\"\"";
-        DigestAuth instance = new DigestAuth(header, "MD5");
+        DigestAuth instance = new DigestAuth(header);
         boolean expResult = true;
         boolean result = instance.checkMD5();
         String response = instance.getResponse();
@@ -107,7 +104,7 @@ public class DigestAuthTest {
         String header = "username=\"admin\", realm=\"ldap\", uri=\"/rest/v2/name/eesti\", nonce=\"\",  qop=auth,"
                 + " nc=, cnonce=\"\","
                 + " response=\"959346459acf46fe3671a60a297e5e35\", opaque=\"\"";
-        DigestAuth instance = new DigestAuth(header, "");
+        DigestAuth instance = new DigestAuth(header);
         boolean expResult = true;
         boolean result = instance.checkMD5_auth();
         assertEquals(expResult, result);
@@ -117,7 +114,7 @@ public class DigestAuthTest {
         //System.out.println("checkMD5");
         String header = "username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", "
                 + "qop=auth, nc=, cnonce=\"\", response=\"e2d568923b2cf97cc782e66f0049af6f\", opaque=\"\"";
-        DigestAuth instance = new DigestAuth(header,"");
+        DigestAuth instance = new DigestAuth(header);
         boolean expResult = true;
         boolean result = instance.checkMD5_sess_auth();
         assertEquals(expResult, result);

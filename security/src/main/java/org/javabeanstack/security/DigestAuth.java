@@ -23,9 +23,6 @@
 package org.javabeanstack.security;
 
 import org.javabeanstack.crypto.DigestUtil;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  *
@@ -34,6 +31,8 @@ import java.util.Collections;
 public class DigestAuth {
 
     private String header;
+
+    
     private String username = "";
     private String realm = "";
     private String nonce = "";
@@ -46,15 +45,12 @@ public class DigestAuth {
     private String password = "";
     private String response = "";
 
-    public DigestAuth(String header, String algoritmo) {
+    public DigestAuth(String header) {
         //Procesar header y asignar en los atributos.
-
-        //Corta la mitad en vectores con una ",". Luego de la mitad se corta la mitad de = con split 
         // y luego se quita el las comillas dobles de cada valor con replace
         header = header.replace("\"", "");
         header = header.replace(" ", "");
         this.header = header;
-
         //Guarda los valores de cada uno en MD5 auth
         this.cnonce = getPropertyValue("cnonce");
         this.nonceCount = getPropertyValue("nc");
@@ -67,16 +63,18 @@ public class DigestAuth {
         this.username = getPropertyValue("username");
 
     }
-
+//arrayHeader.get(0).split("=",2)[1];
     private String getPropertyValue(String property) {
+         //Corta la mitad en vectores con una ",". Luego de la mitad se corta la mitad de = con split 
         String[] pHeader = header.split(",");
         //Ordenar el header 
-        ArrayList<String> arrayHeader = new ArrayList<>();
-        arrayHeader.addAll(Arrays.asList(pHeader));
-        Collections.sort(arrayHeader);
         String result="";
         for (String pHeader1 : pHeader) {
             //Preguntar si la propiedad = property
+            if (pHeader1.split("=",2)[0].equals(property)){
+                result = pHeader1.split("=",2)[1];
+            }
+            
         }
         return result;
     }
@@ -198,5 +196,12 @@ public class DigestAuth {
 
     public void setResponse(String response) {
         this.response = response;
+    }
+    public String getHeader() {
+        return header;
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
     }
 }
