@@ -35,6 +35,22 @@ public class DigestAuthTest {
     public DigestAuthTest() {
     }
 
+    @Test
+    public void testProperties(){
+       String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"nonce\", cnonce=\"cnonce\""
+               + "uri=\"/rest/v2/name/eesti\", opaque=\"\" response=\"response\"";
+        DigestAuth instance = new DigestAuth(header);
+        String expected = "cnonce";
+        assertEquals(expected, instance.getCnonce());
+        
+        expected = "nonce";
+        assertEquals(expected, instance.getNonce());
+        
+        expected = "response";
+        assertEquals(expected, instance.getResponse());
+        
+    }
+    
     /**
      * Test of check method, of class DigestAuth.
      */
@@ -49,6 +65,8 @@ public class DigestAuthTest {
         fail("The test case is a prototype.");
     }
 
+    
+            
     /**
      * Test of checkMD5 method, of class DigestAuth.
      */

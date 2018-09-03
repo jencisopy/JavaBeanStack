@@ -23,13 +23,9 @@
 package org.javabeanstack.security;
 
 import org.javabeanstack.crypto.DigestUtil;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Vector;
 
 /**
  *
@@ -48,7 +44,7 @@ public class DigestAuth {
     private String qop = "auth";
     private String opaque = "";
     private String password = "";
-    private String response_esp = "";
+    private String response = "";
 
     
 
@@ -74,7 +70,7 @@ public class DigestAuth {
        this.opaque = arrayHeader.get(3).split("=",2)[1];
        this.qop = arrayHeader.get(4).split("=",2)[1];
        this.realm = arrayHeader.get(5).split("=",2)[1];
-       this.response_esp = arrayHeader.get(6).split("=",2)[1];
+       this.response = arrayHeader.get(6).split("=",2)[1];
        this.uri = arrayHeader.get(7).split("=",2)[1];
        this.username = arrayHeader.get(8).split("=",2)[1];
        
@@ -84,26 +80,27 @@ public class DigestAuth {
         return true;
     }
     public boolean checkMD5(){
+        //Algoritmo MD5 
         String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":password");
         String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
-        String response = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + ha2);
-        return response.equals(response_esp);
+        String result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + ha2);
+        return result.equals(this.response);
     }
     public boolean checkMD5_auth(){
-        //Algoritmo MD5
+        //Algoritmo MD5 + qop = auth
         String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":password");
         String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
-        String response = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
+        String result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
          + this.cnonce + ":" + this.qop + ":" + ha2);
-        return response.equals(response_esp);
+        return result.equals(this.response);
     }
      public boolean checkMD5_sess_auth(){
-        //Algoritmo MD5-sess
+        //Algoritmo MD5-sess + qop = auth
         String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":password");
         String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
-        String response = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
+        String result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
          + this.cnonce + ":" + this.qop + ":" + ha2);
-        return response.equals(response_esp);
+        return result.equals(this.response);
     }
 
     public boolean checkMD5_Sess() {
@@ -193,11 +190,11 @@ public class DigestAuth {
     public void setPassword(String password) {
         this.password = password;
     }
-    public String getResponse_esp() {
-        return response_esp;
+    public String getResponse() {
+        return response;
     }
 
-    public void setResponse_esp(String response_esp) {
-        this.response_esp = response_esp;
+    public void setResponse(String response) {
+        this.response = response;
     }
 }
