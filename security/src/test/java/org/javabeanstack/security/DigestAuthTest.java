@@ -54,33 +54,39 @@ public class DigestAuthTest {
      */
     @Test
     public void testCheckMD5() {
+       String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", "
+               + "uri=\"/rest/v2/name/eesti\", response=\"f09cecf114d72dcb1ba99e02ac448687\","
+               + "opaque=\"\"";
+        DigestAuth instance = new DigestAuth(header);
+        boolean expResult = true;
+        boolean result = instance.checkMD5();
+        assertEquals(expResult, result);
+    }
+    
+    @Test
+    public void testCheckMD5_auth() {
         //System.out.println("checkMD5");
-        String header = "username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", qop=auth,"
+        String header = "username=\"admin\", realm=\"ldap\", uri=\"/rest/v2/name/eesti\", nonce=\"\",  qop=auth,"
                 + " nc=, cnonce=\"\","
                 + " response=\"959346459acf46fe3671a60a297e5e35\", opaque=\"\"";
-        header = header.replace("\"", "");
         DigestAuth instance = new DigestAuth(header);
-        String[] partHeader = header.split(",");
-        String expResult = partHeader[7].split("=",2)[1].replace("\"", "");
-        //guarda el response esperado
-        String result = instance.getResponse();
-        
-        System.out.println(expResult);
-        System.out.println(result);
+        boolean expResult = true;
+        boolean result = instance.checkMD5_auth();
         assertEquals(expResult, result);
-       
+    }
+    @Test
+    public void testCheckMD5_sess_auth() {
+        //System.out.println("checkMD5");
+        String header = "username=\"admin\", realm=\"ldap\", uri=\"/rest/v2/name/eesti\", nonce=\"\",  qop=auth,"
+                + " nc=, cnonce=\"\","
+                + " response=\"959346459acf46fe3671a60a297e5e35\", opaque=\"\"";
+        DigestAuth instance = new DigestAuth(header);
+        boolean expResult = true;
+        boolean result = instance.checkMD5_sess_auth();
+        assertEquals(expResult, result);
     }
     /**
      * Test of checkMD5_Sess method, of class DigestAuth.
      */
-    @Test
-    public void testCheckMD5_Sess() {
-        System.out.println("checkMD5_Sess");
-        //DigestAuth instance = new DigestAuth();
-        boolean expResult = false;
-        //boolean result = instance.checkMD5_Sess();
-        //assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+    
 }
