@@ -23,6 +23,7 @@
 package org.javabeanstack.security;
 
 import org.javabeanstack.crypto.DigestUtil;
+import static org.javabeanstack.util.Strings.*;
 
 /**
  *
@@ -31,8 +32,6 @@ import org.javabeanstack.crypto.DigestUtil;
 public class DigestAuth {
 
     private String header;
-
-    
     private String username = "";
     private String realm = "";
     private String nonce = "";
@@ -44,69 +43,92 @@ public class DigestAuth {
     private String opaque = "";
     private String password = "";
     private String response = "";
+    private String type = "";
 
     public DigestAuth(String header) {
         //Procesar header y asignar en los atributos.
         // y luego se quita el las comillas dobles de cada valor con replace
+        type = left(header, header.indexOf(" "));
+        header = substr(header, header.indexOf(" "));
         header = header.replace("\"", "");
         header = header.replace(" ", "");
         this.header = header;
-        //Guarda los valores de cada uno en MD5 auth
-        this.cnonce = getPropertyValue("cnonce");
-        this.nonceCount = getPropertyValue("nc");
-        this.nonce = getPropertyValue("nonce");
-        this.opaque = getPropertyValue("opaque");
-        this.qop = getPropertyValue("qop");
-        this.realm = getPropertyValue("realm");
-        this.response = getPropertyValue("response");
-        this.uri = getPropertyValue("uri");
-        this.username = getPropertyValue("username");
 
+        if (type.equalsIgnoreCase("Digest")) {
+            //Guarda los valores de cada uno en MD5 auth
+            this.cnonce = getPropertyValue("cnonce");
+            this.nonceCount = getPropertyValue("nc");
+            this.nonce = getPropertyValue("nonce");
+            this.opaque = getPropertyValue("opaque");
+            this.qop = getPropertyValue("qop");
+            this.realm = getPropertyValue("realm");
+            this.response = getPropertyValue("response");
+            this.uri = getPropertyValue("uri");
+            this.username = getPropertyValue("username");
+        } else if (type.equalsIgnoreCase("basic")) {
+            //Implementar
+        }
     }
-//arrayHeader.get(0).split("=",2)[1];
+
     private String getPropertyValue(String property) {
-         //Corta la mitad en vectores con una ",". Luego de la mitad se corta la mitad de = con split 
+        //Corta la mitad en vectores con una ",". Luego de la mitad se corta la mitad de = con split 
         String[] pHeader = header.split(",");
         //Ordenar el header 
-        String result="";
+        String result = "";
         for (String pHeader1 : pHeader) {
             //Preguntar si la propiedad = property
-            if (pHeader1.split("=",2)[0].equals(property)){
-                result = pHeader1.split("=",2)[1];
+            if (pHeader1.split("=", 2)[0].equals(property)) {
+                result = pHeader1.split("=", 2)[1];
+                break;
             }
-            
         }
         return result;
     }
 
     public boolean check() {
+        if (checkBasic()){
+            return true;
+        }
+        if (checkMD5()) {
+            return true;
+        }
+        return checkMD5_Sess();
+    }
+
+    public boolean checkBasic() {
+        // Implementar
         return true;
     }
 
     public boolean checkMD5() {
+        String result = "";
         //Algoritmo MD5 
-        String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":password");
-        String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
-        String result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + ha2);
+        if (qop.isEmpty()) {
+            String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword());
+            String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + ha2);
+        } else if (qop.equals("auth")) {
+            String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword());
+            String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
+                    + this.cnonce + ":" + this.qop + ":" + ha2);
+        } else if (qop.equals("auth-int")) {
+            //implementar
+        }
         return this.response.equals(result);
     }
 
-    public boolean checkMD5_auth() {
-        //Algoritmo MD5 + qop = auth
-        String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":password");
-        String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
-        String result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-                + this.cnonce + ":" + this.qop + ":" + ha2);
-        return result.equals(this.response);
-    }
-
-    public boolean checkMD5_sess_auth() {
-
-        //Algoritmo MD5-sess + qop = auth
-        String ha1 = DigestUtil.md5(DigestUtil.md5(this.username + ":" + this.realm + ":password") + ":" + this.nonce + ":" + this.cnonce);
-        String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
-        String result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-                + this.cnonce + ":" + this.qop + ":" + ha2);
+    public boolean checkMD5_Sess() {
+        String result = "";
+        //Algoritmo MD5-sess 
+        if (qop.equals("auth")) {
+            String ha1 = DigestUtil.md5(DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword()) + ":" + this.nonce + ":" + this.cnonce);
+            String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
+                    + this.cnonce + ":" + this.qop + ":" + ha2);
+        } else if (qop.equals("auth-int")) {
+            //implementar
+        }
         return result.equals(this.response);
     }
 
@@ -197,11 +219,20 @@ public class DigestAuth {
     public void setResponse(String response) {
         this.response = response;
     }
+
     public String getHeader() {
         return header;
     }
 
     public void setHeader(String header) {
         this.header = header;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
