@@ -66,17 +66,10 @@ public class DigestAuthTest {
         assertEquals(expected, instance.getResponse());
 
         expected = "";
-        assertEquals(expected, instance.getOpaque());
+        assertEquals(expected, instance.getOpaque());         
     }
-    @Test
-    public void testProperties_aux() {
-        
-        String header = "Basic YWRtaW46cGFzc3dvcmQ=";
-        DigestAuth instance = new DigestAuth(header);
-
-        String expected = "admin:password";
-        assertEquals(expected, instance.getResponse());
-    }
+   
+    
     /**
      * Test of check method, of class DigestAuth.
      */
@@ -112,6 +105,25 @@ public class DigestAuthTest {
         instance.setPassword("password");
         result = instance.check();
         assertEquals(expResult, result);
+        
+        //MD5 + auth-int
+        header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", qop=auth-int, "
+                + "nc=, cnonce=\"\","
+                + " response=\"dc437c5059dcc8231154e291101c9e3a\", opaque=\"\"";
+                                
+        instance = new DigestAuth(header);
+        instance.setPassword("password");
+        result = instance.check();
+        assertEquals(expResult, result);
+        
+        //MD5_sess
+        header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", "
+                 + "nc=, cnonce=\"\", response=\"862438ddcba07ae27f9db57d02ee4af4\", opaque=\"\"";
+        instance = new DigestAuth(header);
+        instance.setPassword("password");
+        result = instance.check();
+        assertEquals(expResult, result);
+        
 
         //MD5_sess + auth
         header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", "

@@ -26,12 +26,13 @@ import java.util.Base64;
 import org.javabeanstack.crypto.DigestUtil;
 import static org.javabeanstack.util.Strings.*;
 
+
 /**
  *
  * @author Jorge Enciso
  */
 public class DigestAuth {
-
+    
     private String header;
     private String username = "";
     private String realm = "";
@@ -45,7 +46,8 @@ public class DigestAuth {
     private String password = "";
     private String response = "";
     private String type = "";
-
+    private String decode = "";
+    
     public DigestAuth(String header) {
         //Procesar header y asignar en los atributos.
         // y luego se quita el las comillas dobles de cada valor con replace
@@ -69,8 +71,8 @@ public class DigestAuth {
         } else if (type.equalsIgnoreCase("Basic")) {
             //Implementar
             this.response = new String(Base64.getDecoder().decode(this.header));
-            this.username = "";
-            this.password = "";
+            this.username = this.response.split(":")[0];
+            this.password = this.response.split(":")[1];
         }
     }
 
@@ -101,43 +103,47 @@ public class DigestAuth {
 
     public boolean checkBasic() {
         // Implementar
-        //String result = Base64.getEncoder().encode(this.username.getBytes()+":".getBytes()+this.password.getBytes());
-        //byte[] bPassword = Base64.getEncoder().encode(this.password.getBytes());
-        //String result = Arrays.toString(bUser) + Arrays.toString(Base64.getEncoder().encode(":".getBytes())) + Arrays.toString(bPassword);
-               // +":"+this.password).getBytes()));
-        //String user = "password";
-        //return user.equals(this.password);
-        String result = this.username +":"+ this.password;
-        return this.response.equals(result);
+        
+       String result = this.username +":"+ this.password;
+       return this.response.equals(result);
     }
 
     public boolean checkMD5() {
-        String result = "";
+        String result = "", ha1="", ha2="";
         //Algoritmo MD5 
+        ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword());
         if (qop.isEmpty()) {
-            String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword());
-            String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + ha2);
         } else if (qop.equals("auth")) {
-            String ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword());
-            String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
                     + this.cnonce + ":" + this.qop + ":" + ha2);
         } else if (qop.equals("auth-int")) {
+            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
+                    + this.cnonce + ":" + this.qop + ":" + ha2);
             //implementar
         }
         return this.response.equals(result);
     }
 
     public boolean checkMD5_Sess() {
-        String result = "";
+        String result = "", ha1="", ha2="";
         //Algoritmo MD5-sess 
+        ha1 = DigestUtil.md5(DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword()) + ":" + this.nonce + ":" + this.cnonce);
+        if (qop.isEmpty()) {
+            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            result = DigestUtil.md5(ha1+":"+this.nonce+":"+ha2);
+        }
         if (qop.equals("auth")) {
-            String ha1 = DigestUtil.md5(DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword()) + ":" + this.nonce + ":" + this.cnonce);
-            String ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-                    + this.cnonce + ":" + this.qop + ":" + ha2);
+             + this.cnonce + ":" + this.qop + ":" + ha2);
         } else if (qop.equals("auth-int")) {
+            /*ha2 = DigestUtil.md5(this.method + ":" + this.uri+":"+"");
+             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
+             + this.cnonce + ":" + this.qop + ":" + ha2);*/
             //implementar
         }
         return result.equals(this.response);
@@ -246,4 +252,5 @@ public class DigestAuth {
     public void setType(String type) {
         this.type = type;
     }
+    
 }

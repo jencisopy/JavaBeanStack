@@ -155,8 +155,8 @@ public class DigestUtilTest {
 
     @Test
     public void testDigestAuth_MD5_sess_auth_int() throws Exception {
-        //https://restcountries.eu/rest/v2/all
-        //https://restcountries.eu/rest/v2/name/eesti
+        
+        
         String nonce = "";
         String cnonce = "";
         String nonceCount = "";//Contador de request en hexadecimal en donde el usuario realiza la petición
