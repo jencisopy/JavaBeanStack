@@ -46,7 +46,7 @@ public class DigestAuth {
     private String password = "";
     private String response = "";
     private String type = "";
-    private String decode = "";
+    private String entityBody = "";
     
     public DigestAuth(String header) {
         //Procesar header y asignar en los atributos.
@@ -69,10 +69,9 @@ public class DigestAuth {
             this.uri = getPropertyValue("uri");
             this.username = getPropertyValue("username");
         } else if (type.equalsIgnoreCase("Basic")) {
-            //Implementar
-            this.response = new String(Base64.getDecoder().decode(this.header));
-            this.username = this.response.split(":")[0];
-            this.password = this.response.split(":")[1];
+            header = new String(Base64.getDecoder().decode(this.header));
+            this.username = header.split(":")[0];
+            this.password = header.split(":")[1];
         }
     }
 
@@ -112,18 +111,20 @@ public class DigestAuth {
         String result = "", ha1="", ha2="";
         //Algoritmo MD5 
         ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword());
+        ha2 = DigestUtil.md5(this.method + ":" + this.uri);        
         if (qop.isEmpty()) {
-            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + ha2);
         } else if (qop.equals("auth")) {
-            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-                    + this.cnonce + ":" + this.qop + ":" + ha2);
+                                        + this.cnonce + ":" + this.qop + ":" + ha2);
         } else if (qop.equals("auth-int")) {
-            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+            if (qop.equals("auth-int")){
+                if (!isNullorEmpty(entityBody)){
+                    ha2 = DigestUtil.md5(this.method + ":" + this.uri+":"+DigestUtil.md5(entityBody));
+                }
+            }
             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-                    + this.cnonce + ":" + this.qop + ":" + ha2);
-            //implementar
+                                        + this.cnonce + ":" + this.qop + ":" + ha2);
         }
         return this.response.equals(result);
     }
@@ -132,19 +133,18 @@ public class DigestAuth {
         String result = "", ha1="", ha2="";
         //Algoritmo MD5-sess 
         ha1 = DigestUtil.md5(DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword()) + ":" + this.nonce + ":" + this.cnonce);
+        ha2 = DigestUtil.md5(this.method + ":" + this.uri);
         if (qop.isEmpty()) {
-            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
             result = DigestUtil.md5(ha1+":"+this.nonce+":"+ha2);
         }
-        if (qop.equals("auth")) {
-            ha2 = DigestUtil.md5(this.method + ":" + this.uri);
+        else {
+            if (qop.equals("auth-int")){
+                if (!isNullorEmpty(entityBody)){
+                    ha2 = DigestUtil.md5(this.method + ":" + this.uri+":"+DigestUtil.md5(entityBody));
+                }
+            }
             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-             + this.cnonce + ":" + this.qop + ":" + ha2);
-        } else if (qop.equals("auth-int")) {
-            /*ha2 = DigestUtil.md5(this.method + ":" + this.uri+":"+"");
-             result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-             + this.cnonce + ":" + this.qop + ":" + ha2);*/
-            //implementar
+                                                + this.cnonce + ":" + this.qop + ":" + ha2);
         }
         return result.equals(this.response);
     }
