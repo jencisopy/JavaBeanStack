@@ -37,8 +37,8 @@ public class DigestAuthTest {
     @Test
     public void testProperties() {
         
-        String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", "
-                + "qop=auth, nc=, cnonce=\"\", response=\"e2d568923b2cf97cc782e66f0049af6f\", opaque=\"\"";
+        String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"nonceprueba\", uri=\"/rest/v2/name/eesti\", "
+                + "qop=auth, nc=11, cnonce=\"prueba\", response=\"e2d568923b2cf97cc782e66f0049af6f\", opaque=\"\"";
         DigestAuth instance = new DigestAuth(header);
 
         String expected = "admin";
@@ -47,7 +47,7 @@ public class DigestAuthTest {
         expected = "ldap";
         assertEquals(expected, instance.getRealm());
 
-        expected = "";
+        expected = "nonceprueba";
         assertEquals(expected, instance.getNonce());
 
         expected = "/rest/v2/name/eesti";
@@ -56,10 +56,10 @@ public class DigestAuthTest {
         expected = "auth";
         assertEquals(expected, instance.getQop());
 
-        expected = "";
+        expected = "11";
         assertEquals(expected, instance.getNonceCount());
 
-        expected = "";
+        expected = "prueba";
         assertEquals(expected, instance.getCnonce());
 
         expected = "e2d568923b2cf97cc782e66f0049af6f";
