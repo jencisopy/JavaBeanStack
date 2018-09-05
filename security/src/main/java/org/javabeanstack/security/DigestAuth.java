@@ -26,72 +26,40 @@ import java.util.Base64;
 import org.javabeanstack.crypto.DigestUtil;
 import static org.javabeanstack.util.Strings.*;
 
-
 /**
  *
  * @author Jorge Enciso
  */
 public class DigestAuth {
-    
-    private String header;
-    private String username = "";
-    private String realm = "";
-    private String nonce = "";
-    private String cnonce = "";
-    private String nonceCount = ""; //Contador de request en hexadecimal en donde el usuario realiza la petición
-    private String method = "GET";
-    private String uri = "";
-    private String qop = "auth";
-    private String opaque = "";
-    private String password = "";
-    private String response = "";
-    private String type = "";
-    private String entityBody = "";
-    
-    public DigestAuth(String header) {
-        //Procesar header y asignar en los atributos.
-        // y luego se quita el las comillas dobles de cada valor con replace
-        type = left(header, header.indexOf(" "));
-        header = substr(header, header.indexOf(" "));
-        header = header.replace("\"", "");
-        header = header.replace(" ", "");
-        this.header = header;
 
-        if (type.equalsIgnoreCase("Digest")) {
-            //Guarda los valores de cada uno en MD5 auth
-            this.cnonce = getPropertyValue("cnonce");
-            this.nonceCount = getPropertyValue("nc");
-            this.nonce = getPropertyValue("nonce");
-            this.opaque = getPropertyValue("opaque");
-            this.qop = getPropertyValue("qop");
-            this.realm = getPropertyValue("realm");
-            this.response = getPropertyValue("response");
-            this.uri = getPropertyValue("uri");
-            this.username = getPropertyValue("username");
-        } else if (type.equalsIgnoreCase("Basic")) {
-            header = new String(Base64.getDecoder().decode(this.header));
-            this.username = header.split(":")[0];
-            this.password = header.split(":")[1];
-        }
+    private ClientAuth clientAuth;
+    private ServerAuth serverAuth;
+
+    public DigestAuth() {
     }
 
-    private String getPropertyValue(String property) {
-        //Corta la mitad en vectores con una ",". Luego de la mitad se corta la mitad de = con split 
-        String[] pHeader = header.split(",");
-        //Ordenar el header 
-        String result = "";
-        for (String pHeader1 : pHeader) {
-            //Preguntar si la propiedad = property
-            if (pHeader1.split("=", 2)[0].equals(property)) {
-                result = pHeader1.split("=", 2)[1];
-                break;
-            }
-        }
-        return result;
+    public DigestAuth(String method, String msgHeader, String msgBody) {
+        clientAuth = new ClientAuth();
+        clientAuth.setProperties(method, msgHeader, msgBody);
+    }
+
+    public void setRequestAuth(String method, String msgHeader, String msgBody) {
+        clientAuth = new ClientAuth();
+        clientAuth.setProperties(method, msgHeader, msgBody);
+    }
+
+    public void setServerAuth(String type, String username, String password, String realm, String nonce, String opaque) {
+        serverAuth = new ServerAuth();
+        serverAuth.username = username;
+        serverAuth.password = password;
+        serverAuth.realm = realm;
+        serverAuth.nonce = nonce;
+        serverAuth.opaque = opaque;
+        serverAuth.type = type;
     }
 
     public boolean check() {
-        if (checkBasic()){
+        if (checkBasic()) {
             return true;
         }
         if (checkMD5()) {
@@ -101,156 +69,161 @@ public class DigestAuth {
     }
 
     public boolean checkBasic() {
-        // Implementar
-        
-       String result = this.username +":"+ this.password;
-       return this.response.equals(result);
+        if (!clientAuth.username.equals(serverAuth.username)) {
+            return false;
+        }
+        return clientAuth.password.equals(serverAuth.password);
     }
 
     public boolean checkMD5() {
-        String result = "", ha1="", ha2="";
-        //Algoritmo MD5 
-        ha1 = DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword());
-        ha2 = DigestUtil.md5(this.method + ":" + this.uri);        
-        if (qop.isEmpty()) {
-            result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + ha2);
-        } else if (qop.equals("auth")) {
-            result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-                                        + this.cnonce + ":" + this.qop + ":" + ha2);
-        } else if (qop.equals("auth-int")) {
-            if (qop.equals("auth-int")){
-                if (!isNullorEmpty(entityBody)){
-                    ha2 = DigestUtil.md5(this.method + ":" + this.uri+":"+DigestUtil.md5(entityBody));
-                }
-            }
-            result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-                                        + this.cnonce + ":" + this.qop + ":" + ha2);
+        //Check nonce, opaque, realm, type
+        if (!serverAuth.check(clientAuth)) {
+            return false;
         }
-        return this.response.equals(result);
+        String result = "";
+        //Algoritmo MD5 
+        String ha1 = DigestUtil.md5(clientAuth.username + ":" + clientAuth.realm + ":" + serverAuth.password);
+        String ha2 = DigestUtil.md5(clientAuth.method + ":" + clientAuth.uri);
+        String qop = clientAuth.qop;
+        // qop = auth-int solo si el mensaje tiene cuerpo        
+        if (clientAuth.qop.equals("auth-int")) {
+            if (isNullorEmpty(clientAuth.entityBody)) {
+                qop = "auth";
+            }
+        }
+        if (qop.isEmpty()) {
+            result = DigestUtil.md5(ha1 + ":" + clientAuth.nonce + ":" + ha2);
+        } else if (qop.equals("auth")) {
+            result = DigestUtil.md5(ha1 
+                                        + ":" + clientAuth.nonce 
+                                        + ":" + clientAuth.nonceCount 
+                                        + ":" + clientAuth.cnonce 
+                                        + ":" + clientAuth.qop 
+                                        + ":" + ha2);
+        } else if (qop.equals("auth-int")) {
+            ha2 = DigestUtil.md5(clientAuth.method + ":" + clientAuth.uri + ":" + clientAuth.entityBody);
+            result = DigestUtil.md5(ha1 
+                                    + ":" + clientAuth.nonce 
+                                    + ":" + clientAuth.nonceCount 
+                                    + ":" + clientAuth.cnonce 
+                                    + ":" + clientAuth.qop 
+                                    + ":" + ha2);
+        }
+        return clientAuth.response.equals(result);
     }
 
     public boolean checkMD5_Sess() {
-        String result = "", ha1="", ha2="";
-        //Algoritmo MD5-sess 
-        ha1 = DigestUtil.md5(DigestUtil.md5(this.username + ":" + this.realm + ":" + getPassword()) + ":" + this.nonce + ":" + this.cnonce);
-        ha2 = DigestUtil.md5(this.method + ":" + this.uri);
-        if (qop.isEmpty()) {
-            result = DigestUtil.md5(ha1+":"+this.nonce+":"+ha2);
+        //Check nonce, opaque, realm, type
+        if (!serverAuth.check(clientAuth)) {
+            return false;
         }
-        else {
-            if (qop.equals("auth-int")){
-                if (!isNullorEmpty(entityBody)){
-                    ha2 = DigestUtil.md5(this.method + ":" + this.uri+":"+DigestUtil.md5(entityBody));
+        String result = "";
+        //Algoritmo MD5-sess 
+        String ha1 = DigestUtil.md5(DigestUtil.md5(clientAuth.username + ":" + clientAuth.realm + ":" + serverAuth.password) + ":" + clientAuth.nonce + ":" + clientAuth.cnonce);
+        String ha2 = DigestUtil.md5(clientAuth.method + ":" + clientAuth.uri);
+        String qop = clientAuth.qop;
+        // qop = auth-int solo si el mensaje tiene cuerpo
+        if (clientAuth.qop.equals("auth-int")) {
+            if (isNullorEmpty(clientAuth.entityBody)) {
+                qop = "auth";
+            }
+        }
+        if (clientAuth.qop.isEmpty()) {
+            result = DigestUtil.md5(ha1 + ":" + clientAuth.nonce + ":" + ha2);
+        } else {
+            if (qop.equals("auth-int")) {
+                ha2 = DigestUtil.md5(clientAuth.method + ":" + clientAuth.uri + ":" + clientAuth.entityBody);
+            }
+            result = DigestUtil.md5(ha1 + ":"
+                                        + clientAuth.nonce + ":"
+                                        + clientAuth.nonceCount + ":"
+                                        + clientAuth.cnonce + ":"
+                                        + clientAuth.qop + ":" + ha2);
+        }
+        return result.equals(clientAuth.response);
+    }
+
+    class ClientAuth {
+
+        String header;
+        String username = "";
+        String realm = "";
+        String nonce = "";
+        String cnonce = "";
+        String nonceCount = ""; //Contador de request en hexadecimal en donde el usuario realiza la petición
+        String method = "GET";
+        String uri = "";
+        String qop = "auth";
+        String opaque = "";
+        String password = "";
+        String response = "";
+        String type = "";
+        String entityBody = "";
+
+        void setProperties(String method, String msgHeader, String msgBody) {
+            //Procesar header y asignar en los atributos.
+            type = left(msgHeader, msgHeader.indexOf(" "));
+            msgHeader = substr(msgHeader, msgHeader.indexOf(" "));
+            msgHeader = msgHeader.replace("\"", "");
+            msgHeader = msgHeader.replace(" ", "");
+            this.header = msgHeader;
+            this.method = method;
+            this.entityBody = msgBody;
+
+            if (type.equalsIgnoreCase("Digest")) {
+                //Guarda los valores de cada uno en MD5 auth
+                this.cnonce = getPropertyValue("cnonce");
+                this.nonceCount = getPropertyValue("nc");
+                this.nonce = getPropertyValue("nonce");
+                this.opaque = getPropertyValue("opaque");
+                this.qop = getPropertyValue("qop");
+                this.realm = getPropertyValue("realm");
+                this.response = getPropertyValue("response");
+                this.uri = getPropertyValue("uri");
+                this.username = getPropertyValue("username");
+            } else if (type.equalsIgnoreCase("Basic")) {
+                msgHeader = new String(Base64.getDecoder().decode(this.header));
+                this.username = msgHeader.split(":")[0];
+                this.password = msgHeader.split(":")[1];
+            }
+        }
+
+        private String getPropertyValue(String property) {
+            //Corta la mitad en vectores con una ",". Luego de la mitad se corta la mitad de = con split 
+            String[] pHeader = clientAuth.header.split(",");
+            //Ordenar el header 
+            String result = "";
+            for (String pHeader1 : pHeader) {
+                //Preguntar si la propiedad = property
+                if (pHeader1.split("=", 2)[0].equals(property)) {
+                    result = pHeader1.split("=", 2)[1];
+                    break;
                 }
             }
-            result = DigestUtil.md5(ha1 + ":" + this.nonce + ":" + this.nonceCount + ":"
-                                                + this.cnonce + ":" + this.qop + ":" + ha2);
+            return result;
         }
-        return result.equals(this.response);
     }
 
-    public String getUsername() {
-        return username;
-    }
+    class ServerAuth {
+        String type = "";
+        String username = "";
+        String password = "";
+        String realm = "";
+        String nonce = "";
+        String nonceCount = ""; //Contador de request en hexadecimal en donde el usuario realiza la petición
+        String opaque = "";
 
-    public void setUsername(String username) {
-        this.username = username;
+        boolean check(ClientAuth requestAuth) {
+            if (!type.equals(requestAuth.type)) {
+                return false;
+            }
+            if (!realm.equals(requestAuth.realm)) {
+                return false;
+            }
+            if (!nonce.equals(requestAuth.nonce)) {
+                return false;
+            }
+            return opaque.equals(requestAuth.opaque);
+        }
     }
-
-    public String getRealm() {
-        return realm;
-    }
-
-    public void setRealm(String realm) {
-        this.realm = realm;
-    }
-
-    public String getNonce() {
-        return nonce;
-    }
-
-    public void setNonce(String nonce) {
-        this.nonce = nonce;
-    }
-
-    public String getCnonce() {
-        return cnonce;
-    }
-
-    public void setCnonce(String cnonce) {
-        this.cnonce = cnonce;
-    }
-
-    public String getNonceCount() {
-        return nonceCount;
-    }
-
-    public void setNonceCount(String nonceCount) {
-        this.nonceCount = nonceCount;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public String getQop() {
-        return qop;
-    }
-
-    public void setQop(String qop) {
-        this.qop = qop;
-    }
-
-    public String getOpaque() {
-        return opaque;
-    }
-
-    public void setOpaque(String opaque) {
-        this.opaque = opaque;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getResponse() {
-        return response;
-    }
-
-    public void setResponse(String response) {
-        this.response = response;
-    }
-
-    public String getHeader() {
-        return header;
-    }
-
-    public void setHeader(String header) {
-        this.header = header;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-    
 }
