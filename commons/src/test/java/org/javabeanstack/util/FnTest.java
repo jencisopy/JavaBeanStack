@@ -32,7 +32,10 @@ public class FnTest {
         boolean expResult = true;
         boolean result = Fn.inList(obj, list);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
+        
+        result = Fn.inList(obj,"EXISTE","exist","exist2","existe");
+        assertEquals(expResult, result);
+
     }
 
 
@@ -81,7 +84,6 @@ public class FnTest {
         expResult = 1;
         result = Fn.findInMatrix(matrix, search, caseSensitive);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -109,7 +111,6 @@ public class FnTest {
         expResult = false;
         result = Fn.toLogical(value);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
 
@@ -127,7 +128,6 @@ public class FnTest {
         Object expResult = 1;
         Object result = Fn.iif(condition, value1, value2);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -141,6 +141,5 @@ public class FnTest {
         Object expResult = "es nulo";
         Object result = Fn.nvl(value, alternateValue);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 }

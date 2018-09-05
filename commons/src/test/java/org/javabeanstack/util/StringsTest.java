@@ -167,8 +167,6 @@ public class StringsTest {
         expResult = "";
         result = Strings.replicate(character, times);
         assertEquals(expResult, result);
-                
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -396,7 +394,6 @@ public class StringsTest {
         String expResult = "xx reemplazo xx reemplazo2";
         String result = Strings.textMerge(text, "valor","reemplazo","valor2","reemplazo2");
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -545,7 +542,6 @@ public class StringsTest {
         String expResult = "ZXN0ZSBlcyB1biB0ZXh0byBwYXJhIGNvZGlmaWNhciBhIGJhc2UgNjQ=";
         String result = Strings.encode64(message);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -558,7 +554,6 @@ public class StringsTest {
         String expResult = "este es un texto para codificar a base 64";
         String result = Strings.decode64(messageEncode);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**

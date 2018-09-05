@@ -64,7 +64,7 @@ public class Fn {
         return false;
     }
     
-    public static <T> T iif(boolean condition, T value1, T value2) {
+    public static <T> T iif(Boolean condition, T value1, T value2) {
         if (condition) {
             return value1;
         }
