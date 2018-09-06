@@ -52,14 +52,13 @@ public class DatesTest {
         
         expResult = java.sql.Date.valueOf("1972-05-19");
         assertEquals(expResult, result);        
-        //fail("The test case is a prototype.");
     }
 
     /**
      * Test of toDate method, of class Fn.
      */
     @Test
-    public void testToDate2() {
+    public void testToDate_String() {
         System.out.println("toDate");
         String dateString = "1972/05/19";
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
@@ -67,7 +66,6 @@ public class DatesTest {
         Date result = Dates.toDate(dateString, formatter);
         
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -81,7 +79,6 @@ public class DatesTest {
         String expResult = "1972/05/19";
         String result = Dates.toString(date, formater);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -95,7 +92,6 @@ public class DatesTest {
         String expResult = "1972-05-19";
         String result = Dates.toString(date, format);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -110,7 +106,6 @@ public class DatesTest {
         
         System.out.println(expResult);
         System.out.println(result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -130,8 +125,96 @@ public class DatesTest {
         System.out.println(result);
         
         assertEquals(expResult, result);
+    }
 
+
+
+    /**
+     * Test of toDate method, of class Dates.
+     */
+    @Test
+    public void testToDate_Date() {
+        System.out.println("toDate");
+        Date date = Dates.now();
+        Date expResult = Dates.today();
+        Date result = Dates.toDate(date);
+        assertEquals(expResult, result);
+    }
+
+
+    /**
+     * Test of sum method, of class Dates.
+     */
+    @Test
+    public void testSum() {
+        System.out.println("sum");
+        Date date = Dates.today();
+        int quantity = 1;
+        int interval = Calendar.HOUR_OF_DAY;
         
-        //fail("The test case is a prototype.");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(interval, quantity);
+        Date expResult = calendar.getTime();
+        
+        Date result = Dates.sum(date, quantity, interval);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of sumDays method, of class Dates.
+     */
+    @Test
+    public void testSumDays() {
+        System.out.println("sumDays");
+        Date date = Dates.today();
+        int days = 2;
+        
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.DAY_OF_YEAR, days);
+        Date expResult = calendar.getTime();
+        
+        Date result = Dates.sumDays(date, days);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of sumSeconds method, of class Dates.
+     */
+    @Test
+    public void testSumSeconds() {
+        System.out.println("sumSeconds");
+        Date date = Dates.today();
+        int seconds = 10;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, seconds);
+        calendar.set(Calendar.MILLISECOND, 0);
+        
+        Date expResult = calendar.getTime();
+        Date result = Dates.sumSeconds(date, seconds);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getLastTimeOfDay method, of class Dates.
+     */
+    @Test
+    public void testGetLastTimeOfDay() {
+        System.out.println("getLastTimeOfDay");
+        Date date = Dates.today();
+        Date expResult = Dates.sum(date, 1, Calendar.DAY_OF_YEAR);
+        expResult = Dates.sum(expResult, -1, Calendar.SECOND);
+        Date result = Dates.getLastTimeOfDay(date);
+        assertEquals(expResult, result);
     }
 }
