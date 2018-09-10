@@ -22,6 +22,9 @@
  */
 package org.javabeanstack.security;
 
+import org.javabeanstack.security.model.ClientAuth;
+import org.javabeanstack.security.model.ServerAuth;
+import org.javabeanstack.util.Strings;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -30,11 +33,9 @@ import static org.junit.Assert.*;
  * @author JORGE
  */
 public class DigestAuthTest {
-
     public DigestAuthTest() {
     }
    
-    
     /**
      * Test of check method, of class DigestAuth.
      */
@@ -42,64 +43,58 @@ public class DigestAuthTest {
     public void testCheck() {
         System.out.println("check");
         
+        DigestAuth auth = new DigestAuth();
+        auth.createResponseAuth(DigestAuth.BASIC,"basic","ldap");
+        auth.getResponseAuth("basic").setUsername("admin");
+        auth.getResponseAuth("basic").setPassword("password");
+
         // Basic 
         String header = "Basic YWRtaW46cGFzc3dvcmQ=";
-        DigestAuth auth = new DigestAuth();
-        auth.setRequestAuth("GET",header,"");
-        auth.setServerAuth("Basic", "admin", "password", "", "", "");
+        ClientAuth requestAuth = new ClientAuth("GET",header,"");
+
         
         boolean expResult = true;
-
-        boolean result = auth.checkBasic();
+        boolean result = auth.checkBasic(requestAuth);
         assertEquals(expResult, result);
-        
+
         // MD5
         header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", response=\"885d2f93dceb6077d8167e00d8111902\", opaque=\"\"";
-        auth = new DigestAuth();
-        auth.setRequestAuth("GET",header,"");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
-        result = auth.checkMD5();
+        auth.createResponseAuth(DigestAuth.DIGEST,"","ldap");        
+        auth.getResponseAuth("").setUsername("admin");
+        auth.getResponseAuth("").setPassword("password");
+        requestAuth = new ClientAuth("GET",header,"");        
+        
+        result = auth.checkMD5(requestAuth);
         assertEquals(expResult, result);
 
         //MD5 + auth
         header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", qop=auth, nc=, cnonce=\"\", response=\"7197e78bdbbf865c75d8d0b0e3e8466f\", opaque=\"\"";
-        auth = new DigestAuth();
-        auth.setRequestAuth("GET",header,"");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
-        result = auth.checkMD5();
+        requestAuth = new ClientAuth("GET",header,"");
+        result = auth.checkMD5(requestAuth);
         assertEquals(expResult, result);
         
         //MD5 + auth-int
         header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", qop=auth-int, nc=, cnonce=\"\", response=\"00f1eed3553116bc77e5d9721cf746b6\", opaque=\"\"";
-        auth = new DigestAuth();
-        auth.setRequestAuth("POST",header,"prueba entity body\n");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
-        result = auth.checkMD5();
+        requestAuth = new ClientAuth("POST",header,"prueba entity body\n");
+        result = auth.checkMD5(requestAuth);
         assertEquals(expResult, result);
         
         //MD5_sess
         header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/all\", nc=, cnonce=\"\", response=\"0f20da8e35fdf53cd4e730edbe4c992f\", opaque=\"\"";
-        auth = new DigestAuth();
-        auth.setRequestAuth("GET",header,"");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
-        result = auth.checkMD5_Sess();
+        requestAuth = new ClientAuth("GET",header,"");        
+        result = auth.checkMD5_Sess(requestAuth);
         assertEquals(expResult, result);
         
-
         //MD5_sess + auth
         header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/all\", qop=auth, nc=, cnonce=\"\", response=\"d3a8fb5bb9ed6923a48bf32f8d6a3683\", opaque=\"\"";
-        auth = new DigestAuth();
-        auth.setRequestAuth("GET",header,"");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
-        result = auth.checkMD5_Sess();
+        requestAuth = new ClientAuth("GET",header,"");
+        result = auth.checkMD5_Sess(requestAuth);
         assertEquals(expResult, result);
         
         //MD5_sess + auth-int
         header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", qop=auth-int, nc=, cnonce=\"\", response=\"ae5f7169f53d646ae4b34b4a2904f45a\", opaque=\"\"";
-        auth = new DigestAuth();
-        auth.setRequestAuth("POST",header,"prueba entity body\n");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
-        result = auth.checkMD5_Sess();
+        requestAuth = new ClientAuth("POST",header,"prueba entity body\n");
+        result = auth.checkMD5_Sess(requestAuth);
         assertEquals(expResult, result);
     }
 
@@ -111,10 +106,13 @@ public class DigestAuthTest {
         String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\","
                 + " uri=\"/rest/v2/name/eesti\", response=\"f09cecf114d72dcb1ba99e02ac448687\", opaque=\"\"";
         DigestAuth auth = new DigestAuth();
-        auth.setRequestAuth("GET",header,"");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
+        auth.createResponseAuth(DigestAuth.DIGEST,"","ldap");
+        auth.getResponseAuth("").setUsername("admin");
+        auth.getResponseAuth("").setPassword("password");
+        
+        ClientAuth requestAuth = new ClientAuth("GET",header,"");
         boolean expResult = true;
-        boolean result = auth.checkMD5();
+        boolean result = auth.checkMD5(requestAuth);
         assertEquals(expResult, result);
     }
 
@@ -125,10 +123,13 @@ public class DigestAuthTest {
                 + " nc=, cnonce=\"\","
                 + " response=\"959346459acf46fe3671a60a297e5e35\", opaque=\"\"";
         DigestAuth auth = new DigestAuth();
-        auth.setRequestAuth("GET",header,"");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
+        auth.createResponseAuth(DigestAuth.DIGEST,"","ldap");
+        auth.getResponseAuth("").setUsername("admin");
+        auth.getResponseAuth("").setPassword("password");
+        
+        ClientAuth requestAuth = new ClientAuth("GET",header,"");        
         boolean expResult = true;
-        boolean result = auth.checkMD5();
+        boolean result = auth.checkMD5(requestAuth);
         assertEquals(expResult, result);
     }
 
@@ -138,10 +139,52 @@ public class DigestAuthTest {
         String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/rest/v2/name/eesti\", "
                 + "qop=auth, nc=, cnonce=\"\", response=\"e2d568923b2cf97cc782e66f0049af6f\", opaque=\"\"";
         DigestAuth auth = new DigestAuth();
-        auth.setRequestAuth("GET",header,"");
-        auth.setServerAuth("Digest", "admin", "password", "ldap", "", "");
+        auth.createResponseAuth(DigestAuth.DIGEST,"","ldap");
+        auth.getResponseAuth("").setUsername("admin");
+        auth.getResponseAuth("").setPassword("password");
+        
+        ClientAuth requestAuth = new ClientAuth("GET",header,"");        
         boolean expResult = true;
-        boolean result = auth.checkMD5_Sess();
+        boolean result = auth.checkMD5_Sess(requestAuth);
         assertEquals(expResult, result);
+    }
+    
+    @Test
+    public void testPurgarServerAuth() throws Exception{
+        DigestAuth auth = new DigestAuth();
+        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
+        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
+        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
+        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
+        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
+    }
+    
+    @Test
+    public void testGetResponseHeader(){
+        DigestAuth auth = new DigestAuth(DigestAuth.BASIC, "", "");
+        String expResult = "Basic realm=\"Restricted\"";
+        ServerAuth serverAuth = auth.createResponseAuth();
+        String result = auth.getResponseHeader(serverAuth);
+        assertEquals(expResult, result);
+        
+        auth = new DigestAuth(DigestAuth.DIGEST, "ldap", "");
+        serverAuth = auth.createResponseAuth();
+        result = auth.getResponseHeader(serverAuth);
+        expResult = "Digest realm=\""+auth.getRealm()
+                + "\" qop=\""+auth.getQop()
+                + "\" nonce=\""+serverAuth.getNonce()
+                + "\" opaque=\""+serverAuth.getOpaque();
+
+        assertEquals(expResult, Strings.left(result, expResult.length()));
+
+        auth = new DigestAuth(DigestAuth.DIGEST, "ldap", "auth,auth-int");
+        serverAuth = auth.createResponseAuth();
+        result = auth.getResponseHeader(serverAuth);
+        expResult = "Digest realm=\""+auth.getRealm()
+                + "\" qop=\""+auth.getQop()
+                + "\" nonce=\""+serverAuth.getNonce()
+                + "\" opaque=\""+serverAuth.getOpaque();
+
+        assertEquals(expResult, Strings.left(result, expResult.length()));
     }
 }
