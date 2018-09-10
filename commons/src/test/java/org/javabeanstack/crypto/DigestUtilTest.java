@@ -22,8 +22,6 @@
  */
 package org.javabeanstack.crypto;
 
-//import io.jsonwebtoken.impl.crypto.MacProvider;
-//import com.sun.org.apache.xml.internal.security.utils.Base64;
 import java.util.Base64;
 import org.junit.Test;
 import static org.junit.Assert.*;

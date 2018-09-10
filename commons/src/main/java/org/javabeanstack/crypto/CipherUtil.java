@@ -45,10 +45,12 @@ import org.javabeanstack.util.Fn;
  * @author Jorge Enciso
  */
 public class CipherUtil {
-
     public static final String BLOWFISH = "Blowfish";
     public static final String AES_CBC = "AES/CBC/PKCS5Padding";
 
+    private CipherUtil(){
+    }
+    
     /**
      * Encripta un texto utilizando el algoritmo Blowfish y devuelve el
      * resultado en formato string hexadecimal.

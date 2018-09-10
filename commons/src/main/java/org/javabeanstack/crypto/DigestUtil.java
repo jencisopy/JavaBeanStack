@@ -48,6 +48,9 @@ public class DigestUtil {
     public static final String HMACSHA384 = "HmacSHA384";
     public static final String HMACSHA512 = "HmacSHA512";
     
+    private DigestUtil(){
+    }
+    
     /**
      * Devuelve la firma md5 en formato String hexadecimal
      * @param msg mensaje

@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author JORGE
+ * @author Jorge Enciso
  */
 public class CipherUtilTest {
 
