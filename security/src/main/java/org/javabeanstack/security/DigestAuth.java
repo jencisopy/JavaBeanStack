@@ -36,7 +36,10 @@ import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.*;
 
 /**
- *
+ * Clase que implementa funcionalidades de autenticación basados en las especificaciones
+ * RFC 2069, RFC 2617
+ * Más información en https://en.wikipedia.org/wiki/Digest_access_authentication
+ * 
  * @author Jorge Enciso
  */
 public class DigestAuth {
@@ -50,16 +53,27 @@ public class DigestAuth {
     public DigestAuth() {
     }
 
+    /**
+     * Setea propiedades que definirá el comportamiento del componente.
+     * 
+     * @param typeAuth tipo de autenticación ("Basic","Digest")
+     * @param realm entorno, grupo o base donde se autentica.
+     * @param qop quality of protection (para digest los valores posibles "auth","auth-int")
+     */
     public DigestAuth(String typeAuth, String realm, String qop) {
         this.type = typeAuth;
         this.realm = realm;
         this.qop = qop;
     }
     
-    public ServerAuth createResponseAuth(){
-        return DigestAuth.this.createResponseAuth(type, null, realm);
-    }
     
+    /**
+     * Devuelve el valor alfanumerico que se utilizará para enviar en la variable
+     * header "www-autenticate" del paquete de respuesta del servidor.
+     * @param responseAuth objeto con los datos necesarios para la autenticación
+     * @return valor alfanumerico que se utilizará para enviar en la variable
+     * header "www-autenticate" del paquete de respuesta del servidor.
+     */
     public String getResponseHeader(ServerAuth responseAuth){
         String value = "";
         value = type;
@@ -70,7 +84,7 @@ public class DigestAuth {
         String opaque = responseAuth.getOpaque();
         String nonce = responseAuth.getNonce();
         String nc = ((Integer)responseAuth.getNonceCount()).toString();
-        nc = Strings.leftPad(nc, 10, "0");
+        nc = Strings.leftPad(nc, 8, "0");
         
         value += " realm=\""+realm
                 + "\" qop=\""+qop
@@ -80,7 +94,27 @@ public class DigestAuth {
 
         return value;
     }
+
+    /**
+     * Crea un objeto para autenticar que envia al cliente
+     * @return objeto que se utilizará para autenticar la petición.
+     */
+    public ServerAuth createResponseAuth(){
+        return DigestAuth.this.createResponseAuth(type, null, realm);
+    }
     
+    /**
+     * Devuelve el valor alfanumerico que se utilizará para enviar en la variable
+     * header "www-autenticate" del paquete de respuesta del servidor.
+     * La ejecución directa de este metodo es para casos excepcionales en la cual
+     * se creará typeAuth, nonce o realm personalizados.
+     * 
+     * @param typeAuth tipo de autenticación ("Basic","Digest")
+     * @param nonce codigo identificador del objeto autenticador.
+     * @param realm grupo, entorno o base donde se autenticará la petición.
+     * @return valor alfanumerico que se utilizará para enviar en la variable
+     * header "www-autenticate" del paquete de respuesta del servidor.
+     */
     public ServerAuth createResponseAuth(String typeAuth, String nonce, String realm){
         ServerAuth responseAuth = new ServerAuth();
         if (typeAuth == null){
@@ -105,6 +139,10 @@ public class DigestAuth {
         return responseAuth;
     }
     
+    /**
+     * Elimina todos los objeto de autenticación que ya fuerón utilizados o
+     * no se hicierón referencia hace 1 minuto.
+     */
     protected void purgeResponseAuth(){
         Date now = DateUtils.addMinutes(Dates.now(),-1);
         for(Iterator<Map.Entry<String, ServerAuth>> it = serverAuthMap.entrySet().iterator(); it.hasNext(); ) {
@@ -115,15 +153,30 @@ public class DigestAuth {
         }
     }
     
+    /**
+     * Devuelve el objeto creado con los datos necesarios para autenticar una
+     * petición.
+     * @param nonce identificador del objeto.
+     * @return objeto creado con los datos necesarios para autenticar una petición.
+     */
     public ServerAuth getResponseAuth(String nonce){
         ServerAuth auth = serverAuthMap.get(nonce);
         if (auth != null){
             auth.setLastReference(new Date());
         }
+        if (nonce.equalsIgnoreCase("basic") && auth == null){
+            createResponseAuth(DigestAuth.BASIC,"basic","");
+            auth = serverAuthMap.get(nonce);
+        }
         return auth;
     }
     
 
+    /**
+     * Devuelve verdadero o falso si existe o no un objeto responseAuth
+     * @param nonce identificador del objeto.
+     * @return verdadero o falso si existe o no un objeto responseAuth
+     */
     public boolean isNonceExist(String nonce){
         ServerAuth responseAuth = serverAuthMap.get(nonce);
         if (responseAuth != null){
@@ -133,6 +186,11 @@ public class DigestAuth {
         return false;
     }
     
+    /**
+     * Devuelve el valor opaque del objeto autenticador.
+     * @param nonce identificador del objeto autenticador.
+     * @return el valor opaque del objeto autenticador solicitado.
+     */
     public String getOpaque(String nonce){
         ServerAuth response = serverAuthMap.get(nonce);        
         if (response != null){
@@ -141,6 +199,12 @@ public class DigestAuth {
         return null;
     }
 
+    /**
+     * Chequea válidez de los datos que vienen en el header del request
+     * @param clientAuth objeto request enviado en la petición del usuario.
+     * @return verdadero o falso si los datos que vienen en la header del request
+     * es válido o no.
+     */
     protected boolean checkNonce(ClientAuth clientAuth){
         //Verificar existencia de nonce
         if (!isNonceExist(clientAuth.getNonce())){
@@ -155,6 +219,11 @@ public class DigestAuth {
         return true;
     }
     
+    /**
+     * Autentica la petición. Válida todas las opciones.
+     * @param requestAuth datos de autenticación enviado por el usuario.
+     * @return verdadero o falso si tuvo exito o fracaso la autenticación.
+     */
     public boolean check(ClientAuth requestAuth) {
         if (requestAuth.getType().equals(BASIC)){
             return checkBasic(requestAuth);
@@ -174,6 +243,11 @@ public class DigestAuth {
         return false;
     }
 
+    /**
+     * Autentica la petición utilizando la modalidad "Basic"
+     * @param clientAuth datos de autenticación enviado por el usuario.
+     * @return verdadero o falso si tuvo exito o fracaso la autenticación.
+     */
     public boolean checkBasic(ClientAuth clientAuth) {
         ServerAuth serverAuth = getResponseAuth("basic");
         if (serverAuth == null){
@@ -185,6 +259,12 @@ public class DigestAuth {
         return clientAuth.getPassword().equals(serverAuth.getPassword());
     }
 
+
+    /**
+     * Autentica la petición utilizando la modalidad "Digest" MD5
+     * @param clientAuth datos de autenticación enviado por el usuario.
+     * @return verdadero o falso si tuvo exito o fracaso la autenticación.
+     */
     public boolean checkMD5(ClientAuth clientAuth) {
         ServerAuth serverAuth = getResponseAuth(clientAuth.getNonce());        
         //Check nonce, opaque, realm, type
@@ -223,6 +303,11 @@ public class DigestAuth {
         return clientAuth.getResponse().equals(result);
     }
 
+    /**
+     * Autentica la petición utilizando la modalidad "Digest" MD5-sess
+     * @param clientAuth datos de autenticación enviado por el usuario.
+     * @return verdadero o falso si tuvo exito o fracaso la autenticación.
+     */
     public boolean checkMD5_Sess(ClientAuth clientAuth) {
         ServerAuth serverAuth = getResponseAuth(clientAuth.getNonce());
         //Check nonce, opaque, realm, type
@@ -255,6 +340,12 @@ public class DigestAuth {
         return result.equals(clientAuth.getResponse());
     }
     
+    /**
+     * Compara valores del objeto autenticador generado en el server y el objeto enviado por el cliente.
+     * @param requestAuth objeto autenticador enviado desde el cliente.
+     * @param responseAuth objeto autenticador generado en el servidor.
+     * @return verdadero o falso si son iguales o difieren en algún dato.
+     */
     public boolean compareServerAndClientAuth(ClientAuth requestAuth, ServerAuth responseAuth) {
         if (!responseAuth.getType().equals(requestAuth.getType())) {
             return false;
@@ -262,29 +353,58 @@ public class DigestAuth {
         if (!responseAuth.getRealm().equals(requestAuth.getRealm())) {
             return false;
         }
+        if (responseAuth.getNonceCount() != 0 || !isNullorEmpty(requestAuth.getNonceCount())){
+            if (!requestAuth.getQop().isEmpty() && responseAuth.getNonceCount() != Integer.parseInt(requestAuth.getNonceCount())){
+                return false;
+            }
+        }
         return responseAuth.getNonce().equals(requestAuth.getNonce());
     }
 
+    /**
+     * Tipo de autenticación ("Basic", "Digest")
+     * @return tipo de autenticación.
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Setea tipo de autenticación. Valores válidos positbles "Basic" o "Digest"
+     * @param type tipo de autenticación.
+     */
     public void setType(String type) {
         this.type = type;
     }
 
+    /**
+     * Entorno, grupo o base donde autenticar la petición.
+     * @return Entorno, grupo o base donde autenticar la petición.
+     */
     public String getRealm() {
         return realm;
     }
 
+    /**
+     * Setea la propiedad realm
+     * @param realm Entorno, grupo o base donde autenticar la petición.
+     */
     public void setRealm(String realm) {
         this.realm = realm;
     }
 
+    /**
+     * Devuelve la propiedad qop (quality of protection)
+     * @return propiedad qop
+     */
     public String getQop() {
         return this.qop;
     }
     
+    /**
+     * Setea la propiedad qoq (valores posibles "","auth","auth-int")
+     * @param qop quality of protection
+     */
     public void setQop(String qop) {
         this.qop = qop;
     }
