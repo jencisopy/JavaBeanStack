@@ -36,6 +36,22 @@ public class DigestAuthTest {
     public DigestAuthTest() {
     }
    
+    @Test
+    public void testCheckWrong(){
+        System.out.println("check fallidos");
+        String header = "Digest username=\"adminerror\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", response=\"885d2f93dceb6077d8167e00d8111902\", opaque=\"\"";
+        DigestAuth auth = new DigestAuth();
+        auth.createResponseAuth(DigestAuth.DIGEST,"","ldap");        
+        auth.getResponseAuth("").setUsername("admin");
+        auth.getResponseAuth("").setPassword("password");
+        ClientAuth requestAuth = new ClientAuth("GET",header,"");        
+        // Equivocarse al proposito más de las 10 veces permitidas
+        for (int i = 0;i <= 10;i++){
+            auth.check(requestAuth);
+        }
+        assertNull(auth.getResponseAuth(""));
+    }
+    
     /**
      * Test of check method, of class DigestAuth.
      */
@@ -53,7 +69,7 @@ public class DigestAuthTest {
         ClientAuth requestAuth = new ClientAuth("GET",header,"");
         boolean result = auth.checkBasic(requestAuth);
         assertEquals(expResult, result);
-
+        
         // MD5
         header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", response=\"885d2f93dceb6077d8167e00d8111902\", opaque=\"\"";
         auth.createResponseAuth(DigestAuth.DIGEST,"","ldap");        
@@ -92,6 +108,15 @@ public class DigestAuthTest {
         requestAuth = new ClientAuth("POST",header,"prueba entity body\n");
         result = auth.checkMD5_Sess(requestAuth);
         assertEquals(expResult, result);
+        
+        //Check Generico
+        result = auth.check(requestAuth);
+        assertEquals(expResult, result);
+        // Una vez realizado el check elimina el objeto autenticador de la lista de los válidos
+        // si es tipo "Digest"
+        result = auth.check(requestAuth);
+        assertFalse(result);
+        
     }
 
     /**
@@ -152,15 +177,6 @@ public class DigestAuthTest {
         assertEquals(expResult, result);
     }
     
-    @Test
-    public void testPurgarServerAuth() throws Exception{
-        DigestAuth auth = new DigestAuth();
-        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
-        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
-        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
-        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
-        auth.createResponseAuth(DigestAuth.DIGEST,null,"ldap");
-    }
 
     /**
      * Test of getResponseHeader method, of class DigestAuth.

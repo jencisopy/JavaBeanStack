@@ -135,7 +135,6 @@ public class DigestAuth {
         }
         responseAuth.setNonce(nonce);
         serverAuthMap.put(nonce, responseAuth);
-        purgeResponseAuth();
         return responseAuth;
     }
     
@@ -143,7 +142,7 @@ public class DigestAuth {
      * Elimina todos los objeto de autenticación que ya fuerón utilizados o
      * no se hicierón referencia hace 1 minuto.
      */
-    protected void purgeResponseAuth(){
+    public void purgeResponseAuth(){
         Date now = DateUtils.addMinutes(Dates.now(),-1);
         for(Iterator<Map.Entry<String, ServerAuth>> it = serverAuthMap.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<String, ServerAuth> entry = it.next();
@@ -230,14 +229,22 @@ public class DigestAuth {
         }
         if (requestAuth.getType().equals(DIGEST)){
             if (checkMD5(requestAuth)) {
+                // Eliminar serverAuth si tuvo exito
+                serverAuthMap.remove(requestAuth.getNonce());
                 return true;
             }
             if (checkMD5_Sess(requestAuth)){
+                // Eliminar serverAuth si tuvo exito
+                serverAuthMap.remove(requestAuth.getNonce());
                 return true;
             }
             ServerAuth responseAuth = serverAuthMap.get(requestAuth.getNonce());        
             if (responseAuth != null){
                 responseAuth.increment();
+                // Si sobrepasa los 10 intentos eliminar el objeto serverAuth
+                if (responseAuth.getNonceCount() > 10){
+                    serverAuthMap.remove(requestAuth.getNonce());
+                }
             }
         }
         return false;
@@ -249,6 +256,7 @@ public class DigestAuth {
      * @return verdadero o falso si tuvo exito o fracaso la autenticación.
      */
     public boolean checkBasic(ClientAuth clientAuth) {
+        //TODO ver como controlar varios intentos fallidos.
         ServerAuth serverAuth = getResponseAuth("basic");
         if (serverAuth == null){
             return false;
@@ -347,6 +355,9 @@ public class DigestAuth {
      * @return verdadero o falso si son iguales o difieren en algún dato.
      */
     public boolean compareServerAndClientAuth(ClientAuth requestAuth, ServerAuth responseAuth) {
+        if (responseAuth == null){
+            return false;
+        }
         if (!responseAuth.getType().equals(requestAuth.getType())) {
             return false;
         }
