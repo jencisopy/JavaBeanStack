@@ -46,6 +46,7 @@ public class DigestAuthTest {
         auth.getResponseAuth("").setPassword("password");
         ClientAuth requestAuth = new ClientAuth("GET",header,"");        
         // Equivocarse al proposito más de las 10 veces permitidas
+        // Por defecto se puede equivocar 10 veces
         for (int i = 0;i <= 10;i++){
             auth.check(requestAuth);
         }

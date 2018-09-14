@@ -49,6 +49,7 @@ public class DigestAuth {
     private String type = "BASIC";
     private String realm = "";
     private String qop = "";
+    private int numberCanFail = 10;
 
     public DigestAuth() {
     }
@@ -77,7 +78,7 @@ public class DigestAuth {
     public String getResponseHeader(ServerAuth responseAuth){
         String value = "";
         value = type;
-        if (type.equals("Basic")){
+        if (type.equalsIgnoreCase("Basic")){
             value += " realm=\"Restricted\"";
             return value;
         }
@@ -242,7 +243,7 @@ public class DigestAuth {
             if (responseAuth != null){
                 responseAuth.increment();
                 // Si sobrepasa los 10 intentos eliminar el objeto serverAuth
-                if (responseAuth.getNonceCount() > 10){
+                if (responseAuth.getNonceCount() > getNumberCanFail()){
                     serverAuthMap.remove(requestAuth.getNonce());
                 }
             }
@@ -418,5 +419,22 @@ public class DigestAuth {
      */
     public void setQop(String qop) {
         this.qop = qop;
+    }
+
+    /**
+     * Devuelve el numero de veces que se puede fallar en la autenticación
+     * 
+     * @return numero de veces que se puede fallar en la autenticación
+     */
+    public int getNumberCanFail() {
+        return numberCanFail;
+    }
+
+    /**
+     * Setea al numero de veces que se puede fallar en la autenticación.
+     * @param numberCanFail 
+     */
+    public void setNumberCanFail(int numberCanFail) {
+        this.numberCanFail = numberCanFail;
     }
 }
