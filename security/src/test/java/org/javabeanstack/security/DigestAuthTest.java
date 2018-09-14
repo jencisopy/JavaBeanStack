@@ -51,6 +51,19 @@ public class DigestAuthTest {
             auth.check(requestAuth);
         }
         assertNull(auth.getResponseAuth(""));
+        
+        // Basic 
+        header = "Basic YWRtaW46cGFzc3dvcmQ=";
+        auth.createResponseAuth(DigestAuth.BASIC,"basic admin","");
+        auth.getResponseAuth("basic admin").setUsername("admin");
+        auth.getResponseAuth("basic admin").setPassword("passwordwrong");
+        requestAuth = new ClientAuth("GET",header,"");
+        // Equivocarse al proposito más de las 10 veces permitidas
+        // Por defecto se puede equivocar 10 veces
+        for (int i = 0;i <= 10;i++){
+            auth.check(requestAuth);
+        }
+        assertNull(auth.getResponseAuth("basic admin"));        
     }
     
     /**
@@ -62,11 +75,12 @@ public class DigestAuthTest {
 
         boolean expResult = true;
         DigestAuth auth = new DigestAuth();
-        auth.getResponseAuth("basic").setUsername("admin");
-        auth.getResponseAuth("basic").setPassword("password");
 
         // Basic 
         String header = "Basic YWRtaW46cGFzc3dvcmQ=";
+        auth.createResponseAuth(DigestAuth.BASIC,"basic admin","");
+        auth.getResponseAuth("basic admin").setUsername("admin");
+        auth.getResponseAuth("basic admin").setPassword("password");
         ClientAuth requestAuth = new ClientAuth("GET",header,"");
         boolean result = auth.checkBasic(requestAuth);
         assertEquals(expResult, result);
@@ -117,7 +131,6 @@ public class DigestAuthTest {
         // si es tipo "Digest"
         result = auth.check(requestAuth);
         assertFalse(result);
-        
     }
 
     /**
@@ -209,5 +222,43 @@ public class DigestAuthTest {
                 + "\" opaque=\""+serverAuth.getOpaque();
 
         assertEquals(expResult, Strings.left(result, expResult.length()));
+    }
+    
+    /**
+     * Test metodo purgeResponseAuth()
+     * @throws InterruptedException 
+     */
+    @Test
+    public void purgeResponseAuth() throws InterruptedException{
+        System.out.println("purgeResponseAuth");        
+        DigestAuth auth = new DigestAuth();
+        auth.setSecondsIdle(2); // 2 segundos de vida
+        
+        // Probar con basic
+        for (int i = 0;i <= 500;i++){
+            auth.createResponseAuth(DigestAuth.BASIC,"basic "+i,"");                    
+        }
+        Thread.sleep(2000);
+        auth.purgeResponseAuth();
+        for (int i = 0;i <= 500;i++){
+            ServerAuth serverAuth = auth.getResponseAuth("basic "+i);
+            if (serverAuth != null){
+                fail("Error purga");
+                break;
+            }
+        }
+        // Probar con tipo auth = Digest
+        for (int i = 0;i <= 500;i++){
+            auth.createResponseAuth(DigestAuth.DIGEST,"digest "+i,"");                    
+        }
+        Thread.sleep(2000);
+        auth.purgeResponseAuth();
+        for (int i = 0;i <= 500;i++){
+            ServerAuth serverAuth = auth.getResponseAuth("digest "+i);
+            if (serverAuth != null){
+                fail("Error purga");
+                break;
+            }
+        }
     }
 }

@@ -50,6 +50,7 @@ public class DigestAuth {
     private String realm = "";
     private String qop = "";
     private int numberCanFail = 10;
+    private int secondsIdle=60;
 
     public DigestAuth() {
     }
@@ -136,15 +137,19 @@ public class DigestAuth {
         }
         responseAuth.setNonce(nonce);
         serverAuthMap.put(nonce, responseAuth);
+        // Purgar autenticadores viejos, si hay acumuladas más de 500 peticiones
+        if (serverAuthMap.size() > 500){
+            purgeResponseAuth();
+        }
         return responseAuth;
     }
     
     /**
      * Elimina todos los objeto de autenticación que ya fuerón utilizados o
-     * no se hicierón referencia hace 1 minuto.
+     * no se hicierón en un tiempo definido en el atributo secondsIdle
      */
     public void purgeResponseAuth(){
-        Date now = DateUtils.addMinutes(Dates.now(),-1);
+        Date now = DateUtils.addSeconds(Dates.now(),secondsIdle*-1);
         for(Iterator<Map.Entry<String, ServerAuth>> it = serverAuthMap.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<String, ServerAuth> entry = it.next();
             if(entry.getValue().getLastReference().before(now)) {
@@ -163,10 +168,6 @@ public class DigestAuth {
         ServerAuth auth = serverAuthMap.get(nonce);
         if (auth != null){
             auth.setLastReference(new Date());
-        }
-        if (nonce.equalsIgnoreCase("basic") && auth == null){
-            createResponseAuth(DigestAuth.BASIC,"basic","");
-            auth = serverAuthMap.get(nonce);
         }
         return auth;
     }
@@ -257,15 +258,25 @@ public class DigestAuth {
      * @return verdadero o falso si tuvo exito o fracaso la autenticación.
      */
     public boolean checkBasic(ClientAuth clientAuth) {
-        //TODO ver como controlar varios intentos fallidos.
-        ServerAuth serverAuth = getResponseAuth("basic");
+        ServerAuth serverAuth = getResponseAuth("basic "+clientAuth.getUsername());
+        //Usuario incorrecto o no se seteo el autenticador
         if (serverAuth == null){
             return false;
         }
-        if (!clientAuth.getUsername().equals(serverAuth.getUsername())) {
+        //Verificar cantidad de intentos fallidos.
+        if (serverAuth.getNonceCount() >= numberCanFail){
+            //Eliminar autenticador cuando sobrepasa cantidad de fallos permitidos
+            serverAuthMap.remove("basic "+clientAuth.getUsername());
             return false;
         }
-        return clientAuth.getPassword().equals(serverAuth.getPassword());
+        // Verificar password
+        if (!clientAuth.getPassword().equals(serverAuth.getPassword())){
+            serverAuth.increment();
+            return false;
+        }
+        //Tuvo exito eliminar autenticador
+        serverAuthMap.remove("basic "+clientAuth.getUsername());        
+        return true;
     }
 
 
@@ -436,5 +447,21 @@ public class DigestAuth {
      */
     public void setNumberCanFail(int numberCanFail) {
         this.numberCanFail = numberCanFail;
+    }
+
+    /**
+     * Devuelve Cantidad de segundos antes de considerarse el autenticador como obsoleto
+     * @return  Cantidad de segundos antes de considerarse el autenticador como obsoleto
+     */
+    public int getSecondsIdle() {
+        return secondsIdle;
+    }
+
+    /**
+     * Setea cantidad de segundos la cual se considera válido el autenticador creado.
+     * @param secondsIdle 
+     */
+    public void setSecondsIdle(int secondsIdle) {
+        this.secondsIdle = secondsIdle;
     }
 }
