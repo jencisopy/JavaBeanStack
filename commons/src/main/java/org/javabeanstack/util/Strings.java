@@ -336,26 +336,64 @@ public class Strings {
     }
     
 
+    /**
+     * Toma los n caracteres del lado izquierdo de un string
+     * @param str variable string
+     * @param len cantidad de caracteres
+     * @return cantidad de caracteres del lado izquierdo de una variable alfanumérica.
+     */
     public static String left(String str, int len) {
         return StringUtils.left(str, len);
     }
 
+    /**
+     * Toma los n caracteres del lado derecho de un string
+     * @param str variable string
+     * @param len cantidad de caracteres
+     * @return cantidad de caracteres del lado derecho de una variable alfanumérica.
+     */
     public static String right(String str, int len) {
         return StringUtils.right(str, len);
     }
 
+    /**
+     * Extrae carecteres de un string
+     * @param str variable string
+     * @param start posición a partir de la cual extraera los caracteres hasta el final de la variable.
+     * @return caracteres extraidos a partir de una posición hasta el final de la variable.
+     */
     public static String substring(String str, int start) {
         return StringUtils.substring(str, start);
     }
 
+    /**
+     * Extrae caracteres de un string
+     * @param str variable string 
+     * @param start posición a partir de la cual extraera los caracteres de la variable.
+     * @param end posición final hasta donde extraera los caracteres.
+     * @return caracteres extraidos de la variable alfanumérica.
+     */
     public static String substring(String str, int start, int end) {
         return StringUtils.substring(str, start, end);
     }
 
+    /**
+     * Extrae caracteres de un string
+     * @param str variable string
+     * @param start posición a partir de la cual extraera los caracteres hasta el final de la variable.
+     * @return caracteres extraidos a partir de una posición hasta el final de la variable.
+     */
     public static String substr(String str, int start) {
         return StringUtils.substring(str, start);
     }
 
+    /**
+     * Extrae caracteres de un string
+     * @param str variable string 
+     * @param start posición a partir de la cual extraera los caracteres de la variable.
+     * @param charactersReturned cantidad de caracteres a retornar.
+     * @return caracteres extraidos de la variable alfanumérica.
+     */
     public static String substr(String str, int start, int charactersReturned) {
         return StringUtils.substring(str, start, start + charactersReturned);
     }
@@ -412,6 +450,11 @@ public class Strings {
         return found;
     }
 
+    /**
+     * Convierte el primer carácter de la variable a mayúscula.
+     * @param text variable alfanumérica.
+     * @return variable con el primer carácter convertido a mayúscula.
+     */
     public static String capitalize(String text){
         if (text == null){
             return null;
@@ -574,7 +617,7 @@ public class Strings {
      * @return charSet ej. UTF-8
      */    
     public static String getXmlFileCharSet(File file){
-        if (!file.exists() || file.canRead()){
+        if (!file.exists() || !file.canRead()){
             return "";
         }
         String text = fileToString(file);
@@ -589,5 +632,14 @@ public class Strings {
             result = text.substring(pos1,pos2);
         }
         return result;
+    }
+    
+    
+    public static String leftPad(String str, int size, String padStr){
+        return StringUtils.leftPad(str, size, padStr);
+    }
+    
+    public static String rightPad(String str, int size, String padStr){
+        return StringUtils.rightPad(str, size, padStr);
     }
 }

@@ -22,6 +22,7 @@
 package org.javabeanstack.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -64,7 +65,6 @@ public class StringsTest {
         expResult = true;
         result = Strings.isNullorEmpty(string);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -80,8 +80,6 @@ public class StringsTest {
         int expResult = 16;
         int result = Strings.findString(searchExpr, exprIn);
         assertEquals(expResult, result);
-
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -120,8 +118,6 @@ public class StringsTest {
         assertEquals(expResult, result);
         System.out.println(result);
         assertEquals(expResult, result);
-        
-        // fail("The test case is a prototype.");
     }
 
     /**
@@ -147,7 +143,6 @@ public class StringsTest {
         expResult = 0;
         result = Strings.occurs(searchExpr, exprIn);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -182,7 +177,6 @@ public class StringsTest {
         int expResult = 57;
         int result = Strings.findLimit(limit, expr);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -216,7 +210,6 @@ public class StringsTest {
         expResult = -1;
         result = Strings.findLimit(limit, expr, occurs);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -255,7 +248,6 @@ public class StringsTest {
         expResult = "reemplaza una cadena [**********] limitada por un caracter";
         result = Strings.varReplace(var, limit);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -343,7 +335,6 @@ public class StringsTest {
 
         List<String> result = Strings.convertToList(expr, separator);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -360,7 +351,6 @@ public class StringsTest {
         String expResult = "xxreemplazoxx";
         String result = Strings.textMerge(text, params);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -399,87 +389,146 @@ public class StringsTest {
     /**
      * Test of left method, of class Strings.
      */
-    //@Test
+    @Test
     public void testLeft() {
         System.out.println("left");
-        String str = "";
-        int len = 0;
-        String expResult = "";
+        String str = "Juan Perez";
+        int len = 4;
+        String expResult = "Juan";
         String result = Strings.left(str, len);
         assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        
+        str = "Juan";
+        len = 5;
+        expResult = "Juan";
+        result = Strings.left(str, len);
+        assertEquals(expResult, result);
+
+        str = null;
+        len = 5;
+        expResult = null;
+        result = Strings.left(str, len);
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of right method, of class Strings.
      */
-    //@Test
+    @Test
     public void testRight() {
         System.out.println("right");
-        String str = "";
-        int len = 0;
-        String expResult = "";
+        String str = "Juan Perez";
+        int len = 5;
+        String expResult = "Perez";
         String result = Strings.right(str, len);
         assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        
+        str = "Perez";
+        len = 6;
+        expResult = "Perez";
+        result = Strings.right(str, len);
+        assertEquals(expResult, result);
+        
+        str = null;
+        len = 6;
+        expResult = null;
+        result = Strings.right(str, len);
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of substring method, of class Strings.
      */
-    //@Test
+    @Test
     public void testSubstring_String_int() {
         System.out.println("substring");
-        String str = "";
-        int start = 0;
-        String expResult = "";
+        String str = "Juan Perez Benitez";
+        int start = 5;
+        String expResult = "Perez Benitez";
         String result = Strings.substring(str, start);
         assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        
+        str = "Juan Perez Benitez";
+        start = 50;
+        expResult = "";
+        result = Strings.substring(str, start);
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of substring method, of class Strings.
      */
-    //@Test
+    @Test
     public void testSubstring_3args() {
         System.out.println("substring");
-        String str = "";
-        int start = 0;
-        int end = 0;
-        String expResult = "";
+        String str = "Juan Perez Benitez";
+        int start = 5;
+        int end = 10;
+        String expResult = "Perez";
         String result = Strings.substring(str, start, end);
         assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        
+        start = 5;
+        end = 50;
+        expResult = "Perez Benitez";
+        result = Strings.substring(str, start, end);
+        assertEquals(expResult, result);
+        
+        str = null;
+        start = 5;
+        end = 50;
+        expResult = null;
+        result = Strings.substring(str, start, end);
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of substr method, of class Strings.
      */
-    //@Test
+    @Test
     public void testSubstr_String_int() {
         System.out.println("substr");
-        String str = "";
-        int start = 0;
-        String expResult = "";
+        String str = "Juan Perez Benitez";
+        int start = 5;
+        String expResult = "Perez Benitez";
         String result = Strings.substr(str, start);
         assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        
+        start = 50;
+        expResult = "";
+        result = Strings.substr(str, start);
+        assertEquals(expResult, result);
+        
+        str = null;        
+        start = 50;
+        expResult = null;
+        result = Strings.substr(str, start);
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of substr method, of class Strings.
      */
-    //@Test
+    @Test
     public void testSubstr_3args() {
         System.out.println("substr");
-        String str = "";
-        int start = 0;
-        int charactersReturned = 0;
-        String expResult = "";
+        String str = "Juan Perez Benitez";
+        int start = 5;
+        int charactersReturned = 5;
+        String expResult = "Perez";
         String result = Strings.substr(str, start, charactersReturned);
         assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        
+        start = 5;
+        charactersReturned = 50;
+        expResult = "Perez Benitez";
+        result = Strings.substr(str, start, charactersReturned);
+        assertEquals(expResult, result);
+        
+        str = null;
+        expResult = null;
+        result = Strings.substr(str, start, charactersReturned);
+        assertEquals(expResult, result);
     }
 
     /**
@@ -493,7 +542,6 @@ public class StringsTest {
         String result = Strings.dateToString(date);
         result = result.substring(0, 8);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -529,7 +577,6 @@ public class StringsTest {
         expResult = false;
         result = Strings.inString(comodinBegin, search, comodinEnd, expression);
         assertEquals(expResult, result);
-        //fail("The test case is a prototype.");
     }
 
     /**
@@ -556,113 +603,127 @@ public class StringsTest {
         assertEquals(expResult, result);
     }
 
+
     /**
      * Test of fileToString method, of class Strings.
      */
-    //@Test
+    @Test
     public void testFileToString_File() {
         System.out.println("fileToString");
-        File file = null;
-        String expResult = "";
+        String path = "./src/test/java/org/javabeanstack/util/prueba.xml";
+        File file = new File(path);
+        String expResult = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         String result = Strings.fileToString(file);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        assertEquals(expResult, result.substring(0, 38));
     }
-
+    
     /**
      * Test of fileToString method, of class Strings.
      */
-    //@Test
+    @Test
     public void testFileToString_String() {
         System.out.println("fileToString");
-        String filePath = "";
-        String expResult = "";
-        String result = Strings.fileToString(filePath);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        String path = "./src/test/java/org/javabeanstack/util/prueba.xml";
+        String expResult = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+        String result = Strings.fileToString(path);
+        assertEquals(expResult, result.substring(0, 38));
     }
 
     /**
      * Test of fileToString method, of class Strings.
      */
-    //@Test
+    @Test
     public void testFileToString_String_String() {
         System.out.println("fileToString");
-        String filePath = "";
-        String charSet = "";
-        String expResult = "";
+        String filePath = "./src/test/java/org/javabeanstack/util/prueba.xml";
+        String charSet = "UTF-8";
+        String expResult = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         String result = Strings.fileToString(filePath, charSet);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        assertEquals(expResult, result.substring(0, 38));
     }
 
     /**
      * Test of streamToString method, of class Strings.
      * @throws java.lang.Exception
      */
-    //@Test
+    @Test
     public void testStreamToString_InputStream() throws Exception {
         System.out.println("streamToString");
-        InputStream input = null;
-        String expResult = "";
+        String path = "./src/test/java/org/javabeanstack/util/prueba.xml";
+        File file = new File(path);
+        InputStream input = new FileInputStream(file);
+        String expResult = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         String result = Strings.streamToString(input);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        assertEquals(expResult, result.substring(0, 38));
     }
 
     /**
      * Test of streamToString method, of class Strings.
      * @throws java.lang.Exception
      */
-    //@Test
+    @Test
     public void testStreamToString_InputStream_String() throws Exception {
         System.out.println("streamToString");
-        InputStream input = null;
-        String charSet = "";
-        String expResult = "";
+        String path = "./src/test/java/org/javabeanstack/util/prueba.xml";
+        File file = new File(path);
+        String charSet = "UTF-8";
+        InputStream input = new FileInputStream(file);
+        String expResult = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         String result = Strings.streamToString(input, charSet);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        assertEquals(expResult, result.substring(0, 38));
     }
 
     /**
      * Test of streamToString method, of class Strings.
      * @throws java.lang.Exception
      */
-    //@Test
+    @Test
     public void testStreamToString_InputStream_Charset() throws Exception {
         System.out.println("streamToString");
-        InputStream input = null;
-        Charset charSet = null;
-        String expResult = "";
+        String path = "./src/test/java/org/javabeanstack/util/prueba.xml";
+        File file = new File(path);
+        InputStream input = new FileInputStream(file);
+        Charset charSet = Charset.forName("UTF-8");
+        String expResult = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         String result = Strings.streamToString(input, charSet);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+        assertEquals(expResult, result.substring(0, 38));
     }
 
     /**
      * Test of getXmlFileCharSet method, of class Strings.
      */
-    //@Test
+    @Test
     public void testGetXmlFileCharSet_String() {
         System.out.println("getXmlFileCharSet");
-        String text = "";
-        String expResult = "";
+        String path = "./src/test/java/org/javabeanstack/util/prueba.xml";
+        String text = Strings.fileToString(path);
+        String expResult = "UTF-8";
         String result = Strings.getXmlFileCharSet(text);
         assertEquals(expResult, result);
-        fail("The test case is a prototype.");
     }
 
     /**
      * Test of getXmlFileCharSet method, of class Strings.
      */
-    //@Test
+    @Test
     public void testGetXmlFileCharSet_File() {
         System.out.println("getXmlFileCharSet");
-        File file = null;
-        String expResult = "";
+        String path = "./src/test/java/org/javabeanstack/util/prueba.xml";
+        File file = new File(path);
+        String expResult = "UTF-8";
         String result = Strings.getXmlFileCharSet(file);
         assertEquals(expResult, result);
-        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of capitalize method, of class Strings.
+     */
+    @Test
+    public void testCapitalize() {
+        System.out.println("capitalize");
+        String text = "juan";
+        String expResult = "Juan";
+        String result = Strings.capitalize(text);
+        assertEquals(expResult, result);
     }
 }

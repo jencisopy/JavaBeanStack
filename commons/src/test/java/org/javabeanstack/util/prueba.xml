@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XML>
+    <VIEW>
+        <CODIGO header="Código"/>
+        <TIPO header="Tipo"/>            
+        <NOMBRE header="Nombre"/>
+    </VIEW>  
+</XML>
