@@ -22,6 +22,9 @@
  */
 package org.javabeanstack.security;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.javabeanstack.security.exceptions.TypeAuthInvalid;
 import org.javabeanstack.security.model.ClientAuth;
 import org.javabeanstack.security.model.ServerAuth;
 import org.javabeanstack.util.Strings;
@@ -37,7 +40,7 @@ public class DigestAuthTest {
     }
    
     @Test
-    public void testCheckWrong(){
+    public void testCheckWrong() throws Exception{
         System.out.println("check fallidos");
         String header = "Digest username=\"adminerror\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", response=\"885d2f93dceb6077d8167e00d8111902\", opaque=\"\"";
         DigestAuth auth = new DigestAuth();
@@ -70,7 +73,7 @@ public class DigestAuthTest {
      * Test of check method, of class DigestAuth.
      */
     @Test
-    public void testCheck() {
+    public void testCheck() throws Exception {
         System.out.println("check");
 
         boolean expResult = true;
@@ -127,8 +130,7 @@ public class DigestAuthTest {
         //Check Generico
         result = auth.check(requestAuth);
         assertEquals(expResult, result);
-        // Una vez realizado el check elimina el objeto autenticador de la lista de los válidos
-        // si es tipo "Digest"
+        // Una vez realizado el check exitoso se elimina el objeto autenticador de la lista de los válidos
         result = auth.check(requestAuth);
         assertFalse(result);
     }
@@ -137,7 +139,7 @@ public class DigestAuthTest {
      * Test of checkMD5 method, of class DigestAuth.
      */
     @Test
-    public void testCheckMD5() {
+    public void testCheckMD5() throws Exception{
         String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"f09cecf114d72dcb1ba99e02ac448687\", "
                 + "uri=\"/digest-auth\", response=\"aac60f90b7712c712735645b9cbbc767\", opaque=\"\"";
         DigestAuth auth = new DigestAuth();
@@ -155,7 +157,7 @@ public class DigestAuthTest {
      * Test of checkMD5_auth method, of class DigestAuth.
      */
     @Test
-    public void testCheckMD5_auth() {
+    public void testCheckMD5_auth() throws Exception{
         System.out.println("checkMD5_auth");
         String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"f09cecf114d72dcb1ba99e02ac448687\", "
                 + "uri=\"/digest-auth\", qop=auth, nc=00000000, cnonce=\"f09cecf114d72dcb1ba99e02ac448688\", "
@@ -175,7 +177,7 @@ public class DigestAuthTest {
      * Test of checkMD5_sess_auth method, of class DigestAuth.
      */
     @Test
-    public void testCheckMD5_sess_auth() {
+    public void testCheckMD5_sess_auth() throws Exception{
         System.out.println("checkMD5_sess_auth");
         String header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"f09cecf114d72dcb1ba99e02ac448687\", "
                 + "uri=\"/digest-auth\", qop=auth, nc=00000000, cnonce=\"f09cecf114d72dcb1ba99e02ac448688\", "
@@ -196,7 +198,7 @@ public class DigestAuthTest {
      * Test of getResponseHeader method, of class DigestAuth.
      */
     @Test
-    public void testGetResponseHeader(){
+    public void testGetResponseHeader() throws Exception{
         DigestAuth auth = new DigestAuth(DigestAuth.BASIC, "", "");
         String expResult = "Basic realm=\"Restricted\"";
         ServerAuth serverAuth = auth.createResponseAuth();
@@ -229,10 +231,10 @@ public class DigestAuthTest {
      * @throws InterruptedException 
      */
     @Test
-    public void purgeResponseAuth() throws InterruptedException{
+    public void purgeResponseAuth() throws Exception{
         System.out.println("purgeResponseAuth");        
         DigestAuth auth = new DigestAuth();
-        auth.setSecondsIdle(2); // 2 segundos de vida
+        auth.setSecondsIdle(1); // 1 segundo de vida
         
         // Probar con basic
         for (int i = 0;i <= 500;i++){
@@ -260,5 +262,29 @@ public class DigestAuthTest {
                 break;
             }
         }
+    }
+    
+    @Test
+    public void testTypeInvalid() throws Exception{
+        System.out.println("TypeAuthInvalid");        
+        DigestAuth auth = new DigestAuth();
+        List<String> typeValids = new ArrayList();
+        typeValids.add("Basic");
+        auth.setTypeAuthValid(typeValids);
+        auth.createResponseAuth(DigestAuth.BASIC,"basic ","");
+        try {
+            auth.createResponseAuth(DigestAuth.DIGEST,"","");
+            fail("Error validación");
+        } catch (TypeAuthInvalid e) {
+            System.out.println("Prueba exitosa "+e.getMessage());
+        }
+        
+        try {
+            auth = new DigestAuth("cualquier cosa", "", "");
+            fail("Error validación");
+        } catch (TypeAuthInvalid e) {
+            System.out.println("Prueba exitosa "+e.getMessage());
+        }
+
     }
 }
