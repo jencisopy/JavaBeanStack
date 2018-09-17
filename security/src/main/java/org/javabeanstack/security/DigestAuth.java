@@ -23,6 +23,7 @@
 package org.javabeanstack.security;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,9 +40,10 @@ import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.*;
 
 /**
- * Clase que implementa funcionalidades de autenticación basados en las
- * especificaciones RFC 2069, RFC 2617 Más información en
- * https://en.wikipedia.org/wiki/Digest_access_authentication
+ * Clase que implementa funcionalidades de autenticación basado en la
+ * especificación RFC 2617.
+ * Más información en https://en.wikipedia.org/wiki/Digest_access_authentication
+ * https://tools.ietf.org/html/rfc2617
  *
  * @author Jorge Enciso
  */
@@ -56,16 +58,13 @@ public class DigestAuth {
     private int numberCanFail = 10;
     private int secondsIdle = 60;
     private List<String> typeAuthValids = new ArrayList();
+    private List<String> algorithmValids = new ArrayList();
+    private List<String> qopValids = new ArrayList();
 
     public DigestAuth() {
-        typeAuthValids.add("Basic");
-        typeAuthValids.add("Digest");
+        defaultAttributes();
     }
     
-    protected final boolean isValidTypeAuth(String typeAuth){
-        return typeAuthValids.contains(typeAuth);
-    }
-
     /**
      * Setea propiedades que definirá el comportamiento del componente.
      *
@@ -76,16 +75,49 @@ public class DigestAuth {
      * @throws org.javabeanstack.security.exceptions.TypeAuthInvalid
      */
     public DigestAuth(String typeAuth, String realm, String qop) throws TypeAuthInvalid {
-        typeAuthValids.add("Basic");
-        typeAuthValids.add("Digest");
+        defaultAttributes();
         if (!isValidTypeAuth(typeAuth)){
             throw new TypeAuthInvalid(typeAuth+" no es válido");
         }
         this.type = typeAuth;
         this.realm = realm;
-        this.qop = qop;
+        this.qop = Fn.nvl(qop,"");
+        if (!this.qop.isEmpty()){
+            String[] qops = this.qop.split(",");
+            for (int i=0;i < qops.length;i++){
+               qops[i] = qops[i].trim();
+            }
+            this.qopValids = Arrays.asList(qops);
+        }
     }
 
+    /**
+     * Atributos por defecto
+     */
+    private void defaultAttributes(){
+        typeAuthValids.add("Basic");
+        typeAuthValids.add("Digest");
+        
+        algorithmValids.add("MD5");
+        algorithmValids.add("MD5-sess");
+        
+        qopValids.add("");
+        qopValids.add("auth");
+        qopValids.add("auth-int");
+    }
+    
+    protected final boolean isValidTypeAuth(String typeAuth){
+        return typeAuthValids.contains(typeAuth);
+    }
+
+    protected final boolean isValidAlgoritm(String algorithm){
+        return algorithmValids.contains(algorithm);
+    }
+
+    protected final boolean isValidQop(String qop){
+        return qopValids.contains(qop);
+    }
+    
     /**
      * Devuelve el valor alfanumerico que se utilizará para enviar en la
      * variable header "www-autenticate" del paquete de respuesta del servidor.
@@ -323,6 +355,10 @@ public class DigestAuth {
         if (!isValidTypeAuth(DIGEST)){
             return false;
         }
+        // Validar si esta permitido el algoritmo "MD5"
+        if (!isValidAlgoritm("MD5")){
+            return false;
+        }
         ServerAuth serverAuth = getResponseAuth(clientAuth.getNonce());
         //Check nonce, opaque, realm, type
         if (!compareServerAndClientAuth(clientAuth, serverAuth)) {
@@ -371,6 +407,10 @@ public class DigestAuth {
         if (!isValidTypeAuth(DIGEST)){
             return false;
         }
+        // Validar si esta permitido el algoritmo "MD5-sess"        
+        if (!isValidAlgoritm("MD5-sess")){
+            return false;
+        }
         ServerAuth serverAuth = getResponseAuth(clientAuth.getNonce());
         //Check nonce, opaque, realm, type
         if (!compareServerAndClientAuth(clientAuth, serverAuth)) {
@@ -412,6 +452,9 @@ public class DigestAuth {
      */
     public boolean compareServerAndClientAuth(ClientAuth requestAuth, ServerAuth responseAuth) {
         if (responseAuth == null) {
+            return false;
+        }
+        if (!isValidQop(requestAuth.getQop())){
             return false;
         }
         if (!responseAuth.getType().equals(requestAuth.getType())) {
@@ -527,20 +570,56 @@ public class DigestAuth {
     }
 
     /**
-     * Devuelve los tipos de autenticaciones válidas (Basic,Digest)
+     * Devuelve los tipos de autenticaciones válidos (Basic,Digest)
      *
      * @return tipos de autenticaciones válidas
      */
-    public List<String> getTypeAuthValid() {
+    public List<String> getTypeAuthValids() {
         return typeAuthValids;
     }
 
     /**
-     * Setea los tipos de Autenticaciones válidas
+     * Setea los tipos de Autenticaciones válidos
      *
      * @param typeAuthValid tipos de autenticaciones (Basic, Digest)
      */
-    public void setTypeAuthValid(List<String> typeAuthValid) {
+    public void setTypeAuthValids(List<String> typeAuthValid) {
         this.typeAuthValids = typeAuthValid;
+    }
+
+    /**
+     * Devuelve los algoritmos de autenticaciones válidos (MD5, MD5-sess)
+     *
+     * @return algoritmos de autenticaciones válidos
+     */
+    public List<String> getAlgorithmValids() {
+        return algorithmValids;
+    }
+
+    /**
+     * Setea los algoritmos válidos
+     *
+     * @param algorithmValids algoritmos válidos (MD5, MD5-sess)
+     */
+    public void setAlgorithmValids(List<String> algorithmValids) {
+        this.algorithmValids = algorithmValids;
+    }
+
+    /**
+     * Devuelve los qops válidos ("","auth","auth-int")
+     *
+     * @return qops válidos
+     */
+    public List<String> getQopValids() {
+        return qopValids;
+    }
+
+    /**
+     * Setea los qops válidos
+     *
+     * @param qopValids qops válidos ("","auth","auth-int")
+     */
+    public void setQopValids(List<String> qopValids) {
+        this.qopValids = qopValids;
     }
 }
