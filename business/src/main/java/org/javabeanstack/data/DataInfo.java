@@ -320,7 +320,7 @@ public class DataInfo {
             Field field = DataInfo.getDeclaredField(classObj, fieldname + "_default");
             field.setAccessible(true);
             valor = field.get(ejb);
-        } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException | NullPointerException ex) {
             ErrorManager.showError(ex, LOGGER);
         }
         return valor;
@@ -347,7 +347,7 @@ public class DataInfo {
                     ejb.setAction(IDataRow.UPDATE);
                 }
             }
-        } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+        } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
     }
@@ -378,7 +378,7 @@ public class DataInfo {
                 return (T) obj;
             }
             return null;
-        } catch (IllegalAccessException | IllegalArgumentException | SecurityException ex) {
+        } catch (IllegalAccessException | IllegalArgumentException | SecurityException | NullPointerException ex) {
             ErrorManager.showError(ex, LOGGER);
         }
         return null;
@@ -403,7 +403,7 @@ public class DataInfo {
             } else {
                 field = classType.getDeclaredField(fieldname);
             }
-        } catch (NoSuchFieldException ex) {
+        } catch (NoSuchFieldException | NullPointerException ex) {
             field = null;
         } catch (SecurityException ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -453,7 +453,7 @@ public class DataInfo {
             } else {
                 cls = getDeclaredField(classType, fieldname).getType();
             }
-        } catch (NoSuchFieldException ex) {
+        } catch (NoSuchFieldException| NullPointerException ex) {
             cls = null;
         } catch (SecurityException ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -484,7 +484,7 @@ public class DataInfo {
                 field.setAccessible(true);
                 value = field.get(ejb);
             }
-        } catch (IllegalAccessException | IllegalArgumentException | SecurityException ex) {
+        } catch (Exception ex) {
             return null;
         }
         return value;
