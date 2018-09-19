@@ -106,7 +106,7 @@ public class IOUtil {
         try (InputStream input = new FileInputStream(filePath)) {
             properties.load(input);
             return properties;
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(IOUtil.class).error(ex.getMessage());
         }
         return null;
@@ -120,7 +120,7 @@ public class IOUtil {
     public static Properties getPropertiesFrom(File file) {
         // load a properties file
         Properties properties = new Properties();
-        if (file == null || !file.isFile() || file.canRead()) {
+        if (file == null || !file.isFile() || !file.canRead()) {
             return null;
         }
         try (InputStream input = new FileInputStream(file)){
@@ -146,32 +146,65 @@ public class IOUtil {
         try (InputStream input = getResourceAsStream(clazz, filePath)){
             properties.load(input);
             return properties;
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(IOUtil.class).error(ex.getMessage());
         }
         return null;
     }
     
+    /**
+     * Devuelve el path de un archivo ejemplo c:/carpeta1/subcarpeta1/archivo.txt
+     * retorna /carpeta1/subcarpeta1/
+     * @param file nombre y path del archivo
+     * @return el path del archivo
+     */
     public static String getPath(String file){
         return FilenameUtils.getPath(file);
     }
 
+    /**
+     * Devuelve el path de un archivo ejemplo c:/carpeta1/subcarpeta1/archivo.txt
+     * retorna c:/carpeta1/subcarpeta1/
+     * @param file nombre y path del archivo
+     * @return el path del archivo
+     */
     public static String getFullPath(String file){
         return FilenameUtils.getFullPath(file);
     }
     
+    /**
+     * Devuelve el path de un archivo ejemplo c:/carpeta1/subcarpeta1/archivo.txt
+     * retorna /carpeta1/subcarpeta1
+     * @param file nombre y path del archivo
+     * @return el path del archivo
+     */
     public static String getFullPathNoEndSeparator(String file){
         return FilenameUtils.getFullPathNoEndSeparator(file);
     }
     
+    /**
+     * Devuelve el nombre del archivo sin la extensión
+     * @param file nombre archivo
+     * @return el nombre del archivo sin extensión
+     */
     public static String getFileBaseName(String file){
         return FilenameUtils.getBaseName(file);
     }
 
+    /**
+     * Devuelve el nombre del archivo 
+     * @param file nombre archivo
+     * @return el nombre del archivo sin path
+     */
     public static String getFileName(String file){
         return FilenameUtils.getName(file);
     }
     
+    /**
+     * Devuelve la extensión del archivo
+     * @param file nombre archivo
+     * @return extensión del archivo
+     */
     public static String getFileExtension(String file){
         return FilenameUtils.getExtension(file);
     }
