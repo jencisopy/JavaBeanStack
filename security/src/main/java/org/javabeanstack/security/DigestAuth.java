@@ -303,7 +303,7 @@ public class DigestAuth {
             ServerAuth responseAuth = serverAuthMap.get(requestAuth.getNonce());
             if (responseAuth != null) {
                 responseAuth.increment();
-                // Si sobrepasa los 10 intentos eliminar el objeto serverAuth
+                // Si sobrepasa los n intentos permitidos eliminar el objeto serverAuth
                 if (responseAuth.getNonceCount() > getNumberCanFail()) {
                     serverAuthMap.remove(requestAuth.getNonce());
                 }
@@ -323,7 +323,7 @@ public class DigestAuth {
         if (!isValidTypeAuth(BASIC)){
             return false;
         }
-        ServerAuth serverAuth = getResponseAuth("basic " + clientAuth.getUsername());
+        ServerAuth serverAuth = getResponseAuth(clientAuth.getUsername());
         //Usuario incorrecto o no se seteo el autenticador
         if (serverAuth == null) {
             return false;
@@ -331,7 +331,7 @@ public class DigestAuth {
         //Verificar cantidad de intentos fallidos.
         if (serverAuth.getNonceCount() >= numberCanFail) {
             //Eliminar autenticador cuando sobrepasa cantidad de fallos permitidos
-            serverAuthMap.remove("basic " + clientAuth.getUsername());
+            serverAuthMap.remove(clientAuth.getUsername());
             return false;
         }
         // Verificar password
@@ -340,7 +340,7 @@ public class DigestAuth {
             return false;
         }
         //Tuvo exito eliminar autenticador
-        serverAuthMap.remove("basic " + clientAuth.getUsername());
+        serverAuthMap.remove(clientAuth.getUsername());
         return true;
     }
 
@@ -385,7 +385,7 @@ public class DigestAuth {
                     + ":" + clientAuth.getQop()
                     + ":" + ha2);
         } else if (qop.equals("auth-int")) {
-            ha2 = DigestUtil.md5(clientAuth.getMethod() + ":" + clientAuth.getUri() + ":" + clientAuth.getEntityBody());
+            ha2 = DigestUtil.md5(clientAuth.getMethod() + ":" + clientAuth.getUri() + ":" + DigestUtil.md5(clientAuth.getEntityBody()));
             result = DigestUtil.md5(ha1
                     + ":" + clientAuth.getNonce()
                     + ":" + clientAuth.getNonceCount()
@@ -431,7 +431,7 @@ public class DigestAuth {
             result = DigestUtil.md5(ha1 + ":" + clientAuth.getNonce() + ":" + ha2);
         } else {
             if (qop.equals("auth-int")) {
-                ha2 = DigestUtil.md5(clientAuth.getMethod() + ":" + clientAuth.getUri() + ":" + clientAuth.getEntityBody());
+                ha2 = DigestUtil.md5(clientAuth.getMethod() + ":" + clientAuth.getUri() + ":" + DigestUtil.md5(clientAuth.getEntityBody()));
             }
             result = DigestUtil.md5(ha1 + ":"
                     + clientAuth.getNonce() + ":"

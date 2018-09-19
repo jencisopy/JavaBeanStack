@@ -57,9 +57,9 @@ public class DigestAuthTest {
         
         // Basic 
         header = "Basic YWRtaW46cGFzc3dvcmQ=";
-        auth.createResponseAuth(DigestAuth.BASIC,"basic admin","");
-        auth.getResponseAuth("basic admin").setUsername("admin");
-        auth.getResponseAuth("basic admin").setPassword("passwordwrong");
+        auth.createResponseAuth(DigestAuth.BASIC,"admin","");
+        auth.getResponseAuth("admin").setUsername("admin");
+        auth.getResponseAuth("admin").setPassword("passwordwrong");
         requestAuth = new ClientAuth("GET",header,"");
         // Equivocarse al proposito más de las 10 veces permitidas
         // Por defecto se puede equivocar 10 veces
@@ -81,9 +81,9 @@ public class DigestAuthTest {
 
         // Basic 
         String header = "Basic YWRtaW46cGFzc3dvcmQ=";
-        auth.createResponseAuth(DigestAuth.BASIC,"basic admin","");
-        auth.getResponseAuth("basic admin").setUsername("admin");
-        auth.getResponseAuth("basic admin").setPassword("password");
+        auth.createResponseAuth(DigestAuth.BASIC,"admin","");
+        auth.getResponseAuth("admin").setUsername("admin");
+        auth.getResponseAuth("admin").setPassword("password");
         ClientAuth requestAuth = new ClientAuth("GET",header,"");
         boolean result = auth.checkBasic(requestAuth);
         assertEquals(expResult, result);
@@ -104,7 +104,7 @@ public class DigestAuthTest {
         assertEquals(expResult, result);
         
         //MD5 + auth-int
-        header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", qop=auth-int, nc=, cnonce=\"\", response=\"00f1eed3553116bc77e5d9721cf746b6\", opaque=\"\"";
+        header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", qop=auth-int, nc=, cnonce=\"\", response=\"d638e3ff4888119971d73d73005759b1\", opaque=\"\"";
         requestAuth = new ClientAuth("POST",header,"prueba entity body\n");
         result = auth.checkMD5(requestAuth);
         assertEquals(expResult, result);
@@ -122,7 +122,7 @@ public class DigestAuthTest {
         assertEquals(expResult, result);
         
         //MD5_sess + auth-int
-        header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", qop=auth-int, nc=, cnonce=\"\", response=\"ae5f7169f53d646ae4b34b4a2904f45a\", opaque=\"\"";
+        header = "Digest username=\"admin\", realm=\"ldap\", nonce=\"\", uri=\"/digest-auth\", qop=auth-int, nc=, cnonce=\"\", response=\"976f31cf01fbeca7a277326e0085ec92\", opaque=\"\"";
         requestAuth = new ClientAuth("POST",header,"prueba entity body\n");
         result = auth.checkMD5_Sess(requestAuth);
         assertEquals(expResult, result);
@@ -238,12 +238,12 @@ public class DigestAuthTest {
         
         // Probar con basic
         for (int i = 0;i <= 500;i++){
-            auth.createResponseAuth(DigestAuth.BASIC,"basic "+i,"");                    
+            auth.createResponseAuth(DigestAuth.BASIC,""+i,"");                    
         }
         Thread.sleep(2000);
         auth.purgeResponseAuth();
         for (int i = 0;i <= 500;i++){
-            ServerAuth serverAuth = auth.getResponseAuth("basic "+i);
+            ServerAuth serverAuth = auth.getResponseAuth(""+i);
             if (serverAuth != null){
                 fail("Error purga");
                 break;
