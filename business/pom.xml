@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb-client-bom</artifactId>
-            <version>10.1.0.Final</version>            
+            <version>14.0.0.Final</version>            
             <scope>test</scope>
             <type>pom</type>
         </dependency>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>5.2.5.Final</version>
+            <version>5.3.6.Final</version>
             <scope>test</scope>            
         </dependency>
     </dependencies>      

@@ -197,11 +197,12 @@ public class DataResult implements IDataResult {
     /**
      * En caso de grabarse un solo registro devuelve el registro con los datos
      * del identificador generado en la base de datos.
+     * @param <T>
      * @return registro grabado.
      */
     @Override
-    public IDataRow getRowResult() {
-        return rowResult;
+    public <T extends IDataRow> T getRowResult() {
+        return (T)rowResult;
     }
     
     /**

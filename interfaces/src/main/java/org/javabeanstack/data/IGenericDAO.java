@@ -77,7 +77,7 @@ public interface IGenericDAO {
     public IDataResult update(String sessionId, IDataSet dataSet);
 
     /**
-     * Agregar,un registro en la tabla
+     * Agrega un registro en la tabla
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
      * @param sessionId identificador de la sesión del usuario
@@ -88,7 +88,7 @@ public interface IGenericDAO {
     public <T extends IDataRow> IDataResult persist(String sessionId, T ejb) throws Exception;
 
     /**
-     * Modificar un registro en la tabla dada
+     * Modifica un registro en la tabla dada
      *
      * @param <T> tipo de dato generalemente hereda de DataRow
      * @param sessionId identificador de la sesión del usuario
@@ -133,7 +133,7 @@ public interface IGenericDAO {
     public <T extends IDataRow> T findById(Class<T> entityClass, String sessionId, Object id) throws Exception;
 
     /**
-     * Devuelve un registro de una tabla dada
+     * Devuelve una lista de registros de una tabla dada
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
@@ -158,7 +158,7 @@ public interface IGenericDAO {
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params) throws Exception;
 
     /**
-     * Devuelve un registro de una tabla dada
+     * Devuelve una lista de registros de una tabla dada
      *
      * @param <T>
      * @param entityClass clase mapeada a la tabla
@@ -312,7 +312,7 @@ public interface IGenericDAO {
     public List<Object> findByNativeQuery(String sessionId, String queryString, Map<String, Object> parameters) throws Exception;
 
     /**
-     * Selecciona datos de la base de datos a travez de una instrucción nativa
+     * Selecciona datos de la base de datos a travez de una instrucción sql nativa
      *
      * @param sessionId identificador de la sesión del usuario 
      * @param queryString sentencia sql

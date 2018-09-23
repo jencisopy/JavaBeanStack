@@ -47,5 +47,5 @@ public interface IDataResult extends Serializable{
     public void setErrorMsg(String error);
     public void setErrorsMap(Map<String, IErrorReg> error);    
     public void setRemoveDeleted(Boolean remove);
-    public IDataRow getRowResult();
+    public <T extends IDataRow> T getRowResult();
 }

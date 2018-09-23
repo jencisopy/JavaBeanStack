@@ -42,7 +42,7 @@ import org.javabeanstack.data.DataRow;
 @NamedQueries({
     @NamedQuery(name = "AppUserFormView.findAll", query = "SELECT a FROM AppUserFormView a")})
 public class AppUserFormView extends DataRow {
-    private static final long serialVersionUID = -7941769011539363185L;
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
