@@ -38,7 +38,6 @@ import org.junit.BeforeClass;
  * @author Jorge Enciso
  */
 public class AbstractDAOTest extends TestClass {
-
     private static IGenericDAORemote dao;
 
     public AbstractDAOTest() {
@@ -51,7 +50,6 @@ public class AbstractDAOTest extends TestClass {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        
     }
 
     /**
@@ -233,6 +231,8 @@ public class AbstractDAOTest extends TestClass {
     @Test
     public void testFindByNativeQuery() throws Exception {
         System.out.println("findByNativeQuery");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = dataLink.getUserSession().getSessionId();
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -241,11 +241,11 @@ public class AbstractDAOTest extends TestClass {
         String sqlSentence = "select * from {schema}.moneda where idmoneda > :id";
         Map<String, Object> params = new HashMap();
         params.put("id",0);
-        List<Object> query1 = dataLink.findByNativeQuery(sqlSentence, params);
+        List<Object> query1 = dao.findByNativeQuery(sessionid, sqlSentence, params);
         assertTrue(!query1.isEmpty());
         
         // Un grupo de registros first, max
-        query1 = dataLink.findByNativeQuery(sqlSentence, params,0,10);
+        query1 = dao.findByNativeQuery(sessionid, sqlSentence, params,0,10);
         assertTrue(!query1.isEmpty());
     }
 
@@ -273,20 +273,20 @@ public class AbstractDAOTest extends TestClass {
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
-        dao.update(null, relation);
+        dao.update(sessionid, relation);
         
         // Merge
         List<AppTablesRelation>  relations = dao.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
         relations.get(0).setIncluded(true);
         relations.get(0).setAction(IDataRow.UPDATE);
-        dao.update(null, relations);
+        dao.update(sessionid, relations);
 
         relation = dao.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNotNull(relation);
 
         //Remove
         relation.setAction(IDataRow.DELETE);
-        dao.update(null, relation);
+        dao.update(sessionid, relation);
         
         relation = dao.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNull(relation);
@@ -352,7 +352,10 @@ public class AbstractDAOTest extends TestClass {
         
         relation = dao.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
         relation.setIncluded(true);
-        dao.merge(sessionid, relation);
+        
+        IDataResult dataResult = dao.merge(sessionid, relation);
+        AppTablesRelation rowResult = dataResult.getRowResult();
+        assertEquals(relation.isIncluded(),rowResult.isIncluded());
 
         relation = dao.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNotNull(relation);

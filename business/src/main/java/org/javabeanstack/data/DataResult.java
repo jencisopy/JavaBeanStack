@@ -204,6 +204,16 @@ public class DataResult implements IDataResult {
     public <T extends IDataRow> T getRowResult() {
         return (T)rowResult;
     }
+
+    /**
+     * Asigna el ultimo registro grabado en la base
+     * @param <T>
+     * @param row
+     */
+    @Override
+    public <T extends IDataRow> void setRowResult(T row) {
+        rowResult = row;
+    }
     
     /**
      * Devuelve el error como Exception si lo hubiese
