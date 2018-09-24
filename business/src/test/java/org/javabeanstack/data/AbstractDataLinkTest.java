@@ -479,9 +479,52 @@ public class AbstractDataLinkTest extends TestClass {
     /**
      * Test of update method, of class AbstractDataLink.
      */
-    //@Test
+    @Test
     public void testUpdate_IDataSet() throws Exception {
         System.out.println("update");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataSet dataSet = new DataSet();
+        
+        List<AppTablesRelation> relations = new ArrayList();
+        //Persist
+        for (int i = 0;i<5;i++){
+            AppTablesRelation relation = new AppTablesRelation();
+            relation.setEntityPK("xx1");
+            relation.setEntityFK("xx"+i);
+            relation.setFechacreacion(new Date());
+            relation.setFechamodificacion(new Date());
+            relation.setFieldsFK("id");
+            relation.setFieldsPK("id");
+            relation.setAction(IDataRow.INSERT);
+            relations.add(relation);
+        }
+        dataSet.add("relacion", relations);
+        dataLinkCat.update(dataSet);
+        
+        // Merge
+        relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
+        dataSet.add("relacion", relations);        
+        for (int i = 0;i<5;i++){
+            relations.get(i).setIncluded(true);
+            relations.get(i).setAction(IDataRow.UPDATE);
+        }
+        dataLinkCat.update(dataSet);
+
+        relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
+        dataSet.add("relacion", relations);
+        for (int i = 0;i<5;i++){
+            assertTrue(relations.get(i).isIncluded());
+            relations.get(i).setAction(IDataRow.DELETE);
+        }
+        //Remove
+        dataLinkCat.update(dataSet);
+        relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
+        assertTrue(relations.isEmpty());        
+        
     }
 
 
