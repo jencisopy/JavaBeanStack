@@ -470,6 +470,7 @@ public class DataInfo {
     public static Object getFieldValue(Object ejb, String fieldname) {
         Object value;
         try {
+            //TODO implementar extracción del valor por medio del getter
             // Si contiene un punto significa que el campo esta en uno de sus miembros
             if (fieldname.contains(".")) {
                 String memberName = fieldname.substring(0, Strings.findString(".", fieldname));

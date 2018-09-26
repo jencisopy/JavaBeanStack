@@ -29,6 +29,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -42,7 +43,7 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
  * @author Jorge Enciso
  */
 @Entity
-@Table(name = "appresource")
+@Table(name = "appresource",uniqueConstraints = { @UniqueConstraint(columnNames = {"code"})})
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "AppResource.findAll", query = "SELECT a FROM AppResource a")})

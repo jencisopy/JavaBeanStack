@@ -738,6 +738,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
                             break;
                     }
                     ejb.setErrors((Map<String, IErrorReg>) null);
+                    dataResult.setRowResult(ejb);                    
                 }
                 for (IDataRow ejb : ejbs) {
                     if (ejb.getAction() != IDataRow.DELETE) {
@@ -774,6 +775,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     public <T extends IDataRow> IDataResult persist(String sessionId, T ejb) {
         ejb.setAction(IDataRow.INSERT);
         return update(sessionId, ejb);
+        
     }
 
     /**
