@@ -18,6 +18,12 @@ public class DataNativeQueryTest extends TestClass{
     public void testExpr() {
         System.out.println("\n DataNativeQuery TESTEXPR");
         System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        
         query = (DataNativeQuery)dataLink.newDataNativeQuery();        
         
         query.select(""                  
@@ -113,6 +119,14 @@ public class DataNativeQueryTest extends TestClass{
 
     @Test
     public void testQuery() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
         List<IDataQueryModel> data = 
             query.select("{SCHEMa}.fn_iditem(b.iditem,b.item,a.idempresa,'P') as item")
@@ -149,6 +163,14 @@ public class DataNativeQueryTest extends TestClass{
 
     @Test
     public void testQuery2() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY2");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
 //        List<IDataQueryModel>
 //            data = query.select("datos.fn_iditem(iditem,item,idempresa) as item")
@@ -174,6 +196,13 @@ public class DataNativeQueryTest extends TestClass{
 
     @Test
     public void testQuery3() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY3");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
 
         query.select("a.nro")
@@ -192,6 +221,13 @@ public class DataNativeQueryTest extends TestClass{
 
     @Test
     public void testQuery4() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY4");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
 
         query.select("a.nro")
@@ -209,6 +245,13 @@ public class DataNativeQueryTest extends TestClass{
 
     @Test
     public void testQuery5() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY5");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
 
         query.select("nro")
@@ -226,6 +269,13 @@ public class DataNativeQueryTest extends TestClass{
 
     @Test
     public void testQuery6() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY6");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
 
         query.select("nro")
@@ -243,6 +293,13 @@ public class DataNativeQueryTest extends TestClass{
 
     @Test
     public void testQuery7() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY7");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
         IDataExpression exprFilter = new DataExpression();
         exprFilter.addExpression("vendedor = :vendedor");
@@ -264,6 +321,13 @@ public class DataNativeQueryTest extends TestClass{
     
     @Test
     public void testQuery8() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY8");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
         
         IDataNativeQuery subquery = (DataNativeQuery)dataLink.newDataNativeQuery();
@@ -284,6 +348,13 @@ public class DataNativeQueryTest extends TestClass{
     
     @Test
     public void testQuery9() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY9");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
         
         IDataNativeQuery subquery1 = (DataNativeQuery)dataLink.newDataNativeQuery();
@@ -309,6 +380,13 @@ public class DataNativeQueryTest extends TestClass{
 
     @Test
     public void testQuery10() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY10");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
         
         IDataNativeQuery subquery1 = (DataNativeQuery)dataLink.newDataNativeQuery();
@@ -332,12 +410,18 @@ public class DataNativeQueryTest extends TestClass{
     
     @Test
     public void testDBFilter() throws Exception {
+        System.out.println("\n DataNativeQuery TESTDBFILTER");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         query = (DataNativeQuery)dataLink.newDataNativeQuery();
         
         query.select("codigo, nombre")
                 .from("moneda a")
                 .createQuery();
-
 
         System.out.println("\nTESTDBFILTER");
         System.out.println("================");
