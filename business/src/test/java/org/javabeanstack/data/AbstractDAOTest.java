@@ -315,7 +315,7 @@ public class AbstractDAOTest extends TestClass {
         relation.setFieldsPK("id");
         IDataResult dataResult = dao.persist(sessionid, relation);
         
-        AppTablesRelation rowResult = dataResult.getRowResult();
+        AppTablesRelation rowResult = dataResult.getRowUpdated();
         assertEquals(relation.getEntityPK(),rowResult.getEntityPK());
         
         List<AppTablesRelation>  relations = dao.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
@@ -354,7 +354,7 @@ public class AbstractDAOTest extends TestClass {
         relation.setIncluded(true);
         
         IDataResult dataResult = dao.merge(sessionid, relation);
-        AppTablesRelation rowResult = dataResult.getRowResult();
+        AppTablesRelation rowResult = dataResult.getRowUpdated();
         assertEquals(relation.isIncluded(),rowResult.isIncluded());
 
         relation = dao.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);

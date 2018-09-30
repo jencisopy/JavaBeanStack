@@ -308,8 +308,6 @@ public class AbstractDataObjectTest extends TestClass{
         Exception expResult = null;
         Exception result = instance.getErrorApp();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -323,8 +321,6 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = "";
         String result = instance.getErrorMsg(all);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -338,8 +334,6 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = "";
         String result = instance.getErrorMsg(fieldName);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -352,8 +346,6 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = "";
         String result = instance.getFilter();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -366,8 +358,6 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = "";
         String result = instance.getOrder();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -380,8 +370,6 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = "";
         String result = instance.getFilterExtra();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -394,8 +382,6 @@ public class AbstractDataObjectTest extends TestClass{
         Map<String, Object> expResult = null;
         Map<String, Object> result = instance.getFilterParams();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -408,8 +394,6 @@ public class AbstractDataObjectTest extends TestClass{
         List expResult = null;
         List result = instance.getDataRows();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -422,8 +406,6 @@ public class AbstractDataObjectTest extends TestClass{
         Map expResult = null;
         Map result = instance.getDataRowsChanged();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
 
@@ -437,8 +419,6 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = "";
         String result = instance.getSelectCmd();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -451,8 +431,6 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = "";
         String result = instance.getLastQuery();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
 
@@ -466,8 +444,6 @@ public class AbstractDataObjectTest extends TestClass{
         int expResult = 0;
         int result = instance.getRowCount();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -480,8 +456,6 @@ public class AbstractDataObjectTest extends TestClass{
         int expResult = 0;
         int result = instance.getRecStatus();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -494,8 +468,6 @@ public class AbstractDataObjectTest extends TestClass{
         int expResult = 0;
         int result = instance.getFirstRow();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -508,8 +480,6 @@ public class AbstractDataObjectTest extends TestClass{
         int expResult = 0;
         int result = instance.getMaxRows();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -522,8 +492,6 @@ public class AbstractDataObjectTest extends TestClass{
         Long expResult = null;
         Long result = instance.getIdcompany();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -536,8 +504,6 @@ public class AbstractDataObjectTest extends TestClass{
         Long expResult = null;
         Long result = instance.getIdempresa();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
 
@@ -550,8 +516,6 @@ public class AbstractDataObjectTest extends TestClass{
         int first = 0;
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.setFirstRow(first);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -563,8 +527,6 @@ public class AbstractDataObjectTest extends TestClass{
         int maxRows = 0;
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.setMaxRows(maxRows);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -575,8 +537,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("setSelectcmd");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.setSelectcmd();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
 
@@ -592,8 +552,6 @@ public class AbstractDataObjectTest extends TestClass{
         int maxrows = 0;
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.beforeOpen(order, filter, readwrite, maxrows);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -606,8 +564,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.open();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -624,8 +580,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.open(order, filter, readwrite, maxrows);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -640,8 +594,6 @@ public class AbstractDataObjectTest extends TestClass{
         int maxrows = 0;
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterOpen(order, filter, readwrite, maxrows);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
 
@@ -653,8 +605,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("dataFill");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.dataFill();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -665,8 +615,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("afterDataFill");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterDataFill();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -677,8 +625,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("beforeRequery");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.beforeRequery();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -693,8 +639,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.requery(filterExtra, filterParams);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -707,8 +651,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.requery();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -719,8 +661,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("afterRequery");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterRequery();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -734,8 +674,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.beforeRowMove(row);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -749,8 +687,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.goTo(rownumber);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -765,8 +701,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.goTo(rownumber, offset);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -778,8 +712,6 @@ public class AbstractDataObjectTest extends TestClass{
         IDataRow row = null;
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterRowMove(row);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -792,8 +724,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.moveFirst();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -806,8 +736,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.moveNext();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -820,8 +748,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.movePreviews();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -834,8 +760,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.moveLast();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -852,8 +776,6 @@ public class AbstractDataObjectTest extends TestClass{
         int expResult = 0;
         int result = AbstractDataObject.findRow(rowList, field, value, begin, end);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -870,8 +792,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.find(field, value, begin, end);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -886,8 +806,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.find(field, value);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -900,8 +818,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.findNext();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -914,8 +830,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.isEof();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -929,8 +843,6 @@ public class AbstractDataObjectTest extends TestClass{
         Object expResult = null;
         Object result = instance.getNewValue(fieldname);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -944,8 +856,6 @@ public class AbstractDataObjectTest extends TestClass{
         Object expResult = null;
         Object result = instance.getFieldDefaultValue(fieldname);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -959,8 +869,6 @@ public class AbstractDataObjectTest extends TestClass{
         Object expResult = null;
         Object result = instance.getField(fieldname);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -975,8 +883,6 @@ public class AbstractDataObjectTest extends TestClass{
         Object expResult = null;
         Object result = instance.getField(objname, fieldname);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -990,8 +896,6 @@ public class AbstractDataObjectTest extends TestClass{
         Object expResult = null;
         Object result = instance.getFieldOld(fieldname);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1005,8 +909,6 @@ public class AbstractDataObjectTest extends TestClass{
         IDataRow expResult = null;
         IDataRow result = instance.getFieldObjFK(fieldname);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1022,8 +924,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.beforeSetField(fieldname, oldValue, newValue);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1038,8 +938,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.setField(fieldname, value);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1054,8 +952,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.setField(fieldname, param);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1067,13 +963,10 @@ public class AbstractDataObjectTest extends TestClass{
         String fieldname = "";
         Object newValue = null;
         boolean noAfterSetField = false;
-        String range = "";
         AbstractDataObject instance = new AbstractDataObjectImpl();
         boolean expResult = false;
-        boolean result = instance.setField(fieldname, newValue, noAfterSetField, range);
+        boolean result = instance.setField(fieldname, newValue, noAfterSetField);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1089,8 +982,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.afterSetField(fieldname, oldValue, newValue);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1104,8 +995,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.isFieldExist(fieldname);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1119,8 +1008,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.isForeingKey(fieldname);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1133,8 +1020,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.isOpen();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1148,8 +1033,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.allowOperation(operation);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1162,8 +1045,6 @@ public class AbstractDataObjectTest extends TestClass{
         Object expResult = null;
         Object result = instance.getPrimaryKeyValue();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1177,8 +1058,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.setPrimaryKeyValue(value);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1189,8 +1068,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("beforeRefreshRow");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.beforeRefreshRow();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1203,8 +1080,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.refreshRow();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1215,8 +1090,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("afterRefreshRow");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterRefreshRow();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1230,8 +1103,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.beforeInsertRow(newRow);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1244,8 +1115,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.insertRow();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1258,8 +1127,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.insertRowFrom();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1270,8 +1137,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("afterInsertRow");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterInsertRow();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1284,8 +1149,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.beforeDeleteRow();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1298,8 +1161,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.deleteRow();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1310,8 +1171,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("afterDeleteRow");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterDeleteRow();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1326,8 +1185,6 @@ public class AbstractDataObjectTest extends TestClass{
         String tableCopy = "";
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.copyFrom(idcompany, companyName, xmlTag, tableCopy);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1340,8 +1197,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.isExists();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1354,8 +1209,6 @@ public class AbstractDataObjectTest extends TestClass{
         Map<String, IErrorReg> expResult = null;
         Map<String, IErrorReg> result = instance.checkDataRow();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1369,8 +1222,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.beforeUpdate(allRows);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1384,8 +1235,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.beforeUpdate(dataSet);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1397,8 +1246,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean allRows = false;
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.beforeCheckData(allRows);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1412,8 +1259,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.checkData(allRows);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1427,8 +1272,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.checkData(dataSet);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1440,8 +1283,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean allRows = false;
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterCheckData(allRows);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1455,8 +1296,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.update(allRows);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1470,8 +1309,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.update(dataSet);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1483,8 +1320,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean allRows = false;
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterUpdate(allRows);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1498,8 +1333,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.afterUpdate(dataSet);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1510,8 +1343,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("beforeClose");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.beforeClose();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1524,8 +1355,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.revert();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1539,8 +1368,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.revert(allRows);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1554,8 +1381,6 @@ public class AbstractDataObjectTest extends TestClass{
         boolean expResult = false;
         boolean result = instance.revert(dataSet);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1566,8 +1391,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("close");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.close();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -1578,8 +1401,6 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("afterClose");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         instance.afterClose();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     public class AbstractDataObjectImpl extends AbstractDataObject {

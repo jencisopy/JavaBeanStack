@@ -1122,7 +1122,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean setField(String fieldname, Object value) {
-        return this.setField(fieldname, value, false, "");
+        return this.setField(fieldname, value, false);
     }
 
     /**
@@ -1162,13 +1162,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @param newValue
      * @param noAfterSetField Si es verdadero no se ejecuta el metodo
      * AfterSetfield.
-     * @param range Se utiliza para asignar el valor a un grupo de registros
-     * segun el criterio de rango.
      * @return Verdadero si tuvo exito o falso si no
      */
-    //XXX ver, tema range
     @Override
-    public boolean setField(String fieldname, Object newValue, boolean noAfterSetField, String range) {
+    public boolean setField(String fieldname, Object newValue, boolean noAfterSetField) {
         /* No se puede modificar si es de solo lectura */
         if (!this.readWrite) {
             return false;
@@ -1735,7 +1732,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             } else {
                 dataResult = getDAO().update(row);
                 // Asignar el registro resultante de la actualización
-                row = (T) dataResult.getRowResult();
+                row = (T) dataResult.getRowUpdated();
                 dataRows.set(recno, row);
                 if (!dataResult.isSuccessFul()) {
                     errorApp = new Exception(dataResult.getErrorMsg());

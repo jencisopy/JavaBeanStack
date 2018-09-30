@@ -87,7 +87,7 @@ public interface IDataObject <T extends IDataRow>{
     public Map<String, Object> getFilterParams(); 
     public boolean      setField(String fieldname, Object value);
     public boolean      setField(String fieldname, Map<String, Object> param);    
-    public boolean      setField(String fieldname, Object value, boolean noAfterSetField, String range);
+    public boolean      setField(String fieldname, Object value, boolean noAfterSetField);
     public void         setFilterExtra(String filterExtra);     
     public void         setFilterParams(Map<String, Object> filterParams); 
     public boolean      isFieldExist(String fieldname);

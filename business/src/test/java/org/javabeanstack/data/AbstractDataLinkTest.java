@@ -204,7 +204,7 @@ public class AbstractDataLinkTest extends TestClass {
         relation.setFieldsPK("id");
         IDataResult dataResult = dataLinkCat.persist(relation);
         
-        AppTablesRelation rowResult = dataResult.getRowResult();
+        AppTablesRelation rowResult = dataResult.getRowUpdated();
         assertEquals(relation.getEntityPK(),rowResult.getEntityPK());
 
         List<AppTablesRelation>  relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
@@ -273,7 +273,7 @@ public class AbstractDataLinkTest extends TestClass {
         relation.setIncluded(true);
         
         IDataResult dataResult = dataLinkCat.merge(relation);
-        AppTablesRelation rowResult = dataResult.getRowResult();
+        AppTablesRelation rowResult = dataResult.getRowUpdated();
         assertEquals(relation.isIncluded(),rowResult.isIncluded());
 
         relation = dataLinkCat.findByQuery("select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);

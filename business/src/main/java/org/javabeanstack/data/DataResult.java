@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.util.Fn;
 
 /**
  * A travéz de esta clase, se devuelve el resultado de la grabación de registros
@@ -39,7 +40,7 @@ public class DataResult implements IDataResult {
     private final Map<String, List<IDataRow>> mapResult = new HashMap();
     private Boolean success = true;
     private String errorMsg = "";
-    private IDataRow rowResult;
+    private IDataRow rowUpdated;
     private Exception exception;
     private Boolean removeDeleted=false;
     private Map<String, IErrorReg> errorsMap = new HashMap();
@@ -78,6 +79,34 @@ public class DataResult implements IDataResult {
         }
         return mapResult.get(key);
     }
+
+
+    /**
+     * Devuelve una lista ejb del conjunto que ha sido procesado.
+     * @return  lista ejb con los datos que han sido grabados.
+     */
+    @Override
+    public  List<IDataRow> getRowsUpdated() {
+        Map.Entry<String, List<IDataRow>> entry = mapResult.entrySet().iterator().next();
+        if (entry == null){
+            return null;
+        }
+        return entry.getValue();        
+    }
+    
+    /**
+     * Devuelve una lista ejb del conjunto que ha sido procesado.
+     * @param key   identificador de la lista
+     * @return  lista ejb con los datos que han sido grabados.
+     */
+    @Override
+    public List<IDataRow> getRowsUpdated(String key) {
+        if (Fn.nvl(key,"").isEmpty()) {
+            key = "1";
+        }
+        return mapResult.get(key);
+    }
+    
     
     /**
      * Determina si se eliminarón de las listas de registros los elementos
@@ -154,7 +183,7 @@ public class DataResult implements IDataResult {
         List<IDataRow> list = new ArrayList();
         list.add(row);
         setRowsUpdated(list);
-        rowResult = list.get(0);
+        rowUpdated = list.get(0);
     }
 
     /**
@@ -201,8 +230,8 @@ public class DataResult implements IDataResult {
      * @return registro grabado.
      */
     @Override
-    public <T extends IDataRow> T getRowResult() {
-        return (T)rowResult;
+    public <T extends IDataRow> T getRowUpdated() {
+        return (T)rowUpdated;
     }
 
     /**
@@ -211,8 +240,8 @@ public class DataResult implements IDataResult {
      * @param row
      */
     @Override
-    public <T extends IDataRow> void setRowResult(T row) {
-        rowResult = row;
+    public <T extends IDataRow> void setRowUpdated(T row) {
+        rowUpdated = row;
     }
     
     /**
