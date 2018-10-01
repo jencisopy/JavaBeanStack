@@ -22,7 +22,7 @@
 package org.javabeanstack.events;
 
 import java.io.Serializable;
-import org.javabeanstack.data.IDataObject;
+import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataRow;
 
 /**

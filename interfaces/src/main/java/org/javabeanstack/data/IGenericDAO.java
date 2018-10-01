@@ -21,6 +21,8 @@
  */
 package org.javabeanstack.data;
 
+import org.javabeanstack.datactrl.IDataObject;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +37,7 @@ import org.javabeanstack.security.IUserSession;
  *
  * @author Jorge Enciso
  */
-public interface IGenericDAO {
+public interface IGenericDAO extends Serializable {
     /**
      * Sincroniza un ejb con la base de datos.
      *

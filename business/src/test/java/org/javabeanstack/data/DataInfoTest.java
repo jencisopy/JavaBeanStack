@@ -224,8 +224,6 @@ public class DataInfoTest {
         Object expResult = null;
         //Object result = DataInfo.getDefaultValue(ejb, fieldname);
         //assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -237,8 +235,6 @@ public class DataInfoTest {
         Object ejb = null;
         String fieldname = "";
         //DataInfo.setDefaultValue(ejb, fieldname);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
 

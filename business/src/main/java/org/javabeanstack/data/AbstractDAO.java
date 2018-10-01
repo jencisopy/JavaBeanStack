@@ -21,9 +21,11 @@
  */
 package org.javabeanstack.data;
 
+import org.javabeanstack.data.model.DataResult;
+import org.javabeanstack.data.model.DataSet;
+import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -55,7 +57,7 @@ import org.javabeanstack.util.Strings;
  * @author Jorge Enciso
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public abstract class AbstractDAO implements IGenericDAO, Serializable {
+public abstract class AbstractDAO implements IGenericDAO {
     private static final Logger LOGGER = Logger.getLogger(AbstractDAO.class);
     private static final String DEFAULT_SCHEMA_PROPERTY="hibernate.default_schema";
     public static final String FALSE = "false";
@@ -738,7 +740,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
                             break;
                     }
                     ejb.setErrors((Map<String, IErrorReg>) null);
-                    dataResult.setRowResult(ejb);                    
+                    dataResult.setRowUpdated(ejb);                    
                 }
                 for (IDataRow ejb : ejbs) {
                     if (ejb.getAction() != IDataRow.DELETE) {
@@ -997,6 +999,7 @@ public abstract class AbstractDAO implements IGenericDAO, Serializable {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getDataEngine(String persistentUnit) {
         String result;
+        //TODO buscar en hibernate.dialect
         result = (String) this.getPersistUnitProp(persistentUnit).get("jbs.dbengine");
         return result;
     }

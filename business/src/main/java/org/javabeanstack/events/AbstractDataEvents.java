@@ -23,7 +23,7 @@
 package org.javabeanstack.events;
 
 import org.apache.log4j.Logger;
-import org.javabeanstack.data.IDataObject;
+import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataRow;
 
 /**

@@ -445,6 +445,7 @@ public class DataInfo {
     public static Class getFieldType(Class classType, String fieldname) {
         Class cls = null;
         try {
+            //TODO implementar extracción del valor por medio del getter            
             if (fieldname.contains(".")) {
                 String className = fieldname.substring(0, Strings.findString(".", fieldname));
                 Class classMember = classType.getDeclaredField(className).getType();

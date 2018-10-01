@@ -558,6 +558,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         queryConstants.put("schema", schema);
         String schemaCat = (String) dataLink.getDao().getPersistUnitProp(IDBManager.CATALOGO).get("hibernate.default_schema");
         queryConstants.put("schemacatalog", schemaCat);
+        //TODO revisar sgte. linea ver buscar en hibernate.dialect
         String motordatos = (String) dataLink.getPersistUnitProp().get("jbs.dbengine");
         if ("POSTGRES".equals(motordatos)) {
             queryConstants.put("true", "true");

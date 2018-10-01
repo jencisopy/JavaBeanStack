@@ -19,11 +19,14 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-package org.javabeanstack.data;
+package org.javabeanstack.datactrl;
 
 import org.javabeanstack.error.IErrorReg;
 import java.util.List;
 import java.util.Map;
+import org.javabeanstack.data.IDataLink;
+import org.javabeanstack.data.IDataRow;
+import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.events.IDataEvents;
 
 /**
@@ -87,7 +90,7 @@ public interface IDataObject <T extends IDataRow>{
     public Map<String, Object> getFilterParams(); 
     public boolean      setField(String fieldname, Object value);
     public boolean      setField(String fieldname, Map<String, Object> param);    
-    public boolean      setField(String fieldname, Object value, boolean noAfterSetField, String range);
+    public boolean      setField(String fieldname, Object value, boolean noAfterSetField);
     public void         setFilterExtra(String filterExtra);     
     public void         setFilterParams(Map<String, Object> filterParams); 
     public boolean      isFieldExist(String fieldname);

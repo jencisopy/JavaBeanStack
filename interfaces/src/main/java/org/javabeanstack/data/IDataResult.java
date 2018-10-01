@@ -33,20 +33,23 @@ import org.javabeanstack.error.IErrorReg;
 public interface IDataResult extends Serializable{
     public void put(String key, List<IDataRow> listEjb);
     public Map<String, List<IDataRow>> getMapResult();
-    public List<IDataRow> getListEjb(String key);
+    public List<IDataRow> getListEjb(String key);        
     public Boolean isSuccessFul();
     public Boolean isRemoveDeleted();
-    public void setSuccess(Boolean success);
-    public void setRowsUpdated(IDataRow row);        
-    public void setRowsUpdated(List<? extends IDataRow> rows);    
-    public <T extends IDataRow> void setRowsUpdated(IDataSet dataSet);    
     public String getErrorMsg();
     public Map<String, IErrorReg> getErrorsMap();
     public Exception getException();
+    public <T extends IDataRow> T getRowUpdated();
+    public List<IDataRow> getRowsUpdated();    
+    public List<IDataRow> getRowsUpdated(String key);
+
     public void setException(Exception ex);    
     public void setErrorMsg(String error);
     public void setErrorsMap(Map<String, IErrorReg> error);    
     public void setRemoveDeleted(Boolean remove);
-    public <T extends IDataRow> void setRowResult(T row);
-    public <T extends IDataRow> T getRowResult();
+    public void setSuccess(Boolean success);
+    public <T extends IDataRow> void setRowUpdated(T row);        
+    public void setRowsUpdated(IDataRow row);        
+    public void setRowsUpdated(List<? extends IDataRow> rows);    
+    public <T extends IDataRow> void setRowsUpdated(IDataSet dataSet);    
 }

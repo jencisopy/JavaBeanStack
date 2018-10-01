@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.javabeanstack.data;
 
 import java.util.Properties;
@@ -21,14 +16,13 @@ import org.javabeanstack.security.IUserSession;
  * @author Jorge Enciso
  */
 public class TestClass {
-
     private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(TestClass.class);
     static protected Context context;
     static protected IDataLink dataLink;
     static protected IDataLink dataLinkCat;
     static protected String sessionId;
     static protected String error;
-    static String jndiProject = "/TestProjects-ear/TestProjects-ejb/";
+    static protected String jndiProject = "/TestProjects-ear/TestProjects-ejb/";
 
     public TestClass() {
     }
