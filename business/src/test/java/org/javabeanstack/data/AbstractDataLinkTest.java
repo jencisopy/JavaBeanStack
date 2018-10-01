@@ -22,6 +22,7 @@
  */
 package org.javabeanstack.data;
 
+import org.javabeanstack.data.model.DataSet;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;

@@ -21,6 +21,7 @@
 */
 package org.javabeanstack.data;
 
+import org.javabeanstack.datactrl.IDataObject;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

@@ -21,6 +21,9 @@
  */
 package org.javabeanstack.data;
 
+import org.javabeanstack.data.model.DataResult;
+import org.javabeanstack.data.model.DataSet;
+import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import java.lang.reflect.Field;

@@ -20,14 +20,17 @@
 * MA 02110-1301  USA
 */
 
-package org.javabeanstack.data;
+package org.javabeanstack.data.model;
 
+import org.javabeanstack.datactrl.IDataObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.javabeanstack.data.IDataRow;
+import org.javabeanstack.data.IDataSet;
 
 /**
  * Esta clase se utiliza para enviar los set de datos para la actualización en 

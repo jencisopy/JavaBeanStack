@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.data.IDataLink;
-import org.javabeanstack.data.IDataObject;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;

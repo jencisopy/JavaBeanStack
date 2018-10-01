@@ -21,6 +21,7 @@
  */
 package org.javabeanstack.data;
 
+import org.javabeanstack.datactrl.IDataObject;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.util.List;

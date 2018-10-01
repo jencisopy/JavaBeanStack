@@ -36,8 +36,6 @@ import static org.javabeanstack.util.Fn.inList;
  * Contiene metodos necesarios para generar expresiones utilizadas principalmente en los selects nativos. 
  * Es utilizado principalmente por DataNativeQuery().
  * 
- * El test unitario se encuentra en TestProjects clase
- *     py.com.oym.test.data.TestDataExpression
  * 
  * @author Jorge Enciso
  */

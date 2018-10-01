@@ -20,12 +20,15 @@
 * MA 02110-1301  USA
 */
 
-package org.javabeanstack.data;
+package org.javabeanstack.data.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.javabeanstack.data.IDataResult;
+import org.javabeanstack.data.IDataRow;
+import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Fn;
 
@@ -67,6 +70,17 @@ public class DataResult implements IDataResult {
         return mapResult;
     }
 
+    /**
+     * En caso de grabarse un solo registro devuelve el registro con los datos
+     * del identificador generado en la base de datos.
+     * @param <T>
+     * @return registro grabado.
+     */
+    @Override
+    public <T extends IDataRow> T getRowUpdated() {
+        return (T)rowUpdated;
+    }
+    
     /**
      * Devuelve una lista ejb del conjunto que ha sido procesado.
      * @param key   identificador de la lista
@@ -223,16 +237,6 @@ public class DataResult implements IDataResult {
         });
     }
 
-    /**
-     * En caso de grabarse un solo registro devuelve el registro con los datos
-     * del identificador generado en la base de datos.
-     * @param <T>
-     * @return registro grabado.
-     */
-    @Override
-    public <T extends IDataRow> T getRowUpdated() {
-        return (T)rowUpdated;
-    }
 
     /**
      * Asigna el ultimo registro grabado en la base
