@@ -20,11 +20,12 @@
 * MA 02110-1301  USA
 */
 
-package org.javabeanstack.data;
+package org.javabeanstack.data.model;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 
@@ -32,9 +33,6 @@ import org.javabeanstack.util.Strings;
  * Clase que ofrece funcionalidades para acceder de varias maneras al registro
  * de datos (row) resultante de un nativequery. Es utilizado principalmente en 
  * la clase DataNativeQuery
- * 
- * El test unitario se encuentra en TestProjects clase
- *     py.com.oym.test.data.TestDataQueryModel.
  * 
  * @author Jorge Enciso 
  */

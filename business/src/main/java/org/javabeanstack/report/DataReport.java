@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
-import org.javabeanstack.data.DataQueryModel;
+import org.javabeanstack.data.model.DataQueryModel;
 import org.javabeanstack.data.IDataExpression;
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataNativeQuery;
@@ -49,8 +49,6 @@ import static org.javabeanstack.util.Fn.nvl;
  *    order by {orderBy}
  *    group by {groupBy}
  *
- * El test unitario se encuentra en TestProjects clase
- *     py.com.oym.test.data.TestDataReport
  * </pre>
  *
  * @author Jorge Enciso

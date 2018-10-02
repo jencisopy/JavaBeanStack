@@ -1,9 +1,10 @@
-package org.javabeanstack.data;
+package org.javabeanstack.data.model;
 
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import org.javabeanstack.data.IDataQueryModel;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

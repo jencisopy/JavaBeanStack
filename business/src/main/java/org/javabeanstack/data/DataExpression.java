@@ -36,7 +36,6 @@ import static org.javabeanstack.util.Fn.inList;
  * Contiene metodos necesarios para generar expresiones utilizadas principalmente en los selects nativos. 
  * Es utilizado principalmente por DataNativeQuery().
  * 
- * 
  * @author Jorge Enciso
  */
 public class DataExpression implements IDataExpression{

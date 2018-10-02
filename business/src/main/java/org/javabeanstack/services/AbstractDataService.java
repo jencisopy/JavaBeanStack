@@ -57,10 +57,7 @@ import org.javabeanstack.util.Fn;
  * graban los registros en la base de datos. Es un ejb que se ejecuta en la capa
  * de la lógica del negocio.
  *
- * El test unitario se encuentra en TestProjects clase
- * py.com.oym.test.data.TestDataService
- *
- * @author Jorge Enciso
+  * @author Jorge Enciso
  */
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public abstract class AbstractDataService implements IDataService {
