@@ -32,7 +32,7 @@ public class ColumnModel implements Serializable {
         this.filterFunction=filterFunction;
         this.mask=mask;
     }
-        
+
     public ColumnModel(String header, Integer property, String column, Boolean visible,String link, String id) {
         this.header = header;
         this.property = property;
@@ -40,9 +40,18 @@ public class ColumnModel implements Serializable {
         this.visible= visible;
         this.link  = link;
         this.id=id;
+    }    
+    
+    public ColumnModel(String header, Integer property, String column, Boolean visible,String link, String id,String mask) {
+        this.header = header;
+        this.property = property;
+        this.column = column;
+        this.visible= visible;
+        this.link  = link;
+        this.id=id;
+        this.mask=mask;
     }
 
-    
     /**
      * Devuelve encabezado de la columna
      * @return 
@@ -147,7 +156,6 @@ public class ColumnModel implements Serializable {
         this.mask = mask;
     }
 
- 
 
     @Override
     public String toString() {

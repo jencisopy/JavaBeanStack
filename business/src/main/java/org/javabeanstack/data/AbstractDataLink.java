@@ -38,8 +38,6 @@ import org.javabeanstack.util.Strings;
 /**
  * Es un wrapper de AbstractDao, gestiona el acceso a los datos.
  * 
- * El test unitario se encuentra en TestProjects clase
- *     py.com.oym.test.data.TestDataLink
  * @author Jorge Enciso
  */
 public abstract class AbstractDataLink implements IDataLink, Serializable {

@@ -22,6 +22,7 @@
 
 package org.javabeanstack.data;
 
+import org.javabeanstack.data.model.DataQueryModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,9 +43,6 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
 /**
  * Esta clase abstrae funcionalidades que permiten ejecutar sentencias nativas
  * sobre la base de datos.
- *
- * El test unitario se encuentra en TestProjects clase
- * py.com.oym.test.data.TestDataNativeQuery
  *
  * @author Jorge Enciso
  */
