@@ -30,6 +30,7 @@ import org.javabeanstack.model.tables.AppTablesRelation;
 import org.javabeanstack.model.tables.AppUser;
 import org.javabeanstack.model.tables.AppUserFormView;
 import org.javabeanstack.model.tables.AppUserMember;
+import org.javabeanstack.model.tables.Region;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -268,6 +269,20 @@ public class DataInfoTest {
         assertEquals("id", result);
         
         result = (String)DataInfo.getFieldValue(ejb,"noexiste");
+        assertNull(result);
+        
+        // No existe el atributo, existe el getter
+        Region region = new Region();
+        region.setCodigo("codigo");
+        region.setNombre("nombre");
+        result = (String)DataInfo.getFieldValue(region,"publicCodigoNombre");
+        String expResult = "codigo nombre";
+        assertEquals(expResult, result);
+        
+        result = (String)DataInfo.getFieldValue(region,"privateCodigoNombre");
+        assertNull(result);
+        
+        result = (String)DataInfo.getFieldValue(region,"protectedCodigoNombre");
         assertNull(result);
     }
 }

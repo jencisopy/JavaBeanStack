@@ -117,7 +117,20 @@ public class Region extends DataRow implements Serializable {
     public void setIdempresa(Long idempresa) {
         this.idempresa = idempresa;
     }
-  
+
+    
+    public String getPublicCodigoNombre() {
+        return codigo.trim()+" "+nombre.trim();
+    }
+    
+
+    private String getPrivateCodigoNombre() {
+        return codigo.trim()+" "+nombre.trim();
+    }
+
+    protected String getProtectedCodigoNombre() {
+        return codigo.trim()+" "+nombre.trim();
+    }
     
     @PrePersist
     public void prePersist() {

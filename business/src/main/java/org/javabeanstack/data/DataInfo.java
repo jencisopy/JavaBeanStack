@@ -23,6 +23,7 @@
 package org.javabeanstack.data;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.FetchType;
@@ -434,6 +435,36 @@ public class DataInfo {
         }
         return fields;
     }
+    
+    /**
+     * Devuelve un metodo solicitado de una clase sin importar si el
+     * nombre esta en mayuscula o minuscula.
+     *
+     * @param classType clase
+     * @param methodName Nombre del metodo
+     * @return objeto metodo
+     */
+    public static Method getMethod(Class classType, String methodName) {
+        Method method = null;
+        try {
+            method = classType.getMethod(methodName);
+        } catch (NoSuchMethodException| NullPointerException ex) {
+            method = null;
+        } catch (SecurityException ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        if (method != null) {
+            return method;
+        }
+        Method[] methods = classType.getMethods();
+        for (Method method1 : methods) {
+            if (method1.getName().equalsIgnoreCase(methodName.toLowerCase())) {
+                return method1;
+            }
+        }
+        return null;
+    }
+    
 
     
     /**
@@ -469,9 +500,8 @@ public class DataInfo {
      * @return valor del campo solicitado.
      */
     public static Object getFieldValue(Object ejb, String fieldname) {
-        Object value;
+        Object value = null;
         try {
-            //TODO implementar extracción del valor por medio del getter
             // Si contiene un punto significa que el campo esta en uno de sus miembros
             if (fieldname.contains(".")) {
                 String memberName = fieldname.substring(0, Strings.findString(".", fieldname));
@@ -482,9 +512,20 @@ public class DataInfo {
                 Object parentValue = field.get(ejb);
                 value = getFieldValue(parentValue,fieldname);
             } else {
+                // Buscar entre los atributos si coincide el nombre
                 Field field = getDeclaredField(ejb.getClass(), fieldname);
-                field.setAccessible(true);
-                value = field.get(ejb);
+                if (field != null){
+                    field.setAccessible(true);
+                    value = field.get(ejb);
+                }
+                else {
+                    // Si no hay atributos con el nombre solicitado buscar como metodo
+                    Method method = getMethod(ejb.getClass(),"get"+Strings.capitalize(fieldname));
+                    if (method != null){
+                        method.setAccessible(true);
+                        value = method.invoke(ejb);
+                    }
+                }
             }
         } catch (Exception ex) {
             return null;
