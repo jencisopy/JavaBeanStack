@@ -30,7 +30,6 @@ import org.javabeanstack.model.tables.AppTablesRelation;
 import org.javabeanstack.model.tables.AppUser;
 import org.javabeanstack.model.tables.AppUserFormView;
 import org.javabeanstack.model.tables.AppUserMember;
-import org.javabeanstack.model.tables.Region;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -272,17 +271,52 @@ public class DataInfoTest {
         assertNull(result);
         
         // No existe el atributo, existe el getter
-        Region region = new Region();
-        region.setCodigo("codigo");
-        region.setNombre("nombre");
-        result = (String)DataInfo.getFieldValue(region,"publicCodigoNombre");
+        DataInfoPrb infoPrb = new DataInfoPrb();
+        infoPrb.setCodigo("codigo");
+        infoPrb.setNombre("nombre");
+        result = (String)DataInfo.getFieldValue(infoPrb,"publicCodigoNombre");
         String expResult = "codigo nombre";
         assertEquals(expResult, result);
         
-        result = (String)DataInfo.getFieldValue(region,"privateCodigoNombre");
+        result = (String)DataInfo.getFieldValue(infoPrb,"privateCodigoNombre");
         assertNull(result);
         
-        result = (String)DataInfo.getFieldValue(region,"protectedCodigoNombre");
+        result = (String)DataInfo.getFieldValue(infoPrb,"protectedCodigoNombre");
         assertNull(result);
+    }
+    
+    class DataInfoPrb{
+        private String codigo;
+        private String nombre;
+
+        public String getCodigo() {
+            return codigo;
+        }
+
+        public void setCodigo(String codigo) {
+            this.codigo = codigo;
+        }
+
+        public String getNombre() {
+            return nombre;
+        }
+
+        public void setNombre(String nombre) {
+            this.nombre = nombre;
+        }
+        
+        
+        public String getPublicCodigoNombre() {
+            return codigo.trim()+" "+nombre.trim();
+        }
+
+
+        private String getPrivateCodigoNombre() {
+            return codigo.trim()+" "+nombre.trim();
+        }
+
+        protected String getProtectedCodigoNombre() {
+            return codigo.trim()+" "+nombre.trim();
+        }
     }
 }
