@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @author Jorge Enciso
  */
 public class DataInfoTest {
-    
+
     public DataInfoTest() {
     }
 
@@ -49,13 +49,13 @@ public class DataInfoTest {
     public void testIsPrimaryKey() {
         System.out.println("isPrimaryKey");
         boolean expResult = true;
-        boolean result = DataInfo.isPrimaryKey(AppUser.class,"iduser");
+        boolean result = DataInfo.isPrimaryKey(AppUser.class, "iduser");
         assertEquals(expResult, result);
-        
-        result = DataInfo.isPrimaryKey(AppUser.class,"code");
+
+        result = DataInfo.isPrimaryKey(AppUser.class, "code");
         assertEquals(false, result);
-        
-        result = DataInfo.isPrimaryKey(AppUser.class,"noexiste");
+
+        result = DataInfo.isPrimaryKey(AppUser.class, "noexiste");
         assertEquals(false, result);
     }
 
@@ -66,13 +66,13 @@ public class DataInfoTest {
     public void testIsUniqueKey() {
         System.out.println("isUniqueKey");
         boolean expResult = true;
-        boolean result = DataInfo.isUniqueKey(AppResource.class,"code");
+        boolean result = DataInfo.isUniqueKey(AppResource.class, "code");
         assertEquals(expResult, result);
-        
-        result = DataInfo.isUniqueKey(AppResource.class,"referencetime");
+
+        result = DataInfo.isUniqueKey(AppResource.class, "referencetime");
         assertEquals(false, result);
-        
-        result = DataInfo.isUniqueKey(AppResource.class,"noexiste");
+
+        result = DataInfo.isUniqueKey(AppResource.class, "noexiste");
         assertEquals(false, result);
     }
 
@@ -83,16 +83,16 @@ public class DataInfoTest {
     public void testIsForeignKey() {
         System.out.println("isForeignKey");
         boolean expResult = true;
-        boolean result = DataInfo.isForeignKey(AppUserMember.class,"usermember");
+        boolean result = DataInfo.isForeignKey(AppUserMember.class, "usermember");
         assertEquals(expResult, result);
-        
-        result = DataInfo.isForeignKey(AppUserMember.class,"usergroup");
+
+        result = DataInfo.isForeignKey(AppUserMember.class, "usergroup");
         assertEquals(expResult, result);
-        
-        result = DataInfo.isForeignKey(AppUserMember.class,"otro");
+
+        result = DataInfo.isForeignKey(AppUserMember.class, "otro");
         assertEquals(false, result);
-        
-        result = DataInfo.isForeignKey(AppUserMember.class,"idusermembar");
+
+        result = DataInfo.isForeignKey(AppUserMember.class, "idusermembar");
         assertEquals(false, result);
     }
 
@@ -103,10 +103,10 @@ public class DataInfoTest {
     public void testIsFieldExist() {
         System.out.println("isFieldExist");
         boolean expResult = true;
-        boolean result = DataInfo.isFieldExist(AppUser.class,"iduser");
+        boolean result = DataInfo.isFieldExist(AppUser.class, "iduser");
         assertEquals(expResult, result);
-        
-        result = DataInfo.isFieldExist(AppUser.class,"noexiste");
+
+        result = DataInfo.isFieldExist(AppUser.class, "noexiste");
         assertEquals(false, result);
     }
 
@@ -117,13 +117,13 @@ public class DataInfoTest {
     public void testIsLazyFetch() {
         System.out.println("isLazyFetch");
         boolean expResult = true;
-        boolean result = DataInfo.isLazyFetch(AppUserFormView.class,"appUserFormViewColumnList");
+        boolean result = DataInfo.isLazyFetch(AppUserFormView.class, "appUserFormViewColumnList");
         assertEquals(expResult, result);
-        
-        result = DataInfo.isLazyFetch(AppUserFormView.class,"usergroup");
+
+        result = DataInfo.isLazyFetch(AppUserFormView.class, "usergroup");
         assertEquals(false, result);
 
-        result = DataInfo.isLazyFetch(AppUserFormView.class,"noexiste");
+        result = DataInfo.isLazyFetch(AppUserFormView.class, "noexiste");
         assertEquals(false, result);
     }
 
@@ -135,7 +135,7 @@ public class DataInfoTest {
         System.out.println("getLazyMembers");
         List<Field> result = DataInfo.getLazyMembers(AppUserFormView.class);
         assertTrue(!result.isEmpty());
-        
+
         result = DataInfo.getLazyMembers(AppTablesRelation.class);
         assertTrue(result.isEmpty());
     }
@@ -237,7 +237,6 @@ public class DataInfoTest {
         //DataInfo.setDefaultValue(ejb, fieldname);
     }
 
-
     /**
      * Test of getFieldType method, of class DataInfo.
      */
@@ -245,7 +244,7 @@ public class DataInfoTest {
     public void testGetFieldType() {
         System.out.println("getFieldType");
         Class expResult = Long.class;
-        Class result = DataInfo.getFieldType(AppResource.class,"idappresource");
+        Class result = DataInfo.getFieldType(AppResource.class, "idappresource");
         assertEquals(expResult, result);
     }
 
@@ -264,59 +263,106 @@ public class DataInfoTest {
         ejb.setFieldsPK("id");
         ejb.setIncluded(false);
 
-        String result = (String)DataInfo.getFieldValue(ejb,"fieldsFK");
+        String result = (String) DataInfo.getFieldValue(ejb, "fieldsFK");
         assertEquals("id", result);
-        
-        result = (String)DataInfo.getFieldValue(ejb,"noexiste");
+
+        result = (String) DataInfo.getFieldValue(ejb, "noexiste");
         assertNull(result);
-        
+
         // No existe el atributo, existe el getter
         DataInfoPrb infoPrb = new DataInfoPrb();
         infoPrb.setCodigo("codigo");
         infoPrb.setNombre("nombre");
-        result = (String)DataInfo.getFieldValue(infoPrb,"publicCodigoNombre");
+        result = (String) DataInfo.getFieldValue(infoPrb, "publicCodigoNombre");
         String expResult = "codigo nombre";
         assertEquals(expResult, result);
-        
-        result = (String)DataInfo.getFieldValue(infoPrb,"privateCodigoNombre");
+
+        result = (String) DataInfo.getFieldValue(infoPrb, "privateCodigoNombre");
+        assertNull(result);
+
+        result = (String) DataInfo.getFieldValue(infoPrb, "protectedCodigoNombre");
         assertNull(result);
         
-        result = (String)DataInfo.getFieldValue(infoPrb,"protectedCodigoNombre");
-        assertNull(result);
+        result = (String) DataInfo.getFieldValue(infoPrb, "child.publicCodigoNombre");
+        assertEquals(expResult, result);
+        
+        result = (String) DataInfo.getFieldValue(infoPrb, "childGetter.publicCodigoNombre");
+        assertEquals(expResult, result);
+    }
+}
+
+class DataInfoPrb {
+    private String codigo="codigo";
+    private String nombre="nombre";
+    private DataInfoPrbChild child = new DataInfoPrbChild();
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getPublicCodigoNombre() {
+        return codigo.trim() + " " + nombre.trim();
+    }
+
+    private String getPrivateCodigoNombre() {
+        return codigo.trim() + " " + nombre.trim();
+    }
+
+    protected String getProtectedCodigoNombre() {
+        return codigo.trim() + " " + nombre.trim();
     }
     
-    class DataInfoPrb{
-        private String codigo;
-        private String nombre;
-
-        public String getCodigo() {
-            return codigo;
-        }
-
-        public void setCodigo(String codigo) {
-            this.codigo = codigo;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public void setNombre(String nombre) {
-            this.nombre = nombre;
-        }
-        
-        
-        public String getPublicCodigoNombre() {
-            return codigo.trim()+" "+nombre.trim();
-        }
+    public DataInfoPrbChild child(){
+        return child;
+    }
+    
+    public DataInfoPrbChild getChildGetter(){
+        return child;
+    }
+}
 
 
-        private String getPrivateCodigoNombre() {
-            return codigo.trim()+" "+nombre.trim();
-        }
+class DataInfoPrbChild {
+    private String codigo="codigo";
+    private String nombre="nombre";
 
-        protected String getProtectedCodigoNombre() {
-            return codigo.trim()+" "+nombre.trim();
-        }
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getPublicCodigoNombre() {
+        return codigo.trim() + " " + nombre.trim();
+    }
+
+    private String getPrivateCodigoNombre() {
+        return codigo.trim() + " " + nombre.trim();
+    }
+
+    protected String getProtectedCodigoNombre() {
+        return codigo.trim() + " " + nombre.trim();
     }
 }

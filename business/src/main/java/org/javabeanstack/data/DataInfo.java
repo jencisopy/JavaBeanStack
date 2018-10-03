@@ -508,9 +508,20 @@ public class DataInfo {
                 fieldname = fieldname.substring(Strings.findString(".", fieldname) + 1);
 
                 Field field = getDeclaredField(ejb.getClass(), memberName);
-                field.setAccessible(true);
-                Object parentValue = field.get(ejb);
-                value = getFieldValue(parentValue,fieldname);
+                if (field != null){
+                    field.setAccessible(true);
+                    Object parentValue = field.get(ejb);
+                    value = getFieldValue(parentValue,fieldname);
+                }
+                else {
+                    // Si no hay atributos con el nombre solicitado buscar como metodo
+                    Method method = getMethod(ejb.getClass(),"get"+Strings.capitalize(memberName));
+                    if (method != null){
+                        method.setAccessible(true);
+                        Object parentValue = method.invoke(ejb);
+                        value = getFieldValue(parentValue,fieldname);
+                    }
+                }
             } else {
                 // Buscar entre los atributos si coincide el nombre
                 Field field = getDeclaredField(ejb.getClass(), fieldname);
