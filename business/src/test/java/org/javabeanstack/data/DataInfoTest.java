@@ -216,25 +216,45 @@ public class DataInfoTest {
     /**
      * Test of getDefaultValue method, of class DataInfo.
      */
-    //@Test
+    @Test
     public void testGetDefaultValue() {
         System.out.println("getDefaultValue");
-        Object ejb = null;
-        String fieldname = "";
-        Object expResult = null;
-        //Object result = DataInfo.getDefaultValue(ejb, fieldname);
-        //assertEquals(expResult, result);
+        DataRow ejb = new DataInfoPrb();
+        String fieldname = "codigo";
+        Object expResult = "codigodefault";
+        Object result = DataInfo.getDefaultValue(ejb, fieldname);
+        assertEquals(expResult, result);
     }
 
     /**
+     * Test of setIdvalue method, of class DataInfo.
+     */
+    @Test
+    public void testSetFieldValue() {
+        System.out.println("setFieldValue");
+        DataInfoPrb ejb = new DataInfoPrb();
+        DataInfo.setFieldValue(ejb, "codigo", "codigocambiado");
+
+        Object expResult = "codigocambiado";
+        Object result = DataInfo.getFieldValue(ejb,"codigo");
+        assertEquals(expResult, result);
+        
+        boolean exito = DataInfo.setFieldValue(ejb, "child.publicCodigoNombre", "codigocambiado");        
+        assertTrue(exito);
+    }
+    
+    /**
      * Test of setDefaultValue method, of class DataInfo.
      */
-    //@Test
+    @Test
     public void testSetDefaultValue() {
         System.out.println("setDefaultValue");
-        Object ejb = null;
-        String fieldname = "";
-        //DataInfo.setDefaultValue(ejb, fieldname);
+        DataRow ejb = new DataInfoPrb();
+        String fieldname = "codigo";        
+        DataInfo.setDefaultValue(ejb, fieldname);
+        Object expResult = "codigodefault";
+        Object result = ejb.getValue(fieldname);
+        assertEquals(expResult, result);
     }
 
     /**
@@ -246,8 +266,47 @@ public class DataInfoTest {
         Class expResult = Long.class;
         Class result = DataInfo.getFieldType(AppResource.class, "idappresource");
         assertEquals(expResult, result);
+        
+        result = DataInfo.getFieldType(AppResource.class, "noexiste");
+        assertNull(result);
     }
 
+    /**
+     * Test of getMethodReturnType method, of class DataInfo.
+     */
+    @Test
+    public void testGetMethodType() {
+        System.out.println("getMethodType");
+        Class expResult = String.class;
+        Class result = DataInfo.getMethodReturnType(DataInfoPrb.class, "getPublicCodigoNombre");
+        assertEquals(expResult, result);
+
+        result = DataInfo.getMethodReturnType(DataInfoPrb.class, "child.getPublicCodigoNombre");
+        assertEquals(expResult, result);
+
+        result = DataInfo.getMethodReturnType(DataInfoPrb.class, "getChildGetter.getPublicCodigoNombre");
+        assertEquals(expResult, result);
+
+        boolean isGetter = true;
+        result = DataInfo.getMethodReturnType(DataInfoPrb.class, "getPublicCodigoNombre", isGetter);
+        assertEquals(expResult, result);
+        
+        result = DataInfo.getMethodReturnType(DataInfoPrb.class, "publicCodigoNombre", isGetter);
+        assertEquals(expResult, result);
+
+        result = DataInfo.getMethodReturnType(DataInfoPrb.class, "getChildGetter.publicCodigoNombre", isGetter);
+        assertEquals(expResult, result);
+
+        result = DataInfo.getMethodReturnType(DataInfoPrb.class, "childGetter.getPublicCodigoNombre", isGetter);
+        assertEquals(expResult, result);
+        
+        result = DataInfo.getMethodReturnType(DataInfoPrb.class, "childGetter.publicCodigoNombre", isGetter);
+        assertEquals(expResult, result);
+        
+        result = DataInfo.getFieldType(DataInfoPrb.class, "noexiste"); 
+        assertNull(result);
+    }
+    
     /**
      * Test of getFieldValue method, of class DataInfo.
      */
@@ -291,9 +350,10 @@ public class DataInfoTest {
     }
 }
 
-class DataInfoPrb {
+class DataInfoPrb extends DataRow{
     private String codigo="codigo";
     private String nombre="nombre";
+    private String codigo_default="codigodefault";    
     private DataInfoPrbChild child = new DataInfoPrbChild();
 
     public String getCodigo() {
@@ -314,6 +374,10 @@ class DataInfoPrb {
 
     public String getPublicCodigoNombre() {
         return codigo.trim() + " " + nombre.trim();
+    }
+    
+    public void setPublicCodigoNombre(String codigo) {
+        this.codigo = codigo.trim();
     }
 
     private String getPrivateCodigoNombre() {
@@ -356,6 +420,10 @@ class DataInfoPrbChild {
 
     public String getPublicCodigoNombre() {
         return codigo.trim() + " " + nombre.trim();
+    }
+    
+    public void setPublicCodigoNombre(String codigo) {
+        this.codigo = codigo.trim();
     }
 
     private String getPrivateCodigoNombre() {

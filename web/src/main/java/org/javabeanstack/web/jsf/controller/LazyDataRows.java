@@ -226,7 +226,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         String separador = ""; 
         for (Map.Entry e : filters.entrySet()) {
             Class clase = DataInfo.getFieldType(getEntityClass(), (String) e.getKey());
-            String key = e.getKey().toString().replace(".", "");            
+            String key = e.getKey().toString().replace(".", "");
             // Si el campo es string buscar un valor contenido en el campo                
             if (clase != null && String.class.isAssignableFrom(clase)) {
                 filter = separador + " upper(o." + e.getKey() + ") like upper(:" + key + ")";
