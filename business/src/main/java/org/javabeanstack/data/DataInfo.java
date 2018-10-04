@@ -18,8 +18,7 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.data;
 
 import java.lang.reflect.Field;
@@ -37,17 +36,18 @@ import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 
 /**
- * Esta clase contiene metodos que brindan información sobre los modelos ejb
- * ej. si un campo es primarykey,
+ * Esta clase contiene metodos que brindan información sobre los modelos ejb ej.
+ * si un campo es primarykey,
  *
  * @author Jorge Enciso
  */
 public class DataInfo {
+
     private static final Logger LOGGER = Logger.getLogger(DataInfo.class);
 
-    private DataInfo(){
+    private DataInfo() {
     }
-    
+
     /**
      * Determina si el campo o miembro dado corresponde a la clave primaria.
      *
@@ -124,7 +124,7 @@ public class DataInfo {
                 return true;
             }
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);            
+            ErrorManager.showError(ex, LOGGER);
         }
         return false;
     }
@@ -195,7 +195,7 @@ public class DataInfo {
      * valores de los campos unicos.
      *
      * @param ejb
-     * @return  sentencia con la expresión de filtro de/los campos unicos.
+     * @return sentencia con la expresión de filtro de/los campos unicos.
      */
     public static String createQueryUkCommand(IDataRow ejb) {
         try {
@@ -310,9 +310,9 @@ public class DataInfo {
      * row
      *
      * @param <T>
-     * @param ejb   instancia del objeto DataRow
+     * @param ejb instancia del objeto DataRow
      * @param fieldname nombre del campo
-     * @return  valor por defecto oara el campo o atributo dado.
+     * @return valor por defecto oara el campo o atributo dado.
      */
     public static <T extends IDataRow> Object getDefaultValue(T ejb, String fieldname) {
         Object valor = null;
@@ -332,7 +332,7 @@ public class DataInfo {
      * row
      *
      * @param <T>
-     * @param ejb   instancia del objeto DataRow
+     * @param ejb instancia del objeto DataRow
      * @param fieldname nombre del campo
      */
     public static <T extends IDataRow> void setDefaultValue(T ejb, String fieldname) {
@@ -360,7 +360,8 @@ public class DataInfo {
      * @param <T>
      * @param ejb Objeto row.
      * @param objrelaName Nombre del atributo.
-     * @return el valor de un atributo que hace referencia a un objeto relacionado
+     * @return el valor de un atributo que hace referencia a un objeto
+     * relacionado
      */
     public static <T extends IDataRow> T getObjFk(T ejb, String objrelaName) {
         try {
@@ -423,11 +424,12 @@ public class DataInfo {
 
     /**
      * Devuelve la lista de campos/atributos de una clase
+     *
      * @param classType clase DataRow
      * @return lista de campos
      */
     public static Field[] getDeclaredFields(Class classType) {
-        Field[] fields; 
+        Field[] fields;
         try {
             fields = classType.getDeclaredFields();
         } catch (SecurityException ex) {
@@ -435,10 +437,10 @@ public class DataInfo {
         }
         return fields;
     }
-    
+
     /**
-     * Devuelve un metodo solicitado de una clase sin importar si el
-     * nombre esta en mayuscula o minuscula.
+     * Devuelve un metodo solicitado de una clase sin importar si el nombre esta
+     * en mayuscula o minuscula.
      *
      * @param classType clase
      * @param methodName Nombre del metodo
@@ -448,7 +450,7 @@ public class DataInfo {
         Method method = null;
         try {
             method = classType.getMethod(methodName);
-        } catch (NoSuchMethodException| NullPointerException ex) {
+        } catch (NoSuchMethodException | NullPointerException ex) {
             method = null;
         } catch (SecurityException ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -464,11 +466,10 @@ public class DataInfo {
         }
         return null;
     }
-    
 
-    
     /**
      * Devuelve el tipo de dato de un campo o atributo solicitado
+     *
      * @param classType clase DataRow
      * @param fieldname nombre del campo
      * @return tipo de dato de un campo o atributo solicitado
@@ -476,7 +477,6 @@ public class DataInfo {
     public static Class getFieldType(Class classType, String fieldname) {
         Class cls = null;
         try {
-            //TODO implementar extracción del valor por medio del getter            
             if (fieldname.contains(".")) {
                 String className = fieldname.substring(0, Strings.findString(".", fieldname));
                 Class classMember = classType.getDeclaredField(className).getType();
@@ -485,17 +485,70 @@ public class DataInfo {
             } else {
                 cls = getDeclaredField(classType, fieldname).getType();
             }
-        } catch (NoSuchFieldException| NullPointerException ex) {
+        } catch (NoSuchFieldException | NullPointerException ex) {
             cls = null;
         } catch (SecurityException ex) {
             ErrorManager.showError(ex, LOGGER);
         }
         return cls;
     }
-    
+
+    /**
+     * Devuelve el tipo de dato que devuelve un metodo
+     *
+     * @param classType clase DataRow
+     * @param methodname nombre del metodo
+     * @return tipo de dato que devuelve un metodo
+     */
+    public static Class getMethodReturnType(Class classType, String methodname) {
+        return getMethodReturnType(classType, methodname, false);
+    }
+
+    /**
+     * Devuelve el tipo de dato que devuelve un metodo
+     *
+     * @param classType clase DataRow
+     * @param methodname nombre del metodo
+     * @param isGetter se agrega el prefijo "get" al metodo
+     * @return tipo de dato que devuelve un metodo
+     */
+    public static Class getMethodReturnType(Class classType, String methodname, Boolean isGetter) {
+        Class cls = null;
+        try {
+            if (methodname.contains(".")) {
+                String memberName = methodname.substring(0, Strings.findString(".", methodname));
+                methodname = methodname.substring(Strings.findString(".", methodname) + 1);
+                Class classMember;
+                Field field = getDeclaredField(classType, memberName);
+                if (field != null) {
+                    classMember = field.getType();
+                    cls = getMethodReturnType(classMember, methodname, isGetter);
+                } else {
+                    if (!"get".equals(Strings.left(memberName, 3).toLowerCase())) {
+                        memberName = "get" + Strings.capitalize(memberName);
+                    }
+                    Method method = getMethod(classType, memberName);
+                    classMember = method.getReturnType();
+                    cls = getMethodReturnType(classMember, methodname, isGetter);
+                }
+            } else {
+                if (!"get".equals(Strings.left(methodname, 3).toLowerCase())) {
+                    methodname = "get" + Strings.capitalize(methodname);
+                }
+                cls = classType.getMethod(methodname).getReturnType();
+            }
+        } catch (NoSuchMethodException | NullPointerException ex) {
+            cls = null;
+        } catch (SecurityException ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return cls;
+    }
+
     /**
      * Devuelve el valor de un campo o atributo
-     * @param ejb   objeto DataRow
+     *
+     * @param ejb objeto DataRow
      * @param fieldname nombre del campo
      * @return valor del campo solicitado.
      */
@@ -508,31 +561,29 @@ public class DataInfo {
                 fieldname = fieldname.substring(Strings.findString(".", fieldname) + 1);
 
                 Field field = getDeclaredField(ejb.getClass(), memberName);
-                if (field != null){
+                if (field != null) {
                     field.setAccessible(true);
                     Object parentValue = field.get(ejb);
-                    value = getFieldValue(parentValue,fieldname);
-                }
-                else {
+                    value = getFieldValue(parentValue, fieldname);
+                } else {
                     // Si no hay atributos con el nombre solicitado buscar como metodo
-                    Method method = getMethod(ejb.getClass(),"get"+Strings.capitalize(memberName));
-                    if (method != null){
+                    Method method = getMethod(ejb.getClass(), "get" + Strings.capitalize(memberName));
+                    if (method != null) {
                         method.setAccessible(true);
                         Object parentValue = method.invoke(ejb);
-                        value = getFieldValue(parentValue,fieldname);
+                        value = getFieldValue(parentValue, fieldname);
                     }
                 }
             } else {
                 // Buscar entre los atributos si coincide el nombre
                 Field field = getDeclaredField(ejb.getClass(), fieldname);
-                if (field != null){
+                if (field != null) {
                     field.setAccessible(true);
                     value = field.get(ejb);
-                }
-                else {
+                } else {
                     // Si no hay atributos con el nombre solicitado buscar como metodo
-                    Method method = getMethod(ejb.getClass(),"get"+Strings.capitalize(fieldname));
-                    if (method != null){
+                    Method method = getMethod(ejb.getClass(), "get" + Strings.capitalize(fieldname));
+                    if (method != null) {
                         method.setAccessible(true);
                         value = method.invoke(ejb);
                     }
@@ -543,4 +594,59 @@ public class DataInfo {
         }
         return value;
     }
-}    
+    
+    /**
+     * Setea un valor a un miembro de un objeto 
+     *
+     * @param ejb objeto DataRow
+     * @param fieldname nombre del campo
+     * @param value
+     * @return verdadero o falso si tuvo exito o no
+     */
+    public static Boolean setFieldValue(Object ejb, String fieldname, Object value) {
+        Boolean exito = true;
+        try {
+            // Si contiene un punto significa que el campo esta en uno de sus miembros
+            if (fieldname.contains(".")) {
+                String memberName = fieldname.substring(0, Strings.findString(".", fieldname));
+                fieldname = fieldname.substring(Strings.findString(".", fieldname) + 1);
+
+                Field field = getDeclaredField(ejb.getClass(), memberName);
+                if (field != null) {
+                    field.setAccessible(true);
+                    Object parentValue = field.get(ejb);
+                    exito = setFieldValue(parentValue, fieldname, value);
+                } else {
+                    // Si no hay atributos con el nombre solicitado buscar como metodo
+                    Method method = getMethod(ejb.getClass(), "get" + Strings.capitalize(memberName));
+                    if (method != null) {
+                        method.setAccessible(true);
+                        Object parentValue = method.invoke(ejb);
+                        exito = setFieldValue(parentValue, fieldname, value);
+                    }
+                }
+            } else {
+                exito = false;
+                // Buscar entre los atributos si coincide el nombre
+                Field field = getDeclaredField(ejb.getClass(), fieldname);
+                if (field != null) {
+                    field.setAccessible(true);
+                    field.set(ejb,value);
+                    exito = true;
+                } else {
+                    // Si no hay atributos con el nombre solicitado buscar como metodo
+                    Method method = getMethod(ejb.getClass(), "set" + Strings.capitalize(fieldname));
+                    if (method != null) {
+                        method.setAccessible(true);
+                        method.invoke(ejb,value);
+                        exito = true;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);            
+            return false;
+        }
+        return exito;
+    }
+}
