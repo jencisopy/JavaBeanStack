@@ -14,7 +14,6 @@
  */
 package org.javabeanstack.model.tables;
 
-import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,19 +35,18 @@ import org.javabeanstack.data.DataRow;
  * @author Jorge Enciso
  */
 @Entity
-@Table(name = "appuserformviewcolumn") 
+@Table(name = "appuserformviewcolumn")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "AppUserFormViewColumn.findAll", query = "SELECT a FROM AppUserFormViewColumn a")})
-public class AppUserFormViewColumn extends DataRow{
-    private static final long serialVersionUID = -558553967080513790L;
+public class AppUserFormViewColumn extends DataRow {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "idappuserformviewcolumn")
-    private Long idappuserformviewcolumn; 
-    
+    private Long idappuserformviewcolumn;
 
 
     @JoinColumn(name = "idappuserformview", referencedColumnName = "idappuserformview")
@@ -92,6 +90,14 @@ public class AppUserFormViewColumn extends DataRow{
 
     @Column(name = "width")
     private Integer width;
+    
+    @Size(max = 100)
+    @Column(name = "columnOrder")
+    private String columnOrder;
+    
+    @Size(max = 100)
+    @Column(name = "columnFilter")
+    private String columnFilter;
     
 
     public AppUserFormViewColumn() {
@@ -158,7 +164,7 @@ public class AppUserFormViewColumn extends DataRow{
     }
 
     public void setAppUserFormView(AppUserFormView appUserFormView) {
-        this.appUserFormView = appUserFormView;
+        this.appUserFormView = (AppUserFormView)appUserFormView;
     }
     
 
@@ -202,30 +208,22 @@ public class AppUserFormViewColumn extends DataRow{
         this.width = width;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 59 * hash + Objects.hashCode(this.idappuserformviewcolumn);
-        return hash;
+    public String getColumnOrder() {
+        return columnOrder;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AppUserFormViewColumn other = (AppUserFormViewColumn) obj;
-        if (!Objects.equals(this.idappuserformviewcolumn, other.idappuserformviewcolumn)) {
-            return false;
-        }
-        return true;
+    public void setColumnOrder(String columnOrder) {
+        this.columnOrder = columnOrder;
     }
+
+    public String getColumnFilter() {
+        return columnFilter;
+    }
+
+    public void setColumnFilter(String columnFilter) {
+        this.columnFilter = columnFilter;
+    }
+
     
     @Override
     public String toString() {

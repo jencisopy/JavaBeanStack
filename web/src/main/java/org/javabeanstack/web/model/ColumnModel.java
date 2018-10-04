@@ -1,6 +1,7 @@
 package org.javabeanstack.web.model;
 
 import java.io.Serializable;
+import org.javabeanstack.util.Fn;
 
 /**
  * Modelo de columnas utilizado para manejar dataTables con columnas dinamicas
@@ -10,7 +11,9 @@ public class ColumnModel implements Serializable {
 
     private String header;
     private Integer property;
-    private String column;
+    private String name;
+    private String order;
+    private String filter;
     private Boolean visible;
     private String link;
     private String id;
@@ -25,7 +28,9 @@ public class ColumnModel implements Serializable {
     public ColumnModel(String header, Integer property, String column, String style, int width,String link, String filterFunction, String mask) {
         this.header = header;        
         this.property = property;        
-        this.column = column;
+        this.name = column;
+        this.filter = column;
+        this.order = column;
         this.style= style;
         this.width = width;
         this.link=link;
@@ -36,7 +41,9 @@ public class ColumnModel implements Serializable {
     public ColumnModel(String header, Integer property, String column, Boolean visible,String link, String id) {
         this.header = header;
         this.property = property;
-        this.column = column;
+        this.name = column;
+        this.filter = column;
+        this.order = column;
         this.visible= visible;
         this.link  = link;
         this.id=id;
@@ -45,7 +52,9 @@ public class ColumnModel implements Serializable {
     public ColumnModel(String header, Integer property, String column, Boolean visible,String link, String id,String mask) {
         this.header = header;
         this.property = property;
-        this.column = column;
+        this.name = column;
+        this.filter = column;
+        this.order = column;
         this.visible= visible;
         this.link  = link;
         this.id=id;
@@ -88,16 +97,16 @@ public class ColumnModel implements Serializable {
      * Devuelve nombre de la columna, esto cuando se tienen valores fijos y no dinamicos
      * @return 
      */
-    public String getColumn() {
-        return column;
+    public String getName() {
+        return name;
     }
 
     /**
      * Establece valores de la columna, cuando se tienen valores fijos y no dinamicos
-     * @param column 
+     * @param name 
      */
-    public void setColumn(String column) {
-        this.column = column;
+    public void setName(String name) {
+        this.name = name;
     }    
 
     public Boolean getVisible() {
@@ -156,6 +165,29 @@ public class ColumnModel implements Serializable {
         this.mask = mask;
     }
 
+    public String getOrder() {
+        if (Fn.nvl(order, "").isEmpty()){
+            order = name;
+        }
+        return order;
+    }
+
+    public void setOrder(String order) {
+        this.order = order;
+    }
+
+    public String getFilter() {
+        if (Fn.nvl(filter, "").isEmpty()){
+            filter = name;
+        }
+        return filter;
+    }
+
+    public void setFilter(String filter) {
+        this.filter = filter;
+    }
+
+    
 
     @Override
     public String toString() {
