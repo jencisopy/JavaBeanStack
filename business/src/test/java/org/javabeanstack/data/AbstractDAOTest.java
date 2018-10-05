@@ -231,13 +231,13 @@ public class AbstractDAOTest extends TestClass {
     @Test
     public void testFindByNativeQuery() throws Exception {
         System.out.println("findByNativeQuery");
-        // Cuando sessionId es null solo se puede acceder al schema catalogo
-        String sessionid = dataLink.getUserSession().getSessionId();
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
             return;
         }
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = dataLink.getUserSession().getSessionId();
         String sqlSentence = "select * from {schema}.moneda where idmoneda > :id";
         Map<String, Object> params = new HashMap();
         params.put("id",0);
