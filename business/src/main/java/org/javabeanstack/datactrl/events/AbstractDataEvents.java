@@ -20,11 +20,12 @@
 * MA 02110-1301  USA
 */
 
-package org.javabeanstack.events;
+package org.javabeanstack.datactrl.events;
 
 import org.apache.log4j.Logger;
 import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataRow;
+import org.javabeanstack.events.IDataEvents;
 
 /**
  * Esta clase se encarga de interceptar los eventos producidos en el DataObject

@@ -17,6 +17,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import org.javabeanstack.data.DataRow;
@@ -26,10 +27,11 @@ import org.javabeanstack.model.IAppUserMember;
 import org.javabeanstack.util.Dates;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuario",
+        uniqueConstraints = { @UniqueConstraint(columnNames = {"codigo"})})
 public class AppUser extends DataRow implements IAppUser {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 0L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
