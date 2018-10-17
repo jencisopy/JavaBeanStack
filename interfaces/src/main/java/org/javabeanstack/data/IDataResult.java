@@ -40,8 +40,8 @@ public interface IDataResult extends Serializable{
     public Map<String, IErrorReg> getErrorsMap();
     public Exception getException();
     public <T extends IDataRow> T getRowUpdated();
-    public List<IDataRow> getRowsUpdated();    
-    public List<IDataRow> getRowsUpdated(String key);
+    public <T extends IDataRow> List<T> getRowsUpdated();    
+    public <T extends IDataRow> List<T> getRowsUpdated(String key);
 
     public void setException(Exception ex);    
     public void setErrorMsg(String error);
@@ -49,7 +49,7 @@ public interface IDataResult extends Serializable{
     public void setRemoveDeleted(Boolean remove);
     public void setSuccess(Boolean success);
     public <T extends IDataRow> void setRowUpdated(T row);        
-    public void setRowsUpdated(IDataRow row);        
-    public void setRowsUpdated(List<? extends IDataRow> rows);    
+    public <T extends IDataRow> void setRowsUpdated(T row);        
+    public <T extends IDataRow> void setRowsUpdated(List<T> rows);    
     public <T extends IDataRow> void setRowsUpdated(IDataSet dataSet);    
 }

@@ -187,7 +187,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         IDataResult dataResult = getDao().update(getSessionId(), ejb);
-        dataResult.setRowsUpdated(ejb);
+        if (dataResult.isSuccessFul() && dataResult.isRemoveDeleted()){
+            dataResult.setRowsUpdated(ejb);
+        }
         return dataResult;
     }
 
@@ -206,9 +208,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         //Procesar solo los registros modificados
         List<T> ejbs2 = this.getRowsChanged(ejbs);
         IDataResult dataResult = getDao().update(getSessionId(), ejbs2);
-        dataResult.setRowsUpdated(ejbs);
-        // Eliminar registros borrados de la lista
         if (dataResult.isSuccessFul()){
+            dataResult.setRowsUpdated(ejbs);            
+            // Eliminar registros borrados de la lista            
             removeDeleted(ejbs);
             dataResult.setRemoveDeleted(Boolean.TRUE);            
         }
@@ -230,9 +232,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Procesar solo registros modificados.
         IDataSet dataSetChanged = dataSet.getChanged();
         IDataResult dataResult = getDao().update(getSessionId(), dataSetChanged);
-        dataResult.setRowsUpdated(dataSet);
-        // Eliminar registros borrados de la lista        
         if (dataResult.isSuccessFul()){
+            dataResult.setRowsUpdated(dataSet);            
+            // Eliminar registros borrados de la lista                    
             for (Map.Entry<String, List<? extends IDataRow>> entry: dataSet.getMapListSet().entrySet()){
                 List<? extends IDataRow> ejbs = entry.getValue();
                 removeDeleted(ejbs);                

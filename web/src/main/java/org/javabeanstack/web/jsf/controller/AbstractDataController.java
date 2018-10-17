@@ -21,8 +21,7 @@
  */
 package org.javabeanstack.web.jsf.controller;
 
-import org.javabeanstack.web.util.FacesContextUtil;
-import com.google.common.base.Strings;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,48 +32,81 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
+
+import org.primefaces.PrimeFaces;
 import org.primefaces.component.datatable.DataTable;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.ToggleEvent;
 import org.primefaces.model.Visibility;
 
+
 import org.javabeanstack.datactrl.AbstractDataObject;
+import org.javabeanstack.web.util.FacesContextUtil;
 
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.util.Strings;
 import org.javabeanstack.web.model.ColumnModel;
 
+
 /**
- * Controller para los ABMs de las tablas, hereda funcionalidades de AbstractDataObject
+ * Controller para los ABMs de las tablas, hereda funcionalidades de
+ * AbstractDataObject
  *
  * @author Jorge Enciso
  * @param <T>
  */
 public abstract class AbstractDataController<T extends IDataRow> extends AbstractDataObject<T> {
-    /** Lista de columnas de la grilla con los datos */
+
+    /**
+     * Lista de columnas de la grilla con los datos
+     */
     private List<UIColumn> tableUIColumns;
-    /** Lista de registros de la selección de datos en un proceso que trae los datos por bloque (pagina a pagina)*/
+    /**
+     * Lista de registros de la selección de datos en un proceso que trae los
+     * datos por bloque (pagina a pagina)
+     */
     private LazyDataRows<T> lazyDataRows;
-    /** Guarda los registros seleccionados en el UIDataTable o grilla de datos */
+    /**
+     * Guarda los registros seleccionados en el UIDataTable o grilla de datos
+     */
     private T[] rowsSelected;
-    /** Se asigna cuando se selecciona un registro en la grilla de datos */
+    /**
+     * Se asigna cuando se selecciona un registro en la grilla de datos
+     */
     private T rowSelected;
-    /** Registros resultante de la aplicación de un proceso de filtrado */
+    private Integer recnoIndex;
+    /**
+     * Registros resultante de la aplicación de un proceso de filtrado
+     */
     private List<T> rowsFiltered;
-    /** El contexto del servet jsf */
+    /**
+     * El contexto del servet jsf
+     */
     private FacesContextUtil facesCtx = new FacesContextUtil();
-    /** identificador del registro de la tabla normalmente se pasa desde otro proceso para realizar una operación sobre el mismo */
+    /**
+     * identificador del registro de la tabla normalmente se pasa desde otro
+     * proceso para realizar una operación sobre el mismo
+     */
     private Object id;
-    /** Operación a ejecutar, (agregar, modificar, borrar, consultar etc) */
+    /**
+     * Operación a ejecutar, (agregar, modificar, borrar, consultar etc)
+     */
     private String action = "";
-    /** Si se activa este atributo, se anula el proceso de recuperar registros (LazyDataRows.load) */
+    /**
+     * Si se activa este atributo, se anula el proceso de recuperar registros
+     * (LazyDataRows.load)
+     */
     private Boolean noLazyRowsLoad = false;
     private String refreshUIComponent;
     private String formViewSelected = "DEFAULT";
-    /** Lista de campos de busquedas los cuales serán parte del filtro en el metodo onCompleteText */ 
+    /**
+     * Lista de campos de busquedas los cuales serán parte del filtro en el
+     * metodo onCompleteText
+     */
     private final Map<String, String> completeTextSearchFields = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
     // TODO Redefinir en las clases hijas
@@ -87,17 +119,20 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.setType(type);
     }
 
-    /** 
-     * Acción a realizar o en ejecución, (agregar, modificar, borrar, consultar etc) 
+    /**
+     * Acción a realizar o en ejecución, (agregar, modificar, borrar, consultar
+     * etc)
+     *
      * @return valor de action (agregar, modificar, borrar, consultar etc)
      */
     public String getAction() {
         return action;
     }
 
-    /** 
-     * Devuelve el identificador del registro de la tabla normalmente se pasa 
-     * desde otro proceso para realizar una operación sobre el mismo 
+    /**
+     * Devuelve el identificador del registro de la tabla normalmente se pasa
+     * desde otro proceso para realizar una operación sobre el mismo
+     *
      * @return identificador del registro de la tabla
      */
     public Object getId() {
@@ -105,8 +140,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Asigna el identificador del registro de la tabla para realizar alguna operación sobre el registro
-     * @param id el identificador del registro de la tabla 
+     * Asigna el identificador del registro de la tabla para realizar alguna
+     * operación sobre el registro
+     *
+     * @param id el identificador del registro de la tabla
      */
     public void setId(Object id) {
         this.id = id;
@@ -114,6 +151,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     /**
      * Devuelve la instancia de FacesContext
+     *
      * @return la instancia de FacesContext
      */
     public FacesContextUtil getFacesCtx() {
@@ -131,11 +169,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.noLazyRowsLoad = noLazyRowsLoad;
     }
 
-    /** 
-     * Devuelve una lista de Registros de la selección de datos en un proceso que 
-     * trae registros por bloque (pagina a pagina)
-     * @return 
-    */
+    /**
+     * Devuelve una lista de Registros de la selección de datos en un proceso
+     * que trae registros por bloque (pagina a pagina)
+     *
+     * @return
+     */
     public LazyDataRows<T> getLazyDataRows() {
         if (lazyDataRows == null) {
             lazyDataRows = new LazyDataRows(this);
@@ -144,16 +183,18 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Asigna la lista de registros 
-     * @param lazyDataRows 
+     * Asigna la lista de registros
+     *
+     * @param lazyDataRows
      */
     public void setLazyDataRows(LazyDataRows<T> lazyDataRows) {
         this.lazyDataRows = lazyDataRows;
     }
 
     /**
-     * Devuelve el registro seleccionado en la grilla que originalmente fue asignado
-     * en el metodo onRowSelected()
+     * Devuelve el registro seleccionado en la grilla que originalmente fue
+     * asignado en el metodo onRowSelected()
+     *
      * @return registro seleccionado en la grilla.
      */
     public T getRowSelected() {
@@ -162,7 +203,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     /**
      * Asigna en forma manual el atributo rowSelected.
-     * @param rowSelected 
+     *
+     * @param rowSelected
      */
     public void setRowSelected(T rowSelected) {
         try {
@@ -177,7 +219,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Devuelve los registros seleccionados en la grilla 
+     * Devuelve los registros seleccionados en la grilla
+     *
      * @return registros seleccionados en la grilla.
      */
     public T[] getRowsSelected() {
@@ -186,14 +229,17 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     /**
      * Asigna manualmente los registros seleccionados
-     * @param rowsSelected 
+     *
+     * @param rowsSelected
      */
     public void setRowsSelected(T[] rowsSelected) {
         this.rowsSelected = rowsSelected;
     }
 
     /**
-     * Devuelve los Registros que fuerón objeto de un proceso de filtrado en la grilla
+     * Devuelve los Registros que fuerón objeto de un proceso de filtrado en la
+     * grilla
+     *
      * @return registros filtrados.
      */
     public List<T> getRowsFiltered() {
@@ -202,14 +248,16 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     /**
      * Asigna la lista de registros filtrados.
-     * @param rowsFiltered 
+     *
+     * @param rowsFiltered
      */
     public void setRowsFiltered(List<T> rowsFiltered) {
         this.rowsFiltered = rowsFiltered;
     }
 
     /**
-     * Devuelve la cantidad total de registros 
+     * Devuelve la cantidad total de registros
+     *
      * @return cantidad total de registros de la sentencia
      */
     public Integer getRowsCount() {
@@ -255,6 +303,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     /**
      * Devuelve el nombre del archivo xhtml linkeado a este controller
+     *
      * @return archivo xhtml linkeado a este controller
      */
     protected String getWebFileName() {
@@ -272,9 +321,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.tableTextFooter = tableTextFooter;
     }
 
-    /** 
+    /**
      * Se ejecuta al seleccionar un registro en la grilla
-     * @param event 
+     *
+     * @param event
      */
     public void onRowSelect(SelectEvent event) {
         int recno = this.getDataRows().indexOf((T) event.getObject());
@@ -287,7 +337,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Se ejecuta posterior a la ejecución del filtrado de la grilla
      */
     public void onRowFilter() {
-        if (Strings.isNullOrEmpty(tableTextFooter)) {
+        if (Strings.isNullorEmpty(tableTextFooter)) {
             return;
         }
         UIComponent text = facesCtx.findComponent(tableTextFooter);
@@ -397,7 +447,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             separador = " or ";
         }
         //TODO revisar este codigo
-        if (Strings.isNullOrEmpty(filter)) {
+        if (Strings.isNullorEmpty(filter)) {
             filter = " nombre like '%" + text + "%' or codigo like '%" + text + "%'";
         }
         return filter;
@@ -588,7 +638,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Refresca el valor de un control de datos.
      */
     protected void refreshUIComponent() {
-        if (!Strings.isNullOrEmpty(refreshUIComponent)) {
+        if (!Strings.isNullorEmpty(refreshUIComponent)) {
             getFacesCtx().refreshView(refreshUIComponent);
         }
     }
@@ -603,7 +653,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Se ejecuta al finalizar toda operación, normalmente al final de Update() o Revert()
+     * Se ejecuta al finalizar toda operación, normalmente al final de Update()
+     * o Revert()
+     *
      * @param success verdadero o falso en las operaciones update o revert.
      */
     protected void afterAction(boolean success) {
@@ -623,4 +675,26 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     public String logout() {
         return facesCtx.logout();
     }
+
+
+
+    public void setRowForDetail(T rowForDetail) {
+        setRowSelected(rowForDetail);
+        int recno = this.getDataRows().indexOf((T) rowForDetail);
+        this.recnoIndex=recno;        
+        this.goTo(recno);
+        PrimeFaces instance = PrimeFaces.current();
+        String command = "selectRow("+recno+")";        
+        instance.executeScript(command);        
+    }
+
+    public Integer getRecnoIndex() {
+        return recnoIndex;
+    }
+
+    public void setRecnoIndex(Integer recnoIndex) {
+        this.recnoIndex = recnoIndex;
+    }
+
+    
 }

@@ -22,6 +22,7 @@
  */
 package org.javabeanstack.data;
 
+import java.math.BigDecimal;
 import org.javabeanstack.data.model.DataSet;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,9 +30,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static org.javabeanstack.data.TestClass.error;
+import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.tables.AppResource;
 import org.javabeanstack.model.tables.AppTablesRelation;
 import org.javabeanstack.model.tables.AppUser;
+import org.javabeanstack.model.tables.Moneda;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -40,7 +43,7 @@ import static org.junit.Assert.*;
  * @author Jorge Enciso
  */
 public class AbstractDataLinkTest extends TestClass {
-    
+
     public AbstractDataLinkTest() {
     }
 
@@ -60,7 +63,6 @@ public class AbstractDataLinkTest extends TestClass {
         assertNotNull(expResult, result);
     }
 
-    
     /**
      * Test of find method, of class AbstractDataLink.
      */
@@ -91,7 +93,7 @@ public class AbstractDataLinkTest extends TestClass {
         appResource.setCode("no se encuentra");
         appResource = dataLinkCat.findByUk(appResource);
         assertNull(appResource);
-        
+
         appResource = new AppResource();
         appResource.setCode("clasemaker.xml");
         appResource = dataLinkCat.findByUk(appResource);
@@ -114,7 +116,7 @@ public class AbstractDataLinkTest extends TestClass {
 
         user = dataLinkCat.findByQuery("select o from AppUser o where iduser = 0L", null);
         assertNull(user);
-        
+
         Map<String, Object> params = new HashMap();
         params.put("iduser", 1L);
         user = dataLinkCat.findByQuery("select o from AppUser o where iduser = :iduser", params);
@@ -137,14 +139,13 @@ public class AbstractDataLinkTest extends TestClass {
 
         users = dataLinkCat.findListByQuery("select o from AppUser o where iduser = 0L", null);
         assertTrue(users.isEmpty());
-        
+
         Map<String, Object> params = new HashMap();
         params.put("iduser", 1L);
         users = dataLinkCat.findListByQuery("select o from AppUser o where iduser = :iduser", params);
         assertNotNull(users);
     }
 
-    
     /**
      * Test of findByNamedQuery method, of class AbstractDataLink.
      */
@@ -160,7 +161,6 @@ public class AbstractDataLinkTest extends TestClass {
         assertTrue(!prueba.isEmpty());
     }
 
-
     /**
      * Test of findByNativeQuery method, of class AbstractDataLink.
      */
@@ -174,16 +174,15 @@ public class AbstractDataLinkTest extends TestClass {
         }
         String sqlSentence = "select * from {schema}.moneda where idmoneda > :id";
         Map<String, Object> params = new HashMap();
-        params.put("id",0);
+        params.put("id", 0);
         List<Object> query1 = dataLink.findByNativeQuery(sqlSentence, params);
         assertTrue(!query1.isEmpty());
-        
+
         // Un grupo de registros first, max
-        query1 = dataLink.findByNativeQuery(sqlSentence, params,0,10);
+        query1 = dataLink.findByNativeQuery(sqlSentence, params, 0, 10);
         assertTrue(!query1.isEmpty());
     }
 
-    
     /**
      * Test of persist method, of class AbstractDataLink.
      */
@@ -204,15 +203,44 @@ public class AbstractDataLinkTest extends TestClass {
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         IDataResult dataResult = dataLinkCat.persist(relation);
-        
-        AppTablesRelation rowResult = dataResult.getRowUpdated();
-        assertEquals(relation.getEntityPK(),rowResult.getEntityPK());
 
-        List<AppTablesRelation>  relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
+        AppTablesRelation rowResult = dataResult.getRowUpdated();
+        assertEquals(relation.getEntityPK(), rowResult.getEntityPK());
+
+        List<AppTablesRelation> relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         assertTrue(relations.get(0).getEntityPK().trim().equals("xx1"));
 
         //Remove
         dataLinkCat.remove(relations.get(0));
+    }
+
+    /**
+     * Test of persist method, of class AbstractDataLink.
+     */
+    @Test
+    public void testPersist2() throws Exception {
+        System.out.println("persist2");
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        Moneda moneda = new Moneda();
+        moneda.setCodigo("PYG");
+        moneda.setNombre("Guarani");
+        moneda.setCambio(BigDecimal.ONE);
+        moneda.setObservacion("34424");
+        //Error al propósito
+        IDataResult dataResult = dataLink.persist(moneda);
+        Moneda monedaResult = dataResult.getRowUpdated();
+        List<Moneda> monedasResult = dataResult.getRowsUpdated();
+        assertNull(monedaResult);
+        assertFalse(monedasResult.get(0).getErrors().isEmpty());
+
+        for (Map.Entry<String, IErrorReg> entry : monedasResult.get(0).getErrors().entrySet()) {
+            System.out.println("Key: " + entry.getKey()
+                    + " fieldName: " + entry.getValue().getFieldName()
+                    + " Msg: " + entry.getValue().getMessage());
+        }
     }
 
     /**
@@ -228,18 +256,18 @@ public class AbstractDataLinkTest extends TestClass {
         }
         List<AppTablesRelation> relations = new ArrayList();
         //Persist
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
-            relation.setEntityFK("xx"+i);
+            relation.setEntityFK("xx" + i);
             relation.setFechacreacion(new Date());
             relation.setFechamodificacion(new Date());
             relation.setFieldsFK("id");
             relation.setFieldsPK("id");
             relations.add(relation);
         }
-        
-        dataLinkCat.persist(relations);        
+
+        dataLinkCat.persist(relations);
 
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         assertTrue(relations.get(0).getEntityPK().trim().equals("xx1"));
@@ -269,13 +297,13 @@ public class AbstractDataLinkTest extends TestClass {
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         dataLinkCat.persist(relation);
-        
+
         relation = dataLinkCat.findByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         relation.setIncluded(true);
-        
+
         IDataResult dataResult = dataLinkCat.merge(relation);
         AppTablesRelation rowResult = dataResult.getRowUpdated();
-        assertEquals(relation.isIncluded(),rowResult.isIncluded());
+        assertEquals(relation.isIncluded(), rowResult.isIncluded());
 
         relation = dataLinkCat.findByQuery("select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNotNull(relation);
@@ -283,7 +311,7 @@ public class AbstractDataLinkTest extends TestClass {
         //Remove
         dataLinkCat.remove(relation);
     }
-    
+
     /**
      * Test of merge method, of class AbstractDataLink.
      */
@@ -297,28 +325,28 @@ public class AbstractDataLinkTest extends TestClass {
         }
         List<AppTablesRelation> relations = new ArrayList();
         //Persist
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
-            relation.setEntityFK("xx"+i);
+            relation.setEntityFK("xx" + i);
             relation.setFechacreacion(new Date());
             relation.setFechamodificacion(new Date());
             relation.setFieldsFK("id");
             relation.setFieldsPK("id");
             relations.add(relation);
         }
-        
+
         IDataResult dataResult = dataLinkCat.persist(relations);
 
         // Merge
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             relations.get(i).setIncluded(true);
         }
         dataLinkCat.merge(relations);
 
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             assertTrue(relations.get(i).isIncluded());
         }
         //Remove
@@ -346,17 +374,17 @@ public class AbstractDataLinkTest extends TestClass {
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         dataLinkCat.persist(relation);
-        
+
         relation = dataLinkCat.findByQuery("select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2'", null);
         assertNotNull(relation);
 
         //Remove
         dataLinkCat.remove(relation);
-        
+
         relation = dataLinkCat.findByQuery("select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2'", null);
         assertNull(relation);
     }
-    
+
     /**
      * Test of remove method, of class AbstractDataLink.
      */
@@ -370,10 +398,10 @@ public class AbstractDataLinkTest extends TestClass {
         }
         List<AppTablesRelation> relations = new ArrayList();
         //Persist
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
-            relation.setEntityFK("xx"+i);
+            relation.setEntityFK("xx" + i);
             relation.setFechacreacion(new Date());
             relation.setFechamodificacion(new Date());
             relation.setFieldsFK("id");
@@ -385,9 +413,9 @@ public class AbstractDataLinkTest extends TestClass {
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
 
         //Remove
-        dataLinkCat.remove(relations);    
-        
-        relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);        
+        dataLinkCat.remove(relations);
+
+        relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         assertTrue(relations.isEmpty());
     }
 
@@ -413,9 +441,9 @@ public class AbstractDataLinkTest extends TestClass {
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
         dataLinkCat.update(relation);
-        
+
         // Merge
-        List<AppTablesRelation>  relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
+        List<AppTablesRelation> relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         relations.get(0).setIncluded(true);
         relations.get(0).setAction(IDataRow.UPDATE);
         dataLinkCat.update(relations);
@@ -426,7 +454,7 @@ public class AbstractDataLinkTest extends TestClass {
         //Remove
         relation.setAction(IDataRow.DELETE);
         dataLinkCat.update(relation);
-        
+
         relation = dataLinkCat.findByQuery("select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNull(relation);
     }
@@ -444,10 +472,10 @@ public class AbstractDataLinkTest extends TestClass {
         }
         List<AppTablesRelation> relations = new ArrayList();
         //Persist
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
-            relation.setEntityFK("xx"+i);
+            relation.setEntityFK("xx" + i);
             relation.setFechacreacion(new Date());
             relation.setFechamodificacion(new Date());
             relation.setFieldsFK("id");
@@ -455,26 +483,26 @@ public class AbstractDataLinkTest extends TestClass {
             relation.setAction(IDataRow.INSERT);
             relations.add(relation);
         }
-        
+
         dataLinkCat.update(relations);
 
         // Merge
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             relations.get(i).setIncluded(true);
             relations.get(i).setAction(IDataRow.UPDATE);
         }
         dataLinkCat.update(relations);
 
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             assertTrue(relations.get(i).isIncluded());
             relations.get(i).setAction(IDataRow.DELETE);
         }
         //Remove
-        dataLinkCat.update(relations);        
+        dataLinkCat.update(relations);
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
-        assertTrue(relations.isEmpty());        
+        assertTrue(relations.isEmpty());
     }
 
     /**
@@ -489,13 +517,13 @@ public class AbstractDataLinkTest extends TestClass {
             return;
         }
         IDataSet dataSet = new DataSet();
-        
+
         List<AppTablesRelation> relations = new ArrayList();
         //Persist
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
-            relation.setEntityFK("xx"+i);
+            relation.setEntityFK("xx" + i);
             relation.setFechacreacion(new Date());
             relation.setFechamodificacion(new Date());
             relation.setFieldsFK("id");
@@ -505,11 +533,11 @@ public class AbstractDataLinkTest extends TestClass {
         }
         dataSet.add("relacion", relations);
         dataLinkCat.update(dataSet);
-        
+
         // Merge
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
-        dataSet.add("relacion", relations);        
-        for (int i = 0;i<5;i++){
+        dataSet.add("relacion", relations);
+        for (int i = 0; i < 5; i++) {
             relations.get(i).setIncluded(true);
             relations.get(i).setAction(IDataRow.UPDATE);
         }
@@ -517,20 +545,20 @@ public class AbstractDataLinkTest extends TestClass {
 
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         dataSet.add("relacion", relations);
-        for (int i = 0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             assertTrue(relations.get(i).isIncluded());
             relations.get(i).setAction(IDataRow.DELETE);
         }
         //Remove
         dataLinkCat.update(dataSet);
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
-        assertTrue(relations.isEmpty());        
-        
-    }
+        assertTrue(relations.isEmpty());
 
+    }
 
     /**
      * Test of refreshRow method, of class AbstractDataLink.
+     * @throws java.lang.Exception
      */
     @Test
     public void testRefreshRow() throws Exception {
@@ -603,7 +631,7 @@ public class AbstractDataLinkTest extends TestClass {
             return;
         }
         Map<String, Object> props = dataLinkCat.getPersistUnitProp();
-        assertNotNull(props);        
+        assertNotNull(props);
     }
 
     /**
@@ -619,7 +647,6 @@ public class AbstractDataLinkTest extends TestClass {
         }
         assertNotNull(dataLink.getUserSession());
     }
-
 
     /**
      * Test of getDBLinkInfo method, of class AbstractDataLink.

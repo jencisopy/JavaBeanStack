@@ -97,28 +97,30 @@ public class DataResult implements IDataResult {
 
     /**
      * Devuelve una lista ejb del conjunto que ha sido procesado.
+     * @param <T>
      * @return  lista ejb con los datos que han sido grabados.
      */
     @Override
-    public  List<IDataRow> getRowsUpdated() {
+    public  <T extends IDataRow> List<T> getRowsUpdated() {
         Map.Entry<String, List<IDataRow>> entry = mapResult.entrySet().iterator().next();
         if (entry == null){
             return null;
         }
-        return entry.getValue();        
+        return (List<T>)entry.getValue();        
     }
     
     /**
      * Devuelve una lista ejb del conjunto que ha sido procesado.
+     * @param <T>
      * @param key   identificador de la lista
      * @return  lista ejb con los datos que han sido grabados.
      */
     @Override
-    public List<IDataRow> getRowsUpdated(String key) {
+    public <T extends IDataRow> List<T> getRowsUpdated(String key) {
         if (Fn.nvl(key,"").isEmpty()) {
             key = "1";
         }
-        return mapResult.get(key);
+        return (List<T>)mapResult.get(key);
     }
     
     
@@ -190,10 +192,11 @@ public class DataResult implements IDataResult {
     
     /**
      * Agrega a una lista las filas procesadas.
+     * @param <T>
      * @param row 
      */
     @Override
-    public void setRowsUpdated(IDataRow row) {
+    public <T extends IDataRow> void setRowsUpdated(T row) {
         List<IDataRow> list = new ArrayList();
         list.add(row);
         setRowsUpdated(list);
@@ -202,10 +205,11 @@ public class DataResult implements IDataResult {
 
     /**
      * Agrega a una lista las filas procesadas.
+     * @param <T>
      * @param rows
      */
     @Override
-    public void setRowsUpdated(List<? extends IDataRow> rows) {
+    public <T extends IDataRow> void setRowsUpdated(List<T> rows) {
         IDataSet dataSet = new DataSet();
         dataSet.add("1", rows);
         setRowsUpdated(dataSet);

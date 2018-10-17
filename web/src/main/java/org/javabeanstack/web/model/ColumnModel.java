@@ -15,6 +15,10 @@ public class ColumnModel implements Serializable {
     private String order;
     private String filter;
     private Boolean visible;
+    private Boolean sortable;
+    private Boolean filterable;
+    private Boolean exportable;
+    private Boolean toggleable;
     private String link;
     private String id;
     private String style;
@@ -187,6 +191,37 @@ public class ColumnModel implements Serializable {
         this.filter = filter;
     }
 
+    public Boolean getSortable() {
+        return sortable;
+    }
+
+    public void setSortable(Boolean sortable) {
+        this.sortable = sortable;
+    }
+
+    public Boolean getFilterable() {
+        return filterable;
+    }
+
+    public void setFilterable(Boolean filterable) {
+        this.filterable = filterable;
+    }
+
+    public Boolean getExportable() {
+        return exportable;
+    }
+
+    public void setExportable(Boolean exportable) {
+        this.exportable = exportable;
+    }
+
+    public Boolean getToggleable() {
+        return toggleable;
+    }
+
+    public void setToggleable(Boolean toggleable) {
+        this.toggleable = toggleable;
+    }
     
 
     @Override
