@@ -103,7 +103,7 @@ public class AbstractDataServiceTest extends TestClass{
 
     /** Prueba unique key
      * @throws java.lang.Exception */
-    @Test    
+    //@Test    
     public void testCheckUniqueKey3() throws Exception {
         System.out.println("DataService - TestCheckUniqueKey3");                
         //No hubo conexión con el servidor de aplicaciones
