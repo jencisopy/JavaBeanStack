@@ -43,9 +43,12 @@ import javax.persistence.criteria.CriteriaQuery;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.exceptions.CompanyError;
+import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Fn;
+import static org.javabeanstack.util.Fn.nvl;
 import org.javabeanstack.util.Strings;
 
 /**
@@ -721,18 +724,21 @@ public abstract class AbstractDAO implements IGenericDAO {
                         case IDataRow.INSERT:
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
+                            checkFieldIdcompany(dbLinkInfo, ejb);                            
                             em.persist(ejb);
                             em.flush();
                             break;
                         case IDataRow.UPDATE:
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
+                            checkFieldIdcompany(dbLinkInfo, ejb);
                             em.merge(ejb);
                             em.flush();
                             break;
                         case IDataRow.DELETE:
                             ejbsRes.add(ejb);
                             em.remove(em.merge(ejb));
+                            checkFieldIdcompany(dbLinkInfo, ejb);
                             ejbsRes.remove(ejb);
                             em.flush();
                             break;
@@ -749,6 +755,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 }
                 dataResult.put(entry.getKey(), ejbsRes);
             } catch (Exception ex) {
+                dataResult.setRowUpdated(null);
                 String msgError = ErrorManager.getStackCause(ex);
                 if (lastEjb != null) {
                     lastEjb.setErrors(msgError, "", 0);
@@ -1177,5 +1184,44 @@ public abstract class AbstractDAO implements IGenericDAO {
         IDBLinkInfo dbInfo = new DBLinkInfo();
         dbInfo.setUserSession(getUserSession(sessionId));
         return dbInfo;
+    }
+    
+    /**
+     * Verifica que el valor del campo idcompany (identificador de la empresa
+     * a la que esta logueada) sea válido. No puede grabar o borrar registros
+     * que corresponde a una empresa que no esta logueada.
+     * @param <T>
+     * @param dbLinkInfo
+     * @param ejb
+     * @throws CompanyError 
+     */
+    private <T extends IDataRow> void checkFieldIdcompany(IDBLinkInfo dbLinkInfo, T ejb) throws CompanyError{
+        if (dbLinkInfo == null || ejb == null || dbLinkInfo.getUserSession() == null){
+            return;
+        }
+        if (ejb.getAction() == 0){
+            return;
+        }
+        Long idcompany = dbLinkInfo.getUserSession().getIdCompany();
+        if (nvl(idcompany, 0L) == 0L) {
+            return;
+        }
+        // Verificar valor de idcompany
+        if (!ejb.checkFieldIdcompany(idcompany)){
+            IUserSession userSession = dbLinkInfo.getUserSession();
+            boolean exito = false;
+            // Si la empresa en la que esta logueada agrupa varias empresas
+            if (!userSession.getCompany().getCompanyList().isEmpty()) {
+                for (IAppCompany company : userSession.getCompany().getCompanyList()) {
+                     if (ejb.checkFieldIdcompany(company.getIdcompany())){
+                         exito = true;
+                         break;
+                     }
+                }
+            }
+            if (!exito){
+                throw new CompanyError("Valor de idcompany inválido");                
+            }
+        }
     }
 }

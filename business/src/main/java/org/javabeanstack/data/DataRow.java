@@ -36,7 +36,7 @@ import org.javabeanstack.error.ErrorManager;
  *
  * @author Jorge Enciso
  */
-public class DataRow implements IDataRow, Serializable, Cloneable {
+public class DataRow implements IDataRow, Cloneable {
 
     private static final Logger LOGGER = Logger.getLogger(DataRow.class);
 
@@ -360,4 +360,12 @@ public class DataRow implements IDataRow, Serializable, Cloneable {
         return false;
     }
 
+    @Override
+    public boolean checkFieldIdcompany(Long idcompany) {
+        if (!DataInfo.isFieldExist(this.getClass(), "idcompany") && 
+               !DataInfo.isFieldExist(this.getClass(), "idempresa")){
+            return true;
+        }
+        return this.getValue("idcompany") == idcompany || this.getValue("idempresa") == idcompany;
+    }
 }
