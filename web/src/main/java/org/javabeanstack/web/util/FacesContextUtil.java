@@ -32,9 +32,10 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import org.primefaces.context.RequestContext;
+
 
 import org.javabeanstack.security.IUserSession;
+import org.primefaces.PrimeFaces;
 
 public class FacesContextUtil {
 
@@ -46,8 +47,8 @@ public class FacesContextUtil {
         return getFacesContext().getApplication();
     }
 
-    public RequestContext getRequestContext() {
-        return RequestContext.getCurrentInstance();
+    public PrimeFaces getRequestContext() {
+        return PrimeFaces.current();
     }
   
     public ExternalContext getExternalContext(){
@@ -156,7 +157,7 @@ public class FacesContextUtil {
     }
     
     public void addCallbackParam(String param, Object value){
-        RequestContext.getCurrentInstance().addCallbackParam(param, value);
+        getRequestContext().ajax().addCallbackParam(param, value);
     }
         
     public void addMessage(String clientId, FacesMessage message){
