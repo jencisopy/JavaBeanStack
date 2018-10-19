@@ -35,6 +35,7 @@ import org.javabeanstack.model.tables.AppResource;
 import org.javabeanstack.model.tables.AppTablesRelation;
 import org.javabeanstack.model.tables.AppUser;
 import org.javabeanstack.model.tables.Moneda;
+import org.javabeanstack.util.Fn;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -243,6 +244,71 @@ public class AbstractDataLinkTest extends TestClass {
         }
     }
 
+    /**
+     * Test of persist method, of class AbstractDataLink.
+     */
+    @Test
+    public void testPersist3() throws Exception {
+        System.out.println("persist3");
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        Moneda moneda = new Moneda();
+        moneda.setCodigo("PYG");
+        moneda.setNombre("Guarani");
+        moneda.setCambio(BigDecimal.ONE);
+        moneda.setObservacion("34424");
+        moneda.setIdempresa(99L);
+        //Error al propósito
+        IDataResult dataResult = dataLink.persist(moneda);
+        Moneda monedaResult = dataResult.getRowUpdated();
+        List<Moneda> monedasResult = dataResult.getRowsUpdated();
+        assertNull(monedaResult);
+        assertFalse(monedasResult.get(0).getErrors().isEmpty());
+
+        for (Map.Entry<String, IErrorReg> entry : monedasResult.get(0).getErrors().entrySet()) {
+            System.out.println("Key: " + entry.getKey()
+                    + " fieldName: " + entry.getValue().getFieldName()
+                    + " Msg: " + entry.getValue().getMessage());
+        }
+    }
+
+    /**
+     * Test of persist method, of class AbstractDataLink.
+     */
+    @Test
+    public void testPersist4() throws Exception {
+        System.out.println("persist4");
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        Moneda moneda = new Moneda();
+        moneda.setCodigo("XXX");
+        moneda.setNombre("XXXXXXX");
+        moneda.setCambio(BigDecimal.ONE);
+        moneda.setIdempresa(dataLink.getUserSession().getIdCompany());
+
+        IDataResult dataResult = dataLink.persist(moneda);
+        Moneda monedaResult = dataResult.getRowUpdated();
+        List<Moneda> monedasResult = dataResult.getRowsUpdated();
+        if (!dataResult.isSuccessFul()){
+            for (Map.Entry<String, IErrorReg> entry : monedasResult.get(0).getErrors().entrySet()) {
+                System.out.println("Key: " + entry.getKey()
+                        + " fieldName: " + entry.getValue().getFieldName()
+                        + " Msg: " + entry.getValue().getMessage());
+            }
+        }
+        assertNotNull(monedaResult);
+        assertTrue(monedasResult.get(0).getErrors().isEmpty());
+        
+        dataResult = dataLink.remove(monedaResult);
+        assertTrue(dataResult.isSuccessFul());
+        
+        
+    }
+    
     /**
      * Test of persist method, of class AbstractDataLink.
      */

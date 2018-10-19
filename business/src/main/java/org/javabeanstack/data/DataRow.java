@@ -45,7 +45,7 @@ public class DataRow implements IDataRow, Cloneable {
     private String idFunctionFind = "";
     private boolean rowChecked = false;
     private Map<String, Boolean> fieldChecked = null;
-    private Map<String, IErrorReg> errors = null;
+    private Map<String, IErrorReg> errors = new HashMap();
 
     //TODO implementar parent, beforesetvalue, aftersetvalue
     public DataRow() {
@@ -181,6 +181,9 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public Map<String, IErrorReg> getErrors() {
+        if (this.errors == null){
+            this.errors = new HashMap();
+        }
         return this.errors;
     }
 
