@@ -32,6 +32,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
+import org.javabeanstack.io.IOUtil;
 
 import org.javabeanstack.security.IUserSession;
 
@@ -75,19 +76,8 @@ public class AuthFilter implements Filter {
             return; 
         } 
           
-        String currentPage = req.getServletPath().toLowerCase(); 
-          
-        // Eliminar la barra del comienzo (viene en formato /index.xhtml)  
-        if(currentPage.startsWith("/")) { 
-            currentPage = currentPage.replace("/", ""); 
-        } 
-          
-        // Substraer hasta el punto (index.xhtml => index) 
-        int idx = currentPage.indexOf("."); 
-        if(idx != -1) { 
-            currentPage = currentPage.substring(0, idx); 
-        } 
-  
+        String currentPage = IOUtil.getFileBaseName(req.getServletPath().toLowerCase()); 
+
         if(!currentPage.isEmpty()) { 
             // Seguir con el flujo normal de la petición
             chain.doFilter(request, response);

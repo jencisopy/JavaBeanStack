@@ -90,6 +90,6 @@ public abstract class AbstractController implements Serializable{
      */
     public String logout() {
         facesCtx.getSessionMap().put("userSession", null);
-        return "login.xhtml?faces-redirect=true";
+        return "/login.xhtml?faces-redirect=true";
     }    
  }
