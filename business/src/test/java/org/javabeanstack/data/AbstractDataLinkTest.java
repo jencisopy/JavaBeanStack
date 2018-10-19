@@ -35,7 +35,6 @@ import org.javabeanstack.model.tables.AppResource;
 import org.javabeanstack.model.tables.AppTablesRelation;
 import org.javabeanstack.model.tables.AppUser;
 import org.javabeanstack.model.tables.Moneda;
-import org.javabeanstack.util.Fn;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -266,6 +265,7 @@ public class AbstractDataLinkTest extends TestClass {
         List<Moneda> monedasResult = dataResult.getRowsUpdated();
         assertNull(monedaResult);
         assertFalse(monedasResult.get(0).getErrors().isEmpty());
+        assertFalse(dataResult.getErrorMsg().isEmpty());
 
         for (Map.Entry<String, IErrorReg> entry : monedasResult.get(0).getErrors().entrySet()) {
             System.out.println("Key: " + entry.getKey()
@@ -302,6 +302,7 @@ public class AbstractDataLinkTest extends TestClass {
         }
         assertNotNull(monedaResult);
         assertTrue(monedasResult.get(0).getErrors().isEmpty());
+        assertTrue(dataResult.getErrorMsg().isEmpty());
         
         dataResult = dataLink.remove(monedaResult);
         assertTrue(dataResult.isSuccessFul());

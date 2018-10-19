@@ -26,8 +26,8 @@
     </developers>  
 
     <scm>
-        <connection>scm:git:git://github.com/jencisopy/JavaBeanStack.git</connection>
-        <developerConnection>scm:git:ssh://github.com/jencisopy/JavaBeanStack.git</developerConnection>
+        <connection>scm:git:https://github.com/jencisopy/JavaBeanStack.git</connection>
+        <developerConnection>scm:git:https://github.com/jencisopy/JavaBeanStack.git</developerConnection>
         <url>https://github.com/jencisopy/JavaBeanStack/</url>        
     </scm>
             
