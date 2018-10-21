@@ -142,6 +142,10 @@ public class AppUser extends DataRow implements IAppUser {
         return code;
     }
 
+    public String getCodigo() {
+        return getCode();
+    }    
+    
     @Override
     public void setCode(String code) {
         this.code = code;

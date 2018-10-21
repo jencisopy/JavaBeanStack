@@ -3,7 +3,7 @@ package org.javabeanstack.services;
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.tables.AppUser;
+import org.javabeanstack.model.tables.Region;
 
 /**
  *
@@ -12,12 +12,12 @@ import org.javabeanstack.model.tables.AppUser;
 public interface IRegionSrv extends IDataService{
 
     @CheckMethod(fieldName = "codigo", action = {IDataRow.AGREGAR, IDataRow.MODIFICAR, IDataRow.BORRAR})
-    IErrorReg checkCodigo(AppUser row, String sessionId);
+    IErrorReg checkCodigo(Region row, String sessionId);
 
     @CheckMethod(fieldName = "codigo", action = {IDataRow.BORRAR})
-    IErrorReg checkCodigo2(AppUser row, String sessionId);
+    IErrorReg checkCodigo2(Region row, String sessionId);
 
     @CheckMethod(fieldName = "nombre")
-    IErrorReg checkNombre(AppUser row, String sessionId);
+    IErrorReg checkNombre(Region row, String sessionId);
     
 }

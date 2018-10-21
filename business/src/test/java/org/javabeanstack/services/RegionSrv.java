@@ -8,12 +8,12 @@ import org.javabeanstack.data.DBManager;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.tables.AppUser;
+import org.javabeanstack.model.tables.Region;
 
 
 /**
  *
- * @author jenci_000
+ * @author Jorge Enciso
  */
 @TransactionManagement(value=TransactionManagementType.CONTAINER)
 public class RegionSrv extends DataService implements IRegionSrv {
@@ -24,7 +24,7 @@ public class RegionSrv extends DataService implements IRegionSrv {
                              IDataRow.MODIFICAR,
                              IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo(AppUser row, String sessionId){
+    public IErrorReg checkCodigo(Region row, String sessionId){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo");
         return errorReg;
@@ -33,7 +33,7 @@ public class RegionSrv extends DataService implements IRegionSrv {
     @CheckMethod(fieldName = "codigo",
                  action = {IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo2(AppUser row, String sessionId){
+    public IErrorReg checkCodigo2(Region row, String sessionId){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo2");
         return errorReg;
@@ -41,7 +41,7 @@ public class RegionSrv extends DataService implements IRegionSrv {
     
     @CheckMethod(fieldName = "nombre")     
     @Override
-    public IErrorReg checkNombre(AppUser row, String sessionId){
+    public IErrorReg checkNombre(Region row, String sessionId){
         IErrorReg errorReg = new ErrorReg();
         LOGGER.info("IN checkNombre");
         //errorReg.setMessage("prueba de error");

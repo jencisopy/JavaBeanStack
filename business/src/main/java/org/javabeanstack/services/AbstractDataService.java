@@ -51,6 +51,7 @@ import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.util.Fn;
+import static org.javabeanstack.util.Strings.isNullorEmpty;
 
 /**
  * Esta clase deriva de AbstractDAO, a travéz de ella se recupera, válida y se
@@ -255,6 +256,9 @@ public abstract class AbstractDataService implements IDataService {
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     protected final void checkUserSession(String sessionId) throws SessionError {
+        if (isNullorEmpty(sessionId)){ 
+            return;
+        }
         IUserSession userSession = getUserSession(sessionId);
         if (userSession == null || userSession.getUser() == null) {
             throw new SessionError("El identificador de la sesión es inválido");

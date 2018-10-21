@@ -23,34 +23,47 @@
 package org.javabeanstack.services;
 
 import java.lang.reflect.Method;
-import java.sql.Connection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.Query;
-import org.javabeanstack.data.IDBConnectFactory;
+import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.model.tables.AppResource;
+import org.javabeanstack.model.tables.AppTablesRelation;
 import org.javabeanstack.model.tables.AppUser;
 import org.javabeanstack.model.tables.AppUserMember;
 import org.javabeanstack.model.tables.Moneda;
 import org.javabeanstack.model.tables.Pais;
-import org.javabeanstack.security.IUserSession;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
 /**
  *
  * @author Jorge Enciso
  */
 public class AbstractDataServiceTest extends TestClass{
+    private static IDataServiceRemote dataService;
     
     public AbstractDataServiceTest() {
     }
 
+    @BeforeClass
+    public static void setUpClass2() {
+        try {
+            dataService = 
+                (IDataServiceRemote) context.lookup(jndiProject+"DataService!org.javabeanstack.services.IDataServiceRemote");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
     @Test
     public void testInstance() throws Exception {
         System.out.println("DataService - TestInstance");        
@@ -74,11 +87,8 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataService dataService  = 
-                (IDataService) context.lookup(jndiProject+"UsuarioSrv!org.javabeanstack.services.IUsuarioSrvRemote");
         
-        AppUser row = dataService.findById(AppUser.class,null ,1L);
-        row.setUserMemberList(null);
+        Moneda row = dataService.find(Moneda.class,sessionId).get(0);
         // Va a pasar la prueba porque es el mismo objeto
         assertTrue(dataService.checkUniqueKey("", row));
     }
@@ -93,17 +103,16 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataServiceRemote dataService  = 
-                (IDataServiceRemote) context.lookup(jndiProject+"DataService!org.javabeanstack.services.IDataServiceRemote");
         
-        Moneda row = dataService.findById(Moneda.class,sessionId ,234L);
+        List<Moneda> rows = dataService.find(Moneda.class,sessionId);
+        Moneda row = rows.get(0);
         // Necesita del parametro sessionId para acceder a la unidad de persistencia adecuado
         assertTrue(dataService.checkUniqueKey(sessionId, row));
     }
 
     /** Prueba unique key
      * @throws java.lang.Exception */
-    //@Test    
+    @Test    
     public void testCheckUniqueKey3() throws Exception {
         System.out.println("DataService - TestCheckUniqueKey3");                
         //No hubo conexión con el servidor de aplicaciones
@@ -111,77 +120,33 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataService usuarioSrv  = 
-                (IDataService) context.lookup(jndiProject+"UsuarioSrv!org.javabeanstack.services.IUsuarioSrvRemote");
+        Moneda moneda = dataService.find(Moneda.class,sessionId).get(0);
         
-        List<AppUser> rows = usuarioSrv.find(AppUser.class,null);
-        AppUser usuario = rows.get(0);
-        usuario.setIduser(0L);
         Map<String, IErrorReg> errors;
 
-        usuario.setAction(IDataRow.MODIFICAR);
-        errors = usuarioSrv.checkDataRow("", usuario);
+        moneda.setAction(IDataRow.MODIFICAR);
+        errors = dataService.checkDataRow(sessionId, moneda);
         assertTrue(errors.isEmpty());
-        
-        usuario.setAction(IDataRow.AGREGAR);        
-        errors = usuarioSrv.checkDataRow("", usuario);
+
+        moneda.setIdmoneda(0L);        
+        moneda.setAction(IDataRow.AGREGAR);        
+        errors = dataService.checkDataRow(sessionId, moneda);
         assertFalse(errors.isEmpty());
 
-        usuario.setAction(IDataRow.BORRAR);        
-        errors = usuarioSrv.checkDataRow("", usuario);
+        moneda.setAction(IDataRow.BORRAR);        
+        errors = dataService.checkDataRow(sessionId, moneda);
         assertTrue(errors.isEmpty());
         
-        usuario.setLogin("xxxxxxx");
-        usuario.setAction(IDataRow.AGREGAR);        
-        errors = usuarioSrv.checkDataRow("", usuario);
+        moneda.setCodigo("xxx");
+        moneda.setAction(IDataRow.AGREGAR);        
+        errors = dataService.checkDataRow(sessionId, moneda);
         assertTrue(errors.isEmpty());
-        
      }        
     
-    /** Prueba de ejecución del metodo de chequeo de acuerdo al tipo de operación
-     * @throws java.lang.Exception
-     */
-    //@Test    
-    public void testCheckData3() throws Exception {
-        System.out.println("DataService - TestCheckData3");
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        IDataService usuarioSrv  = 
-                (IDataService) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
-        
-        List<AppUser> rows = usuarioSrv.findAll(AppUser.class,null);
-        rows.get(0).setAction(IDataRow.MODIFICAR);
-        usuarioSrv.checkDataRow("", rows.get(0));
-        
-        rows.get(0).setAction(IDataRow.BORRAR);
-        usuarioSrv.checkDataRow("", rows.get(0));
-    }        
-    
-    /** Prueba chequeo de datos
-     * @throws java.lang.Exception */
-    //@Test    
-    public void testCheckData4() throws Exception {
-        System.out.println("DataService - TestCheckData4");        
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        IDataService usuarioSrv  = 
-                (IDataService) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
-        
-        List<AppUser> rows = usuarioSrv.findAll(AppUser.class,null);
-        usuarioSrv.merge("", rows.get(0));
-        //dataService.checkDataRow(rows.get(0), "");
-       
-    }        
 
     /** Prueba de chequeo de los foreignkeys
      * @throws java.lang.Exception */
-    //@Test    
+    @Test    
     public void testCheckForeignkey() throws Exception {
         System.out.println("DataService - TestCheckForeignkey");        
         //No hubo conexión con el servidor de aplicaciones
@@ -189,18 +154,15 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataServiceRemote dataService  = 
-                (IDataServiceRemote) context.lookup(jndiProject+"UsuarioMiembroSrv!org.javabeanstack.services.IDataServiceRemote");
-        
-        List<AppUserMember> rows = dataService.findAll(AppUserMember.class,null);
-        assertTrue(dataService.checkForeignKey("",rows.get(0),"usuariogrupo"));
-        rows.get(0).setUserGroup(null);        
-        assertFalse(dataService.checkForeignKey("", rows.get(0),"usuariogrupo"));        
+        AppUserMember userMember = dataService.find(AppUserMember.class,null).get(0);
+        assertTrue(dataService.checkForeignKey("",userMember,"usergroup"));
+        userMember.setUserGroup(null);
+        assertFalse(dataService.checkForeignKey("",userMember,"usergroup"));
     }    
 
     /** Chequeo de los foreignkeys
      * @throws java.lang.Exception */
-    //@Test    
+    @Test    
     public void testCheckForeignKey2() throws Exception {
         System.out.println("DataService - TestCheckForeignkey2");                
         //No hubo conexión con el servidor de aplicaciones
@@ -208,20 +170,17 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataServiceRemote dataService  = 
-                (IDataServiceRemote) context.lookup(jndiProject+"DataService!org.javabeanstack.services.IDataServiceRemote");
-        
         Map<String, IErrorReg> errors;        
-        List<Pais> rows = dataService.find(Pais.class,sessionId);
-        rows.get(0).setAction(IDataRow.MODIFICAR);
+        Pais pais = dataService.find(Pais.class,sessionId).get(0);
+        pais.setAction(IDataRow.MODIFICAR);
         // Necesita del parametro sessionId para acceder a la unidad de persistencia adecuado        
-        errors = dataService.checkDataRow(sessionId, rows.get(0));
+        errors = dataService.checkDataRow(sessionId, pais);
         assertTrue(errors.isEmpty());
     }    
 
-    //@Test        
     /** Chequeo de los foreignkeys
      * @throws java.lang.Exception */
+    @Test            
     public void testCheckForeignKey3() throws Exception {
         System.out.println("DataService - TestCheckForeignkey3");                
         //No hubo conexión con el servidor de aplicaciones
@@ -229,14 +188,10 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataServiceRemote dataService  = 
-                (IDataServiceRemote) context.lookup(jndiProject+"UsuarioMiembroSrv!org.javabeanstack.services.IDataServiceRemote");
-        
-        List<AppUserMember> rows = dataService.findAll(AppUserMember.class,null);
-        AppUserMember usuarioMiembro = rows.get(0);
+        AppUserMember usuarioMiembro = dataService.find(AppUserMember.class,null).get(0);
         usuarioMiembro.setAction(IDataRow.MODIFICAR);
         
-        Map<String, IErrorReg> errors = dataService.checkDataRow(sessionId, rows.get(0));
+        Map<String, IErrorReg> errors = dataService.checkDataRow("", usuarioMiembro);
         assertTrue(errors.isEmpty());
     }
     
@@ -262,102 +217,13 @@ public class AbstractDataServiceTest extends TestClass{
         assertTrue(errors.isEmpty());
     }    
     
-    /**
-     * Test of getPersistentUnit method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetPersistentUnit() {
-        System.out.println("getPersistentUnit");
-        String sessionId = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        String expResult = "";
-        String result = instance.getPersistentUnit(sessionId);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getUserSession method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetUserSession() {
-        System.out.println("getUserSession");
-        String sessionId = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IUserSession expResult = null;
-        IUserSession result = instance.getUserSession(sessionId);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getEntityManagerProp method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetEntityManagerProp() {
-        System.out.println("getEntityManagerProp");
-        String persistUnit = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Map<String, Object> expResult = null;
-        Map<String, Object> result = instance.getEntityManagerProp(persistUnit);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getPersistUnitProp method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetPersistUnitProp() {
-        System.out.println("getPersistUnitProp");
-        String persistUnit = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Map<String, Object> expResult = null;
-        Map<String, Object> result = instance.getPersistUnitProp(persistUnit);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getDataEngine method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetDataEngine() {
-        System.out.println("getDataEngine");
-        String persistentUnit = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        String expResult = "";
-        String result = instance.getDataEngine(persistentUnit);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getSchema method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetSchema() {
-        System.out.println("getSchema");
-        String persistentUnit = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        String expResult = "";
-        String result = instance.getSchema(persistentUnit);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
+    
     /**
      * Test of setListCheckMethods method, of class AbstractDataService.
      */
     //@Test
     public void testSetListCheckMethods() {
-        System.out.println("setListCheckMethods");
+        System.out.println("DataService - setListCheckMethods");
         AbstractDataService instance = new AbstractDataServiceImpl();
         List<Method> expResult = null;
         List<Method> result = instance.setListCheckMethods();
@@ -371,7 +237,7 @@ public class AbstractDataServiceTest extends TestClass{
      */
     //@Test
     public void testSetListFieldCheck() {
-        System.out.println("setListFieldCheck");
+        System.out.println("DataService - setListFieldCheck");
         Object row = null;
         AbstractDataService instance = new AbstractDataServiceImpl();
         Object expResult = null;
@@ -380,277 +246,233 @@ public class AbstractDataServiceTest extends TestClass{
     /**
      * Test of findById method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testFindById() throws Exception {
-        System.out.println("findById");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Object expResult = null;
+        System.out.println("DataService - findById");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        AppUser user = dataService.findById(AppUser.class, sessionid, 1L);
+        assertNotNull(user);
+        
+        user = dataService.findById(AppUser.class, sessionid, 0L);
+        assertNull(user);
     }
 
     /**
      * Test of findByUk method, of class AbstractDataService.
+     *
+     * @throws java.lang.Exception
      */
-    //@Test
+    @Test
     public void testFindByUk() throws Exception {
-        System.out.println("findByUk");
-        String sessionId = "";
-        Object ejb = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Object expResult = null;
+        System.out.println("DataService - findByUk");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        AppResource appResource = new AppResource();
+        appResource.setCode("no se encuentra");
+        appResource = dataService.findByUk(sessionid, appResource);
+        assertNull(appResource);
+        
+        appResource = new AppResource();
+        appResource.setCode("clasemaker.xml");
+        appResource = dataService.findByUk(sessionid, appResource);
+        assertNotNull(appResource);
     }
+    
 
     /**
      * Test of find method, of class AbstractDataService.
+     *
+     * @throws java.lang.Exception
      */
-    //@Test
-    public void testFind_Class_String() throws Exception {
-        System.out.println("find");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-    }
-
-    /**
-     * Test of find method, of class AbstractDataService.
-     */
-    //@Test
-    public void testFind_5args() throws Exception {
-        System.out.println("find");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-    }
-
-    /**
-     * Test of find method, of class AbstractDataService.
-     */
-    //@Test
-    public void testFind_7args() throws Exception {
-        System.out.println("find");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-    }
-
-    /**
-     * Test of findByNativeQuery method, of class AbstractDataService.
-     */
-    //@Test
-    public void testFindByNativeQuery_3args() throws Exception {
-        System.out.println("findByNativeQuery");
-        String sessionId = "";
-        String queryString = "";
-        Map<String, Object> parameters = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List<Object> expResult = null;
-        List<Object> result = instance.findByNativeQuery(sessionId, queryString, parameters);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of findByNativeQuery method, of class AbstractDataService.
-     */
-    //@Test
-    public void testFindByNativeQuery_5args() throws Exception {
-        System.out.println("findByNativeQuery");
-        String sessionId = "";
-        String queryString = "";
-        Map<String, Object> parameters = null;
-        int first = 0;
-        int max = 0;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List<Object> expResult = null;
-        List<Object> result = instance.findByNativeQuery(sessionId, queryString, parameters, first, max);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    @Test
+    public void testFind() throws Exception {
+        System.out.println("DataService - find");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        List<AppUser> users = dataService.find(AppUser.class, sessionid);
+        assertTrue(users.size() > 0);
+        
+        String order = "code desc";
+        String filter = "";
+        users = dataService.find(AppUser.class, sessionid, order, filter, null);
+        assertTrue(users.size() > 0);
+        
+        filter = "code = 'Administrador'";
+        users = dataService.find(AppUser.class, sessionid, order, filter, null);
+        assertTrue(users.size() == 1);
+        
+        filter = "code = :code";
+        Map<String, Object> params = new HashMap();
+        params.put("code", "Administrador");
+        users = dataService.find(AppUser.class, sessionid, order, filter, params);
+        assertTrue(users.size() == 1);
+        
+        users = dataService.find(AppUser.class, sessionid, null, "", null, 0, 4);        
+        assertTrue(users.size() == 4);
     }
 
     /**
      * Test of findByQuery method, of class AbstractDataService.
+     *
+     * @throws java.lang.Exception
      */
-    //@Test
+    @Test
     public void testFindByQuery() throws Exception {
-        System.out.println("findByQuery");
-        String sessionId = "";
-        String queryString = "";
-        Map<String, Object> parameters = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Object expResult = null;
-        Object result = instance.findByQuery(sessionId, queryString, parameters);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        System.out.println("DataService - findByQuery");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        AppUser user = dataService.findByQuery(sessionid, "select o from AppUser o where iduser = 1L", null);
+        assertNotNull(user);
+
+        user = dataService.findByQuery(sessionid, "select o from AppUser o where iduser = 0L", null);
+        assertNull(user);
+        
+        Map<String, Object> params = new HashMap();
+        params.put("iduser", 1L);
+        user = dataService.findByQuery(sessionid, "select o from AppUser o where iduser = :iduser", params);
+        assertNotNull(user);
     }
 
     /**
      * Test of findListByQuery method, of class AbstractDataService.
      */
-    //@Test
-    public void testFindListByQuery_3args() throws Exception {
-        System.out.println("findListByQuery");
-        String sessionId = "";
-        String queryString = "";
-        Map<String, Object> parameters = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-        List result = instance.findListByQuery(sessionId, queryString, parameters);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+    @Test
+    public void testFindListByQuery() throws Exception {
+        System.out.println("DataService - findListByQuery");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        List<AppUser> users = dataService.findListByQuery(sessionid, "select o from AppUser o where iduser = 1L", null);
+        assertNotNull(users);
 
-    /**
-     * Test of findListByQuery method, of class AbstractDataService.
-     */
-    //@Test
-    public void testFindListByQuery_4args() throws Exception {
-        System.out.println("findListByQuery");
-        String sessionId = "";
-        String queryString = "";
-        int first = 0;
-        int max = 0;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-        List result = instance.findListByQuery(sessionId, queryString, first, max);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of findListByQuery method, of class AbstractDataService.
-     */
-    //@Test
-    public void testFindListByQuery_5args() throws Exception {
-        System.out.println("findListByQuery");
-        String sessionId = "";
-        String queryString = "";
-        Map<String, Object> parameters = null;
-        int first = 0;
-        int max = 0;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-        List result = instance.findListByQuery(sessionId, queryString, parameters, first, max);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        users = dataService.findListByQuery(sessionid, "select o from AppUser o where iduser = 0L", null);
+        assertTrue(users.isEmpty());
+        
+        Map<String, Object> params = new HashMap();
+        params.put("iduser", 1L);
+        users = dataService.findListByQuery(sessionid, "select o from AppUser o where iduser = :iduser", params);
+        assertNotNull(users);
     }
 
     /**
      * Test of findByNamedQuery method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testFindByNamedQuery() throws Exception {
-        System.out.println("findByNamedQuery");
-        String sessionId = "";
-        String namedQuery = "";
-        Map<String, Object> parameters = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Object expResult = null;
-        Object result = instance.findByNamedQuery(sessionId, namedQuery, parameters);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        System.out.println("DataService - findByNamedQuery");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        
+        List<AppTablesRelation> prueba = dataService.findListByNamedQuery(sessionid, "AppTablesRelation.findAll", null);
+        assertTrue(!prueba.isEmpty());
     }
 
     /**
-     * Test of findListByNamedQuery method, of class AbstractDataService.
+     * Test of findByNativeQuery method, of class AbstractDataService.
      */
-    //@Test
-    public void testFindListByNamedQuery_3args() throws Exception {
-        System.out.println("findListByNamedQuery");
-        String sessionId = "";
-        String namedQuery = "";
-        Map<String, Object> parameters = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-        List result = instance.findListByNamedQuery(sessionId, namedQuery, parameters);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    @Test
+    public void testFindByNativeQuery() throws Exception {
+        System.out.println("DataService - findByNativeQuery");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sqlSentence = "select * from {schema}.moneda where idmoneda > :id";
+        Map<String, Object> params = new HashMap();
+        params.put("id",0);
+        List<Object> query1 = dataService.findByNativeQuery(sessionId, sqlSentence, params);
+        assertTrue(!query1.isEmpty());
+        
+        // Un grupo de registros first, max
+        query1 = dataService.findByNativeQuery(sessionId, sqlSentence, params,0,10);
+        assertTrue(!query1.isEmpty());
     }
 
-    /**
-     * Test of findListByNamedQuery method, of class AbstractDataService.
-     */
-    //@Test
-    public void testFindListByNamedQuery_4args() throws Exception {
-        System.out.println("findListByNamedQuery");
-        String sessionId = "";
-        String namedQuery = "";
-        int first = 0;
-        int max = 0;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-        List result = instance.findListByNamedQuery(sessionId, namedQuery, first, max);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of findListByNamedQuery method, of class AbstractDataService.
-     */
-    //@Test
-    public void testFindListByNamedQuery_5args() throws Exception {
-        System.out.println("findListByNamedQuery");
-        String sessionId = "";
-        String namedQuery = "";
-        Map<String, Object> parameters = null;
-        int first = 0;
-        int max = 0;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-        List result = instance.findListByNamedQuery(sessionId, namedQuery, parameters, first, max);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
     /**
      * Test of refreshRow method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testRefreshRow() throws Exception {
-        System.out.println("refreshRow");
-        String sessionId = "";
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Object expResult = null;
+        System.out.println("DataService - refreshRow");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        AppResource resource = dataService.findByQuery(sessionid, "select o from AppResource o where code = 'clasemaker.xml'", null);
+        resource = dataService.refreshRow(sessionid, resource);
+        assertNotNull(resource);
     }
 
     /**
      * Test of getCount method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testGetCount() throws Exception {
-        System.out.println("getCount");
-        String sessionId = "";
-        String queryString = "";
-        Map<String, Object> parameters = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Long expResult = null;
-        Long result = instance.getCount(sessionId, queryString, parameters);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        System.out.println("DataService - getCount");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        Long rec = dataService.getCount(sessionid, "select o FROM AppCompany o", null);
+        assertTrue(rec > 0L);
     }
 
     /**
      * Test of getCount2 method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testGetCount2() throws Exception {
-        System.out.println("getCount2");
-        String sessionId = "";
-        String queryString = "";
-        Map<String, Object> parameters = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Long expResult = null;
-        Long result = instance.getCount2(sessionId, queryString, parameters);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        System.out.println("DataService - getCount2");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        // {schema} se reemplaza automáticamente por el nombre del schema
+        Long rec = dataService.getCount2(sessionid, "select * FROM {schema}.empresa", null);
+        assertTrue(rec > 0L);
     }
 
     /**
@@ -658,7 +480,7 @@ public class AbstractDataServiceTest extends TestClass{
      */
     //@Test
     public void testCheckUserSession() throws Exception {
-        System.out.println("checkUserSession");
+        System.out.println("DataService - checkUserSession");
         String sessionId = "";
         AbstractDataService instance = new AbstractDataServiceImpl();
         instance.checkUserSession(sessionId);
@@ -667,48 +489,11 @@ public class AbstractDataServiceTest extends TestClass{
     }
 
     /**
-     * Test of checkUniqueKey method, of class AbstractDataService.
-     */
-    //@Test
-    public void testCheckUniqueKey() {
-        System.out.println("checkUniqueKey");
-        String sessionId = "";
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        boolean expResult = false;
-    }
-
-    /**
-     * Test of checkForeignKey method, of class AbstractDataService.
-     */
-    //@Test
-    public void testCheckForeignKey() {
-        System.out.println("checkForeignKey");
-        String sessionId = "";
-        Object row = null;
-        String fieldName = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        boolean expResult = false;
-    }
-
-    /**
-     * Test of checkDataRow method, of class AbstractDataService.
-     */
-    //@Test
-    public void testCheckDataRow() {
-        System.out.println("checkDataRow");
-        String sessionId = "";
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Map<String, IErrorReg> expResult = null;
-    }
-
-    /**
      * Test of checkDataResult method, of class AbstractDataService.
      */
     //@Test
     public void testCheckDataResult() {
-        System.out.println("checkDataResult");
+        System.out.println("DataService - checkDataResult");
         String sessionId = "";
         Object row = null;
         AbstractDataService instance = new AbstractDataServiceImpl();
@@ -720,7 +505,7 @@ public class AbstractDataServiceTest extends TestClass{
      */
     //@Test
     public void testSave() throws Exception {
-        System.out.println("save");
+        System.out.println("DataService - save");
         String sessionId = "";
         Object row = null;
         AbstractDataService instance = new AbstractDataServiceImpl();
@@ -730,69 +515,151 @@ public class AbstractDataServiceTest extends TestClass{
     /**
      * Test of persist method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testPersist() throws Exception {
-        System.out.println("persist");
-        String sessionId = "";
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
+        System.out.println("DataService - persist");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Persist
+        AppTablesRelation relation = new AppTablesRelation();
+        relation.setEntityPK("xx1");
+        relation.setEntityFK("xx2");
+        relation.setFechacreacion(new Date());
+        relation.setFechamodificacion(new Date());
+        relation.setFieldsFK("id");
+        relation.setFieldsPK("id");
+        IDataResult dataResult = dataService.persist(sessionid, relation);
+        
+        AppTablesRelation rowResult = dataResult.getRowUpdated();
+        assertEquals(relation.getEntityPK(),rowResult.getEntityPK());
+        
+        List<AppTablesRelation>  relations = dataService.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
+
+        assertTrue(relations.get(0).getEntityPK().trim().equals("xx1"));
+
+        //Remove
+        dataService.remove(sessionid, relations.get(0));
     }
 
     /**
      * Test of merge method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testMerge() throws Exception {
-        System.out.println("merge");
-        String sessionId = "";
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
+        System.out.println("DataService - merge");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Persist
+        AppTablesRelation relation = new AppTablesRelation();
+        relation.setEntityPK("xx1");
+        relation.setEntityFK("xx2");
+        relation.setFechacreacion(new Date());
+        relation.setFechamodificacion(new Date());
+        relation.setFieldsFK("id");
+        relation.setFieldsPK("id");
+        relation.setIncluded(false);
+        dataService.persist(sessionid, relation);
+        
+        relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
+        relation.setIncluded(true);
+        
+        IDataResult dataResult = dataService.merge(sessionid, relation);
+        AppTablesRelation rowResult = dataResult.getRowUpdated();
+        assertEquals(relation.isIncluded(),rowResult.isIncluded());
+
+        relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
+        assertNotNull(relation);
+
+        //Remove
+        dataService.remove(sessionid, relation);
     }
 
     /**
      * Test of remove method, of class AbstractDataService.
      */
-    //@Test
-    public void testRemove() throws Exception {
-        System.out.println("remove");
-        String sessionId = "";
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
+    @Test
+    public void testRemove() throws Exception{
+        System.out.println("DataService - remove");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Persist
+        AppTablesRelation relation = new AppTablesRelation();
+        relation.setEntityPK("xx1");
+        relation.setEntityFK("xx2");
+        relation.setFechacreacion(new Date());
+        relation.setFechamodificacion(new Date());
+        relation.setFieldsFK("id");
+        relation.setFieldsPK("id");
+        relation.setIncluded(false);
+        dataService.persist(sessionid, relation);
+        
+        relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2'", null);
+        assertNotNull(relation);
+
+        //Remove
+        dataService.remove(sessionid, relation);
+        
+        relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2'", null);
+        assertNull(relation);
     }
 
-    /**
-     * Test of getDataRows method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetDataRows() throws Exception {
-        System.out.println("getDataRows");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-    }
-
-    /**
-     * Test of getSelectCmd method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetSelectCmd() {
-        System.out.println("getSelectCmd");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        String expResult = "";
-    }
 
     /**
      * Test of update method, of class AbstractDataService.
      */
-    //@Test
-    public void testUpdate_String_GenericType() {
-        System.out.println("update");
-        String sessionId = "";
-        Object ejb = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
+    @Test
+    public void testUpdate() throws Exception{
+        System.out.println("DataService - update");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Persist
+        AppTablesRelation relation = new AppTablesRelation();
+        relation.setEntityPK("xx1");
+        relation.setEntityFK("xx2");
+        relation.setFechacreacion(new Date());
+        relation.setFechamodificacion(new Date());
+        relation.setFieldsFK("id");
+        relation.setFieldsPK("id");
+        relation.setIncluded(false);
+        relation.setAction(IDataRow.INSERT);
+        dataService.update(sessionid, relation);
+        
+        // Merge
+        List<AppTablesRelation>  relations = dataService.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
+        relations.get(0).setIncluded(true);
+        relations.get(0).setAction(IDataRow.UPDATE);
+        dataService.update(sessionid, relations);
+
+        relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
+        assertNotNull(relation);
+
+        //Remove
+        relation.setAction(IDataRow.DELETE);
+        dataService.update(sessionid, relation);
+        
+        relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
+        assertNull(relation);
     }
 
     /**
@@ -800,7 +667,7 @@ public class AbstractDataServiceTest extends TestClass{
      */
     //@Test
     public void testUpdate_String_IDataObject() {
-        System.out.println("update");
+        System.out.println("DataService - update");
         String sessionId = "";
         IDataObject ejbs = null;
         AbstractDataService instance = new AbstractDataServiceImpl();
@@ -816,7 +683,7 @@ public class AbstractDataServiceTest extends TestClass{
      */
     //@Test
     public void testUpdate_String_List() {
-        System.out.println("update");
+        System.out.println("DataService - update");
         AbstractDataService instance = new AbstractDataServiceImpl();
         IDataResult expResult = null;
     }
@@ -826,7 +693,7 @@ public class AbstractDataServiceTest extends TestClass{
      */
     //@Test
     public void testUpdate_String_IDataSet() {
-        System.out.println("update");
+        System.out.println("DataService - update");
         String sessionId = "";
         IDataSet dataSet = null;
         AbstractDataService instance = new AbstractDataServiceImpl();
@@ -838,107 +705,100 @@ public class AbstractDataServiceTest extends TestClass{
     }
 
     /**
-     * Test of getConnection method, of class AbstractDataService.
+     * Test of getEntityManagerProp method, of class AbstractDataLink.
      */
-    //@Test
-    public void testGetConnection_String() {
-        System.out.println("getConnection");
-        String sessionId = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Connection expResult = null;
-        Connection result = instance.getConnection(sessionId);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    @Test
+    public void testGetEntityManagerProp() throws Exception {
+        System.out.println("DataService - getEntityManagerProp");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        Map<String, Object> props = dataService.getEntityManagerProp(dataLink.getPersistUnit());
+        assertNotNull(props);
     }
 
     /**
-     * Test of getConnection method, of class AbstractDataService.
+     * Test of getPersistUnitProp method, of class AbstractDataLink.
      */
-    //@Test
-    public void testGetConnection_String_IDBConnectFactory() {
-        System.out.println("getConnection");
-        String sessionId = "";
-        IDBConnectFactory conn = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Connection expResult = null;
-        Connection result = instance.getConnection(sessionId, conn);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    @Test
+    public void testGetPersistUnitProp() throws Exception{
+        System.out.println("DataService - getPersistUnitProp");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        Map<String, Object> props = dataService.getPersistUnitProp(dataLink.getPersistUnit());
+        assertNotNull(props);
     }
 
     /**
-     * Test of findAll method, of class AbstractDataService.
+     * Test of getUserSession method, of class AbstractDataLink.
      */
-    //@Test
-    public void testFindAll() throws Exception {
-        System.out.println("findAll");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
+    @Test
+    public void testGetUserSession() throws Exception{
+        System.out.println("DataService - getUserSession");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        assertNotNull(dataService.getUserSession(sessionId));
     }
 
     /**
-     * Test of sqlExec method, of class AbstractDataService.
+     * Test of getDBLinkInfo 
      */
-    //@Test
-    public void testSqlExec() throws Exception {
-        System.out.println("sqlExec");
-        String sessionId = "";
-        String queryString = "";
-        Map<String, Object> parameters = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IErrorReg expResult = null;
-        IErrorReg result = instance.sqlExec(sessionId, queryString, parameters);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    @Test
+    public void testGetDBLinkInfo() throws Exception{
+        System.out.println("DataService - getDBLinkInfo");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDBLinkInfo info = dataService.getUserSession(sessionId).getDbLinkInfo();
+        assertNotNull(info);
+    }
+
+    
+    /**
+     * Test of getDataEngine method, of class AbstractDataService.
+     */
+    @Test
+    public void testGetDataEngine() throws Exception {
+        System.out.println("DataService - getDataEngine");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        System.out.println(dataService.getDataEngine("PU1"));
+
+        String expResult = dataService.getDataEngine("PU1");
+        assertNotNull(expResult);
     }
 
     /**
-     * Test of getData method, of class AbstractDataService.
+     * Test of getSchema method, of class AbstractDataService.
      */
-    //@Test
-    public void testGetData_4args() throws Exception {
-        System.out.println("getData");
-        String sessionId = "";
-        String queryString = "";
-        int maxRows = 0;
-        boolean noCache = false;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-        List result = instance.getData(sessionId, queryString, maxRows, noCache);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    @Test
+    public void testGetSchema() throws Exception {
+        System.out.println("DataService - getSchema");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        System.out.println(dataService.getSchema("PU1"));
+
+        String expResult = dataService.getSchema("PU1");
+        assertNotNull(expResult);
     }
 
-    /**
-     * Test of getData method, of class AbstractDataService.
-     */
-    //@Test
-    public void testGetData_Query() throws Exception {
-        System.out.println("getData");
-        Query query = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-        List result = instance.getData(query);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of refreshAll method, of class AbstractDataService.
-     */
-    //@Test
-    public void testRefreshAll() throws Exception {
-        System.out.println("refreshAll");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List expResult = null;
-    }
-
+    
     public class AbstractDataServiceImpl extends AbstractDataService {
     }
-    
 }

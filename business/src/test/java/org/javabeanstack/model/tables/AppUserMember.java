@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppUser;
@@ -19,18 +20,18 @@ import org.javabeanstack.model.IAppUserMember;
 @Table(name = "usuariomiembro")
 public class AppUserMember extends DataRow implements IAppUserMember {
     private static final long serialVersionUID = 0L;
-    
+     
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Basic(optional = false)
-    @Column(name = "idusuariomiembro")
+    @Column(name = "idusuariomiembro") 
     private Long idusermember;
     
-    @JoinColumn(name = "idmiembro", referencedColumnName = "idusuario")
+    @JoinColumn(name = "idmiembro", referencedColumnName = "idusuario", nullable = false)
     @ManyToOne(optional = false)
     private AppUser usermember;
 
-    @JoinColumn(name = "idusuario", referencedColumnName = "idusuario")
+    @JoinColumn(name = "idusuario", referencedColumnName = "idusuario", nullable = false)
     @ManyToOne(optional = false)
     private AppUser usergroup;
     
