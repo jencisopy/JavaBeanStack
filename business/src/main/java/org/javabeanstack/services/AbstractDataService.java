@@ -457,7 +457,8 @@ public abstract class AbstractDataService implements IDataService {
      * @return objeto resultado de la operación.
      * @throws SessionError
      */
-    protected final <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError {
+    @Override
+    public <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError {
         checkUserSession(sessionId);
         IDataResult dataResult;
         // Validar registro

@@ -727,6 +727,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                             checkFieldIdcompany(dbLinkInfo, ejb);                            
                             em.persist(ejb);
                             em.flush();
+                            dataResult.setRowUpdated(ejb);                             
                             break;
                         case IDataRow.UPDATE:
                             setAppUser(ejb, appUser);
@@ -734,11 +735,12 @@ public abstract class AbstractDAO implements IGenericDAO {
                             checkFieldIdcompany(dbLinkInfo, ejb);
                             em.merge(ejb);
                             em.flush();
+                            dataResult.setRowUpdated(ejb);
                             break;
                         case IDataRow.DELETE:
                             ejbsRes.add(ejb);
-                            em.remove(em.merge(ejb));
                             checkFieldIdcompany(dbLinkInfo, ejb);
+                            em.remove(em.merge(ejb));
                             ejbsRes.remove(ejb);
                             em.flush();
                             break;
@@ -746,7 +748,6 @@ public abstract class AbstractDAO implements IGenericDAO {
                             break;
                     }
                     ejb.setErrors((Map<String, IErrorReg>) null);
-                    dataResult.setRowUpdated(ejb);                    
                 }
                 for (IDataRow ejb : ejbs) {
                     if (ejb.getAction() != IDataRow.DELETE) {

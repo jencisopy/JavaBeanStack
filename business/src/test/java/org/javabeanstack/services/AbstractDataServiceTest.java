@@ -32,6 +32,8 @@ import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.TestClass;
+import org.javabeanstack.data.model.DataSet;
+import org.javabeanstack.datactrl.DataObject;
 import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.tables.AppResource;
@@ -40,6 +42,7 @@ import org.javabeanstack.model.tables.AppUser;
 import org.javabeanstack.model.tables.AppUserMember;
 import org.javabeanstack.model.tables.Moneda;
 import org.javabeanstack.model.tables.Pais;
+import org.javabeanstack.model.tables.Region;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -87,7 +90,6 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        
         Moneda row = dataService.find(Moneda.class,sessionId).get(0);
         // Va a pasar la prueba porque es el mismo objeto
         assertTrue(dataService.checkUniqueKey("", row));
@@ -103,7 +105,6 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        
         List<Moneda> rows = dataService.find(Moneda.class,sessionId);
         Moneda row = rows.get(0);
         // Necesita del parametro sessionId para acceder a la unidad de persistencia adecuado
@@ -195,41 +196,12 @@ public class AbstractDataServiceTest extends TestClass{
         assertTrue(errors.isEmpty());
     }
     
-    /** Chequeo de los foreignkeys
-     * @throws java.lang.Exception */
-    //@Test    
-    public void testCheckForeignKey4() throws Exception {
-        System.out.println("DataService - TestCheckForeignkey4");                
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        IDataServiceRemote dataService  = 
-                (IDataServiceRemote) context.lookup(jndiProject+"PaisSrv!org.javabeanstack.services.IDataServiceRemote");
-        
-        List<Pais> rows = dataService.find(Pais.class, sessionId);
-        Pais pais = rows.get(0);
-        //pais.setRegion(null);
-        pais.setAction(IDataRow.MODIFICAR);
-        // Necesita del parametro sessionId para acceder a la unidad de persistencia adecuado                
-        Map<String, IErrorReg> errors = dataService.checkDataRow(sessionId, pais);
-        assertTrue(errors.isEmpty());
-    }    
-    
-    
     /**
      * Test of setListCheckMethods method, of class AbstractDataService.
      */
     //@Test
     public void testSetListCheckMethods() {
         System.out.println("DataService - setListCheckMethods");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        List<Method> expResult = null;
-        List<Method> result = instance.setListCheckMethods();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -238,9 +210,6 @@ public class AbstractDataServiceTest extends TestClass{
     //@Test
     public void testSetListFieldCheck() {
         System.out.println("DataService - setListFieldCheck");
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        Object expResult = null;
     }
 
     /**
@@ -408,7 +377,6 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sqlSentence = "select * from {schema}.moneda where idmoneda > :id";
         Map<String, Object> params = new HashMap();
@@ -476,41 +444,13 @@ public class AbstractDataServiceTest extends TestClass{
     }
 
     /**
-     * Test of checkUserSession method, of class AbstractDataService.
-     */
-    //@Test
-    public void testCheckUserSession() throws Exception {
-        System.out.println("DataService - checkUserSession");
-        String sessionId = "";
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        instance.checkUserSession(sessionId);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of checkDataResult method, of class AbstractDataService.
      */
     //@Test
     public void testCheckDataResult() {
         System.out.println("DataService - checkDataResult");
-        String sessionId = "";
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
     }
 
-    /**
-     * Test of save method, of class AbstractDataService.
-     */
-    //@Test
-    public void testSave() throws Exception {
-        System.out.println("DataService - save");
-        String sessionId = "";
-        Object row = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
-    }
 
     /**
      * Test of persist method, of class AbstractDataService.
@@ -665,45 +605,170 @@ public class AbstractDataServiceTest extends TestClass{
     /**
      * Test of update method, of class AbstractDataService.
      */
-    //@Test
-    public void testUpdate_String_IDataObject() {
+    @Test
+    public void testUpdate_String_IDataObject() throws Exception{
         System.out.println("DataService - update");
-        String sessionId = "";
-        IDataObject ejbs = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
-        IDataResult result = instance.update(sessionId, ejbs);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Region
+        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.refreshRow();
+            region.deleteRow();
+            IDataResult dataResult = dataService.update(sessionId, region);
+            assertTrue(dataResult.isSuccessFul());
+        }
+        region.close();
+
+        region.open();
+        region.insertRow();
+        region.setField("codigo", "ZZZ");
+        region.setField("nombre", "ZZZ BORRAR");
+
+        IDataResult dataResult = dataService.update(sessionId, region);
+        assertTrue(dataResult.isSuccessFul());
+
+        region.close();
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.deleteRow();
+            dataResult = dataService.update(sessionId, region);
+            assertTrue(dataResult.isSuccessFul());
+        }
     }
 
     /**
      * Test of update method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testUpdate_String_List() {
         System.out.println("DataService - update");
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Region
+        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.refreshRow();
+            region.deleteRow();
+            IDataResult dataResult = dataService.update(sessionId, region.getDataRows());
+            assertTrue(dataResult.isSuccessFul());
+        }
+        region.close();
+
+        region.open();
+        region.insertRow();
+        region.setField("codigo", "ZZZ");
+        region.setField("nombre", "ZZZ BORRAR");
+
+        IDataResult dataResult = dataService.update(sessionId, region.getDataRows());
+        assertTrue(dataResult.isSuccessFul());
+
+        region.close();
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.deleteRow();
+            dataResult = dataService.update(sessionId, region.getDataRows());
+            assertTrue(dataResult.isSuccessFul());
+        }
     }
 
     /**
      * Test of update method, of class AbstractDataService.
      */
-    //@Test
-    public void testUpdate_String_IDataSet() {
+    @Test
+    public void testUpdate_String_IDataSet() throws Exception{
         System.out.println("DataService - update");
-        String sessionId = "";
-        IDataSet dataSet = null;
-        AbstractDataService instance = new AbstractDataServiceImpl();
-        IDataResult expResult = null;
-        IDataResult result = instance.update(sessionId, dataSet);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Region
+        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        IDataSet dataSet = new DataSet();
+        dataSet.addDataObject("region", region);
+        
+        if (region.find("codigo", "ZZZ")){
+            region.refreshRow();
+            region.deleteRow();
+            IDataResult dataResult = dataService.update(sessionId, dataSet);
+            assertTrue(dataResult.isSuccessFul());
+        }
+        region.close();
+
+        region.open();
+        region.insertRow();
+        region.setField("codigo", "ZZZ");
+        region.setField("nombre", "ZZZ BORRAR");
+
+        dataSet = new DataSet();
+        dataSet.addDataObject("region", region);
+
+        IDataResult dataResult = dataService.update(sessionId, dataSet);
+        assertTrue(dataResult.isSuccessFul());
+
+        region.close();
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.deleteRow();
+            dataSet = new DataSet();
+            dataSet.addDataObject("region", region);
+            dataResult = dataService.update(sessionId, dataSet);
+            assertTrue(dataResult.isSuccessFul());
+        }
     }
 
+    /**
+     * Test of save method, of class AbstractDataService.
+     */
+    @Test
+    public void testSave() throws Exception{
+        System.out.println("DataService - save");
+        // Cuando sessionId es null solo se puede acceder al schema catalogo
+        String sessionid = null;
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Persist
+        AppTablesRelation relation = new AppTablesRelation();
+        relation.setEntityPK("xx1");
+        relation.setEntityFK("xx2");
+        relation.setFechacreacion(new Date());
+        relation.setFechamodificacion(new Date());
+        relation.setFieldsFK("id");
+        relation.setFieldsPK("id");
+        relation.setIncluded(false);
+        relation.setAction(IDataRow.INSERT);
+        dataService.save(sessionid, relation);
+        
+        // Merge
+        List<AppTablesRelation>  relations = dataService.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
+        relations.get(0).setIncluded(true);
+        relations.get(0).setAction(IDataRow.UPDATE);
+        dataService.save(sessionid, relations.get(0));
+
+        relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
+        assertNotNull(relation);
+
+        //Remove
+        relation.setAction(IDataRow.DELETE);
+        dataService.save(sessionid, relation);
+        
+        relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
+        assertNull(relation);
+    }
+    
     /**
      * Test of getEntityManagerProp method, of class AbstractDataLink.
      */
@@ -796,9 +861,5 @@ public class AbstractDataServiceTest extends TestClass{
 
         String expResult = dataService.getSchema("PU1");
         assertNotNull(expResult);
-    }
-
-    
-    public class AbstractDataServiceImpl extends AbstractDataService {
     }
 }
