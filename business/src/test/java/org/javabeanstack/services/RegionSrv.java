@@ -4,7 +4,6 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import org.apache.log4j.Logger;
 import org.javabeanstack.annotation.CheckMethod;
-import org.javabeanstack.data.DBManager;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
@@ -48,10 +47,6 @@ public class RegionSrv extends DataService implements IRegionSrv {
         return errorReg;
     }
     
-    @Override
-    protected String getPersistentUnit(String sessionId){
-        return DBManager.CATALOGO;
-    }
     
     public String hello(){
         return "RegionSrv";

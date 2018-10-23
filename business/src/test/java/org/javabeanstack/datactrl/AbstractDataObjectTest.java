@@ -90,13 +90,14 @@ public class AbstractDataObjectTest extends TestClass{
         //Campo        
         IDataObject campo = new DataObject(Region.class, null, dataLink, null);
         campo.open();
-        campo.find("codigo", "ZZZ");
-        campo.deleteRow();
-        result = campo.update(false);
-        if (!result) {
-            System.out.println(campo.getErrorMsg(true));
+        if (campo.find("codigo", "ZZZ")){
+            campo.deleteRow();
+            result = campo.update(false);
+            if (!result) {
+                System.out.println(campo.getErrorMsg(true));
+            }
+            assertTrue(result);
         }
-        assertTrue(result);
     }
 
     @Test

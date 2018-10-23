@@ -590,12 +590,16 @@ public class AbstractDataServiceTest extends TestClass{
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
+        relation.setRowChecked(true);
         dataService.update(sessionid, relation);
         
         // Merge
         List<AppTablesRelation>  relations = dataService.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
         relations.get(0).setIncluded(true);
         relations.get(0).setAction(IDataRow.UPDATE);
+        for (AppTablesRelation relation1:relations){
+            relation1.setRowChecked(true);
+        }
         dataService.update(sessionid, relations);
 
         relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
@@ -603,6 +607,7 @@ public class AbstractDataServiceTest extends TestClass{
 
         //Remove
         relation.setAction(IDataRow.DELETE);
+        relation.setRowChecked(true);
         dataService.update(sessionid, relation);
         
         relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
@@ -626,13 +631,14 @@ public class AbstractDataServiceTest extends TestClass{
         if (region.find("codigo", "ZZZ")){
             region.refreshRow();
             region.deleteRow();
+            region.checkDataRow();
             IDataResult dataResult = dataService.update(sessionId, region);
             assertTrue(dataResult.isSuccessFul());
         }
         region.insertRow();
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
-
+        region.checkDataRow();
         IDataResult dataResult = dataService.update(sessionId, region);
         assertTrue(dataResult.isSuccessFul());
 
@@ -640,6 +646,7 @@ public class AbstractDataServiceTest extends TestClass{
         region.open();
         if (region.find("codigo", "ZZZ")){
             region.deleteRow();
+            region.checkDataRow();
             dataResult = dataService.update(sessionId, region);
             assertTrue(dataResult.isSuccessFul());
         }
@@ -649,7 +656,7 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of update method, of class AbstractDataService.
      */
     @Test
-    public void testUpdate_String_List() {
+    public void testUpdate_String_List() throws Exception{
         System.out.println("DataService - update");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -662,13 +669,15 @@ public class AbstractDataServiceTest extends TestClass{
         if (region.find("codigo", "ZZZ")){
             region.refreshRow();
             region.deleteRow();
+            region.checkDataRow();
             IDataResult dataResult = dataService.update(sessionId, region.getDataRows());
             assertTrue(dataResult.isSuccessFul());
         }
         region.insertRow();
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
-
+        region.checkDataRow();
+        
         IDataResult dataResult = dataService.update(sessionId, region.getDataRows());
         assertTrue(dataResult.isSuccessFul());
 
@@ -676,6 +685,7 @@ public class AbstractDataServiceTest extends TestClass{
         region.open();
         if (region.find("codigo", "ZZZ")){
             region.deleteRow();
+            region.checkDataRow();
             dataResult = dataService.update(sessionId, region.getDataRows());
             assertTrue(dataResult.isSuccessFul());
         }
@@ -701,13 +711,15 @@ public class AbstractDataServiceTest extends TestClass{
         if (region.find("codigo", "ZZZ")){
             region.refreshRow();
             region.deleteRow();
+            region.checkDataRow();            
             IDataResult dataResult = dataService.update(sessionId, dataSet);
             assertTrue(dataResult.isSuccessFul());
         }
         region.insertRow();
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
-
+        region.checkDataRow();
+        
         dataSet = new DataSet();
         dataSet.addDataObject("region", region);
 
@@ -718,6 +730,7 @@ public class AbstractDataServiceTest extends TestClass{
         region.open();
         if (region.find("codigo", "ZZZ")){
             region.deleteRow();
+            region.checkDataRow();
             dataSet = new DataSet();
             dataSet.addDataObject("region", region);
             dataResult = dataService.update(sessionId, dataSet);

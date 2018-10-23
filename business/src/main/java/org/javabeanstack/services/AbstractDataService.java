@@ -50,6 +50,7 @@ import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.exceptions.CheckException;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 
@@ -648,7 +649,12 @@ public abstract class AbstractDataService implements IDataService {
             }
         }
         row.setErrors(errors);
-        row.setRowChecked(true);
+        if (errors.isEmpty()){
+            row.setRowChecked(true);            
+        }
+        else{
+            row.setRowChecked(false);            
+        }
         return errors;
     }
 
@@ -688,7 +694,7 @@ public abstract class AbstractDataService implements IDataService {
      * @throws SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError {
+    public <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError  {
         checkUserSession(sessionId);
         IDataResult dataResult;
         // Validar registro
@@ -697,8 +703,12 @@ public abstract class AbstractDataService implements IDataService {
             // Devolver el error si lo hubo
             return dataResult;
         }
-        // Grabar registro en la base de datos.
-        dataResult = update(sessionId, row);
+        try {
+            // Grabar registro en la base de datos.
+            dataResult = update(sessionId, row);
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
         return dataResult;
     }
 
@@ -831,6 +841,7 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Override
     public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
+        isChecked(ejb);
         return dao.update(sessionId, ejb);
     }
 
@@ -843,7 +854,8 @@ public abstract class AbstractDataService implements IDataService {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(String sessionId, IDataObject ejbs) {
+    public IDataResult update(String sessionId, IDataObject ejbs)  {
+        isChecked(ejbs.getDataRows());
         return dao.update(sessionId,ejbs);
     }
 
@@ -858,6 +870,7 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Override
     public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
+        isChecked(ejbs);
         return dao.update(sessionId, ejbs);
     }
 
@@ -871,6 +884,10 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Override
     public IDataResult update(String sessionId, IDataSet dataSet) {
+        // Recorrer los objetos a actualizar en la base
+        for (Map.Entry<String, List<? extends IDataRow>> entry : dataSet.getMapListSet().entrySet()) {
+            isChecked(entry.getValue());
+        }        
         return dao.update(sessionId, dataSet);        
     }
 
@@ -915,5 +932,19 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> List<T> refreshAll(String sessionId, List<T> rows) throws Exception {
         throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    protected <T extends IDataRow> void isChecked(T ejb) throws CheckException{
+        if (ejb != null && ejb.getAction() > 0 && !ejb.isRowChecked()){
+            throw new CheckException("El registro no fue verificado");
+        }
+    }
+    
+    protected <T extends IDataRow> void isChecked(List<T> ejbs) throws CheckException {
+        if (ejbs != null){
+            for (T ejb:ejbs){
+                isChecked(ejb);
+            }
+        }
     }
 }
