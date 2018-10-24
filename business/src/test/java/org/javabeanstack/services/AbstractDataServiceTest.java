@@ -31,6 +31,7 @@ import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
+import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.data.model.DataSet;
 import org.javabeanstack.datactrl.DataObject;
@@ -590,7 +591,7 @@ public class AbstractDataServiceTest extends TestClass{
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
-        relation.setRowChecked(true);
+        relation.setRowChecked(true);  //Si no va a dar error en update
         dataService.update(sessionid, relation);
         
         // Merge
@@ -598,7 +599,7 @@ public class AbstractDataServiceTest extends TestClass{
         relations.get(0).setIncluded(true);
         relations.get(0).setAction(IDataRow.UPDATE);
         for (AppTablesRelation relation1:relations){
-            relation1.setRowChecked(true);
+            relation1.setRowChecked(true); //Si no va a dar error en update
         }
         dataService.update(sessionid, relations);
 
@@ -607,7 +608,7 @@ public class AbstractDataServiceTest extends TestClass{
 
         //Remove
         relation.setAction(IDataRow.DELETE);
-        relation.setRowChecked(true);
+        relation.setRowChecked(true); //Si no va a dar error en update
         dataService.update(sessionid, relation);
         
         relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
@@ -625,31 +626,30 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
+        IGenericDAO dao = dataLink.getDao();
+        //Cambiar dao por dataService.
+        dataLink.setDao(dataService);
         //Region
         IDataObject region = new DataObject(Region.class, null, dataLink, null);
         region.open();
         if (region.find("codigo", "ZZZ")){
             region.refreshRow();
             region.deleteRow();
-            region.checkDataRow();
-            IDataResult dataResult = dataService.update(sessionId, region);
-            assertTrue(dataResult.isSuccessFul());
+            assertTrue(region.update(false));
         }
         region.insertRow();
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
-        region.checkDataRow();
-        IDataResult dataResult = dataService.update(sessionId, region);
-        assertTrue(dataResult.isSuccessFul());
+        assertTrue(region.update(false));        
 
         region.close();
         region.open();
         if (region.find("codigo", "ZZZ")){
             region.deleteRow();
-            region.checkDataRow();
-            dataResult = dataService.update(sessionId, region);
-            assertTrue(dataResult.isSuccessFul());
+            assertTrue(region.update(false));
         }
+        //Devolver dataLink a valores por defecto
+        dataLink.setDao(dao);
     }
 
     /**
@@ -702,6 +702,9 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
+        IGenericDAO dao = dataLink.getDao();
+        //Cambiar dao por dataService.
+        dataLink.setDao(dataService);
         //Region
         IDataObject region = new DataObject(Region.class, null, dataLink, null);
         region.open();
@@ -711,20 +714,14 @@ public class AbstractDataServiceTest extends TestClass{
         if (region.find("codigo", "ZZZ")){
             region.refreshRow();
             region.deleteRow();
-            region.checkDataRow();            
-            IDataResult dataResult = dataService.update(sessionId, dataSet);
-            assertTrue(dataResult.isSuccessFul());
+            assertTrue(region.update(dataSet));
         }
         region.insertRow();
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
-        region.checkDataRow();
-        
         dataSet = new DataSet();
         dataSet.addDataObject("region", region);
-
-        IDataResult dataResult = dataService.update(sessionId, dataSet);
-        assertTrue(dataResult.isSuccessFul());
+        assertTrue(region.update(dataSet));
 
         region.close();
         region.open();
@@ -733,9 +730,10 @@ public class AbstractDataServiceTest extends TestClass{
             region.checkDataRow();
             dataSet = new DataSet();
             dataSet.addDataObject("region", region);
-            dataResult = dataService.update(sessionId, dataSet);
-            assertTrue(dataResult.isSuccessFul());
+            assertTrue(region.update(dataSet));            
         }
+        //Devolver dataLink a valores por defecto
+        dataLink.setDao(dao);
     }
 
     /**
