@@ -74,7 +74,10 @@ public class AbstractDataObjectTest extends TestClass{
         IDataSet dataSet = new DataSet();
         dataSet.addDataObject("region", region);
 
-        boolean result = dataLink.update(dataSet).isSuccessFul();
+        boolean result = region.update(false);
+        if (!result) {
+            System.out.println(region.getErrorMsg(true));
+        }
         assertTrue(result);
     }
 
@@ -88,13 +91,13 @@ public class AbstractDataObjectTest extends TestClass{
         }
         boolean result;
         //Campo        
-        IDataObject campo = new DataObject(Region.class, null, dataLink, null);
-        campo.open();
-        if (campo.find("codigo", "ZZZ")){
-            campo.deleteRow();
-            result = campo.update(false);
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.deleteRow();
+            result = region.update(false);
             if (!result) {
-                System.out.println(campo.getErrorMsg(true));
+                System.out.println(region.getErrorMsg(true));
             }
             assertTrue(result);
         }
@@ -109,14 +112,15 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         //Region
-        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
         region.open();
         region.insertRow();
+        //region.getRow().setCodigo("ZZZ");
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
 
         //pais
-        IDataObject pais = new DataObject(Pais.class, null, dataLink, null);
+        IDataObject<Pais> pais = new DataObject(Pais.class, null, dataLink, null);
         pais.open();
         pais.insertRow();
         pais.setField("codigo", "ZZZ");
@@ -141,7 +145,7 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         //Pais
-        IDataObject pais = new DataObject(Pais.class, null, dataLink, null);
+        IDataObject<Pais> pais = new DataObject(Pais.class, null, dataLink, null);
         pais.open();
         if (pais.find("codigo", "ZZZ")) {
             pais.deleteRow();
