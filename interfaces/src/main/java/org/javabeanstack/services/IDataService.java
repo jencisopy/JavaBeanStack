@@ -33,7 +33,7 @@ import org.javabeanstack.error.IErrorReg;
  * @author Jorge Enciso
  */
 public interface IDataService extends IGenericDAO{
-    <T extends IDataRow> T setListFieldCheck(T row); 
+    <T extends IDataRow> T setFieldsToCheck(T row); 
     <T extends IDataRow> boolean checkUniqueKey(String sessionId, T row) throws Exception;        
     <T extends IDataRow> boolean checkForeignKey(String sessionId, T row, String fieldName) throws Exception;            
     <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row);    

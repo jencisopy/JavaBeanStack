@@ -90,7 +90,7 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         boolean result;
-        //Campo        
+        //Region
         IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
         region.open();
         if (region.find("codigo", "ZZZ")){
@@ -154,13 +154,13 @@ public class AbstractDataObjectTest extends TestClass{
         }
 
         //Region        
-        IDataObject campo = new DataObject(Region.class, null, dataLink, null);
-        campo.open();
-        if (campo.find("codigo", "ZZZ")){
-            campo.deleteRow();
-            result = campo.update(false);
+        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.deleteRow();
+            result = region.update(false);
             if (!result) {
-                System.out.println(campo.getErrorMsg(true));
+                System.out.println(region.getErrorMsg(true));
             }
             assertTrue(result);            
         }
@@ -1417,5 +1417,4 @@ public class AbstractDataObjectTest extends TestClass{
             return null;
         }
     }
-    
 }

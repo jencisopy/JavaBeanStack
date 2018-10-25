@@ -13,7 +13,7 @@ import org.javabeanstack.model.tables.AppUser;
 
 /**
  *
- * @author jenci_000
+ * @author Jorge Enciso
  */
 @TransactionManagement(value=TransactionManagementType.CONTAINER)
 public class UsuarioSrv extends DataService implements IUsuarioSrv {
@@ -24,7 +24,7 @@ public class UsuarioSrv extends DataService implements IUsuarioSrv {
                              IDataRow.MODIFICAR,
                              IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo(AppUser row, String sessionId){
+    public IErrorReg checkCodigo(String sessionId, AppUser row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo");
         return errorReg;
@@ -33,15 +33,17 @@ public class UsuarioSrv extends DataService implements IUsuarioSrv {
     @CheckMethod(fieldName = "codigo",
                  action = {IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo2(AppUser row, String sessionId){
+    public IErrorReg checkCodigo2(String sessionId, AppUser row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo2");
         return errorReg;
     }
     
-    @CheckMethod(fieldName = "nombre")     
+    @CheckMethod(fieldName = "nombre",
+                action   = {IDataRow.AGREGAR,
+                            IDataRow.MODIFICAR})     
     @Override
-    public IErrorReg checkNombre(AppUser row, String sessionId){
+    public IErrorReg checkNombre(String sessionId, AppUser row){
         IErrorReg errorReg = new ErrorReg();
         LOGGER.info("IN checkNombre");
         //errorReg.setMessage("prueba de error");

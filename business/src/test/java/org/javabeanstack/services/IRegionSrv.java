@@ -12,12 +12,12 @@ import org.javabeanstack.model.tables.Region;
 public interface IRegionSrv extends IDataService{
 
     @CheckMethod(fieldName = "codigo", action = {IDataRow.AGREGAR, IDataRow.MODIFICAR, IDataRow.BORRAR})
-    IErrorReg checkCodigo(Region row, String sessionId);
+    IErrorReg checkCodigo(String sessionId, Region row);
 
     @CheckMethod(fieldName = "codigo", action = {IDataRow.BORRAR})
-    IErrorReg checkCodigo2(Region row, String sessionId);
+    IErrorReg checkCodigo2(String sessionId, Region row);
 
-    @CheckMethod(fieldName = "nombre")
-    IErrorReg checkNombre(Region row, String sessionId);
+    @CheckMethod(fieldName = "nombre",  action = {IDataRow.AGREGAR, IDataRow.MODIFICAR})
+    IErrorReg checkNombre(String sessionId, Region row);
     
 }

@@ -43,7 +43,7 @@ public class DataRow implements IDataRow, Cloneable {
     private String queryUK = "";
     private String idFunctionFind = "";
     private boolean rowChecked = false;
-    private Map<String, Boolean> fieldChecked = null;
+    private Map<String, Boolean> fieldsChecked = null;
     private Map<String, IErrorReg> errors = new HashMap();
 
     //TODO implementar parent, beforesetvalue, aftersetvalue
@@ -125,14 +125,14 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public boolean isFieldChecked(String fieldName) {
-        if (this.fieldChecked == null) {
+        if (this.fieldsChecked == null) {
             return true;
         }
         fieldName = "_" + fieldName.toLowerCase();
-        if (this.fieldChecked.get(fieldName) == null) {
+        if (this.fieldsChecked.get(fieldName) == null) {
             return true;
         }
-        return this.fieldChecked.get(fieldName);
+        return this.fieldsChecked.get(fieldName);
     }
 
     /**
@@ -141,8 +141,8 @@ public class DataRow implements IDataRow, Cloneable {
      * @return map con los campos que fuerón verificados.
      */
     @Override
-    public Map getFieldChecked() {
-        return this.fieldChecked;
+    public Map getFieldsChecked() {
+        return this.fieldsChecked;
     }
 
     /**
@@ -151,8 +151,8 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldChecked
      */
     @Override
-    public void setFieldChecked(Map fieldChecked) {
-        this.fieldChecked = fieldChecked;
+    public void setFieldsChecked(Map fieldChecked) {
+        this.fieldsChecked = fieldChecked;
     }
 
     /**
@@ -163,10 +163,10 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void setFieldChecked(String fieldName, boolean checkField) {
-        if (this.fieldChecked != null) {
+        if (this.fieldsChecked != null && !this.fieldsChecked.isEmpty()) {
             fieldName = "_" + fieldName.toLowerCase();
-            if (this.fieldChecked.get(fieldName) != null) {
-                this.fieldChecked.put(fieldName, checkField);
+            if (this.fieldsChecked.get(fieldName) != null) {
+                this.fieldsChecked.put(fieldName, checkField);
                 if (checkField == false) {
                     this.setRowChecked(false);
                 }

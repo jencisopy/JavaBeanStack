@@ -12,12 +12,12 @@ import org.javabeanstack.model.tables.AppUser;
 public interface IUsuarioSrv extends IDataService{
 
     @CheckMethod(fieldName = "codigo", action = {IDataRow.AGREGAR, IDataRow.MODIFICAR, IDataRow.BORRAR})
-    IErrorReg checkCodigo(AppUser row, String sessionId);
+    IErrorReg checkCodigo(String sessionId, AppUser row);
 
     @CheckMethod(fieldName = "codigo", action = {IDataRow.BORRAR})
-    IErrorReg checkCodigo2(AppUser row, String sessionId);
+    IErrorReg checkCodigo2(String sessionId, AppUser row);
 
-    @CheckMethod(fieldName = "nombre")
-    IErrorReg checkNombre(AppUser row, String sessionId);
+    @CheckMethod(fieldName = "nombre", action = {IDataRow.AGREGAR, IDataRow.MODIFICAR})
+    IErrorReg checkNombre(String sessionId, AppUser row);
     
 }

@@ -22,11 +22,11 @@
  */
 package org.javabeanstack.services;
 
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
@@ -36,6 +36,7 @@ import org.javabeanstack.data.TestClass;
 import org.javabeanstack.data.model.DataSet;
 import org.javabeanstack.datactrl.DataObject;
 import org.javabeanstack.datactrl.IDataObject;
+import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.tables.AppResource;
 import org.javabeanstack.model.tables.AppTablesRelation;
@@ -200,17 +201,19 @@ public class AbstractDataServiceTest extends TestClass{
     /**
      * Test of setListCheckMethods method, of class AbstractDataService.
      */
-    //@Test
+    @Test
     public void testSetListCheckMethods() {
         System.out.println("DataService - setListCheckMethods");
+        AbstractDataServiceImpl dataServiceImpl = new AbstractDataServiceImpl();
+        assertTrue(dataServiceImpl.getCheckMethodCount() == 3);
     }
 
     /**
      * Test of setListFieldCheck method, of class AbstractDataService.
      */
     //@Test
-    public void testSetListFieldCheck() {
-        System.out.println("DataService - setListFieldCheck");
+    public void testSetFieldsChecked() {
+        System.out.println("DataService - setFieldsChecked");
     }
 
     /**
@@ -591,7 +594,7 @@ public class AbstractDataServiceTest extends TestClass{
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
-        relation.setRowChecked(true);  //Si no va a dar error en update
+        relation.setRowChecked(false);  //Si no va a dar error en update
         dataService.update(sessionid, relation);
         
         // Merge
@@ -626,9 +629,12 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
+        IRegionSrv dataServiceRegion = 
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+        
         IGenericDAO dao = dataLink.getDao();
         //Cambiar dao por dataService.
-        dataLink.setDao(dataService);
+        dataLink.setDao(dataServiceRegion);
         //Region
         IDataObject region = new DataObject(Region.class, null, dataLink, null);
         region.open();
@@ -648,6 +654,11 @@ public class AbstractDataServiceTest extends TestClass{
             region.deleteRow();
             assertTrue(region.update(false));
         }
+        
+        //No corresponde el tipo de dato 
+        AppTablesRelation relation = new AppTablesRelation();
+        relation.setAction(IDataRow.INSERT);
+        assertFalse((dataServiceRegion.checkDataRow(sessionId, relation)).isEmpty());
         //Devolver dataLink a valores por defecto
         dataLink.setDao(dao);
     }
@@ -870,5 +881,39 @@ public class AbstractDataServiceTest extends TestClass{
 
         String expResult = dataService.getSchema("PU1");
         assertNotNull(expResult);
+    }
+    
+    public class AbstractDataServiceImpl extends AbstractDataService {
+        @CheckMethod(fieldName = "codigo", action   = {IDataRow.INSERT, IDataRow.UPDATE, IDataRow.DELETE}) 
+        public IErrorReg checkCodigo(String sessionId, Region row){
+            IErrorReg errorReg = new ErrorReg(); 
+            return errorReg;
+        }
+
+        @CheckMethod(fieldName = "codigo", action = {IDataRow.DELETE}) 
+        public IErrorReg checkCodigo2(String sessionId, Region row){
+            IErrorReg errorReg = new ErrorReg(); 
+            return errorReg;
+        }
+
+        @CheckMethod(fieldName = "nombre", action = {IDataRow.INSERT, IDataRow.UPDATE})
+        public IErrorReg checkNombre(String sessionId, Region row){
+            IErrorReg errorReg = new ErrorReg();
+            //errorReg.setMessage("prueba de error");
+            return errorReg;
+        }
+
+        public IErrorReg checkVarios(String sessionId, Region row){
+            IErrorReg errorReg = new ErrorReg();
+            return errorReg;
+        }
+        
+        public String hello(){
+            return "RegionSrv";
+        }
+        
+        public int getCheckMethodCount(){
+            return methodList.size();
+        }
     }
 }

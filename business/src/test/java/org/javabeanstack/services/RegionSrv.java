@@ -23,7 +23,7 @@ public class RegionSrv extends DataService implements IRegionSrv {
                              IDataRow.MODIFICAR,
                              IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo(Region row, String sessionId){
+    public IErrorReg checkCodigo(String sessionId, Region row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo");
         return errorReg;
@@ -32,15 +32,15 @@ public class RegionSrv extends DataService implements IRegionSrv {
     @CheckMethod(fieldName = "codigo",
                  action = {IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo2(Region row, String sessionId){
+    public IErrorReg checkCodigo2(String sessionId, Region row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo2");
         return errorReg;
     }
     
-    @CheckMethod(fieldName = "nombre")     
+    @CheckMethod(fieldName = "nombre", action = {IDataRow.AGREGAR, IDataRow.MODIFICAR})
     @Override
-    public IErrorReg checkNombre(Region row, String sessionId){
+    public IErrorReg checkNombre(String sessionId, Region row){
         IErrorReg errorReg = new ErrorReg();
         LOGGER.info("IN checkNombre");
         //errorReg.setMessage("prueba de error");

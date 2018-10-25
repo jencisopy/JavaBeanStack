@@ -22,7 +22,6 @@
 package org.javabeanstack.services;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -64,7 +63,7 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public abstract class AbstractDataService implements IDataService {
     private static final Logger LOGGER = Logger.getLogger(AbstractDataService.class);
-    protected List<Method> methodList = this.setListCheckMethods();
+    protected List<Method> methodList = this.getListCheckMethods();
     @EJB
     protected IGenericDAO dao;
 
@@ -145,7 +144,7 @@ public abstract class AbstractDataService implements IDataService {
      * @return lista de metodos.
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    protected final List<Method> setListCheckMethods() {
+    protected final List<Method> getListCheckMethods() {
         List methods = new ArrayList();
         for (Method method : this.getClass().getDeclaredMethods()) {
             CheckMethod anotation = method.getAnnotation(CheckMethod.class);
@@ -157,30 +156,31 @@ public abstract class AbstractDataService implements IDataService {
         return methods;
     }
 
-    // TODO ver este metodo.
+    /**
+     * Asigna el map fieldsChecked, que básicamente va a informar que campos se 
+     * verificarón y cuales no
+     * @param <T>
+     * @param row objeto ejb
+     * @return Objeto ejb con atributo fieldsChecked preparado para recibir
+     * la información de las validaciones.
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public <T extends IDataRow> T setListFieldCheck(T row) {
-        if (row != null && row.getFieldChecked() == null) {
+    public <T extends IDataRow> T setFieldsToCheck(T row) {
+        if (row != null && row.getFieldsChecked() == null) {
             String fieldName;
             String key;
-            String namePrefix;
             CheckMethod anotation;
-            Map<String, Boolean> fieldChecked = new HashMap<>();
+            Map<String, Boolean> fieldsChecked = new HashMap<>();
             for (Method method : this.getClass().getDeclaredMethods()) {
-                namePrefix = method.getName().toLowerCase().substring(0, 5);
                 anotation = method.getAnnotation(CheckMethod.class);
-                if ("check".equals(namePrefix) || anotation != null) {
-                    if (anotation == null) {
-                        fieldName = method.getName().toLowerCase().substring(5);
-                    } else {
-                        fieldName = anotation.fieldName().toLowerCase();
-                    }
+                if (anotation != null) {
+                    fieldName = anotation.fieldName().toLowerCase();
                     key = "_" + fieldName;
-                    fieldChecked.put(key, true);
+                    fieldsChecked.put(key, true);
                 }
             }
-            row.setFieldChecked(fieldChecked);
+            row.setFieldsChecked(fieldsChecked);
         }
         return row;
     }
@@ -592,9 +592,14 @@ public abstract class AbstractDataService implements IDataService {
     public <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row) {
         Map<String, IErrorReg> errors = new HashMap<>();
         String fieldName;
-        int[] operacion = {IDataRow.INSERT, IDataRow.UPDATE};
+        int[] operacion;
         IErrorReg result;
         CheckMethod anotation;
+        row.setRowChecked(false);
+        // Preparar el registro para las verificaciones.
+        if (row.getFieldsChecked() == null){
+            setFieldsToCheck(row);
+        }
         try {
             // Chequeo de clave duplicada solo si la operación es agregar o modificar
             if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
@@ -625,12 +630,8 @@ public abstract class AbstractDataService implements IDataService {
         // Ejecutar metodos de chequeo de datos
         for (Method method : this.methodList) {
             anotation = method.getAnnotation(CheckMethod.class);
-            if (anotation == null) {
-                fieldName = method.getName().toLowerCase().substring(5);
-            } else {
-                fieldName = anotation.fieldName();
-                operacion = anotation.action();
-            }
+            fieldName = anotation.fieldName();
+            operacion = anotation.action();
             // Si existe un error previo sobre este campo continuar con las otras validaciones
             if (errors.containsKey(fieldName.toLowerCase())) {
                 continue;
@@ -639,21 +640,27 @@ public abstract class AbstractDataService implements IDataService {
                 method.setAccessible(true);
                 // La validación se ejecuta dependiendo de la operación (agregar, modificar, borrar)
                 if (Fn.inList(row.getAction(), operacion)) {
-                    result = (IErrorReg) method.invoke(this, row, sessionId);
+                    result = (IErrorReg) method.invoke(this, sessionId, row);
+                    //Si el resultado es un error guardar información en el objeto errors
                     if (result != null && !"".equals(result.getMessage())) {
                         errors.put(fieldName.toLowerCase(), result);
+                        row.setFieldChecked(fieldName, false);
+                    }
+                    else{
+                        // Paso la verificación del atributo
+                        row.setFieldChecked(fieldName, true);
                     }
                 }
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            } catch (Exception ex) {
+                row.setFieldChecked(fieldName, false);
+                result = new ErrorReg(ErrorManager.getStackCause(ex),0, fieldName);
+                errors.put(fieldName.toLowerCase(), result);
                 ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
             }
         }
         row.setErrors(errors);
         if (errors.isEmpty()){
             row.setRowChecked(true);            
-        }
-        else{
-            row.setRowChecked(false);            
         }
         return errors;
     }
@@ -706,7 +713,11 @@ public abstract class AbstractDataService implements IDataService {
         try {
             // Grabar registro en la base de datos.
             dataResult = update(sessionId, row);
+            return dataResult;
         } catch (Exception ex) {
+            dataResult.setSuccess(false);
+            dataResult.setException(ex);
+            dataResult.setErrorMsg(ErrorManager.getStackCause(ex));
             ErrorManager.showError(ex, LOGGER);
         }
         return dataResult;
@@ -885,9 +896,9 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public IDataResult update(String sessionId, IDataSet dataSet) {
         // Recorrer los objetos a actualizar en la base
-        for (Map.Entry<String, List<? extends IDataRow>> entry : dataSet.getMapListSet().entrySet()) {
+        dataSet.getMapListSet().entrySet().forEach((entry) -> {
             isChecked(entry.getValue());
-        }        
+        });        
         return dao.update(sessionId, dataSet);        
     }
 
@@ -942,9 +953,9 @@ public abstract class AbstractDataService implements IDataService {
     
     protected <T extends IDataRow> void isChecked(List<T> ejbs) throws CheckException {
         if (ejbs != null){
-            for (T ejb:ejbs){
+            ejbs.forEach((ejb) -> {
                 isChecked(ejb);
-            }
+            });
         }
     }
 }
