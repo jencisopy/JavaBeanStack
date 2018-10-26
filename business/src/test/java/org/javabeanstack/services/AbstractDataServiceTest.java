@@ -594,7 +594,7 @@ public class AbstractDataServiceTest extends TestClass{
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
-        relation.setRowChecked(false);  //Si no va a dar error en update
+        relation.setRowChecked(true);  //Si no va a dar error en update
         dataService.update(sessionid, relation);
         
         // Merge
