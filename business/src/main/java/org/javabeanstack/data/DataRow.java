@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.exceptions.FieldException;
 
 /**
  * Es la clase base de todos los modelos ejb mapeados a las tablas o vistas.
@@ -307,13 +308,14 @@ public class DataRow implements IDataRow, Cloneable {
      *
      * @param fieldname nombre del campo o atributo
      * @param value valor a asignar
+     * @throws org.javabeanstack.exceptions.FieldException
      */
     @Override
-    public void setValue(String fieldname, Object value) {
+    public void setValue(String fieldname, Object value) throws FieldException{
         Boolean exito = DataInfo.setFieldValue(this, fieldname, value);
         if (!exito){
             LOGGER.error("fieldname: "+fieldname);
-            return;
+            throw new FieldException("Error en "+fieldname+", no existe el campo o el tipo es incorrecto");
         }
         if (this.action == 0){
             this.action = IDataRow.UPDATE;

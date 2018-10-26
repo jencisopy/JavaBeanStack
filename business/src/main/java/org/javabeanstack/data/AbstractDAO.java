@@ -1130,8 +1130,13 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private void setAppUser(IDataRow ejb, String appUser) {
-        if (DataInfo.isFieldExist(ejb.getClass(), "appuser")) {
-            ejb.setValue("appuser", appUser);
+        try{
+            if (DataInfo.isFieldExist(ejb.getClass(), "appuser")) {
+                ejb.setValue("appuser", appUser);
+            }
+        }
+        catch (Exception ex){
+            //
         }
     }
 

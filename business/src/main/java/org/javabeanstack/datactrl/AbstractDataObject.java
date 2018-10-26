@@ -39,6 +39,7 @@ import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IDataEvents;
+import org.javabeanstack.exceptions.FieldException;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Strings;
 
@@ -53,7 +54,6 @@ import org.javabeanstack.util.Strings;
  * @param <T> tipo ejb
  */
 public abstract class AbstractDataObject<T extends IDataRow> implements IDataObject, Serializable {
-
     private static final Logger LOGGER = Logger.getLogger(AbstractDataObject.class);
     /**
      * Puntero del nro de registro o fila
@@ -882,7 +882,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return verdadero si tuvo exito, falso si no.
      */
     @Override
-    public boolean movePreviews() {
+    public boolean movePrevious() {
         return this.goTo(recno - 1, -1);
     }
 
@@ -926,7 +926,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         //Recorrer el array en busca del objeto con el valor solicitado
         for (int i = begin; i <= end; i++) {
             IDataRow row = rowList.get(i);
-            if (row.getAction() != IDataRow.BORRAR) {
+            if (row.getAction() != IDataRow.DELETE) {
                 if (value instanceof String
                         && ((String) row.getValue(field)).trim().equals(value.toString().trim())) {
                     return i;
@@ -1120,7 +1120,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return Verdadero si tuvo exito o falso si no
      */
     @Override
-    public boolean setField(String fieldname, Object value) {
+    public boolean setField(String fieldname, Object value){
         return this.setField(fieldname, value, false);
     }
 
@@ -1130,9 +1130,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @param fieldname nombre del campo
      * @param param map con los valores
      * @return Verdadero si tuvo exito o falso si no
+     * @throws org.javabeanstack.exceptions.FieldException
      */
     @Override
-    public boolean setField(String fieldname, Map param) {
+    public boolean setField(String fieldname, Map param){
         try {
             if (!(row.getValue(fieldname) instanceof IDataRow)) {
                 return false;
@@ -1164,12 +1165,14 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return Verdadero si tuvo exito o falso si no
      */
     @Override
-    public boolean setField(String fieldname, Object newValue, boolean noAfterSetField) {
+    public boolean setField(String fieldname, Object newValue, boolean noAfterSetField){
         /* No se puede modificar si es de solo lectura */
         if (!this.readWrite) {
+            errorApp = new FieldException("El objeto esta abierto de solo lectura");
             return false;
         }
         if (row == null) {
+            errorApp = new FieldException("El objeto es null");
             return false;
         }
 
@@ -1428,7 +1431,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             //
             this.afterInsertRow();
             return true;
-        } catch (InstantiationException | IllegalAccessException ex) {
+        } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
             errorApp = ex;
         }
@@ -1534,11 +1537,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         /* No se puede modificar si es de solo lectura */
     }
 
-    //TODO Implementar isExists()
-    @Override
-    public boolean isExists() {
-        return false;
-    }
 
     /**
      * Valida los valores ingresados en el registro.
@@ -1787,7 +1785,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 if (!dataResult.isRemoveDeleted()) {
                     removeRow();
                 } else {
-                    movePreviews();
+                    movePrevious();
                 }
             }
             this.afterUpdate(dataSet);
@@ -1950,7 +1948,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         // Eliminar de la lista local el registro actual si esta marcado para ser borrado
         if (row.getAction() == IDataRow.BORRAR && dataRows.size() > recno) {
             dataRows.remove(recno);
-            movePreviews();
+            movePrevious();
         }
     }
 }

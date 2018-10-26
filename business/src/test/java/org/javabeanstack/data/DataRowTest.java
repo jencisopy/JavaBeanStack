@@ -116,7 +116,7 @@ public class DataRowTest {
      * Test of setValue method, of class DataRow.
      */
     @Test
-    public void testSetValue() {
+    public void testSetValue() throws Exception {
         System.out.println("setValue");
         String fieldname = "codigo";
         Object value = "codigocambiado";
