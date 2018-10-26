@@ -41,7 +41,7 @@ public class DataRowTest {
      */
     @Test
     public void testGetValue() {
-        System.out.println("getValue");
+        System.out.println("DataRow - getValue");
         String expResult = "codigo nombre";
         DataRowPrb row = new DataRowPrb();
         String result = (String)row.getValue("codigo");
@@ -77,7 +77,7 @@ public class DataRowTest {
      */
     @Test
     public void testGetFieldType() {
-        System.out.println("getFieldType");
+        System.out.println("DataRow - getFieldType");
         
         Class expResult = String.class;
         DataRowPrb row = new DataRowPrb();
@@ -116,8 +116,8 @@ public class DataRowTest {
      * Test of setValue method, of class DataRow.
      */
     @Test
-    public void testSetValue() {
-        System.out.println("setValue");
+    public void testSetValue() throws Exception {
+        System.out.println("DataRow - setValue");
         String fieldname = "codigo";
         Object value = "codigocambiado";
         DataRow row = new DataRowPrb();

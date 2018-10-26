@@ -651,7 +651,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      *
      */
     @Override
-    public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
+    public <T extends IDataRow> IDataResult update(String sessionId, T ejb)  {
         List<T> ejbs = new ArrayList<>();
         ejbs.add(ejb);
         return update(sessionId, ejbs);
@@ -695,7 +695,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(String sessionId, IDataSet dataSet) {
+    public IDataResult update(String sessionId, IDataSet dataSet)  {
         if (dataSet == null || dataSet.size() == 0) {
             return null;
         }
@@ -727,6 +727,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                             checkFieldIdcompany(dbLinkInfo, ejb);                            
                             em.persist(ejb);
                             em.flush();
+                            dataResult.setRowUpdated(ejb);                             
                             break;
                         case IDataRow.UPDATE:
                             setAppUser(ejb, appUser);
@@ -734,19 +735,20 @@ public abstract class AbstractDAO implements IGenericDAO {
                             checkFieldIdcompany(dbLinkInfo, ejb);
                             em.merge(ejb);
                             em.flush();
+                            dataResult.setRowUpdated(ejb);
                             break;
                         case IDataRow.DELETE:
                             ejbsRes.add(ejb);
-                            em.remove(em.merge(ejb));
                             checkFieldIdcompany(dbLinkInfo, ejb);
+                            em.remove(em.merge(ejb));
                             ejbsRes.remove(ejb);
                             em.flush();
+                            dataResult.setRowUpdated(ejb);                                                         
                             break;
                         default:
                             break;
                     }
                     ejb.setErrors((Map<String, IErrorReg>) null);
-                    dataResult.setRowUpdated(ejb);                    
                 }
                 for (IDataRow ejb : ejbs) {
                     if (ejb.getAction() != IDataRow.DELETE) {
@@ -795,6 +797,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * operaciones
      * @param ejb el objeto con los valores del registro
      * @return IDataResult conteniendo el dato del registro modificado.
+     * @throws org.javabeanstack.exceptions.CheckException
      */
     @Override
     public <T extends IDataRow> IDataResult merge(String sessionId, T ejb) {
@@ -1127,8 +1130,13 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private void setAppUser(IDataRow ejb, String appUser) {
-        if (DataInfo.isFieldExist(ejb.getClass(), "appuser")) {
-            ejb.setValue("appuser", appUser);
+        try{
+            if (DataInfo.isFieldExist(ejb.getClass(), "appuser")) {
+                ejb.setValue("appuser", appUser);
+            }
+        }
+        catch (Exception ex){
+            //
         }
     }
 

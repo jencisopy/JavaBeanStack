@@ -75,7 +75,7 @@ public interface IDataObject <T extends IDataRow>{
     public boolean      goTo(int rownumber, int offset);
     public boolean      moveFirst();
     public boolean      moveNext();
-    public boolean      movePreviews();
+    public boolean      movePrevious();
     public boolean      moveLast();
     public boolean      find(String field, Object value, int begin, int end);
     public boolean      find(String field, Object value);
@@ -104,7 +104,6 @@ public interface IDataObject <T extends IDataRow>{
     public boolean      insertRowFrom();
     public boolean      deleteRow();
     public void         copyFrom(String idcompany, String companyName, String xmlTag, String tableCopy);
-    public boolean      isExists();
     public Map<String, IErrorReg> checkDataRow() throws Exception;
     public boolean      checkData(boolean allRows);   
     public boolean      update(boolean allRows);

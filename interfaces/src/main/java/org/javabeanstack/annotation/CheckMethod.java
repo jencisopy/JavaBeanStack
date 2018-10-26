@@ -33,6 +33,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface CheckMethod {
-    String fieldName() default "";
-    int[] action() default {};
+    String fieldName();
+    int[] action();
 }

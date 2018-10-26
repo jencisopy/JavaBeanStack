@@ -21,7 +21,6 @@
  */
 package org.javabeanstack.data;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.exceptions.FieldException;
 
 /**
  * Es la clase base de todos los modelos ejb mapeados a las tablas o vistas.
@@ -44,8 +44,8 @@ public class DataRow implements IDataRow, Cloneable {
     private String queryUK = "";
     private String idFunctionFind = "";
     private boolean rowChecked = false;
-    private Map<String, Boolean> fieldChecked = null;
-    private Map<String, IErrorReg> errors = null;
+    private Map<String, Boolean> fieldsChecked = null;
+    private Map<String, IErrorReg> errors = new HashMap();
 
     //TODO implementar parent, beforesetvalue, aftersetvalue
     public DataRow() {
@@ -126,14 +126,14 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public boolean isFieldChecked(String fieldName) {
-        if (this.fieldChecked == null) {
+        if (this.fieldsChecked == null) {
             return true;
         }
         fieldName = "_" + fieldName.toLowerCase();
-        if (this.fieldChecked.get(fieldName) == null) {
+        if (this.fieldsChecked.get(fieldName) == null) {
             return true;
         }
-        return this.fieldChecked.get(fieldName);
+        return this.fieldsChecked.get(fieldName);
     }
 
     /**
@@ -142,8 +142,8 @@ public class DataRow implements IDataRow, Cloneable {
      * @return map con los campos que fuerón verificados.
      */
     @Override
-    public Map getFieldChecked() {
-        return this.fieldChecked;
+    public Map getFieldsChecked() {
+        return this.fieldsChecked;
     }
 
     /**
@@ -152,8 +152,8 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldChecked
      */
     @Override
-    public void setFieldChecked(Map fieldChecked) {
-        this.fieldChecked = fieldChecked;
+    public void setFieldsChecked(Map fieldChecked) {
+        this.fieldsChecked = fieldChecked;
     }
 
     /**
@@ -164,10 +164,10 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void setFieldChecked(String fieldName, boolean checkField) {
-        if (this.fieldChecked != null) {
+        if (this.fieldsChecked != null && !this.fieldsChecked.isEmpty()) {
             fieldName = "_" + fieldName.toLowerCase();
-            if (this.fieldChecked.get(fieldName) != null) {
-                this.fieldChecked.put(fieldName, checkField);
+            if (this.fieldsChecked.get(fieldName) != null) {
+                this.fieldsChecked.put(fieldName, checkField);
                 if (checkField == false) {
                     this.setRowChecked(false);
                 }
@@ -181,6 +181,9 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public Map<String, IErrorReg> getErrors() {
+        if (this.errors == null){
+            this.errors = new HashMap();
+        }
         return this.errors;
     }
 
@@ -305,13 +308,14 @@ public class DataRow implements IDataRow, Cloneable {
      *
      * @param fieldname nombre del campo o atributo
      * @param value valor a asignar
+     * @throws org.javabeanstack.exceptions.FieldException
      */
     @Override
-    public void setValue(String fieldname, Object value) {
+    public void setValue(String fieldname, Object value) throws FieldException{
         Boolean exito = DataInfo.setFieldValue(this, fieldname, value);
         if (!exito){
             LOGGER.error("fieldname: "+fieldname);
-            return;
+            throw new FieldException("Error en "+fieldname+", no existe el campo o el tipo es incorrecto");
         }
         if (this.action == 0){
             this.action = IDataRow.UPDATE;

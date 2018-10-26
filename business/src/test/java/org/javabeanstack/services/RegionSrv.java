@@ -4,16 +4,15 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import org.apache.log4j.Logger;
 import org.javabeanstack.annotation.CheckMethod;
-import org.javabeanstack.data.DBManager;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.tables.AppUser;
+import org.javabeanstack.model.tables.Region;
 
 
 /**
  *
- * @author jenci_000
+ * @author Jorge Enciso
  */
 @TransactionManagement(value=TransactionManagementType.CONTAINER)
 public class RegionSrv extends DataService implements IRegionSrv {
@@ -24,7 +23,7 @@ public class RegionSrv extends DataService implements IRegionSrv {
                              IDataRow.MODIFICAR,
                              IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo(AppUser row, String sessionId){
+    public IErrorReg checkCodigo(String sessionId, Region row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo");
         return errorReg;
@@ -33,25 +32,21 @@ public class RegionSrv extends DataService implements IRegionSrv {
     @CheckMethod(fieldName = "codigo",
                  action = {IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo2(AppUser row, String sessionId){
+    public IErrorReg checkCodigo2(String sessionId, Region row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo2");
         return errorReg;
     }
     
-    @CheckMethod(fieldName = "nombre")     
+    @CheckMethod(fieldName = "nombre", action = {IDataRow.AGREGAR, IDataRow.MODIFICAR})
     @Override
-    public IErrorReg checkNombre(AppUser row, String sessionId){
+    public IErrorReg checkNombre(String sessionId, Region row){
         IErrorReg errorReg = new ErrorReg();
         LOGGER.info("IN checkNombre");
         //errorReg.setMessage("prueba de error");
         return errorReg;
     }
     
-    @Override
-    protected String getPersistentUnit(String sessionId){
-        return DBManager.CATALOGO;
-    }
     
     public String hello(){
         return "RegionSrv";

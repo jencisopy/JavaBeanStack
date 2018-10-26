@@ -22,7 +22,8 @@
  */
 package org.javabeanstack.datactrl;
 
-import java.util.HashMap;
+import java.math.BigDecimal;
+import java.util.HashMap; 
 import java.util.List;
 import java.util.Map;
 import javax.naming.NamingException;
@@ -30,6 +31,7 @@ import org.javabeanstack.data.model.DataSet;
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
+import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IDataEvents;
@@ -65,19 +67,19 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         //Region
-        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
         region.open();
         region.insertRow();
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
 
-        IDataSet dataSet = new DataSet();
-        dataSet.addDataObject("region", region);
-
-        boolean result = dataLink.update(dataSet).isSuccessFul();
+        boolean result = region.update(false);
+        if (!result) {
+            System.out.println(region.getErrorMsg(true));
+        }
         assertTrue(result);
     }
-
+ 
     @Test
     public void test2BorrarData() throws NamingException, SessionError, Exception {
         System.out.println("2-DataObject BorrarData");
@@ -87,16 +89,17 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         boolean result;
-        //Campo        
-        IDataObject campo = new DataObject(Region.class, null, dataLink, null);
-        campo.open();
-        campo.find("codigo", "ZZZ");
-        campo.deleteRow();
-        result = campo.update(false);
-        if (!result) {
-            System.out.println(campo.getErrorMsg(true));
+        //Region
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.deleteRow();
+            result = region.update(false);
+            if (!result) {
+                System.out.println(region.getErrorMsg(true));
+            }
+            assertTrue(result);
         }
-        assertTrue(result);
     }
 
     @Test
@@ -108,14 +111,15 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         //Region
-        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
         region.open();
         region.insertRow();
+        //region.getRow().setCodigo("ZZZ");
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
 
         //pais
-        IDataObject pais = new DataObject(Pais.class, null, dataLink, null);
+        IDataObject<Pais> pais = new DataObject(Pais.class, null, dataLink, null);
         pais.open();
         pais.insertRow();
         pais.setField("codigo", "ZZZ");
@@ -126,7 +130,7 @@ public class AbstractDataObjectTest extends TestClass{
         dataSet.addDataObject("region", region);
         dataSet.addDataObject("pais", pais);
 
-        boolean result = dataLink.update(dataSet).isSuccessFul();
+        boolean result = pais.update(dataSet);
         assertTrue(result);
     }
 
@@ -140,7 +144,7 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         //Pais
-        IDataObject pais = new DataObject(Pais.class, null, dataLink, null);
+        IDataObject<Pais> pais = new DataObject(Pais.class, null, dataLink, null);
         pais.open();
         if (pais.find("codigo", "ZZZ")) {
             pais.deleteRow();
@@ -149,13 +153,13 @@ public class AbstractDataObjectTest extends TestClass{
         }
 
         //Region        
-        IDataObject campo = new DataObject(Region.class, null, dataLink, null);
-        campo.open();
-        if (campo.find("codigo", "ZZZ")){
-            campo.deleteRow();
-            result = campo.update(false);
+        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.deleteRow();
+            result = region.update(false);
             if (!result) {
-                System.out.println(campo.getErrorMsg(true));
+                System.out.println(region.getErrorMsg(true));
             }
             assertTrue(result);            
         }
@@ -189,6 +193,7 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
+        IGenericDAO dao = dataLink.getDao();
         IDataService dataservice
                 = (IDataService) context.lookup(jndiProject + "DataService!org.javabeanstack.services.IDataServiceRemote");
 
@@ -202,6 +207,8 @@ public class AbstractDataObjectTest extends TestClass{
         region.setFilter("codigo = '01'");
         region.requery();
         Assert.assertNotNull(region.getDataRows());
+        //Devolver a valores por default
+        dataLink.setDao(dao);
     }
 
     //@Test
@@ -300,13 +307,35 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of getErrorApp method, of class AbstractDataObject.
      */
-    //@Test
-    public void testGetErrorApp() {
-        System.out.println("getErrorApp");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        Exception expResult = null;
-        Exception result = instance.getErrorApp();
-        assertEquals(expResult, result);
+    @Test
+    public void test10GetErrorApp() {
+        System.out.println("10-DataObject getErrorApp");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        //Region
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        // Error al proposito, orden
+        region.open("no existe", "", false, -1);
+        assertTrue(region.getErrorApp() != null);
+        assertFalse(region.isOpen());
+        //
+        region.open();
+        assertTrue(region.getErrorApp() == null);
+        //Error filtro
+        region.setFilter("camponoexiste = 1");
+        region.requery();
+        assertTrue(region.getErrorApp() != null);
+        assertFalse(region.isOpen());
+        //Error setfield
+        region.open();
+        assertFalse(region.setField("camponoexiste", "noexiste"));
+        assertTrue(region.getErrorApp() != null);        
+        //Error setField tipo de dato
+        assertFalse(region.setField("nombre", BigDecimal.ZERO));
+        assertTrue(region.getErrorApp() != null);        
     }
 
     /**
@@ -745,7 +774,7 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println("movePreviews");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         boolean expResult = false;
-        boolean result = instance.movePreviews();
+        boolean result = instance.movePrevious();
         assertEquals(expResult, result);
     }
 
@@ -1186,17 +1215,6 @@ public class AbstractDataObjectTest extends TestClass{
         instance.copyFrom(idcompany, companyName, xmlTag, tableCopy);
     }
 
-    /**
-     * Test of isExists method, of class AbstractDataObject.
-     */
-    //@Test
-    public void testIsExists() {
-        System.out.println("isExists");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.isExists();
-        assertEquals(expResult, result);
-    }
 
     /**
      * Test of checkDataRow method, of class AbstractDataObject.
@@ -1412,5 +1430,4 @@ public class AbstractDataObjectTest extends TestClass{
             return null;
         }
     }
-    
 }

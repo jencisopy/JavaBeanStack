@@ -22,7 +22,6 @@
 package org.javabeanstack.services;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -50,7 +49,9 @@ import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.exceptions.CheckException;
 import org.javabeanstack.util.Fn;
+import static org.javabeanstack.util.Strings.isNullorEmpty;
 
 /**
  * Esta clase deriva de AbstractDAO, a travéz de ella se recupera, válida y se
@@ -62,7 +63,7 @@ import org.javabeanstack.util.Fn;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public abstract class AbstractDataService implements IDataService {
     private static final Logger LOGGER = Logger.getLogger(AbstractDataService.class);
-    protected List<Method> methodList = this.setListCheckMethods();
+    protected List<Method> methodList = this.getListCheckMethods();
     @EJB
     protected IGenericDAO dao;
 
@@ -82,26 +83,54 @@ public abstract class AbstractDataService implements IDataService {
         return userSession.getPersistenceUnit();
     }
 
+    /**
+     *
+     * @param sessionId id de sesión del usuario
+     * @return el objeto userSession con la información de la sesión
+     */
     @Override
     public IUserSession getUserSession(String sessionId) {
         return dao.getUserSession(sessionId);
     }    
 
+    /**
+     * Busca y devuelve el valor de una propiedad solicitada del entity manager
+     *
+     * @param persistUnit unidad de persistencia
+     * @return el valor de una propiedad del entity manager
+     */
     @Override
     public Map<String, Object> getEntityManagerProp(String persistUnit) {
         return dao.getEntityManagerProp(persistUnit);
     }
 
+    /**
+     * Busca y devuelve el valor de una propiedad solicitada 1
+     *
+     * @param persistUnit unidad de persistencia.
+     * @return devuelve un map con todas las propiedades de la unidad de
+     * persistencia solicitada
+     */
     @Override
     public Map<String, Object> getPersistUnitProp(String persistUnit) {
         return dao.getPersistUnitProp(persistUnit);
     }
 
+    /**
+     *
+     * @param persistentUnit unidad de persistencia
+     * @return devuelve el nombre del motor de la base de datos
+     */
     @Override
     public String getDataEngine(String persistentUnit) {
         return dao.getDataEngine(persistentUnit);
     }
 
+    /**
+     *
+     * @param persistentUnit unidad de persistencia
+     * @return devuelve el schema
+     */
     @Override
     public String getSchema(String persistentUnit) {
         return dao.getSchema(persistentUnit);
@@ -115,7 +144,7 @@ public abstract class AbstractDataService implements IDataService {
      * @return lista de metodos.
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    protected final List<Method> setListCheckMethods() {
+    protected final List<Method> getListCheckMethods() {
         List methods = new ArrayList();
         for (Method method : this.getClass().getDeclaredMethods()) {
             CheckMethod anotation = method.getAnnotation(CheckMethod.class);
@@ -127,119 +156,322 @@ public abstract class AbstractDataService implements IDataService {
         return methods;
     }
 
-    // TODO ver este metodo.
+    /**
+     * Asigna el map fieldsChecked, que básicamente va a informar que campos se 
+     * verificarón y cuales no
+     * @param <T>
+     * @param row objeto ejb
+     * @return Objeto ejb con atributo fieldsChecked preparado para recibir
+     * la información de las validaciones.
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public <T extends IDataRow> T setListFieldCheck(T row) {
-        if (row != null && row.getFieldChecked() == null) {
+    public <T extends IDataRow> T setFieldsToCheck(T row) {
+        if (row != null && row.getFieldsChecked() == null) {
             String fieldName;
             String key;
-            String namePrefix;
             CheckMethod anotation;
-            Map<String, Boolean> fieldChecked = new HashMap<>();
+            Map<String, Boolean> fieldsChecked = new HashMap<>();
             for (Method method : this.getClass().getDeclaredMethods()) {
-                namePrefix = method.getName().toLowerCase().substring(0, 5);
                 anotation = method.getAnnotation(CheckMethod.class);
-                if ("check".equals(namePrefix) || anotation != null) {
-                    if (anotation == null) {
-                        fieldName = method.getName().toLowerCase().substring(5);
-                    } else {
-                        fieldName = anotation.fieldName().toLowerCase();
-                    }
+                if (anotation != null) {
+                    fieldName = anotation.fieldName().toLowerCase();
                     key = "_" + fieldName;
-                    fieldChecked.put(key, true);
+                    fieldsChecked.put(key, true);
                 }
             }
-            row.setFieldChecked(fieldChecked);
+            row.setFieldsChecked(fieldsChecked);
         }
         return row;
     }
 
+
+    /**
+     * Devuelve un registro de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param id identificador del registro
+     * @return un registro solicitado
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> T findById(Class<T> entityClass, String sessionId, Object id) throws Exception {
         return dao.findById(entityClass, sessionId, id);
     }
 
+    /**
+     * Devuelve un registro a travéz de su clave unica.
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param ejb objeto ejb con los datos de la clave unica
+     * @return un registro que cumple la condición de la clave unica solicitada.
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> T findByUk(String sessionId, T ejb) throws Exception {
         return dao.findByUk(sessionId, ejb);
     }
 
+    /**
+     * Devuelve una lista de registros de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @return lista de objetos
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId) throws Exception {
         return dao.find(entityClass, sessionId);
     }
 
+    /**
+     * Devuelve una lista de registros de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param order
+     * @param filter
+     * @param params
+     * @return lista de objetos
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params) throws Exception {
         return dao.find(entityClass, sessionId, order, filter, params);        
     }
 
+
+    /**
+     * Devuelve una lista de registro de una tabla dada
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param order
+     * @param filter
+     * @param params
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return lista de objetos
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params, int first, int max) throws Exception {
         return dao.find(entityClass, sessionId, order, filter, params, first, max);
     }
 
-    @Override
-    public List<Object> findByNativeQuery(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
-        return dao.findByNativeQuery(sessionId, queryString, parameters);
-    }
-
-    @Override
-    public List<Object> findByNativeQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
-        return dao.findByNativeQuery(sessionId, queryString, parameters, first, max);
-    }
-
+    /**
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia jpql
+     * @param parameters parametros de la sentencia
+     * @return un objeto con valores del registro de la tabla solicitada
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> T findByQuery(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         return dao.findByQuery(sessionId, queryString, parameters);
     }
 
+    /**
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia jpql
+     * @param parameters parametros de la sentencia
+     * @return una lista de objetos conteniendo los registros de la tabla
+     * solicitada
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> findListByQuery(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         return dao.findListByQuery(sessionId, queryString, parameters);
     }
 
+    /**
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia jpql
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return una lista de objetos conteniendo los registros de la tabla
+     * solicitada
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> findListByQuery(String sessionId, String queryString, int first, int max) throws Exception {
         return dao.findListByQuery(sessionId, queryString, first, max);
     }
 
+    /**
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia jpql
+     * @param parameters parametros de la sentencia
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return una lista de objetos conteniendo los registros de la tabla
+     * solicitada
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> findListByQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
         return dao.findListByQuery(sessionId, queryString, parameters, first, max);
     }
 
+    /**
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param namedQuery namedQuery
+     * @param parameters parámetros de la sentencia.
+     * @return un objeto con los datos del registro de la tabla solicitada
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> T findByNamedQuery(String sessionId, String namedQuery, Map<String, Object> parameters) throws Exception {
         return dao.findByNamedQuery(sessionId, namedQuery, parameters);
     }
 
+    /**
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param namedQuery namedQuery
+     * @param parameters parámetros de la sentencia.
+     * @return una lista de objetos con los datos de los registros de la tabla
+     * solicitada
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId, String namedQuery, Map<String, Object> parameters) throws Exception {
         return dao.findListByNamedQuery(sessionId, namedQuery, parameters);
     }
 
+    /**
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return una lista de objetos conteniendo los registros de la tabla
+     * solicitada
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId, String namedQuery, int first, int max) throws Exception {
         return dao.findListByNamedQuery(sessionId, namedQuery, first, max);
     }
 
+    /**
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param namedQuery namedQuery
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return una lista de objetos con los datos de los registros de la tabla
+     * solicitada
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> findListByNamedQuery(String sessionId, String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception {
         return dao.findListByNamedQuery(sessionId, namedQuery, parameters, first, max);
     }
 
+    /**
+     *
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia sql
+     * @param parameters parámetros de la sentencia.
+     * @return una lista de objetos con datos de los registros solicitados
+     * @throws Exception
+     */
+    @Override
+    public List<Object> findByNativeQuery(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+        return dao.findByNativeQuery(sessionId, queryString, parameters);
+    }
+
+    /**
+     *
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia sql
+     * @param parameters parámetros de la sentencia.
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return una lista de objetos con datos de los registros solicitados
+     * @throws Exception
+     */
+    @Override
+    public List<Object> findByNativeQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
+        return dao.findByNativeQuery(sessionId, queryString, parameters, first, max);
+    }
+
+
+    /**
+     * Refresca desde la base de datos los valores de un objeto.
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param row objeto o registro a refrescar
+     * @return objeto con los datos refrescados de la base de datos
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> T refreshRow(String sessionId, T row) throws Exception {
         return dao.refreshRow(sessionId, row);
     }
 
+    /**
+     * Calcula la cantidad de registros que devolveria una sentencia sql
+     *
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia jpql
+     * @param parameters parámetros de la sentencia
+     * @return cantidad de registros que debería devolver la sentencia.
+     * @throws Exception
+     */
     @Override
     public Long getCount(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         return dao.getCount(sessionId, queryString, parameters);
     }
 
+    /**
+     * Calcula la cantidad de registros que devolveria una sentencia sql
+     *
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia sql
+     * @param parameters parámetros de la sentencia
+     * @return cantidad de registros que debería devolver la sentencia.
+     * @throws Exception
+     */
     @Override
     public Long getCount2(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         return dao.getCount2(sessionId, queryString, parameters);
@@ -255,6 +487,9 @@ public abstract class AbstractDataService implements IDataService {
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     protected final void checkUserSession(String sessionId) throws SessionError {
+        if (isNullorEmpty(sessionId)){ 
+            return;
+        }
         IUserSession userSession = getUserSession(sessionId);
         if (userSession == null || userSession.getUser() == null) {
             throw new SessionError("El identificador de la sesión es inválido");
@@ -357,9 +592,14 @@ public abstract class AbstractDataService implements IDataService {
     public <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row) {
         Map<String, IErrorReg> errors = new HashMap<>();
         String fieldName;
-        int[] operacion = {IDataRow.INSERT, IDataRow.UPDATE};
+        int[] operacion;
         IErrorReg result;
         CheckMethod anotation;
+        row.setRowChecked(false);
+        // Preparar el registro para las verificaciones.
+        if (row.getFieldsChecked() == null){
+            setFieldsToCheck(row);
+        }
         try {
             // Chequeo de clave duplicada solo si la operación es agregar o modificar
             if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
@@ -378,7 +618,7 @@ public abstract class AbstractDataService implements IDataService {
                     fieldName = field.getName();
                     if (!checkForeignKey(sessionId, row, fieldName)) {
                         errors.put(fieldName.toLowerCase(),
-                                new ErrorReg("Dejo en blanco este dato o no existe el registro",
+                                new ErrorReg("Dejo en blanco este dato o no existe el registro - "+fieldName,
                                         50013,
                                         fieldName));
                     }
@@ -390,12 +630,8 @@ public abstract class AbstractDataService implements IDataService {
         // Ejecutar metodos de chequeo de datos
         for (Method method : this.methodList) {
             anotation = method.getAnnotation(CheckMethod.class);
-            if (anotation == null) {
-                fieldName = method.getName().toLowerCase().substring(5);
-            } else {
-                fieldName = anotation.fieldName();
-                operacion = anotation.action();
-            }
+            fieldName = anotation.fieldName();
+            operacion = anotation.action();
             // Si existe un error previo sobre este campo continuar con las otras validaciones
             if (errors.containsKey(fieldName.toLowerCase())) {
                 continue;
@@ -404,17 +640,28 @@ public abstract class AbstractDataService implements IDataService {
                 method.setAccessible(true);
                 // La validación se ejecuta dependiendo de la operación (agregar, modificar, borrar)
                 if (Fn.inList(row.getAction(), operacion)) {
-                    result = (IErrorReg) method.invoke(this, row, sessionId);
+                    result = (IErrorReg) method.invoke(this, sessionId, row);
+                    //Si el resultado es un error guardar información en el objeto errors
                     if (result != null && !"".equals(result.getMessage())) {
                         errors.put(fieldName.toLowerCase(), result);
+                        row.setFieldChecked(fieldName, false);
+                    }
+                    else{
+                        // Paso la verificación del atributo
+                        row.setFieldChecked(fieldName, true);
                     }
                 }
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            } catch (Exception ex) {
+                row.setFieldChecked(fieldName, false);
+                result = new ErrorReg(ErrorManager.getStackCause(ex),0, fieldName);
+                errors.put(fieldName.toLowerCase(), result);
                 ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
             }
         }
         row.setErrors(errors);
-        row.setRowChecked(true);
+        if (errors.isEmpty()){
+            row.setRowChecked(true);            
+        }
         return errors;
     }
 
@@ -453,7 +700,8 @@ public abstract class AbstractDataService implements IDataService {
      * @return objeto resultado de la operación.
      * @throws SessionError
      */
-    protected final <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError {
+    @Override
+    public <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError  {
         checkUserSession(sessionId);
         IDataResult dataResult;
         // Validar registro
@@ -462,8 +710,16 @@ public abstract class AbstractDataService implements IDataService {
             // Devolver el error si lo hubo
             return dataResult;
         }
-        // Grabar registro en la base de datos.
-        dataResult = update(sessionId, row);
+        try {
+            // Grabar registro en la base de datos.
+            dataResult = update(sessionId, row);
+            return dataResult;
+        } catch (Exception ex) {
+            dataResult.setSuccess(false);
+            dataResult.setException(ex);
+            dataResult.setErrorMsg(ErrorManager.getStackCause(ex));
+            ErrorManager.showError(ex, LOGGER);
+        }
         return dataResult;
     }
 
@@ -584,23 +840,65 @@ public abstract class AbstractDataService implements IDataService {
     }
     
 
+    /**
+     * Sincroniza un ejb con la base de datos.
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param ejb objeto mapeado a un registro de una tabla.
+     * @return Devuelve un objeto con el resultado de la grabación
+     *
+     */
     @Override
     public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
+        isChecked(ejb);
         return dao.update(sessionId, ejb);
     }
 
+    /**
+     * Sincroniza una lista de ejbs con la base de datos.
+     *
+     * @param ejbs lista de objetos mapeados a los registros de una tabla.
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @return Devuelve un objeto con el resultado de la grabación
+     */
     @Override
-    public IDataResult update(String sessionId, IDataObject ejbs) {
+    public IDataResult update(String sessionId, IDataObject ejbs)  {
+        isChecked(ejbs.getDataRows());
         return dao.update(sessionId,ejbs);
     }
 
+    /**
+     * Sincroniza una lista de ejbs con la base de datos.
+     *
+     * @param <T>
+     * @param ejbs lista de objetos mapeados a los registros de una tabla.
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @return Devuelve un objeto con el resultado de la grabación
+     */
     @Override
     public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
+        isChecked(ejbs);
         return dao.update(sessionId, ejbs);
     }
 
+    /**
+     * Sincroniza una lista de ejbs con la base de datos.
+     *
+     * @param dataSet set de objetos mapeados a los registros de una tabla.
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @return Devuelve un objeto con el resultado de la grabación
+     */
     @Override
     public IDataResult update(String sessionId, IDataSet dataSet) {
+        // Recorrer los objetos a actualizar en la base
+        dataSet.getMapListSet().entrySet().forEach((entry) -> {
+            isChecked(entry.getValue());
+        });        
         return dao.update(sessionId, dataSet);        
     }
 
@@ -608,7 +906,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public Connection getConnection(String sessionId) {
         throw new UnsupportedOperationException("Not supported");
-    }
+}
 
     @Deprecated
     @Override
@@ -645,5 +943,19 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> List<T> refreshAll(String sessionId, List<T> rows) throws Exception {
         throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    protected <T extends IDataRow> void isChecked(T ejb) throws CheckException{
+        if (ejb != null && ejb.getAction() > 0 && !ejb.isRowChecked()){
+            throw new CheckException("El registro no fue verificado");
+        }
+    }
+    
+    protected <T extends IDataRow> void isChecked(List<T> ejbs) throws CheckException {
+        if (ejbs != null){
+            ejbs.forEach((ejb) -> {
+                isChecked(ejb);
+            });
+        }
     }
 }
