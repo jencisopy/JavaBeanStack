@@ -41,6 +41,7 @@ import org.javabeanstack.model.tables.AppUserFormViewColumn;
 import org.javabeanstack.model.tables.Pais;
 import org.javabeanstack.model.tables.Region;
 import org.javabeanstack.services.IDataService;
+import org.javabeanstack.services.IRegionSrv;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -59,7 +60,7 @@ public class AbstractDataObjectTest extends TestClass{
 
 
     @Test
-    public void test1AddData() throws NamingException, SessionError, Exception {
+    public void test01AddData() throws NamingException, SessionError, Exception {
         System.out.println("1-DataObject AddData");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -81,7 +82,7 @@ public class AbstractDataObjectTest extends TestClass{
     }
  
     @Test
-    public void test2BorrarData() throws NamingException, SessionError, Exception {
+    public void test02BorrarData() throws NamingException, SessionError, Exception {
         System.out.println("2-DataObject BorrarData");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -103,7 +104,7 @@ public class AbstractDataObjectTest extends TestClass{
     }
 
     @Test
-    public void test3AddData() throws NamingException, SessionError, Exception {
+    public void test03AddData() throws NamingException, SessionError, Exception {
         System.out.println("3-DataObject AddData (dataset)");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -135,7 +136,7 @@ public class AbstractDataObjectTest extends TestClass{
     }
 
     @Test
-    public void test4BorrarData() throws NamingException, SessionError, Exception {
+    public void test04BorrarData() throws NamingException, SessionError, Exception {
         System.out.println("4-DataObject BorrarData");
         boolean result;
         //No hubo conexión con el servidor de aplicaciones
@@ -166,7 +167,7 @@ public class AbstractDataObjectTest extends TestClass{
     }
 
     @Test
-    public void test5DBFilter() throws NamingException, SessionError, Exception {
+    public void test05DBFilter() throws NamingException, SessionError, Exception {
         System.out.println("5-DataObject DBFilter");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -186,7 +187,7 @@ public class AbstractDataObjectTest extends TestClass{
 
 
     @Test
-    public void test7getData() throws NamingException, SessionError, Exception {
+    public void test07getData() throws NamingException, SessionError, Exception {
         System.out.println("7-DataObject getData");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -212,7 +213,7 @@ public class AbstractDataObjectTest extends TestClass{
     }
 
     //@Test
-    public void test8FormView() throws NamingException, SessionError, Exception {
+    public void test08FormView() throws NamingException, SessionError, Exception {
         System.out.println("8-DataObject");        
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -272,7 +273,7 @@ public class AbstractDataObjectTest extends TestClass{
     }
     
     //@Test
-    public void test9FormView() throws NamingException, SessionError, Exception {
+    public void test09FormView() throws NamingException, SessionError, Exception {
         System.out.println("9-DataObject");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -341,28 +342,45 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of getErrorMsg method, of class AbstractDataObject.
      */
-    //@Test
-    public void testGetErrorMsg_boolean() {
-        System.out.println("getErrorMsg");
-        boolean all = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        String expResult = "";
-        String result = instance.getErrorMsg(all);
-        assertEquals(expResult, result);
+    @Test
+    public void test11GetErrorMsg() throws Exception{
+        System.out.println("11-DataObject - getErrorMsg");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IRegionSrv dataServiceRegion = 
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+        
+        IGenericDAO dao = dataLink.getDao();
+        //Cambiar dao por dataService.
+        dataLink.setDao(dataServiceRegion);
+        //Region
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        region.insertRow();
+        region.getRow().setCodigo("");
+        region.getRow().setNombre("");
+        
+        assertFalse(region.update(false));
+        assertFalse(region.getErrorMsg(true).isEmpty());
+        assertTrue(region.getErrorMsg("codigo") != null);        
+        assertTrue(region.getErrorMsg("nombre") != null);                
+
+        System.out.println(region.getErrorMsg(true));
+        System.out.println(region.getErrorMsg("codigo"));
+        System.out.println(region.getErrorMsg("nombre"));
+        
+        region.getRow().setCodigo("xx");
+        region.getRow().setNombre("xx");
+        assertTrue(region.checkData(true));
+
+        region.close();
+        //Volver a valores por defecto
+        dataLink.setDao(dao);
     }
 
-    /**
-     * Test of getErrorMsg method, of class AbstractDataObject.
-     */
-    //@Test
-    public void testGetErrorMsg_String() {
-        System.out.println("getErrorMsg");
-        String fieldName = "";
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        String expResult = "";
-        String result = instance.getErrorMsg(fieldName);
-        assertEquals(expResult, result);
-    }
 
     /**
      * Test of getFilter method, of class AbstractDataObject.
@@ -770,7 +788,7 @@ public class AbstractDataObjectTest extends TestClass{
      * Test of movePreviews method, of class AbstractDataObject.
      */
     //@Test
-    public void testMovePreviews() {
+    public void testMovePrevious() {
         System.out.println("movePreviews");
         AbstractDataObject instance = new AbstractDataObjectImpl();
         boolean expResult = false;

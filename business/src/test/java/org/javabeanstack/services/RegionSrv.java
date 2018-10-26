@@ -8,6 +8,7 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.tables.Region;
+import org.javabeanstack.util.Strings;
 
 
 /**
@@ -26,6 +27,9 @@ public class RegionSrv extends DataService implements IRegionSrv {
     public IErrorReg checkCodigo(String sessionId, Region row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo");
+        if (Strings.isNullorEmpty(row.getCodigo())){
+            errorReg.setMessage("No deje en blanco el campo código");
+        }
         return errorReg;
     }
 
@@ -43,7 +47,9 @@ public class RegionSrv extends DataService implements IRegionSrv {
     public IErrorReg checkNombre(String sessionId, Region row){
         IErrorReg errorReg = new ErrorReg();
         LOGGER.info("IN checkNombre");
-        //errorReg.setMessage("prueba de error");
+        if (Strings.isNullorEmpty(row.getNombre())){
+            errorReg.setMessage("No deje en blanco el campo nombre");
+        }
         return errorReg;
     }
     
