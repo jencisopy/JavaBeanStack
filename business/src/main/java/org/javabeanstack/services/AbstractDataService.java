@@ -562,7 +562,7 @@ public abstract class AbstractDataService implements IDataService {
                 } // Buscar valor del foreignkey
                 else if (row.getValue(fieldName) != null) {
                     Class fieldType = row.getFieldType(fieldName);
-                    Object id = row.getValue(fieldName);
+                    Object id = ((IDataRow)row.getValue(fieldName)).getId();
                     IDataRow fieldValue = findById(fieldType, sessionId, id);
                     if (fieldValue == null) {
                         result = false;
