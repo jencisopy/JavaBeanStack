@@ -280,12 +280,7 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public Object getValue(String fieldname) {
-        Object valor = DataInfo.getFieldValue(this, fieldname);
-        if (valor instanceof IDataRow) {
-            IDataRow row = (IDataRow) valor;
-            return DataInfo.getIdvalue(row);
-        }
-        return valor;
+        return DataInfo.getFieldValue(this, fieldname);
     }
 
     /**

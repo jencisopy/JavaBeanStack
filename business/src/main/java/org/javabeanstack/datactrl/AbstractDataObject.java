@@ -129,7 +129,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Es el objeto responsable de los eventos
      */
     private IDataEvents dataEvents;
-
+    
     private boolean showDeletedRow = false;
 
     /**
@@ -304,6 +304,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public Map<Integer, T> getDataRowsChanged() {
+        if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");
+            return null;
+        }
         Map<Integer, T> dataRowsChanged = new LinkedHashMap();
         for (int i = 0; i < dataRows.size(); i++) {
             if (dataRows.get(i).getAction() != 0) {
@@ -385,6 +389,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public int getRowCount() {
         if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");
             return 0;
         }
         return dataRows.size();
@@ -401,6 +406,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public int getRecStatus() {
         if (row == null) {
+            LOGGER.error("El dataobject no esta abierto");
             return 0;
         }
         return row.getAction();
@@ -428,11 +434,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     @Override
     public Long getIdempresa() {
-        Long idempresa = 0L;
-        if (getDAO().getUserSession() != null) {
-            idempresa = getDAO().getUserSession().getIdCompany();
-        }
-        return idempresa;
+        return getIdcompany();
     }
 
     /**
@@ -524,9 +526,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 && getDAO().getUserSession() != null
                 && getDAO().getUserSession().getDBFilter() != null) {
             filtro = getDAO().getUserSession().getDBFilter().getFilterExpr(type, "");
-            if (!"".equals(filter)) {
-                filtro += " and " + filter;
-            }
+            String separador = "";
+            if (!Strings.isNullorEmpty(filter) && !Strings.isNullorEmpty(filtro)){
+                separador = " and ";
+            } 
+            filtro += separador + filter;
         } else {
             filtro = filter;
         }
@@ -571,6 +575,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean open() {
+        order = "";
+        filter = "";
+        filterExtra = "";
+        firstRow = 0;
+        maxrows = -1;
         return this.open("", "", true, -1);
     }
 
@@ -800,12 +809,16 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean goTo(int rownumber, int offset) {
+        if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");
+            return false;
+        }
         //Before move
         this.beforeRowMove(row);
         if (rownumber < 0) {
             return false;
         }
-        if (dataRows.isEmpty()) {
+        if (dataRows.isEmpty()){    
             return false;
         }
 
@@ -818,7 +831,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 break;
             }
             //Si en el desplazamiento no se considera los borrados
-            if (!showDeletedRow && dataRows.get(rownumber).getAction() == IDataRow.BORRAR) {
+            if (!showDeletedRow && dataRows.get(rownumber).getAction() == IDataRow.DELETE) {
                 rownumber = rownumber + offset;
                 continue;
             }
@@ -893,6 +906,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean moveLast() {
+        if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");            
+            return false;
+        }
         return this.goTo(dataRows.size() - 1, -1);
     }
 
@@ -979,6 +996,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean find(String field, Object value) {
+        if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");
+            return false;
+        }
         return this.find(field, value, 0, dataRows.size() - 1);
     }
 
@@ -990,6 +1011,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean findNext() {
+        if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");
+            return false;
+        }
         if (this.lastvalfounded == null) {
             return false;
         }
@@ -1130,7 +1155,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @param fieldname nombre del campo
      * @param param map con los valores
      * @return Verdadero si tuvo exito o falso si no
-     * @throws org.javabeanstack.exceptions.FieldException
      */
     @Override
     public boolean setField(String fieldname, Map param){
@@ -1168,14 +1192,13 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public boolean setField(String fieldname, Object newValue, boolean noAfterSetField){
         /* No se puede modificar si es de solo lectura */
         if (!this.readWrite) {
-            errorApp = new FieldException("El objeto esta abierto de solo lectura");
+            errorApp = new FieldException("El objeto esta abierto para solo lectura");
             return false;
         }
         if (row == null) {
             errorApp = new FieldException("El objeto es null");
             return false;
         }
-
         Object oldValue = row.getValue(fieldname);
         try {
             errorApp = null;
@@ -1231,6 +1254,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      *
      */
     private void setRowBak() {
+        if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");
+            return;
+        }
         if (dataRowsBak == null) {
             initDataRowsBak();
         }
@@ -1273,10 +1300,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean isForeingKey(String fieldname) {
-        if (this.row == null) {
-            return false;
-        }
-        return DataInfo.isForeignKey(this.row.getClass(), fieldname);
+        return DataInfo.isForeignKey(this.type, fieldname);
     }
 
     /**
@@ -1303,7 +1327,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean allowOperation(int operation) {
-        if (operation != IDataRow.AGREGAR) {
+        if (operation != IDataRow.INSERT) {
             if (row == null) {
                 return false;
             }
@@ -1362,7 +1386,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean refreshRow() {
-        if (row == null || row.getAction() == IDataRow.AGREGAR) {
+        if (row == null || row.getAction() == IDataRow.INSERT) {
             return false;
         }
         try {
@@ -1421,7 +1445,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (isFieldExist("idempresa")) {
                 newRow.setValue("idempresa", getIdempresa());
             }
-            newRow.setAction(IDataRow.AGREGAR);
+            else if(isFieldExist("idcompany")) {
+                newRow.setValue("idcompany", getIdcompany());
+            }
+            newRow.setAction(IDataRow.INSERT);
             if (!this.beforeInsertRow(newRow)) {
                 return false;
             }
@@ -1455,6 +1482,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         try {
             errorApp = null;
             T newRow = (T) row.clone();
+            newRow.setAction(IDataRow.INSERT);
             if (!this.beforeInsertRow(newRow)) {
                 return false;
             }
@@ -1642,7 +1670,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 if (this.getRow().getAction() > 0) {
                     // Verificar si el registro fue chequeado
                     if (!this.getRow().isRowChecked()) {
-                        this.checkDataRow();
+                        row.setErrors(this.checkDataRow());
                     }
                     if (this.getRow().getErrors() != null && this.getRow().getErrors().size() > 0) {
                         //Ejecutar afterCheckData
@@ -1738,7 +1766,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 initRowBak();
                 // Eliminar de la lista local el registro actual si esta marcado para ser borrado
                 if (!dataResult.isRemoveDeleted()
-                        && row.getAction() == IDataRow.BORRAR) {
+                        && row.getAction() == IDataRow.DELETE) {
                     removeRow();
                 }
             }
@@ -1781,7 +1809,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             initDataRowsBak();
             // Eliminar de la lista local el registro actual si esta marcado para ser borrado
-            if (row.getAction() == IDataRow.BORRAR) {
+            if (row.getAction() == IDataRow.DELETE) {
                 if (!dataResult.isRemoveDeleted()) {
                     removeRow();
                 } else {
@@ -1848,7 +1876,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         try {
             errorApp = null;
-            if (row.getAction() == IDataRow.AGREGAR) {
+            if (row.getAction() == IDataRow.INSERT) {
                 dataRows.remove(recno);
                 goTo(recno);
             } else if (row.getAction() != 0) {
@@ -1872,6 +1900,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean revert(Boolean allRows) {
+        if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");            
+            return false;
+        }
+        boolean showDeleted = showDeletedRow;        
+        setShowDeletedRow(true);
         if (allRows) {
             // Recorrer la lista y eliminar los insertados y el resto volver 
             // a su estado original
@@ -1880,19 +1914,22 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             while (dataRows.size() > i) {
                 T r = dataRows.get(i);
                 if (r.getAction() > 0) {
-                    if (r.getAction() == IDataRow.AGREGAR) {
+                    if (r.getAction() == IDataRow.INSERT) {
                         dataRows.remove(i);
                         continue;
                     } else {
                         goTo(i);
+                        refreshRow();
                     }
                 }
                 i++;
             }
             goTo(rec);
         } else {
+            setShowDeletedRow(showDeleted);
             return revert();
         }
+        setShowDeletedRow(showDeleted);        
         return true;
     }
 
@@ -1945,8 +1982,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Remueve los elementos marcados para ser borrado de la lista de registros.
      */
     private void removeRow() {
+        if (dataRows == null){
+            LOGGER.error("El dataobject no esta abierto");            
+            return;
+        }
         // Eliminar de la lista local el registro actual si esta marcado para ser borrado
-        if (row.getAction() == IDataRow.BORRAR && dataRows.size() > recno) {
+        if (row.getAction() == IDataRow.DELETE && dataRows.size() > recno) {
             dataRows.remove(recno);
             movePrevious();
         }

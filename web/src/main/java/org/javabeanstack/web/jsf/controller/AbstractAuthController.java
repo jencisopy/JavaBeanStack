@@ -232,7 +232,7 @@ public abstract class AbstractAuthController extends AbstractController {
      * @return Lista de empresas a la que el usuario tiene acceso
      */
     public List<IAppCompany> getUserCompanyAllowedList() {
-        if (userCompanyAllowedList == null && userCompanyAllowedList.isEmpty()) {
+        if (userCompanyAllowedList == null || userCompanyAllowedList.isEmpty()) {
             IUserSession userSession = getUserSession();
             if (userSession == null) {
                 return null;
