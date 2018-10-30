@@ -434,11 +434,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     @Override
     public Long getIdempresa() {
-        Long idempresa = 0L;
-        if (getDAO().getUserSession() != null) {
-            idempresa = getDAO().getUserSession().getIdCompany();
-        }
-        return idempresa;
+        return getIdcompany();
     }
 
     /**
@@ -577,6 +573,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean open() {
+        order = "";
+        filter = "";
+        filterExtra = "";
+        firstRow = 0;
+        maxrows = -1;
         return this.open("", "", true, -1);
     }
 
@@ -1479,6 +1480,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         try {
             errorApp = null;
             T newRow = (T) row.clone();
+            newRow.setAction(IDataRow.INSERT);
             if (!this.beforeInsertRow(newRow)) {
                 return false;
             }
@@ -1900,6 +1902,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             LOGGER.error("El dataobject no esta abierto");            
             return false;
         }
+        boolean showDeleted = showDeletedRow;        
+        setShowDeletedRow(true);
         if (allRows) {
             // Recorrer la lista y eliminar los insertados y el resto volver 
             // a su estado original
@@ -1913,14 +1917,17 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                         continue;
                     } else {
                         goTo(i);
+                        refreshRow();
                     }
                 }
                 i++;
             }
             goTo(rec);
         } else {
+            setShowDeletedRow(showDeleted);
             return revert();
         }
+        setShowDeletedRow(showDeleted);        
         return true;
     }
 
