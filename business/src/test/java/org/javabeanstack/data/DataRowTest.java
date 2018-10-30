@@ -68,7 +68,7 @@ public class DataRowTest {
         assertEquals(expResult, result);
         
         // Si el miembro es de tipo DataRow trae el id del componente
-        Object result2 = row.getValue("child");
+        Object result2 = ((IDataRow)row.getValue("child")).getId();
         assertEquals(1L, result2);
     }
 
