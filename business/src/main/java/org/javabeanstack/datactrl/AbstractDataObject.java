@@ -526,9 +526,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 && getDAO().getUserSession() != null
                 && getDAO().getUserSession().getDBFilter() != null) {
             filtro = getDAO().getUserSession().getDBFilter().getFilterExpr(type, "");
-            if (!"".equals(filter)) {
-                filtro += " and " + filter;
-            }
+            String separador = "";
+            if (!Strings.isNullorEmpty(filter) && !Strings.isNullorEmpty(filtro)){
+                separador = " and ";
+            } 
+            filtro += separador + filter;
         } else {
             filtro = filter;
         }
