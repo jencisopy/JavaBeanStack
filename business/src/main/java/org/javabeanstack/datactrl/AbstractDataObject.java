@@ -744,6 +744,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean requery() {
+        //Primero el open
+        if (!isOpen()){
+            return false;
+        }
         try {
             errorApp = null;
             this.beforeRequery();
@@ -1327,6 +1331,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean allowOperation(int operation) {
+        if (dataRows == null) {
+            return false;
+        }
         if (operation != IDataRow.INSERT) {
             if (row == null) {
                 return false;
