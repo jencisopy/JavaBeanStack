@@ -173,6 +173,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     protected void setDataEvents(IDataEvents dtEvents) {
         dataEvents = dtEvents;
+        if (dataEvents != null){
+            dataEvents.setContext(this);            
+        }
     }
 
     /**
@@ -1338,12 +1341,20 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (row == null) {
                 return false;
             }
-            row.setAction(operation);
         }
         if (dataEvents == null) {
+            if (operation != IDataRow.INSERT) {            
+                row.setAction(operation);
+            }
             return true;
         }
-        return dataEvents.onAllowOperation();
+        if (!dataEvents.onAllowOperation()){
+            return false;
+        }
+        if (operation != IDataRow.INSERT) {
+            row.setAction(operation);
+        }        
+        return true;
     }
 
     /**
@@ -1631,7 +1642,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         Map<String, IDataObject> map = dataSet.getMapDataObject();
         for (Map.Entry<String, IDataObject> entry : map.entrySet()) {
             if (entry.getValue().getDataEvents() != null) {
-                entry.getValue().getDataEvents().beforeUpdate(true);
+                result = entry.getValue().getDataEvents().beforeUpdate(true);
+                if (!result){
+                    break;
+                }
             }
         }
         return result;
@@ -1712,9 +1726,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     protected boolean checkData(IDataSet dataSet) {
         boolean result = true;
         Map<String, IDataObject> map = dataSet.getMapDataObject();
-        map.entrySet().forEach( entry -> {
-            entry.getValue().checkData(true);
-        });
+        for (Map.Entry<String, IDataObject> entry : map.entrySet()) {
+            if (!entry.getValue().checkData(true)){
+                result = false;
+            }
+        }
         return result;
     }
 
@@ -1848,17 +1864,14 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      *
      * @param dataSet set de datos (puede existir más de una lista de objetos en
      * este dataobject)
-     * @return verdadero si tuvo exito o falso si no.
      */
-    protected boolean afterUpdate(IDataSet dataSet) {
-        boolean result = true;
+    protected void afterUpdate(IDataSet dataSet) {
         Map<String, IDataObject> map = dataSet.getMapDataObject();
         for (Map.Entry<String, IDataObject> entry : map.entrySet()) {
             if (entry.getValue().getDataEvents() != null) {
                 entry.getValue().getDataEvents().afterUpdate(true);
             }
         }
-        return result;
     }
 
     /**
