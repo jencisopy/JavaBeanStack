@@ -636,10 +636,11 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
         //Aqui se va a ejecutar 
         region.open();
+        assertTrue(dataEvents.beforeOpen == 1);
     }
 
     /**
@@ -693,15 +694,34 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         //Aqui se va a ejecutar         
+        assertTrue(dataEvents.afterOpen == 1);
     }
 
 
 
+    /**
+     * Test of beforeOpen method, of class AbstractDataObject.
+     */
+    @Test
+    public void test28BeforeDataFill() {
+        System.out.println("28-DataObject - beforeDataFill");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+        //Aqui se va a ejecutar 
+        region.open();
+        assertTrue(dataEvents.beforeDataFill == 1);
+    }
+    
     /**
      * Test of afterDataFill method, of class AbstractDataObject.
      * Se ejecuta antes del afterOpen y afterRequery
@@ -714,13 +734,17 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         //Aqui
+        assertTrue(dataEvents.beforeDataFill == 1);
+        assertTrue(dataEvents.afterDataFill == 1);
         region.requery();
         //Aqui
+        assertTrue(dataEvents.beforeDataFill == 2);        
+        assertTrue(dataEvents.afterDataFill == 2);
     }
 
     /**
@@ -734,12 +758,13 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
-        //Aqui        
+        //Aqui
         region.requery();
+        assertTrue(dataEvents.beforeRequery == 1);
     }
 
     /**
@@ -804,13 +829,14 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
 
         region.requery();
         //Aqui                
+        assertTrue(dataEvents.afterRequery == 1);        
     }
 
     /**
@@ -824,15 +850,20 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.moveFirst();
-        region.moveNext();        
+        assertTrue(dataEvents.beforeRowMove == 2);        
+        region.moveNext();
+        assertTrue(dataEvents.beforeRowMove == 3);        
         region.movePrevious();
+        assertTrue(dataEvents.beforeRowMove == 4);        
         region.moveLast();
+        assertTrue(dataEvents.beforeRowMove == 5);                
         region.goTo(0);
+        assertTrue(dataEvents.beforeRowMove == 6);                
     }
 
     /**
@@ -886,15 +917,20 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.moveFirst();
-        region.moveNext();        
+        assertTrue(dataEvents.afterRowMove == 2);        
+        region.moveNext();
+        assertTrue(dataEvents.afterRowMove == 3);        
         region.movePrevious();
+        assertTrue(dataEvents.afterRowMove == 4);        
         region.moveLast();
+        assertTrue(dataEvents.afterRowMove == 5);                
         region.goTo(0);
+        assertTrue(dataEvents.afterRowMove == 6);                
     }
 
     /**
@@ -1192,11 +1228,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.setField("codigo","xx");
+        assertTrue(dataEvents.beforeSetfield == 1);
     }
 
     /**
@@ -1377,11 +1414,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.refreshRow();
+        assertTrue(dataEvents.beforeRefreshRow > 0);        
     }
 
     /**
@@ -1415,11 +1453,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.refreshRow();
+        assertTrue(dataEvents.afterRefreshRow > 1);                
     }
 
     /**
@@ -1433,11 +1472,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.insertRow();
+        assertTrue(dataEvents.beforeInsertRow == 1);        
     }
 
     /**
@@ -1492,11 +1532,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.insertRow();
+        assertTrue(dataEvents.afterInsertRow == 1);                
     }
 
     /**
@@ -1510,11 +1551,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.deleteRow();
+        assertTrue(dataEvents.beforeDeleteRow == 1);                
     }
 
     /**
@@ -1547,11 +1589,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.insertRow();
+        assertTrue(dataEvents.afterInsertRow == 1);                
     }
 
     /**
@@ -1714,11 +1757,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.close();
+        assertTrue(dataEvents.beforeClose == 1);                
     }
 
     /**
@@ -1852,11 +1896,12 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDataEvents dataEvents = new DataEventsTest();
+        DataEventsTest dataEvents = new DataEventsTest();
         IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
         region.open();
         region.close();
+        assertTrue(dataEvents.afterClose == 1);                        
     }
 
     public class AbstractDataObjectImpl extends AbstractDataObject {
@@ -1872,14 +1917,41 @@ public class AbstractDataObjectTest extends TestClass{
 }
 
 class DataEventsTest extends DataEvents{
+    int beforeOpen = 0;
+    int beforeDataFill = 0;
+    int afterDataFill = 0;
+    int afterOpen = 0;
+    int beforeRequery = 0;
+    int afterRequery = 0;
+    int onAllowOperation = 0;
+    int beforeRowMove = 0;
+    int afterRowMove = 0;
+    int beforeRefreshRow = 0;
+    int afterRefreshRow = 0;
+    int beforeSetfield = 0;
+    int afterSetfield = 0;
+    int beforeInsertRow = 0;
+    int afterInsertRow = 0;
+    int beforeDeleteRow = 0;
+    int afterDeleteRow = 0;
+    int beforeUpdate = 0;
+    int beforeCheckData = 0;
+    int afterCheckData = 0;
+    int afterUpdate = 0;
+    int beforeClose = 0;
+    int afterClose = 0;
+    
     @Override
     public boolean onAllowOperation() {
-        return (getContext().getRow() != null);
+        assertTrue(getContext().getRow() != null);
+        onAllowOperation++;
+        return true;
     }
 
     @Override
     public boolean beforeRowMove(IDataRow curRow) {
-        return (curRow != null);        
+        beforeRowMove++;
+        return true;
     }
 
     @Override
@@ -1887,7 +1959,7 @@ class DataEventsTest extends DataEvents{
         if (!getContext().isEof()){
             assertNotNull(newRow);
         }
-
+        afterRowMove++;
     }
 
     /**
@@ -1900,6 +1972,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void beforeOpen(String order, String filter, boolean readwrite, int maxrows) {
         assertFalse(getContext().isOpen());
+        beforeOpen++;
     }
 
     /**
@@ -1908,6 +1981,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void beforeDataFill() {
         assertFalse(getContext().isOpen());
+        beforeDataFill++;
     }
 
     /**
@@ -1916,6 +1990,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void afterDataFill() {
         assertTrue(getContext().isOpen());
+        afterDataFill++;
     }
 
     /**
@@ -1928,6 +2003,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void afterOpen(String order, String filter, boolean readwrite, int maxrows) {
         assertTrue(getContext().isOpen());
+        afterOpen++;
     }
 
     /**
@@ -1936,6 +2012,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void beforeRequery() {
         assertTrue(getContext().isOpen());
+        beforeRequery++;
     }
 
     /**
@@ -1944,6 +2021,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void afterRequery() {
         assertTrue(getContext().isOpen());        
+        afterRequery++;
     }
 
     /**
@@ -1953,6 +2031,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void beforeRefreshRow(IDataRow row) {
         assertNotNull(row);        
+        beforeRefreshRow++;
     }
 
     /**
@@ -1961,7 +2040,8 @@ class DataEventsTest extends DataEvents{
      */
     @Override
     public void afterRefreshRow(IDataRow row) {
-        assertNotNull(row);                
+        assertNotNull(row);
+        afterRefreshRow++;
     }
 
     /**
@@ -1972,6 +2052,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public boolean beforeInsertRow(IDataRow newRow) {
         assertNotNull(newRow);                
+        beforeInsertRow++;
         return true;
     }
 
@@ -1982,6 +2063,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void afterInsertRow(IDataRow row) {
         assertNotNull(row);
+        afterInsertRow++;
     }
 
     /**
@@ -1992,6 +2074,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public boolean beforeDeleteRow(IDataRow row) {
         assertNotNull(row);
+        beforeDeleteRow++;
         return true;
     }
 
@@ -2001,6 +2084,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void afterDeleteRow() {
         assertTrue(getContext().getRecStatus() == IDataRow.DELETE);
+        afterDeleteRow++;
     }
 
     /**
@@ -2016,6 +2100,7 @@ class DataEventsTest extends DataEvents{
     public boolean beforeSetField(IDataRow row, String fieldname, Object oldValue, Object newValue) {
         assertNotNull(row);
         assertTrue(getContext().isFieldExist(fieldname));
+        beforeSetfield++;
         return true;
     }
 
@@ -2032,6 +2117,7 @@ class DataEventsTest extends DataEvents{
     public boolean afterSetField(IDataRow row, String fieldname, Object oldValue, Object newValue) {
         assertNotNull(row);
         assertTrue(getContext().isFieldExist(fieldname));
+        afterSetfield++;
         return true;
     }
 
@@ -2043,6 +2129,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public boolean beforeUpdate(boolean allRows) {
         assertTrue(getContext().isOpen());
+        beforeUpdate++;
         return true;
     }
 
@@ -2053,6 +2140,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void beforeCheckData(boolean allRows) {
         assertTrue(getContext().isOpen());        
+        beforeCheckData++;
     }
 
     /**
@@ -2062,6 +2150,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void afterCheckData(boolean allRows) {
         assertTrue(getContext().isOpen());
+        afterCheckData++;
     }
 
     /**
@@ -2071,6 +2160,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void afterUpdate(boolean allRows) {
         assertTrue(getContext().isOpen());
+        afterUpdate++;
     }
 
     /**
@@ -2079,6 +2169,7 @@ class DataEventsTest extends DataEvents{
     @Override
     public void beforeClose() {
         assertTrue(getContext().isOpen());        
+        beforeClose++;
     }
 
     /**
@@ -2087,5 +2178,6 @@ class DataEventsTest extends DataEvents{
     @Override
     public void afterClose() {
         assertFalse(getContext().isOpen());
+        afterClose++;
     }
 }
