@@ -34,8 +34,6 @@ import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.SessionError;
-import org.javabeanstack.model.tables.AppUserFormView;
-import org.javabeanstack.model.tables.AppUserFormViewColumn;
 import org.javabeanstack.model.tables.Pais;
 import org.javabeanstack.model.tables.Region;
 import org.javabeanstack.services.IDataService;
@@ -206,98 +204,6 @@ public class AbstractDataObjectTest extends TestClass{
         dataLink.setDao(dao);
     }
 
-    //@Test
-    public void test08FormView() throws NamingException, SessionError, Exception {
-        System.out.println("8-DataObject");        
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        IDataEvents dataEvent = null;
-        IDataObject<AppUserFormView> formViews
-                = new DataObject(AppUserFormView.class, dataEvent, dataLinkCat, null);
-
-        String formName = "bx_campo.xhtml";
-        Map<String, Object> params = new HashMap<>();
-        params.put("form", formName);
-
-        // Buscar la lista de columnas del usuario activo del formulario actual, 
-        // si no existe buscar lista de columnas en forma generica
-        String filter = "form = :form";
-        String order = "viewName";
-        formViews.setFilterParams(params);
-        formViews.open(order, filter, true, -1);
-
-        if (!formViews.isEof()) {
-            if (formViews.find("viewname", "DEFAULT")) {
-                formViews.deleteRow();
-                if (!formViews.update(false)) {
-                    System.out.println(formViews.getErrorMsg(true));
-                }
-            }
-        }
-        formViews.insertRow();
-        formViews.setField("form", formName);
-        formViews.setField("viewname", "DEFAULT");
-        formViews.setField("iduser", 0L);
-        AppUserFormViewColumn detail;
-
-        detail = new AppUserFormViewColumn();
-        detail.setIdorder(0);
-        detail.setColumnName("nombre");
-        detail.setColumnHeader("Nombre");
-        detail.setVisible(true);
-        detail.setLink("");
-        detail.setAppUserFormView(formViews.getRow());
-        formViews.getRow().getChild().add(detail);
-
-        detail = new AppUserFormViewColumn();
-        detail.setIdorder(1);
-        detail.setColumnName("codigo");
-        detail.setColumnHeader("Código");
-        detail.setVisible(true);
-        detail.setLink("");
-        detail.setAppUserFormView(formViews.getRow());
-        formViews.getRow().getChild().add(detail);
-
-        if (!formViews.update(false)) {
-            System.out.println(formViews.getErrorMsg(true));
-        }
-    }
-    
-    //@Test
-    public void test09FormView() throws NamingException, SessionError, Exception {
-        System.out.println("9-DataObject");
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        IDataObject<AppUserFormView> formViews
-                = new DataObject(AppUserFormView.class, null, dataLinkCat, null);
-
-        String formName = "bx_campo.xhtml";
-        Map<String, Object> params = new HashMap<>();
-        params.put("form", formName);
-
-        // Buscar la lista de columnas del usuario activo del formulario actual, 
-        // si no existe buscar lista de columnas en forma generica
-        String filter = "form = :form";
-        String order = "viewName";
-        formViews.setFilterParams(params);
-        formViews.open(order, filter, true, -1);
-
-        if (!formViews.isEof()) {
-            if (formViews.find("viewname", "DEFAULT")) {
-                formViews.setField("filtertext","xx");
-                formViews.getRow().getChild().get(0).setLink("prueba");
-                if (!formViews.update(false)) {
-                    System.out.println(formViews.getErrorMsg(true));
-                }
-            }
-        }
-    }
     
     /**
      * Test of getErrorApp method, of class AbstractDataObject.
@@ -1635,38 +1541,109 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of beforeUpdate method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test74BeforeUpdate_boolean() {
-        System.out.println("beforeUpdate");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.beforeUpdate(allRows);
-        assertEquals(expResult, result);
+        System.out.println("74-DataObject - beforeUpdate");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.update(false);
+        assertTrue(dataEvents.beforeUpdate == 1);                
     }
 
     /**
      * Test of beforeUpdate method, of class AbstractDataObject.
      */
-    //@Test
-    public void test75BeforeUpdate_IDataSet() {
-        System.out.println("beforeUpdate");
-        IDataSet dataSet = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.beforeUpdate(dataSet);
-        assertEquals(expResult, result);
+    @Test
+    public void test75BeforeAndAfterUpdate_IDataSet() throws Exception{
+        System.out.println("75-DataObject - beforeUpdate");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();        
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+        region.open();
+        region.insertRow();
+        //region.getRow().setCodigo("ZZZ");
+        region.setField("codigo", "ZZZ");
+        region.setField("nombre", "ZZZ BORRAR");
+
+        //pais
+        IDataObject<Pais> pais = new DataObject(Pais.class, dataEvents, dataLink, null);
+        pais.open();
+        pais.insertRow();
+        pais.setField("codigo", "ZZZ");
+        pais.setField("nombre", "ZZZ PAIS BORRAR");
+        pais.setField("region", region.getRow());
+
+        IDataSet dataSet = new DataSet();
+        dataSet.addDataObject("region", region);
+        dataSet.addDataObject("pais", pais);
+
+        boolean result = pais.update(dataSet);
+        assertTrue(result);
+        assertTrue(dataEvents.beforeUpdate > 0);
+        assertTrue(dataEvents.afterUpdate > 0);
+        
+        test04BorrarData();
     }
 
     /**
      * Test of beforeCheckData method, of class AbstractDataObject.
      */
-    //@Test
-    public void test76BeforeCheckData() {
-        System.out.println("beforeCheckData");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.beforeCheckData(allRows);
+    @Test
+    public void test76BeforeAndAfterCheckData() throws Exception{
+        System.out.println("76-DataObject - checkData");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IRegionSrv dataServiceRegion = 
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+        
+        IGenericDAO dao = dataLink.getDao();
+        //Cambiar dao por dataService.
+        dataLink.setDao(dataServiceRegion);
+        //Region
+        DataEventsTest dataEvents = new DataEventsTest();        
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+        region.open();
+        region.insertRow();
+        // Esta programado para validar que codigo y nombre no esten en blanco
+        region.getRow().setCodigo("");
+        region.getRow().setNombre("");
+        assertFalse(region.checkData(false)); // Solo el registro posicionado
+        assertTrue(dataEvents.beforeCheckData > 0);
+        assertTrue(dataEvents.afterCheckData > 0);
+        dataEvents.beforeCheckData = 0;
+        dataEvents.afterCheckData = 0;
+        
+        region.revert();
+        //
+        region.insertRow();
+        region.getRow().setCodigo("65");
+        region.getRow().setNombre("65"); 
+        
+        region.getRow().setCodigo("");
+        region.getRow().setNombre("");
+        assertFalse(region.checkData(true)); // todos los registros modificados
+        assertTrue(dataEvents.beforeCheckData > 0);
+        assertTrue(dataEvents.afterCheckData > 0);
+        
+        region.movePrevious();
+        assertTrue(region.checkData(false)); // Solo el registro posicionado
+        
+        region.revert(true);
+        dataLink.setDao(dao);
     }
 
     /**
@@ -1711,40 +1688,27 @@ public class AbstractDataObjectTest extends TestClass{
     }
 
 
-    /**
-     * Test of afterCheckData method, of class AbstractDataObject.
-     */
-    //@Test
-    public void test79AfterCheckData() {
-        System.out.println("afterCheckData");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterCheckData(allRows);
-    }
-
 
     /**
      * Test of afterUpdate method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test82AfterUpdate_boolean() {
-        System.out.println("afterUpdate");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterUpdate(allRows);
+        System.out.println("82-DataObject - afterUpdate");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.getRow().setAction(IDataRow.UPDATE);
+        region.update(false);
+        assertTrue(dataEvents.afterUpdate == 1);
     }
 
-    /**
-     * Test of afterUpdate method, of class AbstractDataObject.
-     */
-    //@Test
-    public void test83AfterUpdate_IDataSet() {
-        System.out.println("afterUpdate");
-        IDataSet dataSet = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        instance.afterUpdate(dataSet);
-    }
 
     /**
      * Test of beforeClose method, of class AbstractDataObject.
