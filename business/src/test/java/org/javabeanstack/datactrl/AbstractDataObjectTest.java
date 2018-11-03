@@ -264,6 +264,7 @@ public class AbstractDataObjectTest extends TestClass{
         region.getRow().setCodigo("");
         region.getRow().setNombre("");
         assertFalse(region.update(false));
+        assertFalse(region.getErrorMsg(true) == null);        
         assertFalse(region.getErrorMsg(true).isEmpty());
         assertTrue(region.getErrorMsg("codigo") != null);        
         assertTrue(region.getErrorMsg("nombre") != null);                
