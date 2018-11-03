@@ -48,7 +48,7 @@ public interface IDataRow extends Serializable{
     public boolean   isRowChecked();
     public void      setRowChecked(boolean rowchecked);    
     public boolean   isFieldChecked(String fieldName);
-    public Map       getFieldsChecked();    
+    public Map<String, Boolean> getFieldsChecked();    
     public void      setFieldsChecked(Map fieldsChecked);        
     public void      setFieldChecked(String fieldName, boolean fieldChecked);    
     public Map<String, IErrorReg> getErrors();

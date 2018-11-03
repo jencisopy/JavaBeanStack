@@ -597,7 +597,7 @@ public abstract class AbstractDataService implements IDataService {
         CheckMethod anotation;
         row.setRowChecked(false);
         // Preparar el registro para las verificaciones.
-        if (row.getFieldsChecked() == null){
+        if (row.getFieldsChecked() == null || row.getFieldsChecked().isEmpty()){
             setFieldsToCheck(row);
         }
         try {

@@ -38,7 +38,7 @@ import org.junit.BeforeClass;
  * @author Jorge Enciso
  */
 public class AbstractDAOTest extends TestClass {
-    private static IGenericDAORemote dao;
+    private static IGenericDAO dao;
 
     public AbstractDAOTest() {
     }
@@ -552,5 +552,8 @@ public class AbstractDAOTest extends TestClass {
         }
         IDBLinkInfo info = dao.getUserSession(sessionId).getDbLinkInfo();
         assertNotNull(info);
+    }
+    
+    public class AbstractDAOImpl extends AbstractDAO {
     }
 }

@@ -161,7 +161,7 @@ public class AbstractDataServiceTest extends TestClass{
         assertTrue(dataService.checkForeignKey("",userMember,"usergroup"));
         userMember.setUserGroup(null);
         assertFalse(dataService.checkForeignKey("",userMember,"usergroup"));
-    }    
+    }
 
     /** Chequeo de los foreignkeys
      * @throws java.lang.Exception */
@@ -211,9 +211,49 @@ public class AbstractDataServiceTest extends TestClass{
     /**
      * Test of setListFieldCheck method, of class AbstractDataService.
      */
-    //@Test
-    public void testSetFieldsChecked() {
+    @Test
+    public void testSetFieldsChecked() throws Exception{
         System.out.println("DataService - setFieldsChecked");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IRegionSrv dataServiceRegion = 
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+        
+        IGenericDAO dao = dataLink.getDao();
+        dataLink.setDao(dataServiceRegion);
+        //Region
+        IDataObject region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.refreshRow();
+            region.deleteRow();
+            IDataResult dataResult = dataServiceRegion.save(sessionId, region.getRow());
+            assertTrue(dataResult.getRowUpdated().isFieldChecked("codigo"));
+            assertTrue(dataResult.getRowUpdated().isFieldChecked("nombre"));
+        }
+        region.insertRow();
+        region.setField("codigo", "ZZZ");
+        region.setField("nombre", "ZZZ BORRAR");
+        
+        IDataResult dataResult = dataServiceRegion.save(sessionId, region.getRow());
+        assertTrue(dataResult.isSuccessFul());
+        assertTrue(dataResult.getRowUpdated().isRowChecked());
+        assertTrue(dataResult.getRowUpdated().isFieldChecked("codigo"));
+        assertTrue(dataResult.getRowUpdated().isFieldChecked("nombre"));
+        
+        region.close();
+        region.open();
+        if (region.find("codigo", "ZZZ")){
+            region.deleteRow();
+            dataResult = dataServiceRegion.save(sessionId, region.getRow());
+            assertTrue(dataResult.isSuccessFul());
+            assertTrue(dataResult.getRowUpdated().isFieldChecked("codigo"));
+            assertTrue(dataResult.getRowUpdated().isFieldChecked("nombre"));
+        }
+        dataLink.setDao(dao);
     }
 
     /**
