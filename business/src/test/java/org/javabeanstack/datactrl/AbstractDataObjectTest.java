@@ -24,7 +24,6 @@ package org.javabeanstack.datactrl;
 
 import java.math.BigDecimal;
 import java.util.HashMap; 
-import java.util.List;
 import java.util.Map;
 import javax.naming.NamingException;
 import org.javabeanstack.data.model.DataSet;
@@ -35,8 +34,6 @@ import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.SessionError;
-import org.javabeanstack.model.tables.AppUserFormView;
-import org.javabeanstack.model.tables.AppUserFormViewColumn;
 import org.javabeanstack.model.tables.Pais;
 import org.javabeanstack.model.tables.Region;
 import org.javabeanstack.services.IDataService;
@@ -45,6 +42,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
+import org.javabeanstack.datactrl.events.DataEvents;
 import static org.junit.Assert.*;
 
 /**
@@ -60,7 +58,7 @@ public class AbstractDataObjectTest extends TestClass{
 
     @Test
     public void test01AddData() throws NamingException, SessionError, Exception {
-        System.out.println("1-DataObject AddData");
+        System.out.println("1-DataObject - AddData");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -81,7 +79,7 @@ public class AbstractDataObjectTest extends TestClass{
  
     @Test
     public void test02BorrarData() throws NamingException, SessionError, Exception {
-        System.out.println("2-DataObject BorrarData");
+        System.out.println("2-DataObject - BorrarData");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -102,7 +100,7 @@ public class AbstractDataObjectTest extends TestClass{
 
     @Test
     public void test03AddData() throws NamingException, SessionError, Exception {
-        System.out.println("3-DataObject AddData (dataset)");
+        System.out.println("3-DataObject - AddData (dataset)");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -133,7 +131,7 @@ public class AbstractDataObjectTest extends TestClass{
 
     @Test
     public void test04BorrarData() throws NamingException, SessionError, Exception {
-        System.out.println("4-DataObject BorrarData");
+        System.out.println("4-DataObject - BorrarData");
         boolean result;
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -164,7 +162,7 @@ public class AbstractDataObjectTest extends TestClass{
 
     @Test
     public void test05DBFilter() throws NamingException, SessionError, Exception {
-        System.out.println("5-DataObject DBFilter");
+        System.out.println("5-DataObject - DBFilter");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -176,7 +174,6 @@ public class AbstractDataObjectTest extends TestClass{
                 .getUserSession()
                 .getDBFilter()
                 .getFilterExpr(region.getType(), "");
-        System.out.println(filter);
         region.open();
         assertTrue(filter.contains("idempresa"));
     }
@@ -184,7 +181,7 @@ public class AbstractDataObjectTest extends TestClass{
 
     @Test
     public void test07getData() throws NamingException, SessionError, Exception {
-        System.out.println("7-DataObject getData");
+        System.out.println("7-DataObject - getData");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -207,105 +204,13 @@ public class AbstractDataObjectTest extends TestClass{
         dataLink.setDao(dao);
     }
 
-    //@Test
-    public void test08FormView() throws NamingException, SessionError, Exception {
-        System.out.println("8-DataObject");        
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        IDataEvents dataEvent = null;
-        IDataObject<AppUserFormView> formViews
-                = new DataObject(AppUserFormView.class, dataEvent, dataLinkCat, null);
-
-        String formName = "bx_campo.xhtml";
-        Map<String, Object> params = new HashMap<>();
-        params.put("form", formName);
-
-        // Buscar la lista de columnas del usuario activo del formulario actual, 
-        // si no existe buscar lista de columnas en forma generica
-        String filter = "form = :form";
-        String order = "viewName";
-        formViews.setFilterParams(params);
-        formViews.open(order, filter, true, -1);
-
-        if (!formViews.isEof()) {
-            if (formViews.find("viewname", "DEFAULT")) {
-                formViews.deleteRow();
-                if (!formViews.update(false)) {
-                    System.out.println(formViews.getErrorMsg(true));
-                }
-            }
-        }
-        formViews.insertRow();
-        formViews.setField("form", formName);
-        formViews.setField("viewname", "DEFAULT");
-        formViews.setField("iduser", 0L);
-        AppUserFormViewColumn detail;
-
-        detail = new AppUserFormViewColumn();
-        detail.setIdorder(0);
-        detail.setColumnName("nombre");
-        detail.setColumnHeader("Nombre");
-        detail.setVisible(true);
-        detail.setLink("");
-        detail.setAppUserFormView(formViews.getRow());
-        formViews.getRow().getChild().add(detail);
-
-        detail = new AppUserFormViewColumn();
-        detail.setIdorder(1);
-        detail.setColumnName("codigo");
-        detail.setColumnHeader("Código");
-        detail.setVisible(true);
-        detail.setLink("");
-        detail.setAppUserFormView(formViews.getRow());
-        formViews.getRow().getChild().add(detail);
-
-        if (!formViews.update(false)) {
-            System.out.println(formViews.getErrorMsg(true));
-        }
-    }
-    
-    //@Test
-    public void test09FormView() throws NamingException, SessionError, Exception {
-        System.out.println("9-DataObject");
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        IDataObject<AppUserFormView> formViews
-                = new DataObject(AppUserFormView.class, null, dataLinkCat, null);
-
-        String formName = "bx_campo.xhtml";
-        Map<String, Object> params = new HashMap<>();
-        params.put("form", formName);
-
-        // Buscar la lista de columnas del usuario activo del formulario actual, 
-        // si no existe buscar lista de columnas en forma generica
-        String filter = "form = :form";
-        String order = "viewName";
-        formViews.setFilterParams(params);
-        formViews.open(order, filter, true, -1);
-
-        if (!formViews.isEof()) {
-            if (formViews.find("viewname", "DEFAULT")) {
-                formViews.setField("filtertext","xx");
-                formViews.getRow().getChild().get(0).setLink("prueba");
-                if (!formViews.update(false)) {
-                    System.out.println(formViews.getErrorMsg(true));
-                }
-            }
-        }
-    }
     
     /**
      * Test of getErrorApp method, of class AbstractDataObject.
      */
     @Test
     public void test10GetErrorApp() {
-        System.out.println("10-DataObject getErrorApp");
+        System.out.println("10-DataObject - getErrorApp");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -359,6 +264,7 @@ public class AbstractDataObjectTest extends TestClass{
         region.getRow().setCodigo("");
         region.getRow().setNombre("");
         assertFalse(region.update(false));
+        assertFalse(region.getErrorMsg(true) == null);        
         assertFalse(region.getErrorMsg(true).isEmpty());
         assertTrue(region.getErrorMsg("codigo") != null);        
         assertTrue(region.getErrorMsg("nombre") != null);                
@@ -382,7 +288,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test12GetFilter() {
-        System.out.println("12-DataObject getFilter");
+        System.out.println("12-DataObject - getFilter");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -399,7 +305,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test13GetOrder() {
-        System.out.println("13-DataObject getOrder");
+        System.out.println("13-DataObject - getOrder");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -414,25 +320,39 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of getFilterExtra method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test14GetFilterExtra() {
-        System.out.println("getFilterExtra");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        String expResult = "";
-        String result = instance.getFilterExtra();
-        assertEquals(expResult, result);
+        System.out.println("14-DataObject - getFilterExtra");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        String expResult = "codigo = 'xx'";
+        region.setFilterExtra("codigo = 'xx'");
+        assertEquals(expResult, region.getFilterExtra());
+        region.open();
+        assertEquals("", region.getFilterExtra());
     }
 
     /**
      * Test of getFilterParams method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test15GetFilterParams() {
-        System.out.println("getFilterParams");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        Map<String, Object> expResult = null;
-        Map<String, Object> result = instance.getFilterParams();
-        assertEquals(expResult, result);
+        System.out.println("15-DataObject - getFilterParam");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        Map<String, Object> filterParams = new HashMap();
+        filterParams.put("codigo", "xx");
+        region.setFilterParams(filterParams);
+        region.open("", "codigo = :codigo", true, -1);
+        assertNotNull(region.getFilterParams());
     }
 
     /**
@@ -440,7 +360,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test16GetDataRows() {
-        System.out.println("16-DataObject getDataRows");
+        System.out.println("16-DataObject - getDataRows");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -465,7 +385,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test17GetSelectCmd() {
-        System.out.println("17-DataObject getSelectCmd");
+        System.out.println("17-DataObject - getSelectCmd");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -489,7 +409,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test18GetLastQuery() {
-        System.out.println("18-DataObject getLastQuery");
+        System.out.println("18-DataObject - getLastQuery");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -512,7 +432,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test19GetRowCount() {
-        System.out.println("19-DataObject getRowCount");
+        System.out.println("19-DataObject - getRowCount");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -531,7 +451,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test20GetRecStatus() {
-        System.out.println("20-DataObject getRecStatus");
+        System.out.println("20-DataObject - getRecStatus");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -555,7 +475,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test21GetIdcompany() {
-        System.out.println("21-DataObject getIdcompany");
+        System.out.println("21-DataObject - getIdcompany");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -570,7 +490,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test22GetIdempresa() {
-        System.out.println("22-DataObject getIdempresa");
+        System.out.println("22-DataObject - getIdempresa");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -615,15 +535,19 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of beforeOpen method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test24BeforeOpen() {
-        System.out.println("beforeOpen");
-        String order = "";
-        String filter = "";
-        boolean readwrite = false;
-        int maxrows = 0;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.beforeOpen(order, filter, readwrite, maxrows);
+        System.out.println("24-DataObject - beforeOpen");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+        //Aqui se va a ejecutar 
+        region.open();
+        assertTrue(dataEvents.beforeOpen == 1);
     }
 
     /**
@@ -664,43 +588,90 @@ public class AbstractDataObjectTest extends TestClass{
         assertTrue("codigo = 'xx'".equals(region.getFilter()));
         assertTrue(region.getFirstRow() == 0);
         assertTrue(region.getMaxRows() > 999999);
-        
     }
 
     /**
      * Test of afterOpen method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test27AfterOpen() {
-        System.out.println("afterOpen");
-        String order = "";
-        String filter = "";
-        boolean readwrite = false;
-        int maxrows = 0;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterOpen(order, filter, readwrite, maxrows);
+        System.out.println("27-DataObject - afterOpen");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        //Aqui se va a ejecutar         
+        assertTrue(dataEvents.afterOpen == 1);
     }
 
 
 
     /**
-     * Test of afterDataFill method, of class AbstractDataObject.
+     * Test of beforeOpen method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
+    public void test28BeforeDataFill() {
+        System.out.println("28-DataObject - beforeDataFill");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+        //Aqui se va a ejecutar 
+        region.open();
+        assertTrue(dataEvents.beforeDataFill == 1);
+    }
+    
+    /**
+     * Test of afterDataFill method, of class AbstractDataObject.
+     * Se ejecuta antes del afterOpen y afterRequery
+     */
+    @Test
     public void test28AfterDataFill() {
-        System.out.println("afterDataFill");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterDataFill();
+        System.out.println("28-DataObject - afterDataFill");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        //Aqui
+        assertTrue(dataEvents.beforeDataFill == 1);
+        assertTrue(dataEvents.afterDataFill == 1);
+        region.requery();
+        //Aqui
+        assertTrue(dataEvents.beforeDataFill == 2);        
+        assertTrue(dataEvents.afterDataFill == 2);
     }
 
     /**
      * Test of beforeRequery method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test29BeforeRequery() {
-        System.out.println("beforeRequery");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.beforeRequery();
+        System.out.println("29-DataObject - beforeRequery");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        //Aqui
+        region.requery();
+        assertTrue(dataEvents.beforeRequery == 1);
     }
 
     /**
@@ -708,13 +679,22 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test30Requery_String_Map() {
-        System.out.println("requery");
-        String filterExtra = "";
-        Map filterParams = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.requery(filterExtra, filterParams);
-        assertEquals(expResult, result);
+        System.out.println("30-DataObject - requery");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        assertFalse(region.requery()); // Primero el open 
+        region.open();
+        Object id = region.getRow().getId();
+        String filterExtra = "idregion = :id";
+        Map<String, Object> params = new HashMap();
+        params.put("id", id);
+        region.requery(filterExtra,params); 
+        //
+        assertTrue(region.getRowCount() == 1);
     }
 
     /**
@@ -748,24 +728,49 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of afterRequery method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test32AfterRequery() {
-        System.out.println("afterRequery");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterRequery();
+        System.out.println("32-DataObject - afterRequery");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+
+        region.requery();
+        //Aqui                
+        assertTrue(dataEvents.afterRequery == 1);        
     }
 
     /**
      * Test of beforeRowMove method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test33BeforeRowMove() {
-        System.out.println("beforeRowMove");
-        IDataRow row = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.beforeRowMove(row);
-        assertEquals(expResult, result);
+        System.out.println("33-DataObject - beforeRowMove");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.moveFirst();
+        assertTrue(dataEvents.beforeRowMove == 2);        
+        region.moveNext();
+        assertTrue(dataEvents.beforeRowMove == 3);        
+        region.movePrevious();
+        assertTrue(dataEvents.beforeRowMove == 4);        
+        region.moveLast();
+        assertTrue(dataEvents.beforeRowMove == 5);                
+        region.goTo(0);
+        assertTrue(dataEvents.beforeRowMove == 6);                
     }
 
     /**
@@ -811,12 +816,28 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of afterRowMove method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test36AfterRowMove() {
-        System.out.println("afterRowMove");
-        IDataRow row = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterRowMove(row);
+        System.out.println("36-DataObject - afterRowMove");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.moveFirst();
+        assertTrue(dataEvents.afterRowMove == 2);        
+        region.moveNext();
+        assertTrue(dataEvents.afterRowMove == 3);        
+        region.movePrevious();
+        assertTrue(dataEvents.afterRowMove == 4);        
+        region.moveLast();
+        assertTrue(dataEvents.afterRowMove == 5);                
+        region.goTo(0);
+        assertTrue(dataEvents.afterRowMove == 6);                
     }
 
     /**
@@ -860,7 +881,7 @@ public class AbstractDataObjectTest extends TestClass{
      */
     @Test
     public void test39MovePrevious() {
-        System.out.println("38-DataObject - movePrevious");
+        System.out.println("39-DataObject - movePrevious");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -896,59 +917,111 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of findRow method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test41FindRow() {
-        System.out.println("findRow");
-        List<? extends IDataRow> rowList = null;
-        String field = "";
-        Object value = null;
+        System.out.println("41-DataObject - findRow");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+        
+        String field = "idempresa";
+        Object value = region.getIdcompany();
         int begin = 0;
-        int end = 0;
+        int end = 1000;
         int expResult = 0;
-        int result = AbstractDataObject.findRow(rowList, field, value, begin, end);
+        int result = AbstractDataObject.findRow(region.getDataRows(), field, value, begin, end);
+        assertEquals(expResult, result);
+        
+        begin = -1;
+        end = -10;
+        expResult = -1;
+        result = AbstractDataObject.findRow(region.getDataRows(), field, value, begin, end);
+        assertEquals(expResult, result);
+        
+        begin = -1;
+        end = 10000;
+        expResult = -1;
+        value = 100L;
+        result = AbstractDataObject.findRow(region.getDataRows(), field, value, begin, end);
+        assertEquals(expResult, result);
+        
+        field = "noexiste";
+        result = AbstractDataObject.findRow(region.getDataRows(), field, value, begin, end);
         assertEquals(expResult, result);
     }
 
     /**
      * Test of find method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test42Find_4args() {
-        System.out.println("find");
-        String field = "";
-        Object value = null;
+        System.out.println("42-DataObject - find");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+
+        String field = "idempresa";
+        Object value = region.getIdcompany();
         int begin = 0;
-        int end = 0;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.find(field, value, begin, end);
-        assertEquals(expResult, result);
+        int end = 1000;
+        
+        boolean result = region.find(field, value, begin, end);
+        assertTrue(result);
     }
 
     /**
      * Test of find method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test43Find_String_Object() {
-        System.out.println("find");
-        String field = "";
-        Object value = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.find(field, value);
-        assertEquals(expResult, result);
+        System.out.println("43-DataObject - find");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        region.open();
+
+        String field = "idempresa";
+        Object value = region.getIdcompany();
+        
+        boolean result = region.find(field, value);
+        assertTrue(result);
     }
 
     /**
      * Test of findNext method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test44FindNext() {
-        System.out.println("findNext");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.findNext();
-        assertEquals(expResult, result);
+        System.out.println("44-DataObject - findNext");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        String field = "idempresa";
+        Object value = region.getIdcompany();
+
+        assertFalse(region.find(field, value));  //Primero el open      
+        region.open();
+        
+        assertFalse(region.findNext());//Primero el find
+        assertTrue(region.find(field, value));
+        assertTrue(region.findNext());
+        region.moveLast();
+        region.moveNext();
+        assertFalse(region.findNext());
     }
 
     /**
@@ -966,6 +1039,9 @@ public class AbstractDataObjectTest extends TestClass{
         region.open();
         region.moveLast();
         region.moveNext();
+        assertTrue(region.isEof());
+        region.moveFirst();
+        region.goTo(1000);
         assertTrue(region.isEof());
     }
 
@@ -1051,16 +1127,20 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of beforeSetField method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test51BeforeSetField() {
-        System.out.println("beforeSetField");
-        String fieldname = "";
-        Object oldValue = null;
-        Object newValue = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.beforeSetField(fieldname, oldValue, newValue);
-        assertEquals(expResult, result);
+        System.out.println("51-DataObject - beforeSetField");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.setField("codigo","xx");
+        assertTrue(dataEvents.beforeSetfield == 1);
     }
 
     /**
@@ -1110,16 +1190,19 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of afterSetField method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test55AfterSetField() {
-        System.out.println("afterSetField");
-        String fieldname = "";
-        Object oldValue = null;
-        Object newValue = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.afterSetField(fieldname, oldValue, newValue);
-        assertEquals(expResult, result);
+        System.out.println("55-DataObject - afterSetField");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataEvents dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.setField("codigo","xx");
     }
 
     /**
@@ -1176,14 +1259,21 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of allowOperation method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test59AllowOperation() {
-        System.out.println("allowOperation");
-        int operation = 0;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.allowOperation(operation);
-        assertEquals(expResult, result);
+        System.out.println("58-DataObject - allowOperation");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        assertFalse(region.allowOperation(IDataRow.INSERT)); // Debe abrir primero
+        region.open();
+        assertTrue(region.allowOperation(IDataRow.INSERT)); 
+        assertTrue(region.allowOperation(IDataRow.UPDATE)); 
+        assertTrue(region.allowOperation(IDataRow.READ)); 
+        assertTrue(region.allowOperation(IDataRow.DELETE)); 
     }
 
     /**
@@ -1223,11 +1313,20 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of beforeRefreshRow method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test62BeforeRefreshRow() {
-        System.out.println("beforeRefreshRow");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.beforeRefreshRow();
+        System.out.println("62-DataObject - beforeRefreshRow");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.refreshRow();
+        assertTrue(dataEvents.beforeRefreshRow > 0);        
     }
 
     /**
@@ -1253,24 +1352,39 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of afterRefreshRow method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test64AfterRefreshRow() {
-        System.out.println("afterRefreshRow");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterRefreshRow();
+        System.out.println("64-DataObject - afterRefreshRow");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.refreshRow();
+        assertTrue(dataEvents.afterRefreshRow > 1);                
     }
 
     /**
      * Test of beforeInsertRow method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test65BeforeInsertRow() {
-        System.out.println("beforeInsertRow");
-        IDataRow newRow = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.beforeInsertRow(newRow);
-        assertEquals(expResult, result);
+        System.out.println("65-DataObject - beforeInsertRow");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.insertRow();
+        assertTrue(dataEvents.beforeInsertRow == 1);        
     }
 
     /**
@@ -1317,23 +1431,39 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of afterInsertRow method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test68AfterInsertRow() {
-        System.out.println("afterInsertRow");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterInsertRow();
+        System.out.println("68-DataObject - afterInsertRow");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.insertRow();
+        assertTrue(dataEvents.afterInsertRow == 1);                
     }
 
     /**
      * Test of beforeDeleteRow method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test69BeforeDeleteRow() {
-        System.out.println("beforeDeleteRow");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.beforeDeleteRow();
-        assertEquals(expResult, result);
+        System.out.println("69-DataObject - beforeDeleteRow");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.deleteRow();
+        assertTrue(dataEvents.beforeDeleteRow == 1);                
     }
 
     /**
@@ -1358,27 +1488,21 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of afterDeleteRow method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test71AfterDeleteRow() {
-        System.out.println("afterDeleteRow");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterDeleteRow();
-    }
+        System.out.println("71-DataObject - afterInsertRow");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
 
-    /**
-     * Test of copyFrom method, of class AbstractDataObject.
-     */
-    //@Test
-    public void test72CopyFrom() {
-        System.out.println("copyFrom");
-        String idcompany = "";
-        String companyName = "";
-        String xmlTag = "";
-        String tableCopy = "";
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.copyFrom(idcompany, companyName, xmlTag, tableCopy);
+        region.open();
+        region.insertRow();
+        assertTrue(dataEvents.afterInsertRow == 1);                
     }
-
 
     /**
      * Test of checkDataRow method, of class AbstractDataObject.
@@ -1418,38 +1542,109 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of beforeUpdate method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test74BeforeUpdate_boolean() {
-        System.out.println("beforeUpdate");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.beforeUpdate(allRows);
-        assertEquals(expResult, result);
+        System.out.println("74-DataObject - beforeUpdate");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.update(false);
+        assertTrue(dataEvents.beforeUpdate == 1);                
     }
 
     /**
      * Test of beforeUpdate method, of class AbstractDataObject.
      */
-    //@Test
-    public void test75BeforeUpdate_IDataSet() {
-        System.out.println("beforeUpdate");
-        IDataSet dataSet = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.beforeUpdate(dataSet);
-        assertEquals(expResult, result);
+    @Test
+    public void test75BeforeAndAfterUpdate_IDataSet() throws Exception{
+        System.out.println("75-DataObject - beforeUpdate");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();        
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+        region.open();
+        region.insertRow();
+        //region.getRow().setCodigo("ZZZ");
+        region.setField("codigo", "ZZZ");
+        region.setField("nombre", "ZZZ BORRAR");
+
+        //pais
+        IDataObject<Pais> pais = new DataObject(Pais.class, dataEvents, dataLink, null);
+        pais.open();
+        pais.insertRow();
+        pais.setField("codigo", "ZZZ");
+        pais.setField("nombre", "ZZZ PAIS BORRAR");
+        pais.setField("region", region.getRow());
+
+        IDataSet dataSet = new DataSet();
+        dataSet.addDataObject("region", region);
+        dataSet.addDataObject("pais", pais);
+
+        boolean result = pais.update(dataSet);
+        assertTrue(result);
+        assertTrue(dataEvents.beforeUpdate > 0);
+        assertTrue(dataEvents.afterUpdate > 0);
+        
+        test04BorrarData();
     }
 
     /**
      * Test of beforeCheckData method, of class AbstractDataObject.
      */
-    //@Test
-    public void test76BeforeCheckData() {
-        System.out.println("beforeCheckData");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.beforeCheckData(allRows);
+    @Test
+    public void test76BeforeAndAfterCheckData() throws Exception{
+        System.out.println("76-DataObject - checkData");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IRegionSrv dataServiceRegion = 
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+        
+        IGenericDAO dao = dataLink.getDao();
+        //Cambiar dao por dataService.
+        dataLink.setDao(dataServiceRegion);
+        //Region
+        DataEventsTest dataEvents = new DataEventsTest();        
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+        region.open();
+        region.insertRow();
+        // Esta programado para validar que codigo y nombre no esten en blanco
+        region.getRow().setCodigo("");
+        region.getRow().setNombre("");
+        assertFalse(region.checkData(false)); // Solo el registro posicionado
+        assertTrue(dataEvents.beforeCheckData > 0);
+        assertTrue(dataEvents.afterCheckData > 0);
+        dataEvents.beforeCheckData = 0;
+        dataEvents.afterCheckData = 0;
+        
+        region.revert();
+        //
+        region.insertRow();
+        region.getRow().setCodigo("65");
+        region.getRow().setNombre("65"); 
+        
+        region.getRow().setCodigo("");
+        region.getRow().setNombre("");
+        assertFalse(region.checkData(true)); // todos los registros modificados
+        assertTrue(dataEvents.beforeCheckData > 0);
+        assertTrue(dataEvents.afterCheckData > 0);
+        
+        region.movePrevious();
+        assertTrue(region.checkData(false)); // Solo el registro posicionado
+        
+        region.revert(true);
+        dataLink.setDao(dao);
     }
 
     /**
@@ -1493,88 +1688,46 @@ public class AbstractDataObjectTest extends TestClass{
         dataLink.setDao(dao);
     }
 
-    /**
-     * Test of checkData method, of class AbstractDataObject.
-     */
-    //@Test
-    public void test78CheckData_IDataSet() {
-        System.out.println("checkData");
-        IDataSet dataSet = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.checkData(dataSet);
-        assertEquals(expResult, result);
-    }
 
-    /**
-     * Test of afterCheckData method, of class AbstractDataObject.
-     */
-    //@Test
-    public void test79AfterCheckData() {
-        System.out.println("afterCheckData");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterCheckData(allRows);
-    }
-
-    /**
-     * Test of update method, of class AbstractDataObject.
-     */
-    //@Test
-    public void test80Update_boolean() {
-        System.out.println("update");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.update(allRows);
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of update method, of class AbstractDataObject.
-     */
-    //@Test
-    public void test81Update_IDataSet() {
-        System.out.println("update");
-        IDataSet dataSet = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.update(dataSet);
-        assertEquals(expResult, result);
-    }
 
     /**
      * Test of afterUpdate method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test82AfterUpdate_boolean() {
-        System.out.println("afterUpdate");
-        boolean allRows = false;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterUpdate(allRows);
+        System.out.println("82-DataObject - afterUpdate");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.getRow().setAction(IDataRow.UPDATE);
+        region.update(false);
+        assertTrue(dataEvents.afterUpdate == 1);
     }
 
-    /**
-     * Test of afterUpdate method, of class AbstractDataObject.
-     */
-    //@Test
-    public void test83AfterUpdate_IDataSet() {
-        System.out.println("afterUpdate");
-        IDataSet dataSet = null;
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        boolean expResult = false;
-        boolean result = instance.afterUpdate(dataSet);
-        assertEquals(expResult, result);
-    }
 
     /**
      * Test of beforeClose method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test84BeforeClose() {
-        System.out.println("beforeClose");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.beforeClose();
+        System.out.println("84-DataObject - beforeClose");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.close();
+        assertTrue(dataEvents.beforeClose == 1);                
     }
 
     /**
@@ -1700,11 +1853,20 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of afterClose method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test89AfterClose() {
-        System.out.println("afterClose");
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        instance.afterClose();
+        System.out.println("89-DataObject - afterClose");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        DataEventsTest dataEvents = new DataEventsTest();
+        IDataObject<Region> region = new DataObject(Region.class, dataEvents, dataLink, null);
+
+        region.open();
+        region.close();
+        assertTrue(dataEvents.afterClose == 1);                        
     }
 
     public class AbstractDataObjectImpl extends AbstractDataObject {
@@ -1716,5 +1878,271 @@ public class AbstractDataObjectTest extends TestClass{
         public IDataLink getDAOCatalog() {
             return null;
         }
+    }
+}
+
+class DataEventsTest extends DataEvents{
+    int beforeOpen = 0;
+    int beforeDataFill = 0;
+    int afterDataFill = 0;
+    int afterOpen = 0;
+    int beforeRequery = 0;
+    int afterRequery = 0;
+    int onAllowOperation = 0;
+    int beforeRowMove = 0;
+    int afterRowMove = 0;
+    int beforeRefreshRow = 0;
+    int afterRefreshRow = 0;
+    int beforeSetfield = 0;
+    int afterSetfield = 0;
+    int beforeInsertRow = 0;
+    int afterInsertRow = 0;
+    int beforeDeleteRow = 0;
+    int afterDeleteRow = 0;
+    int beforeUpdate = 0;
+    int beforeCheckData = 0;
+    int afterCheckData = 0;
+    int afterUpdate = 0;
+    int beforeClose = 0;
+    int afterClose = 0;
+    
+    @Override
+    public boolean onAllowOperation() {
+        assertTrue(getContext().getRow() != null);
+        onAllowOperation++;
+        return true;
+    }
+
+    @Override
+    public boolean beforeRowMove(IDataRow curRow) {
+        beforeRowMove++;
+        return true;
+    }
+
+    @Override
+    public void afterRowMove(IDataRow newRow) {
+        if (!getContext().isEof()){
+            assertNotNull(newRow);
+        }
+        afterRowMove++;
+    }
+
+    /**
+     * Se ejecuta antes buscar los registros en la base de datos.
+     * @param order     orden de la selección de datos.
+     * @param filter    filtro de datos.
+     * @param readwrite si es lectura/escritura
+     * @param maxrows   maxima cantidad de registros a recuperar.
+     */
+    @Override
+    public void beforeOpen(String order, String filter, boolean readwrite, int maxrows) {
+        assertFalse(getContext().isOpen());
+        beforeOpen++;
+    }
+
+    /**
+     * Se ejecuta antes de recuperar los datos de la base de datos.
+     */
+    @Override
+    public void beforeDataFill() {
+        assertFalse(getContext().isOpen());
+        beforeDataFill++;
+    }
+
+    /**
+     * Se ejecuta posterior a la recuperación de los registros de la base de datos.
+     */
+    @Override
+    public void afterDataFill() {
+        assertTrue(getContext().isOpen());
+        afterDataFill++;
+    }
+
+    /**
+     * Se ejecuta posterior a la recuperación de los registros de la base de datos.
+     * @param order     orden de la selección de datos.
+     * @param filter    filtro de datos.    
+     * @param readwrite si es lectura/escritura.
+     * @param maxrows   maxima cantidad de registros que deberian haberse recuperado.
+     */
+    @Override
+    public void afterOpen(String order, String filter, boolean readwrite, int maxrows) {
+        assertTrue(getContext().isOpen());
+        afterOpen++;
+    }
+
+    /**
+     * Se ejecuta antes de recuperar los registros de la base de datos.
+     */
+    @Override
+    public void beforeRequery() {
+        assertTrue(getContext().isOpen());
+        beforeRequery++;
+    }
+
+    /**
+     * Se ejecuta posterior a haberse recuperado los registros de la base de datos.
+     */
+    @Override
+    public void afterRequery() {
+        assertTrue(getContext().isOpen());        
+        afterRequery++;
+    }
+
+    /**
+     * Se ejecuta antes de refrescar los datos de un registro de la base de datos.
+     * @param row registro a refrescar
+     */
+    @Override
+    public void beforeRefreshRow(IDataRow row) {
+        assertNotNull(row);        
+        beforeRefreshRow++;
+    }
+
+    /**
+     * Se ejecuta posterior a refrescar un registro de la base de datos.
+     * @param row registro refrescado.
+     */
+    @Override
+    public void afterRefreshRow(IDataRow row) {
+        assertNotNull(row);
+        afterRefreshRow++;
+    }
+
+    /**
+     * Se ejecuta antes del metodo insertRow
+     * @param newRow    fila a ser insertada
+     * @return  verdadero o falso si se permite o no la inserción.
+     */
+    @Override
+    public boolean beforeInsertRow(IDataRow newRow) {
+        assertNotNull(newRow);                
+        beforeInsertRow++;
+        return true;
+    }
+
+    /**
+     * Se ejecuta posterior al metodo insertRow
+     * @param row registro insertado
+     */
+    @Override
+    public void afterInsertRow(IDataRow row) {
+        assertNotNull(row);
+        afterInsertRow++;
+    }
+
+    /**
+     * Se ejecuta antes del metodo deleteRow
+     * @param row   fila a ser marcada para eliminarse.
+     * @return verdadero o falso si es permitido o no  la operación.
+     */
+    @Override
+    public boolean beforeDeleteRow(IDataRow row) {
+        assertNotNull(row);
+        beforeDeleteRow++;
+        return true;
+    }
+
+    /**
+     * Se ejecuta posterior al metodo deleteRow.
+     */
+    @Override
+    public void afterDeleteRow() {
+        assertTrue(getContext().getRecStatus() == IDataRow.DELETE);
+        afterDeleteRow++;
+    }
+
+    /**
+     * Se ejecuta antes del metodo setField.
+     * 
+     * @param row       registro
+     * @param fieldname nombre del campo
+     * @param oldValue  valor anterior
+     * @param newValue  nuevo valor.
+     * @return verdadero o falso si se permite la modificación del campo
+     */
+    @Override
+    public boolean beforeSetField(IDataRow row, String fieldname, Object oldValue, Object newValue) {
+        assertNotNull(row);
+        assertTrue(getContext().isFieldExist(fieldname));
+        beforeSetfield++;
+        return true;
+    }
+
+    /**
+     * Se ejecuta posterior al metodo setField
+     *  
+     * @param row           registro
+     * @param fieldname     nombre del campo    
+     * @param oldValue      valor anterior
+     * @param newValue      nuevo valor
+     * @return verdadero o falso si tuvo exito.
+     */
+    @Override
+    public boolean afterSetField(IDataRow row, String fieldname, Object oldValue, Object newValue) {
+        assertNotNull(row);
+        assertTrue(getContext().isFieldExist(fieldname));
+        afterSetfield++;
+        return true;
+    }
+
+    /**
+     * Se ejecuta antes del metodo update
+     * @param allRows   si se va a procesar todos los registros
+     * @return verdadero o falso si se permite la ejecución de update.
+     */
+    @Override
+    public boolean beforeUpdate(boolean allRows) {
+        assertTrue(getContext().isOpen());
+        beforeUpdate++;
+        return true;
+    }
+
+    /**
+     * Se ejecuta antes del metodo checkData
+     * @param allRows si se esta procesando todos los registros modificados, o solo el actual.
+     */
+    @Override
+    public void beforeCheckData(boolean allRows) {
+        assertTrue(getContext().isOpen());        
+        beforeCheckData++;
+    }
+
+    /**
+     * Se ejecuta posterior al metodo checkData
+     * @param allRows si se proceso todos los registros.
+     */
+    @Override
+    public void afterCheckData(boolean allRows) {
+        assertTrue(getContext().isOpen());
+        afterCheckData++;
+    }
+
+    /**
+     * Se ejecuta posterior al metodo update
+     * @param allRows se se proceso todos los registros modificados.
+     */
+    @Override
+    public void afterUpdate(boolean allRows) {
+        assertTrue(getContext().isOpen());
+        afterUpdate++;
+    }
+
+    /**
+     * Se ejecuta antes de cerrar el dataObject
+     */
+    @Override
+    public void beforeClose() {
+        assertTrue(getContext().isOpen());        
+        beforeClose++;
+    }
+
+    /**
+     * Se ejecuta posterior a cerrar el dataObject.
+     */
+    @Override
+    public void afterClose() {
+        assertFalse(getContext().isOpen());
+        afterClose++;
     }
 }

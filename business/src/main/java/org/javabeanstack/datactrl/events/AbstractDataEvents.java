@@ -31,20 +31,21 @@ import org.javabeanstack.events.IDataEvents;
  * Esta clase se encarga de interceptar los eventos producidos en el DataObject
  * 
  * @author Jorge Enciso
+ * @param <O>
  * @param <T>
  */
-public abstract class AbstractDataEvents<T extends IDataObject> implements IDataEvents<T> {
+public abstract class AbstractDataEvents<O extends IDataObject, T extends IDataRow> implements IDataEvents<O,T> {
     private static final Logger LOGGER = Logger.getLogger(AbstractDataEvents.class);
     
-    private T context;
+    private O context;
 
     @Override
-    public T getContext() {
+    public O getContext() {
         return context;
     }
 
     @Override
-    public void setContext(T context) {
+    public void setContext(O context) {
         this.context = context;
     }
     
@@ -64,7 +65,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @return verdadero o falso  si va mover o no el puntero del registro.
      */
     @Override
-    public boolean beforeRowMove(IDataRow curRow) {
+    public boolean beforeRowMove(T curRow) {
         if (curRow != null){
             LOGGER.debug("beforeRowMov IN " + curRow.getId());                    
         }
@@ -76,7 +77,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @param newRow el registro posicionado.
      */
     @Override
-    public void afterRowMove(IDataRow newRow) {
+    public void afterRowMove(T newRow) {
         if (newRow != null){
             LOGGER.debug("afterRowMov IN " + newRow.getId());                    
         }
@@ -143,7 +144,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @param row registro a refrescar
      */
     @Override
-    public void beforeRefreshRow(IDataRow row) {
+    public void beforeRefreshRow(T row) {
         LOGGER.debug("beforeRefreshRow IN ");                
     }
 
@@ -152,7 +153,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @param row registro refrescado.
      */
     @Override
-    public void afterRefreshRow(IDataRow row) {
+    public void afterRefreshRow(T row) {
         LOGGER.debug("afterRefreshRow IN ");                
     }
 
@@ -162,7 +163,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @return  verdadero o falso si se permite o no la inserción.
      */
     @Override
-    public boolean beforeInsertRow(IDataRow newRow) {
+    public boolean beforeInsertRow(T newRow) {
         LOGGER.debug("beforeInsertRow IN ");                
         return true;
     }
@@ -172,7 +173,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @param row registro insertado
      */
     @Override
-    public void afterInsertRow(IDataRow row) {
+    public void afterInsertRow(T row) {
         LOGGER.debug("afterInsertRow IN ");                
     }
 
@@ -182,7 +183,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @return verdadero o falso si es permitido o no  la operación.
      */
     @Override
-    public boolean beforeDeleteRow(IDataRow row) {
+    public boolean beforeDeleteRow(T row) {
         LOGGER.debug("beforeDeleteRow IN ");                
         return true;
     }
@@ -205,7 +206,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @return verdadero o falso si se permite la modificación del campo
      */
     @Override
-    public boolean beforeSetField(IDataRow row, String fieldname, Object oldValue, Object newValue) {
+    public boolean beforeSetField(T row, String fieldname, Object oldValue, Object newValue) {
         LOGGER.debug("beforeSetField IN ");                
         return true;
     }
@@ -220,7 +221,7 @@ public abstract class AbstractDataEvents<T extends IDataObject> implements IData
      * @return verdadero o falso si tuvo exito.
      */
     @Override
-    public boolean afterSetField(IDataRow row, String fieldname, Object oldValue, Object newValue) {
+    public boolean afterSetField(T row, String fieldname, Object oldValue, Object newValue) {
         LOGGER.debug("afterSetField IN ");                
         return true;
     }

@@ -29,27 +29,28 @@ import org.javabeanstack.data.IDataRow;
  *
  * @author Jorge Enciso
  * @param <T>
+ * @param <O>
  */
-public interface IDataEvents<T extends IDataObject> extends Serializable{
-    public T getContext();
-    public void setContext(T context);
+public interface IDataEvents<O extends IDataObject,T extends IDataRow> extends Serializable{
+    public O getContext();
+    public void setContext(O context);
     public boolean onAllowOperation();
-    public boolean beforeRowMove(IDataRow curRow);
-    public void    afterRowMove(IDataRow newRow);
+    public boolean beforeRowMove(T curRow);
+    public void    afterRowMove(T newRow);
     public void    beforeOpen(String order, String filter,boolean readwrite, int maxrows);
     public void    beforeDataFill();
     public void    afterDataFill();
     public void    afterOpen(String order, String filter,boolean readwrite, int maxrows);
     public void    beforeRequery();
     public void    afterRequery();
-    public void    beforeRefreshRow(IDataRow row);
-    public void    afterRefreshRow(IDataRow row);
-    public boolean beforeInsertRow(IDataRow newRow);
-    public void    afterInsertRow(IDataRow row);
-    public boolean beforeDeleteRow(IDataRow row); 
+    public void    beforeRefreshRow(T row);
+    public void    afterRefreshRow(T row);
+    public boolean beforeInsertRow(T newRow);
+    public void    afterInsertRow(T row);
+    public boolean beforeDeleteRow(T row); 
     public void    afterDeleteRow();
-    public boolean beforeSetField(IDataRow row, String fieldname, Object oldValue, Object newValue);
-    public boolean afterSetField(IDataRow row, String fieldname, Object oldValue, Object newValue);
+    public boolean beforeSetField(T row, String fieldname, Object oldValue, Object newValue);
+    public boolean afterSetField(T row, String fieldname, Object oldValue, Object newValue);
     public boolean beforeUpdate(boolean allRows);
     public void    beforeCheckData(boolean allRows);
     public void    afterCheckData(boolean allRows);
