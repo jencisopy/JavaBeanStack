@@ -48,11 +48,14 @@ import org.javabeanstack.model.tables.Region;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
  *
  * @author Jorge Enciso
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AbstractDataServiceTest extends TestClass{
     private static IDataServiceRemote dataService;
     
@@ -70,8 +73,8 @@ public class AbstractDataServiceTest extends TestClass{
     }
     
     @Test
-    public void testInstance() throws Exception {
-        System.out.println("DataService - TestInstance");        
+    public void test01Instance() throws Exception {
+        System.out.println("1-DataService - TestInstance");        
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -85,8 +88,8 @@ public class AbstractDataServiceTest extends TestClass{
     /** Prueba control de los unique keys
      * @throws java.lang.Exception */
     @Test
-    public void testCheckUnique1() throws Exception {
-        System.out.println("DataService - CheckUnique1");                
+    public void test02CheckUnique1() throws Exception {
+        System.out.println("2-DataService - CheckUnique1");                
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -100,8 +103,8 @@ public class AbstractDataServiceTest extends TestClass{
     /** Prueba control de los unique keys
      * @throws java.lang.Exception */
     @Test    
-    public void testCheckUnique2() throws Exception {
-        System.out.println("DataService - TestCheckUnique2");
+    public void test03CheckUnique2() throws Exception {
+        System.out.println("3-DataService - TestCheckUnique2");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -116,8 +119,8 @@ public class AbstractDataServiceTest extends TestClass{
     /** Prueba unique key
      * @throws java.lang.Exception */
     @Test    
-    public void testCheckUniqueKey3() throws Exception {
-        System.out.println("DataService - TestCheckUniqueKey3");                
+    public void test04CheckUniqueKey3() throws Exception {
+        System.out.println("4-DataService - TestCheckUniqueKey3");                
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -150,8 +153,8 @@ public class AbstractDataServiceTest extends TestClass{
     /** Prueba de chequeo de los foreignkeys
      * @throws java.lang.Exception */
     @Test    
-    public void testCheckForeignkey() throws Exception {
-        System.out.println("DataService - TestCheckForeignkey");        
+    public void test05CheckForeignkey() throws Exception {
+        System.out.println("5-DataService - TestCheckForeignkey");        
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -166,8 +169,8 @@ public class AbstractDataServiceTest extends TestClass{
     /** Chequeo de los foreignkeys
      * @throws java.lang.Exception */
     @Test    
-    public void testCheckForeignKey2() throws Exception {
-        System.out.println("DataService - TestCheckForeignkey2");                
+    public void test06CheckForeignKey2() throws Exception {
+        System.out.println("6-DataService - TestCheckForeignkey2");                
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -184,8 +187,8 @@ public class AbstractDataServiceTest extends TestClass{
     /** Chequeo de los foreignkeys
      * @throws java.lang.Exception */
     @Test            
-    public void testCheckForeignKey3() throws Exception {
-        System.out.println("DataService - TestCheckForeignkey3");                
+    public void test07CheckForeignKey3() throws Exception {
+        System.out.println("7-DataService - TestCheckForeignkey3");                
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -202,8 +205,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of setListCheckMethods method, of class AbstractDataService.
      */
     @Test
-    public void testSetListCheckMethods() {
-        System.out.println("DataService - setListCheckMethods");
+    public void test08SetListCheckMethods() {
+        System.out.println("8-DataService - setListCheckMethods");
         AbstractDataServiceImpl dataServiceImpl = new AbstractDataServiceImpl();
         assertTrue(dataServiceImpl.getCheckMethodCount() == 3);
     }
@@ -212,8 +215,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of setListFieldCheck method, of class AbstractDataService.
      */
     @Test
-    public void testSetFieldsChecked() throws Exception{
-        System.out.println("DataService - setFieldsChecked");
+    public void test09SetFieldsChecked() throws Exception{
+        System.out.println("9-DataService - setFieldsChecked");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -260,8 +263,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of findById method, of class AbstractDataService.
      */
     @Test
-    public void testFindById() throws Exception {
-        System.out.println("DataService - findById");
+    public void test10FindById() throws Exception {
+        System.out.println("10-DataService - findById");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -282,8 +285,8 @@ public class AbstractDataServiceTest extends TestClass{
      * @throws java.lang.Exception
      */
     @Test
-    public void testFindByUk() throws Exception {
-        System.out.println("DataService - findByUk");
+    public void test11FindByUk() throws Exception {
+        System.out.println("11-DataService - findByUk");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -309,8 +312,8 @@ public class AbstractDataServiceTest extends TestClass{
      * @throws java.lang.Exception
      */
     @Test
-    public void testFind() throws Exception {
-        System.out.println("DataService - find");
+    public void test12Find() throws Exception {
+        System.out.println("12-DataService - find");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -346,8 +349,8 @@ public class AbstractDataServiceTest extends TestClass{
      * @throws java.lang.Exception
      */
     @Test
-    public void testFindByQuery() throws Exception {
-        System.out.println("DataService - findByQuery");
+    public void test13FindByQuery() throws Exception {
+        System.out.println("13-DataService - findByQuery");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -371,8 +374,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of findListByQuery method, of class AbstractDataService.
      */
     @Test
-    public void testFindListByQuery() throws Exception {
-        System.out.println("DataService - findListByQuery");
+    public void test14FindListByQuery() throws Exception {
+        System.out.println("14-DataService - findListByQuery");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -396,8 +399,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of findByNamedQuery method, of class AbstractDataService.
      */
     @Test
-    public void testFindByNamedQuery() throws Exception {
-        System.out.println("DataService - findByNamedQuery");
+    public void test15FindByNamedQuery() throws Exception {
+        System.out.println("15-DataService - findByNamedQuery");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -414,8 +417,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of findByNativeQuery method, of class AbstractDataService.
      */
     @Test
-    public void testFindByNativeQuery() throws Exception {
-        System.out.println("DataService - findByNativeQuery");
+    public void test16FindByNativeQuery() throws Exception {
+        System.out.println("16-DataService - findByNativeQuery");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -438,8 +441,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of refreshRow method, of class AbstractDataService.
      */
     @Test
-    public void testRefreshRow() throws Exception {
-        System.out.println("DataService - refreshRow");
+    public void test17RefreshRow() throws Exception {
+        System.out.println("17-DataService - refreshRow");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -456,8 +459,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getCount method, of class AbstractDataService.
      */
     @Test
-    public void testGetCount() throws Exception {
-        System.out.println("DataService - getCount");
+    public void test18GetCount() throws Exception {
+        System.out.println("18-DataService - getCount");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -473,8 +476,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getCount2 method, of class AbstractDataService.
      */
     @Test
-    public void testGetCount2() throws Exception {
-        System.out.println("DataService - getCount2");
+    public void test19GetCount2() throws Exception {
+        System.out.println("19-DataService - getCount2");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -491,8 +494,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getDataRows method, of class AbstractDataService.
      */
     @Test
-    public void getDataRows() throws Exception{
-        System.out.println("DataService - getDataRows");
+    public void get20DataRows() throws Exception{
+        System.out.println("20-DataService - getDataRows");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -507,8 +510,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of persist method, of class AbstractDataService.
      */
     @Test
-    public void testPersist() throws Exception {
-        System.out.println("DataService - persist");
+    public void test21Persist() throws Exception {
+        System.out.println("21-DataService - persist");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -541,8 +544,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of merge method, of class AbstractDataService.
      */
     @Test
-    public void testMerge() throws Exception {
-        System.out.println("DataService - merge");
+    public void test22Merge() throws Exception {
+        System.out.println("22-DataService - merge");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -579,8 +582,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of remove method, of class AbstractDataService.
      */
     @Test
-    public void testRemove() throws Exception{
-        System.out.println("DataService - remove");
+    public void test23Remove() throws Exception{
+        System.out.println("23-DataService - remove");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         
@@ -615,8 +618,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of update method, of class AbstractDataService.
      */
     @Test
-    public void testUpdate() throws Exception{
-        System.out.println("DataService - update");
+    public void test24Update() throws Exception{
+        System.out.println("24-DataService - update");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -662,8 +665,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of update method, of class AbstractDataService.
      */
     @Test
-    public void testUpdate_String_IDataObject() throws Exception{
-        System.out.println("DataService - update");
+    public void test25Update_String_IDataObject() throws Exception{
+        System.out.println("25-DataService - update");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -707,8 +710,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of update method, of class AbstractDataService.
      */
     @Test
-    public void testUpdate_String_List() throws Exception{
-        System.out.println("DataService - update");
+    public void test26Update_String_List() throws Exception{
+        System.out.println("26-DataService - update");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -746,8 +749,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of update method, of class AbstractDataService.
      */
     @Test
-    public void testUpdate_String_IDataSet() throws Exception{
-        System.out.println("DataService - update");
+    public void test27Update_String_IDataSet() throws Exception{
+        System.out.println("27-DataService - update");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -791,8 +794,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of save method, of class AbstractDataService.
      */
     @Test
-    public void testSave() throws Exception{
-        System.out.println("DataService - save");
+    public void test28Save() throws Exception{
+        System.out.println("28-DataService - save");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -833,8 +836,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getEntityManagerProp method, of class AbstractDataLink.
      */
     @Test
-    public void testGetEntityManagerProp() throws Exception {
-        System.out.println("DataService - getEntityManagerProp");
+    public void test29GetEntityManagerProp() throws Exception {
+        System.out.println("29-DataService - getEntityManagerProp");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -848,8 +851,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getPersistUnitProp method, of class AbstractDataLink.
      */
     @Test
-    public void testGetPersistUnitProp() throws Exception{
-        System.out.println("DataService - getPersistUnitProp");
+    public void test30GetPersistUnitProp() throws Exception{
+        System.out.println("30-DataService - getPersistUnitProp");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -863,8 +866,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getUserSession method, of class AbstractDataLink.
      */
     @Test
-    public void testGetUserSession() throws Exception{
-        System.out.println("DataService - getUserSession");
+    public void test31GetUserSession() throws Exception{
+        System.out.println("31-DataService - getUserSession");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -877,8 +880,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getDBLinkInfo 
      */
     @Test
-    public void testGetDBLinkInfo() throws Exception{
-        System.out.println("DataService - getDBLinkInfo");
+    public void test32GetDBLinkInfo() throws Exception{
+        System.out.println("32-DataService - getDBLinkInfo");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -893,8 +896,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getDataEngine method, of class AbstractDataService.
      */
     @Test
-    public void testGetDataEngine() throws Exception {
-        System.out.println("DataService - getDataEngine");
+    public void test33GetDataEngine() throws Exception {
+        System.out.println("33-DataService - getDataEngine");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -910,8 +913,8 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getSchema method, of class AbstractDataService.
      */
     @Test
-    public void testGetSchema() throws Exception {
-        System.out.println("DataService - getSchema");
+    public void test34GetSchema() throws Exception {
+        System.out.println("34-DataService - getSchema");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);

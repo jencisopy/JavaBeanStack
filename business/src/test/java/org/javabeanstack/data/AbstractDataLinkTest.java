@@ -37,11 +37,14 @@ import org.javabeanstack.model.tables.AppUser;
 import org.javabeanstack.model.tables.Moneda;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
  *
  * @author Jorge Enciso
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AbstractDataLinkTest extends TestClass {
 
     public AbstractDataLinkTest() {
@@ -51,8 +54,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of getPersistUnit method, of class AbstractDataLink.
      */
     @Test
-    public void testGetPersistUnit() {
-        System.out.println("DataLink - getPersistUnit");
+    public void test01GetPersistUnit() {
+        System.out.println("1-DataLink - getPersistUnit");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -67,8 +70,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of find method, of class AbstractDataLink.
      */
     @Test
-    public void testFind() throws Exception {
-        System.out.println("DataLink - find");
+    public void test02Find() throws Exception {
+        System.out.println("2-DataLink - find");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -82,8 +85,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of findByUk method, of class AbstractDataLink.
      */
     @Test
-    public void testFindByUk() throws Exception {
-        System.out.println("DataLink - findByUk");
+    public void test03FindByUk() throws Exception {
+        System.out.println("3-DataLink - findByUk");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -104,8 +107,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of findByQuery method, of class AbstractDataLink.
      */
     @Test
-    public void testFindByQuery() throws Exception {
-        System.out.println("DataLink - findByQuery");
+    public void test04FindByQuery() throws Exception {
+        System.out.println("4-DataLink - findByQuery");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -127,8 +130,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of findListByQuery method, of class AbstractDataLink.
      */
     @Test
-    public void testFindListByQuery() throws Exception {
-        System.out.println("DataLink - findListByQuery");
+    public void test05FindListByQuery() throws Exception {
+        System.out.println("5-DataLink - findListByQuery");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -150,8 +153,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of findByNamedQuery method, of class AbstractDataLink.
      */
     @Test
-    public void testFindByNamedQuery() throws Exception {
-        System.out.println("DataLink - findByNamedQuery");
+    public void test06FindByNamedQuery() throws Exception {
+        System.out.println("6-DataLink - findByNamedQuery");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -165,8 +168,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of findByNativeQuery method, of class AbstractDataLink.
      */
     @Test
-    public void testFindByNativeQuery() throws Exception {
-        System.out.println("DataLink - findByNativeQuery");
+    public void test07FindByNativeQuery() throws Exception {
+        System.out.println("7-DataLink - findByNativeQuery");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -187,8 +190,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of persist method, of class AbstractDataLink.
      */
     @Test
-    public void testPersist() throws Exception {
-        System.out.println("DataLink - persist");
+    public void test08Persist() throws Exception {
+        System.out.println("8-DataLink - persist");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -218,8 +221,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of persist method, of class AbstractDataLink.
      */
     @Test
-    public void testPersist2() throws Exception {
-        System.out.println("DataLink - persist2");
+    public void test09Persist2() throws Exception {
+        System.out.println("9-DataLink - persist2");
         if (error != null) {
             System.out.println(error);
             return;
@@ -247,8 +250,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of persist method, of class AbstractDataLink.
      */
     @Test
-    public void testPersist3() throws Exception {
-        System.out.println("DataLink - persist3");
+    public void test10Persist3() throws Exception {
+        System.out.println("10-DataLink - persist3");
         if (error != null) {
             System.out.println(error);
             return;
@@ -278,8 +281,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of persist method, of class AbstractDataLink.
      */
     @Test
-    public void testPersist4() throws Exception {
-        System.out.println("DataLink - persist4");
+    public void test11Persist4() throws Exception {
+        System.out.println("11-DataLink - persist4");
         if (error != null) {
             System.out.println(error);
             return;
@@ -314,8 +317,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of persist method, of class AbstractDataLink.
      */
     @Test
-    public void testPersist_List() throws Exception {
-        System.out.println("DataLink - persist");
+    public void test12Persist_List() throws Exception {
+        System.out.println("12-DataLink - persist");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -347,8 +350,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of merge method, of class AbstractDataLink.
      */
     @Test
-    public void testMerge_GenericType() throws Exception {
-        System.out.println("DataLink - merge");
+    public void test13Merge_GenericType() throws Exception {
+        System.out.println("13-DataLink - merge");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -383,8 +386,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of merge method, of class AbstractDataLink.
      */
     @Test
-    public void testMerge_List() throws Exception {
-        System.out.println("DataLink - merge");
+    public void test14Merge_List() throws Exception {
+        System.out.println("14-DataLink - merge");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -424,8 +427,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of remove method, of class AbstractDataLink.
      */
     @Test
-    public void testRemove_GenericType() throws Exception {
-        System.out.println("DataLink - remove");
+    public void test15Remove_GenericType() throws Exception {
+        System.out.println("15-DataLink - remove");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -456,8 +459,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of remove method, of class AbstractDataLink.
      */
     @Test
-    public void testRemove_List() throws Exception {
-        System.out.println("DataLink - remove");
+    public void test16Remove_List() throws Exception {
+        System.out.println("16-DataLink - remove");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -490,8 +493,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of update method, of class AbstractDataLink.
      */
     @Test
-    public void testUpdate_GenericType() throws Exception {
-        System.out.println("DataLink - update");
+    public void test17Update_GenericType() throws Exception {
+        System.out.println("17-DataLink - update");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -530,8 +533,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of update method, of class AbstractDataLink.
      */
     @Test
-    public void testUpdate_List() throws Exception {
-        System.out.println("DataLink - update");
+    public void test18Update_List() throws Exception {
+        System.out.println("18-DataLink - update");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -576,8 +579,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of update method, of class AbstractDataLink.
      */
     @Test
-    public void testUpdate_IDataSet() throws Exception {
-        System.out.println("DataLink - update");
+    public void test19Update_IDataSet() throws Exception {
+        System.out.println("19-DataLink - update");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -628,8 +631,8 @@ public class AbstractDataLinkTest extends TestClass {
      * @throws java.lang.Exception
      */
     @Test
-    public void testRefreshRow() throws Exception {
-        System.out.println("DataLink - refreshRow");
+    public void test20RefreshRow() throws Exception {
+        System.out.println("20-DataLink - refreshRow");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -644,8 +647,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of getCount method, of class AbstractDataLink.
      */
     @Test
-    public void testGetCount() throws Exception {
-        System.out.println("DataLink - getCount");
+    public void test21GetCount() throws Exception {
+        System.out.println("21-DataLink - getCount");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -659,8 +662,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of getCount2 method, of class AbstractDataLink.
      */
     @Test
-    public void testGetCount2() throws Exception {
-        System.out.println("DataLink - getCount2");
+    public void test22GetCount2() throws Exception {
+        System.out.println("22-DataLink - getCount2");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -675,8 +678,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of getEntityManagerProp method, of class AbstractDataLink.
      */
     @Test
-    public void testGetEntityManagerProp() {
-        System.out.println("DataLink - getEntityManagerProp");
+    public void test23GetEntityManagerProp() {
+        System.out.println("23-DataLink - getEntityManagerProp");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -690,8 +693,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of getPersistUnitProp method, of class AbstractDataLink.
      */
     @Test
-    public void testGetPersistUnitProp() {
-        System.out.println("DataLink - getPersistUnitProp");
+    public void test24GetPersistUnitProp() {
+        System.out.println("24-DataLink - getPersistUnitProp");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -705,8 +708,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of getUserSession method, of class AbstractDataLink.
      */
     @Test
-    public void testGetUserSession() {
-        System.out.println("DataLink - getUserSession");
+    public void test25GetUserSession() {
+        System.out.println("25-DataLink - getUserSession");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -719,8 +722,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of getDBLinkInfo method, of class AbstractDataLink.
      */
     @Test
-    public void testGetDBLinkInfo() {
-        System.out.println("DataLink - getDBLinkInfo");
+    public void test26GetDBLinkInfo() {
+        System.out.println("26-DataLink - getDBLinkInfo");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -734,8 +737,8 @@ public class AbstractDataLinkTest extends TestClass {
      * Test of getSessionId method, of class AbstractDataLink.
      */
     @Test
-    public void testGetSessionId() {
-        System.out.println("DataLink - getSessionId");
+    public void test27GetSessionId() {
+        System.out.println("27-DataLink - getSessionId");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);

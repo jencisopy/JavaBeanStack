@@ -32,11 +32,14 @@ import org.javabeanstack.model.tables.AppUser;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
  *
  * @author Jorge Enciso
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AbstractDAOTest extends TestClass {
     private static IGenericDAO dao;
 
@@ -58,8 +61,8 @@ public class AbstractDAOTest extends TestClass {
      * @throws java.lang.Exception
      */
     @Test
-    public void testFindAll() throws Exception {
-        System.out.println("AbstractDAO - findAll");
+    public void test01FindAll() throws Exception {
+        System.out.println("1-AbstractDAO - findAll");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -77,8 +80,8 @@ public class AbstractDAOTest extends TestClass {
      * @throws java.lang.Exception
      */
     @Test
-    public void testFindById() throws Exception {
-        System.out.println("AbstractDAO - findById");
+    public void test02FindById() throws Exception {
+        System.out.println("2-AbstractDAO - findById");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -99,8 +102,8 @@ public class AbstractDAOTest extends TestClass {
      * @throws java.lang.Exception
      */
     @Test
-    public void testFindByUk() throws Exception {
-        System.out.println("AbstractDAO - findByUk");
+    public void test03FindByUk() throws Exception {
+        System.out.println("3-AbstractDAO - findByUk");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -125,8 +128,8 @@ public class AbstractDAOTest extends TestClass {
      * @throws java.lang.Exception
      */
     @Test
-    public void testFind() throws Exception {
-        System.out.println("AbstractDAO - find");
+    public void test04Find() throws Exception {
+        System.out.println("4-AbstractDAO - find");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -162,8 +165,8 @@ public class AbstractDAOTest extends TestClass {
      * @throws java.lang.Exception
      */
     @Test
-    public void testFindByQuery() throws Exception {
-        System.out.println("AbstractDAO - findByQuery");
+    public void test05FindByQuery() throws Exception {
+        System.out.println("5-AbstractDAO - findByQuery");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -187,8 +190,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of findListByQuery method, of class AbstractDAO.
      */
     @Test
-    public void testFindListByQuery() throws Exception {
-        System.out.println("AbstractDAO - findListByQuery");
+    public void test06FindListByQuery() throws Exception {
+        System.out.println("6-AbstractDAO - findListByQuery");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -212,8 +215,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of findByNamedQuery method, of class AbstractDAO.
      */
     @Test
-    public void testFindByNamedQuery() throws Exception {
-        System.out.println("AbstractDAO - findByNamedQuery");
+    public void test07FindByNamedQuery() throws Exception {
+        System.out.println("7-AbstractDAO - findByNamedQuery");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -229,8 +232,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of findByNativeQuery method, of class AbstractDAO.
      */
     @Test
-    public void testFindByNativeQuery() throws Exception {
-        System.out.println("AbstractDAO - findByNativeQuery");
+    public void test08FindByNativeQuery() throws Exception {
+        System.out.println("8-AbstractDAO - findByNativeQuery");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -254,8 +257,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of update method, of class AbstractDAO.
      */
     @Test
-    public void testUpdate() throws Exception{
-        System.out.println("AbstractDAO - update");
+    public void test09Update() throws Exception{
+        System.out.println("9-AbstractDAO - update");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -296,8 +299,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of persist method, of class AbstractDAO.
      */
     @Test
-    public void testPersist() throws Exception {
-        System.out.println("AbstractDAO - persist");
+    public void test10Persist() throws Exception {
+        System.out.println("10-AbstractDAO - persist");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -330,8 +333,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of merge method, of class AbstractDAO.
      */
     @Test
-    public void testMerge() throws Exception {
-        System.out.println("AbstractDAO - merge");
+    public void test11Merge() throws Exception {
+        System.out.println("11-AbstractDAO - merge");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -368,8 +371,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of remove method, of class AbstractDAO.
      */
     @Test
-    public void testRemove() throws Exception{
-        System.out.println("AbstractDAO - remove");
+    public void test12Remove() throws Exception{
+        System.out.println("12-AbstractDAO - remove");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         
@@ -403,8 +406,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of refreshRow method, of class AbstractDAO.
      */
     @Test
-    public void testRefreshRow() throws Exception {
-        System.out.println("AbstractDAO - refreshRow");
+    public void test13RefreshRow() throws Exception {
+        System.out.println("13-AbstractDAO - refreshRow");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -422,8 +425,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of getCount method, of class AbstractDAO.
      */
     @Test
-    public void testGetCount() throws Exception {
-        System.out.println("AbstractDAO - getCount");
+    public void test14GetCount() throws Exception {
+        System.out.println("14-AbstractDAO - getCount");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -440,8 +443,8 @@ public class AbstractDAOTest extends TestClass {
      * 
      */
     @Test
-    public void testGetCount2() throws Exception {
-        System.out.println("AbstractDAO - getCount2");
+    public void test15GetCount2() throws Exception {
+        System.out.println("15-AbstractDAO - getCount2");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -459,8 +462,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of getEntityManagerProp method, of class AbstractDAO.
      */
     @Test
-    public void testGetEntityManagerProp() {
-        System.out.println("AbstractDAO - getEntityManagerProp");
+    public void test16GetEntityManagerProp() {
+        System.out.println("16-AbstractDAO - getEntityManagerProp");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -474,8 +477,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of getPersistUnitProp method, of class AbstractDAO.
      */
     @Test
-    public void testGetPersistUnitProp() {
-        System.out.println("AbstractDAO - getPersistUnitProp");
+    public void test17GetPersistUnitProp() {
+        System.out.println("17-AbstractDAO - getPersistUnitProp");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -491,15 +494,13 @@ public class AbstractDAOTest extends TestClass {
      * @throws java.lang.Exception
      */
     @Test
-    public void testGetDataEngine() throws Exception {
-        System.out.println("AbstractDAO - getDataEngine");
+    public void test18GetDataEngine() throws Exception {
+        System.out.println("18-AbstractDAO - getDataEngine");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
             return;
         }
-        System.out.println(dao.getDataEngine("PU1"));
-
         String expResult = dao.getDataEngine("PU1");
         assertNotNull(expResult);
     }
@@ -510,8 +511,8 @@ public class AbstractDAOTest extends TestClass {
      * @throws java.lang.Exception
      */
     @Test
-    public void testGetSchema() throws Exception {
-        System.out.println("AbstractDAO - getSchema");
+    public void test19GetSchema() throws Exception {
+        System.out.println("19-AbstractDAO - getSchema");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -529,8 +530,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of getUserSession method, of class AbstractDAO.
      */
     @Test
-    public void testGetUserSession() {
-        System.out.println("AbstractDAO - getUserSession");
+    public void test20GetUserSession() {
+        System.out.println("20-AbstractDAO - getUserSession");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -543,8 +544,8 @@ public class AbstractDAOTest extends TestClass {
      * Test of getDBLinkInfo method, of class AbstractDAO.
      */
     @Test
-    public void testGetDBLinkInfo() {
-        System.out.println("AbstractDAO - getDBLinkInfo");
+    public void test21GetDBLinkInfo() {
+        System.out.println("21-AbstractDAO - getDBLinkInfo");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);

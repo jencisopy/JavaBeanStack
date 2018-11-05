@@ -32,11 +32,14 @@ import org.javabeanstack.model.tables.AppUserFormView;
 import org.javabeanstack.model.tables.AppUserMember;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
  *
  * @author Jorge Enciso
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DataInfoTest {
 
     public DataInfoTest() {
@@ -46,8 +49,8 @@ public class DataInfoTest {
      * Test of isPrimaryKey method, of class DataInfo.
      */
     @Test
-    public void testIsPrimaryKey() {
-        System.out.println("DataInfo - isPrimaryKey");
+    public void test01IsPrimaryKey() {
+        System.out.println("1-DataInfo - isPrimaryKey");
         boolean expResult = true;
         boolean result = DataInfo.isPrimaryKey(AppUser.class, "iduser");
         assertEquals(expResult, result);
@@ -63,8 +66,8 @@ public class DataInfoTest {
      * Test of isUniqueKey method, of class DataInfo.
      */
     @Test
-    public void testIsUniqueKey() {
-        System.out.println("DataInfo - isUniqueKey");
+    public void test02IsUniqueKey() {
+        System.out.println("2-DataInfo - isUniqueKey");
         boolean expResult = true;
         boolean result = DataInfo.isUniqueKey(AppResource.class, "code");
         assertEquals(expResult, result);
@@ -80,8 +83,8 @@ public class DataInfoTest {
      * Test of isForeignKey method, of class DataInfo.
      */
     @Test
-    public void testIsForeignKey() {
-        System.out.println("DataInfo - isForeignKey");
+    public void test03IsForeignKey() {
+        System.out.println("3-DataInfo - isForeignKey");
         boolean expResult = true;
         boolean result = DataInfo.isForeignKey(AppUserMember.class, "usermember");
         assertEquals(expResult, result);
@@ -100,8 +103,8 @@ public class DataInfoTest {
      * Test of isFieldExist method, of class DataInfo.
      */
     @Test
-    public void testIsFieldExist() {
-        System.out.println("DataInfo - isFieldExist");
+    public void test04IsFieldExist() {
+        System.out.println("4-DataInfo - isFieldExist");
         boolean expResult = true;
         boolean result = DataInfo.isFieldExist(AppUser.class, "iduser");
         assertEquals(expResult, result);
@@ -114,8 +117,8 @@ public class DataInfoTest {
      * Test of isLazyFetch method, of class DataInfo.
      */
     @Test
-    public void testIsLazyFetch() {
-        System.out.println("DataInfo - isLazyFetch");
+    public void test05IsLazyFetch() {
+        System.out.println("5-DataInfo - isLazyFetch");
         boolean expResult = true;
         boolean result = DataInfo.isLazyFetch(AppUserFormView.class, "appUserFormViewColumnList");
         assertEquals(expResult, result);
@@ -131,8 +134,8 @@ public class DataInfoTest {
      * Test of getLazyMembers method, of class DataInfo.
      */
     @Test
-    public void testGetLazyMembers() {
-        System.out.println("DataInfo - getLazyMembers");
+    public void test06GetLazyMembers() {
+        System.out.println("6-DataInfo - getLazyMembers");
         List<Field> result = DataInfo.getLazyMembers(AppUserFormView.class);
         assertTrue(!result.isEmpty());
 
@@ -144,8 +147,8 @@ public class DataInfoTest {
      * Test of getTableName method, of class DataInfo.
      */
     @Test
-    public void testGetTableName() {
-        System.out.println("DataInfo - getTableName");
+    public void test07GetTableName() {
+        System.out.println("7-DataInfo - getTableName");
         String expResult = "usuario";
         String result = DataInfo.getTableName(AppUser.class);
         assertEquals(expResult, result);
@@ -155,8 +158,8 @@ public class DataInfoTest {
      * Test of createQueryUkCommand method, of class DataInfo.
      */
     @Test
-    public void testCreateQueryUkCommand() {
-        System.out.println("DataInfo - createQueryUkCommand");
+    public void test08CreateQueryUkCommand() {
+        System.out.println("8-DataInfo - createQueryUkCommand");
         IDataRow ejb = new AppResource();
         String expResult = "select o from AppResource o  where  o.code = :code";
         String result = DataInfo.createQueryUkCommand(ejb);
@@ -167,8 +170,8 @@ public class DataInfoTest {
      * Test of getIdFieldName method, of class DataInfo.
      */
     @Test
-    public void testGetIdFieldName() {
-        System.out.println("DataInfo - getIdFieldName");
+    public void test09GetIdFieldName() {
+        System.out.println("9-DataInfo - getIdFieldName");
         String expResult = "iduser";
         String result = DataInfo.getIdFieldName(AppUser.class);
         assertEquals(expResult, result);
@@ -178,8 +181,8 @@ public class DataInfoTest {
      * Test of getUniqueFields method, of class DataInfo.
      */
     @Test
-    public void testGetUniqueFields() {
-        System.out.println("DataInfo - getUniqueFields");
+    public void test10GetUniqueFields() {
+        System.out.println("10-DataInfo - getUniqueFields");
         String[] expResult = {"code"};
         String[] result = DataInfo.getUniqueFields(AppResource.class);
         assertArrayEquals(expResult, result);
@@ -189,8 +192,8 @@ public class DataInfoTest {
      * Test of getIdvalue method, of class DataInfo.
      */
     @Test
-    public void testGetIdvalue() {
-        System.out.println("DataInfo - getIdvalue");
+    public void test11GetIdvalue() {
+        System.out.println("11-DataInfo - getIdvalue");
         AppResource ejb = new AppResource();
         ejb.setIdappresource(1L);
 
@@ -203,8 +206,8 @@ public class DataInfoTest {
      * Test of setIdvalue method, of class DataInfo.
      */
     @Test
-    public void testSetIdvalue() {
-        System.out.println("DataInfo - setIdvalue");
+    public void test12SetIdvalue() {
+        System.out.println("12-DataInfo - setIdvalue");
         AppResource ejb = new AppResource();
         DataInfo.setIdvalue(ejb, 1L);
 
@@ -217,8 +220,8 @@ public class DataInfoTest {
      * Test of getDefaultValue method, of class DataInfo.
      */
     @Test
-    public void testGetDefaultValue() {
-        System.out.println("DataInfo - getDefaultValue");
+    public void test13GetDefaultValue() {
+        System.out.println("13-DataInfo - getDefaultValue");
         DataRow ejb = new DataInfoPrb();
         String fieldname = "codigo";
         Object expResult = "codigodefault";
@@ -230,8 +233,8 @@ public class DataInfoTest {
      * Test of setIdvalue method, of class DataInfo.
      */
     @Test
-    public void testSetFieldValue() {
-        System.out.println("DataInfo - setFieldValue");
+    public void test14SetFieldValue() {
+        System.out.println("14-DataInfo - setFieldValue");
         DataInfoPrb ejb = new DataInfoPrb();
         DataInfo.setFieldValue(ejb, "codigo", "codigocambiado");
 
@@ -247,8 +250,8 @@ public class DataInfoTest {
      * Test of setDefaultValue method, of class DataInfo.
      */
     @Test
-    public void testSetDefaultValue() {
-        System.out.println("DataInfo - setDefaultValue");
+    public void test15SetDefaultValue() {
+        System.out.println("15-DataInfo - setDefaultValue");
         DataRow ejb = new DataInfoPrb();
         String fieldname = "codigo";        
         DataInfo.setDefaultValue(ejb, fieldname);
@@ -261,8 +264,8 @@ public class DataInfoTest {
      * Test of getFieldType method, of class DataInfo.
      */
     @Test
-    public void testGetFieldType() {
-        System.out.println("DataInfo - getFieldType");
+    public void test16GetFieldType() {
+        System.out.println("16-DataInfo - getFieldType");
         Class expResult = Long.class;
         Class result = DataInfo.getFieldType(AppResource.class, "idappresource");
         assertEquals(expResult, result);
@@ -275,8 +278,8 @@ public class DataInfoTest {
      * Test of getMethodReturnType method, of class DataInfo.
      */
     @Test
-    public void testGetMethodType() {
-        System.out.println("DataInfo - getMethodType");
+    public void test17GetMethodType() {
+        System.out.println("17-DataInfo - getMethodType");
         Class expResult = String.class;
         Class result = DataInfo.getMethodReturnType(DataInfoPrb.class, "getPublicCodigoNombre");
         assertEquals(expResult, result);
@@ -311,8 +314,8 @@ public class DataInfoTest {
      * Test of getFieldValue method, of class DataInfo.
      */
     @Test
-    public void testGetFieldValue() {
-        System.out.println("DataInfo - getFieldValue");
+    public void test18GetFieldValue() {
+        System.out.println("18-DataInfo - getFieldValue");
         AppTablesRelation ejb = new AppTablesRelation();
         ejb.setEntityPK("xx1");
         ejb.setEntityFK("xx2");
