@@ -175,6 +175,11 @@ public class DataQueryModel implements IDataQueryModel{
         this.row = row;
     }
 
+    /**
+     * Asigna un valor a una columna
+     * @param index indice de la columna.
+     * @param value valor
+     */
     @Override
     public void setColumn(int index, Object value) {
         if (row instanceof Object[]){
@@ -187,6 +192,11 @@ public class DataQueryModel implements IDataQueryModel{
         row = value;
     }
 
+    /**
+     * Asigna un valor a una columna
+     * @param columnName nombre de la columna.
+     * @param value valor.
+     */
     @Override
     public void setColumn(String columnName, Object value) {
         if (!isColumnMetaDataExist()){
@@ -201,7 +211,10 @@ public class DataQueryModel implements IDataQueryModel{
     }
     
     
-    
+    /**
+     * Devuelve si existe metadatos
+     * @return verdadero si existe metadatos o falso si no.
+     */
     protected Boolean isColumnMetaDataExist(){
         if (columnList == null){
             return false;
@@ -282,6 +295,12 @@ public class DataQueryModel implements IDataQueryModel{
         return target;
     }    
     
+    /**
+     * Convierte un array de objectos a formato DataQueryModel
+     * @param source  Array de objetos.
+     * @param columns  lista de columnas correspondientes al array de objetos.
+     * @return objeto de tipo DataQueryModel
+     */
     public static final IDataQueryModel convertToDataQueryModel(Object source, String columns) {
         if (source == null) {
             return null;
@@ -293,6 +312,11 @@ public class DataQueryModel implements IDataQueryModel{
         return row;
     }    
     
+    /**
+     * Crea los labels o nombres de columnas a partir de una lista de campos.
+     * @param columns lista de columnas.
+     * @return array con los nombres de columnas.
+     */
     public static String[] setColumnLabel(String columns) {
         /* Reemplazar texto que se encuentra entre parentesis */
         String regex = "\\(.*?\\)";
