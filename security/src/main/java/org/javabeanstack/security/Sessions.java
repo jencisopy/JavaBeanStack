@@ -79,7 +79,7 @@ public class Sessions implements ISessions{
     @PostConstruct
     private void init() {
         try {
-            secretKey = CipherUtil.getSecureRandomKey(CipherUtil.BLOWFISH);
+            secretKey = CipherUtil.getSecureRandomKey(CipherUtil.BLOWFISH,128);
         } catch (NoSuchAlgorithmException ex) {
             ErrorManager.showError(ex, LOGGER);
         }
