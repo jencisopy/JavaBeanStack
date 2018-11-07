@@ -23,6 +23,7 @@
 package org.javabeanstack.datactrl;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap; 
 import java.util.Map;
 import javax.naming.NamingException;
@@ -952,6 +953,29 @@ public class AbstractDataObjectTest extends TestClass{
         field = "noexiste";
         result = AbstractDataObject.findRow(region.getDataRows(), field, value, begin, end);
         assertEquals(expResult, result);
+
+        begin = 0;
+        end = 1000;
+        field = "fechamodificacion"; // Probando con un valor fecha
+        region.moveLast();
+        value = region.getField(field);
+        result = AbstractDataObject.findRow(region.getDataRows(), field, value, begin, end);
+        assertTrue(result >= 0);
+        
+        value = new Date();
+        result = AbstractDataObject.findRow(region.getDataRows(), field, value, begin, end);
+        assertTrue(result == -1);
+        
+        IDataObject<Pais> pais = new DataObject(Pais.class, null, dataLink, null);
+        pais.open();
+        field = "noedit"; // Probando con un valores booleanos
+        value = false;
+        result = AbstractDataObject.findRow(pais.getDataRows(), field, value, begin, end);
+        assertTrue(result >= 0);
+        
+        value = true;  
+        result = AbstractDataObject.findRow(pais.getDataRows(), field, value, begin, end);
+        assertTrue(result == -1);
     }
 
     /**
@@ -1061,14 +1085,19 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of getFieldDefaultValue method, of class AbstractDataObject.
      */
-    //@Test
+    @Test
     public void test47GetFieldDefaultValue() {
-        System.out.println("getFieldDefaultValue");
-        String fieldname = "";
-        AbstractDataObject instance = new AbstractDataObjectImpl();
-        Object expResult = null;
-        Object result = instance.getFieldDefaultValue(fieldname);
-        assertEquals(expResult, result);
+        System.out.println("47-DataObject - getFieldDefaultValue");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
+        String expResult = "XX";
+        assertNotEquals(expResult,region.getFieldDefaultValue("codigo")); //Debe abrir primero
+        region.open();
+        assertEquals(expResult,region.getFieldDefaultValue("codigo")); 
     }
 
     /**

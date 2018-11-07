@@ -16,6 +16,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -41,6 +42,9 @@ public class Region extends DataRow implements Serializable {
     @NotNull
     @Column(name = "codigo")
     private String codigo;
+
+    @Transient
+    private String codigo_default="XX";
     
     @Basic(optional = false)
     @NotNull
