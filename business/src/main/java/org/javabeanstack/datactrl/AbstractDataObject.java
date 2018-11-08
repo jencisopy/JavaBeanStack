@@ -2028,28 +2028,3 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
     }
 }
-
-
-//            if (newValue == null){
-//                row.setValue(fieldname, null);
-//            } else if ((oldValue instanceof Short) && !(newValue instanceof Short)) {
-//                Short newValueAux = Short.valueOf(newValue.toString());
-//                row.setValue(fieldname, newValueAux);
-//            } else if ((oldValue instanceof Integer) && !(newValue instanceof Integer)) {
-//                Integer newValueAux = Integer.valueOf(newValue.toString());
-//                row.setValue(fieldname, newValueAux);
-//            } else if ((oldValue instanceof Long) && !(newValue instanceof Long)) {
-//                Long newValueAux = Long.valueOf(newValue.toString());
-//                row.setValue(fieldname, newValueAux);
-//            } else if ((oldValue instanceof Character) && !(newValue instanceof Character)) {
-//                char newValueAux = newValue.toString().charAt(0);
-//                row.setValue(fieldname, newValueAux);
-//            } else if ((oldValue instanceof BigDecimal) && !(newValue instanceof BigDecimal)) {
-//                BigDecimal newValueAux = new BigDecimal(newValue.toString());
-//                row.setValue(fieldname, newValueAux);
-//            } else if ((oldValue instanceof Boolean) && !(newValue instanceof Boolean)) {
-//                Boolean newValueAux = (newValue.toString().equals("1"));
-//                row.setValue(fieldname, newValueAux);
-//            } else {
-//                row.setValue(fieldname, newValue);
-//            }
