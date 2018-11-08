@@ -54,6 +54,10 @@ public class Region extends DataRow implements Serializable {
     @Column(name = "fechamodificacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechamodificacion;
+
+    @Column(name = "fechareplicacion")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechareplicacion;
     
     @Size(max = 32)
     @Column(name = "appuser")
@@ -121,6 +125,7 @@ public class Region extends DataRow implements Serializable {
     }
 
     
+    
     @PrePersist
     public void prePersist() {
         fechamodificacion = new Date();
@@ -163,6 +168,14 @@ public class Region extends DataRow implements Serializable {
     @Override
     public String toString() {
         return "Region{" + "idregion=" + idregion + ", codigo=" + codigo + ", nombre=" + nombre + '}';
+    }
+
+    public Date getFechareplicacion() {
+        return fechareplicacion;
+    }
+
+    public void setFechareplicacion(Date fechareplicacion) {
+        this.fechareplicacion = fechareplicacion;
     }
 
 }

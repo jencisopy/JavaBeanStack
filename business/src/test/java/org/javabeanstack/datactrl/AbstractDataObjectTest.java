@@ -1151,7 +1151,22 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = (String)region.getField("nombre");
         region.setField("nombre", "MODIFICADO");
         assertEquals(expResult, region.getFieldOld("nombre"));
+        
+        Date newValue = new Date();
+        Date oldValue = (Date)region.getField("fechareplicacion");
+        region.setField("fechareplicacion", newValue);
+        assertEquals(oldValue, region.getFieldOld("fechareplicacion"));
+
+        boolean result = region.update(false);
+        if (!result) {
+            System.out.println(region.getErrorMsg(true));
+        }
+        System.out.println(region.getFieldOld("fechareplicacion"));
+        System.out.println(region.getField("fechareplicacion"));
+        //Despues de la grabación al no haber modificaciones los valores deben ser iguales
+        assertTrue(region.getFieldOld("fechareplicacion").equals(region.getField("fechareplicacion")));
     }
+    
 
     /**
      * Test of beforeSetField method, of class AbstractDataObject.
@@ -1191,6 +1206,46 @@ public class AbstractDataObjectTest extends TestClass{
         assertEquals(pais.getRow().getRegion().getNombre(),pais.getField("region.nombre"));
         pais.setField("region", null);
         assertEquals(pais.getRow().getRegion(),pais.getField("region"));
+        pais.setField("region", new Region());
+        assertEquals(pais.getRow().getRegion(),pais.getField("region"));
+        
+        //
+        pais.setField("idempresa", BigDecimal.ONE);  //Castear a Long
+        assertNull(pais.getErrorApp());
+        pais.setField("idempresa", "10");  //Castear a Long
+        assertNull(pais.getErrorApp());
+        pais.setField("idempresa", Short.MAX_VALUE);  //Castear a Long
+        assertNull(pais.getErrorApp());
+        pais.setField("idempresa", 10);  //Castear a Long
+        assertNull(pais.getErrorApp());
+
+        pais.setField("latitud", null);
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", "10");  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", BigDecimal.ZERO);
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", "10.19191");  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", 10.19191D);  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", Short.MAX_VALUE);  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());        
+        pais.setField("idempresa", 10);  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", Long.MAX_VALUE);  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        
+        pais.setField("noedit", 1); // castear a boolean 
+        assertNull(pais.getErrorApp());                        
+        pais.setField("noedit", 0); // castear a boolean 
+        assertNull(pais.getErrorApp());                        
+        pais.setField("noedit", "1"); // castear a boolean 
+        assertNull(pais.getErrorApp());                        
+        pais.setField("noedit", "0"); // castear a boolean 
+        assertNull(pais.getErrorApp());                
+        pais.setField("noedit", null); // castear a boolean 
+        assertNull(pais.getErrorApp());                        
     }
 
     /**

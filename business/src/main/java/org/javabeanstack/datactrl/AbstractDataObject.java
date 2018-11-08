@@ -22,8 +22,8 @@
 package org.javabeanstack.datactrl;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,11 +67,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Registro actual
      */
     private T row;
-    /**
-     * Lista original de los datos recuperados de la base, se usa para comparar
-     * con los datos modificados
-     */
-    private Map<Integer, T> dataRowsBak;
     /**
      * Clase del registro
      */
@@ -552,7 +547,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     public void setDataRows(List<T> dataRows) {
         this.dataRows = dataRows;
-        this.dataRowsBak = new HashMap<>();
         this.recno = 0;
     }
 
@@ -603,7 +597,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             this.beforeOpen(order, filter, readwrite, maxrows);
             //
             this.recno = 0;
-            this.dataRowsBak = null;
             this.row = null;
             this.dataRows = null;
             this.readWrite = readwrite;
@@ -756,7 +749,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             this.beforeRequery();
             //
             this.recno = 0;
-            this.dataRowsBak = null;
             this.row = null;
             this.dataRows = null;
             //
@@ -850,7 +842,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             row = dataRows.get(recno);
             // Si no esta en proceso de modificación o borrado
             if (row.getAction() == 0){
-                setRowBak();
                 refreshRow();
             }
             //After move
@@ -1105,13 +1096,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public Object getFieldOld(String fieldname) {
-        /* Buscar la fila backup del puntero actual */
-        if (dataRowsBak != null && dataRowsBak.get(recno) != null) {
-            //Devolver valor de la matriz backup
-            T rowbak = dataRowsBak.get(recno);
-            return rowbak.getValue(fieldname);
-        }
-        return row.getValue(fieldname);
+        return row.getOldValue(fieldname);
     }
 
     /**
@@ -1166,6 +1151,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public boolean setField(String fieldname, Map param){
         try {
+            if (param == null){
+                setField(fieldname,(Object)param);
+                return true;
+            }
             if (!(row.getValue(fieldname) instanceof IDataRow)) {
                 return false;
             }
@@ -1212,18 +1201,28 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (!this.beforeSetField(fieldname, oldValue, newValue)) {
                 return false;
             }
-            //
-            if ((oldValue instanceof Short) && !(newValue instanceof Short)) {
+            Class<?> classMember = row.getFieldType(fieldname);
+            if (newValue == null){
+                row.setValue(fieldname, null);
+            } else if  (classMember.getName().equals(newValue.getClass().getName())){
+                  row.setValue(fieldname, newValue);
+            } else if (classMember.getSimpleName().equals("Short") && !(newValue instanceof Short)) {
                 Short newValueAux = Short.valueOf(newValue.toString());
                 row.setValue(fieldname, newValueAux);
-            } else if ((oldValue instanceof Integer) && !(newValue instanceof Integer)) {
+            } else if (classMember.getSimpleName().equals("Integer") && !(newValue instanceof Integer)) {
                 Integer newValueAux = Integer.valueOf(newValue.toString());
                 row.setValue(fieldname, newValueAux);
-            } else if ((oldValue instanceof Long) && !(newValue instanceof Long)) {
+            } else if (classMember.getSimpleName().equals("Long") && !(newValue instanceof Long)) {
                 Long newValueAux = Long.valueOf(newValue.toString());
                 row.setValue(fieldname, newValueAux);
-            } else if ((oldValue instanceof Character) && !(newValue instanceof Character)) {
+            } else if (classMember.getSimpleName().equals("Character") && !(newValue instanceof Character)) {
                 char newValueAux = newValue.toString().charAt(0);
+                row.setValue(fieldname, newValueAux);
+            } else if (classMember.getSimpleName().equals("BigDecimal") && !(newValue instanceof BigDecimal)) {
+                BigDecimal newValueAux = new BigDecimal(newValue.toString());
+                row.setValue(fieldname, newValueAux);
+            } else if (classMember.getSimpleName().equals("Boolean") && !(newValue instanceof Boolean)) {
+                Boolean newValueAux = (newValue.toString().equals("1"));
                 row.setValue(fieldname, newValueAux);
             } else {
                 row.setValue(fieldname, newValue);
@@ -1254,37 +1253,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             return this.dataEvents.afterSetField(row, fieldname, oldValue, newValue);
         }
         return true;
-    }
-
-    /**
-     * Asigna una copia del registro o la fila actual
-     *
-     */
-    private void setRowBak() {
-        if (dataRows == null){
-            LOGGER.error("El dataobject no esta abierto");
-            return;
-        }
-        if (dataRowsBak == null) {
-            initDataRowsBak();
-        }
-        // Copiar fila actual a la matriz backup
-        if (dataRowsBak.get(recno) == null) {
-            dataRowsBak.put(recno, (T) dataRows.get(recno).clone());
-        }
-    }
-
-    private void initDataRowsBak() {
-        dataRowsBak = new HashMap<>();
-    }
-
-    private void initRowBak() {
-        if (dataRowsBak == null) {
-            return;
-        }
-        if (dataRowsBak.get(recno) == null) {
-            dataRowsBak.remove(recno);
-        }
     }
 
     /**
@@ -1776,7 +1744,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                     errorApp = new Exception(dataResult.getErrorMsg());
                     return false;
                 }
-                initDataRowsBak();
+                row.setOldValues();
             } else {
                 dataResult = getDAO().update(row);
                 // Asignar el registro resultante de la actualización
@@ -1786,7 +1754,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                     errorApp = new Exception(dataResult.getErrorMsg());
                     return false;
                 }
-                initRowBak();
+                row.setOldValues();
                 // Eliminar de la lista local el registro actual si esta marcado para ser borrado
                 if (!dataResult.isRemoveDeleted()
                         && row.getAction() == IDataRow.DELETE) {
@@ -1830,7 +1798,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 errorApp = new Exception(dataResult.getErrorMsg());
                 return false;
             }
-            initDataRowsBak();
+            row.setOldValues();
             // Eliminar de la lista local el registro actual si esta marcado para ser borrado
             if (row.getAction() == IDataRow.DELETE) {
                 if (!dataResult.isRemoveDeleted()) {
@@ -1982,7 +1950,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         this.beforeClose();
         //
         this.recno = 0;
-        this.dataRowsBak = null;
         this.row = null;
         this.dataRows = null;
         //

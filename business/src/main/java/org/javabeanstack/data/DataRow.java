@@ -46,10 +46,29 @@ public class DataRow implements IDataRow, Cloneable {
     private boolean rowChecked = false;
     private Map<String, Boolean> fieldsChecked = null;
     private Map<String, IErrorReg> errors = new HashMap();
+    protected IDataRow fieldsOldValues;    
 
     //TODO implementar parent, beforesetvalue, aftersetvalue
     public DataRow() {
         this.action = 0;
+    }
+    
+    protected IDataRow getFieldsOldValues(){
+        return fieldsOldValues;
+    }
+    
+    @Override
+    public void setOldValues(){
+        fieldsOldValues = null;
+        fieldsOldValues = (IDataRow)this.clone();
+    }
+    
+    @Override
+    public Object getOldValue(String fieldName){
+        if (fieldsOldValues == null){
+            return this.getValue(fieldName);
+        }
+        return fieldsOldValues.getValue(fieldName);
     }
 
     @Override
@@ -280,6 +299,9 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public Object getValue(String fieldname) {
+        if (fieldsOldValues == null){
+            this.setOldValues();
+        }
         return DataInfo.getFieldValue(this, fieldname);
     }
 
