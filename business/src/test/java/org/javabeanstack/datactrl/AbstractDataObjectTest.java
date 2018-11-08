@@ -1151,7 +1151,22 @@ public class AbstractDataObjectTest extends TestClass{
         String expResult = (String)region.getField("nombre");
         region.setField("nombre", "MODIFICADO");
         assertEquals(expResult, region.getFieldOld("nombre"));
+        
+        Date newValue = new Date();
+        Date oldValue = (Date)region.getField("fechareplicacion");
+        region.setField("fechareplicacion", newValue);
+        assertEquals(oldValue, region.getFieldOld("fechareplicacion"));
+
+        boolean result = region.update(false);
+        if (!result) {
+            System.out.println(region.getErrorMsg(true));
+        }
+        System.out.println(region.getFieldOld("fechareplicacion"));
+        System.out.println(region.getField("fechareplicacion"));
+        //Despues de la grabación al no haber modificaciones los valores deben ser iguales
+        assertTrue(region.getFieldOld("fechareplicacion").equals(region.getField("fechareplicacion")));
     }
+    
 
     /**
      * Test of beforeSetField method, of class AbstractDataObject.
