@@ -1191,6 +1191,46 @@ public class AbstractDataObjectTest extends TestClass{
         assertEquals(pais.getRow().getRegion().getNombre(),pais.getField("region.nombre"));
         pais.setField("region", null);
         assertEquals(pais.getRow().getRegion(),pais.getField("region"));
+        pais.setField("region", new Region());
+        assertEquals(pais.getRow().getRegion(),pais.getField("region"));
+        
+        //
+        pais.setField("idempresa", BigDecimal.ONE);  //Castear a Long
+        assertNull(pais.getErrorApp());
+        pais.setField("idempresa", "10");  //Castear a Long
+        assertNull(pais.getErrorApp());
+        pais.setField("idempresa", Short.MAX_VALUE);  //Castear a Long
+        assertNull(pais.getErrorApp());
+        pais.setField("idempresa", 10);  //Castear a Long
+        assertNull(pais.getErrorApp());
+
+        pais.setField("latitud", null);
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", "10");  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", BigDecimal.ZERO);
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", "10.19191");  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", 10.19191D);  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", Short.MAX_VALUE);  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());        
+        pais.setField("idempresa", 10);  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        pais.setField("latitud", Long.MAX_VALUE);  //Castear a BigDecimal
+        assertNull(pais.getErrorApp());
+        
+        pais.setField("noedit", 1); // castear a boolean 
+        assertNull(pais.getErrorApp());                        
+        pais.setField("noedit", 0); // castear a boolean 
+        assertNull(pais.getErrorApp());                        
+        pais.setField("noedit", "1"); // castear a boolean 
+        assertNull(pais.getErrorApp());                        
+        pais.setField("noedit", "0"); // castear a boolean 
+        assertNull(pais.getErrorApp());                
+        pais.setField("noedit", null); // castear a boolean 
+        assertNull(pais.getErrorApp());                        
     }
 
     /**

@@ -22,6 +22,7 @@
 package org.javabeanstack.datactrl;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1166,6 +1167,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public boolean setField(String fieldname, Map param){
         try {
+            if (param == null){
+                setField(fieldname,(Object)param);
+                return true;
+            }
             if (!(row.getValue(fieldname) instanceof IDataRow)) {
                 return false;
             }
@@ -1212,18 +1217,28 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (!this.beforeSetField(fieldname, oldValue, newValue)) {
                 return false;
             }
-            //
-            if ((oldValue instanceof Short) && !(newValue instanceof Short)) {
+            Class<?> classMember = row.getFieldType(fieldname);
+            if (newValue == null){
+                row.setValue(fieldname, null);
+            } else if  (classMember.getName().equals(newValue.getClass().getName())){
+                  row.setValue(fieldname, newValue);
+            } else if (classMember.getSimpleName().equals("Short") && !(newValue instanceof Short)) {
                 Short newValueAux = Short.valueOf(newValue.toString());
                 row.setValue(fieldname, newValueAux);
-            } else if ((oldValue instanceof Integer) && !(newValue instanceof Integer)) {
+            } else if (classMember.getSimpleName().equals("Integer") && !(newValue instanceof Integer)) {
                 Integer newValueAux = Integer.valueOf(newValue.toString());
                 row.setValue(fieldname, newValueAux);
-            } else if ((oldValue instanceof Long) && !(newValue instanceof Long)) {
+            } else if (classMember.getSimpleName().equals("Long") && !(newValue instanceof Long)) {
                 Long newValueAux = Long.valueOf(newValue.toString());
                 row.setValue(fieldname, newValueAux);
-            } else if ((oldValue instanceof Character) && !(newValue instanceof Character)) {
+            } else if (classMember.getSimpleName().equals("Character") && !(newValue instanceof Character)) {
                 char newValueAux = newValue.toString().charAt(0);
+                row.setValue(fieldname, newValueAux);
+            } else if (classMember.getSimpleName().equals("BigDecimal") && !(newValue instanceof BigDecimal)) {
+                BigDecimal newValueAux = new BigDecimal(newValue.toString());
+                row.setValue(fieldname, newValueAux);
+            } else if (classMember.getSimpleName().equals("Boolean") && !(newValue instanceof Boolean)) {
+                Boolean newValueAux = (newValue.toString().equals("1"));
                 row.setValue(fieldname, newValueAux);
             } else {
                 row.setValue(fieldname, newValue);
@@ -2013,3 +2028,28 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
     }
 }
+
+
+//            if (newValue == null){
+//                row.setValue(fieldname, null);
+//            } else if ((oldValue instanceof Short) && !(newValue instanceof Short)) {
+//                Short newValueAux = Short.valueOf(newValue.toString());
+//                row.setValue(fieldname, newValueAux);
+//            } else if ((oldValue instanceof Integer) && !(newValue instanceof Integer)) {
+//                Integer newValueAux = Integer.valueOf(newValue.toString());
+//                row.setValue(fieldname, newValueAux);
+//            } else if ((oldValue instanceof Long) && !(newValue instanceof Long)) {
+//                Long newValueAux = Long.valueOf(newValue.toString());
+//                row.setValue(fieldname, newValueAux);
+//            } else if ((oldValue instanceof Character) && !(newValue instanceof Character)) {
+//                char newValueAux = newValue.toString().charAt(0);
+//                row.setValue(fieldname, newValueAux);
+//            } else if ((oldValue instanceof BigDecimal) && !(newValue instanceof BigDecimal)) {
+//                BigDecimal newValueAux = new BigDecimal(newValue.toString());
+//                row.setValue(fieldname, newValueAux);
+//            } else if ((oldValue instanceof Boolean) && !(newValue instanceof Boolean)) {
+//                Boolean newValueAux = (newValue.toString().equals("1"));
+//                row.setValue(fieldname, newValueAux);
+//            } else {
+//                row.setValue(fieldname, newValue);
+//            }
