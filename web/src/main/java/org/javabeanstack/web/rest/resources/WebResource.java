@@ -35,16 +35,16 @@ public class WebResource extends AbstractWebResource {
     
     @Override
     public <T extends IDataService> T getDataService() {
-        throw new UnsupportedOperationException("Debe implementar este metodo"); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Debe implementar este metodo"); 
     }
 
     @Override
-    public final ISecManager getSecManager() {
+    public ISecManager getSecManager() {
         return secManager;
     }
     
     @Override
-    public final ISecManager getSecManager(String jndi) {
+    public ISecManager getSecManager(String jndi) {
         return secManager;
     }    
 }

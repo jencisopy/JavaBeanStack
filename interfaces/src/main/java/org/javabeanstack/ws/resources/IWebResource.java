@@ -11,7 +11,6 @@ public interface IWebResource{
     <T extends IDataService> T getDataService();
     ISecManager getSecManager();
     ISecManager getSecManager(String jndi);
-    Long getIdempresa();
     Long getIdCompany();    
     Long getIdPerson();
     String getPersonRol();

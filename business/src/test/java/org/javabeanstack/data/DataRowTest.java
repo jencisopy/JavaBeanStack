@@ -130,6 +130,23 @@ public class DataRowTest {
         assertEquals("codigocambiado", row.getValue(fieldname));
     }
     
+    @Test
+    public void testHashcode() {
+        System.out.println("DataRow - HashCode");
+        DataRowPrb row = new DataRowPrb();
+        row.setId(2L);
+        int hashCode = row.hashCode();
+        System.out.println(row.hashCode());
+        for (int i = 0;i<10;i++){
+            int hashCode2 = row.hashCode();
+            assertEquals(hashCode, hashCode2);
+        }
+        row.setId(999999999999999L);
+        System.out.println(row.hashCode());
+        row.setId(-999999999999999L);
+        System.out.println(row.hashCode());
+    }
+    
     class DataRowPrb extends DataRow {
         @Id
         private Long id = 1L;
@@ -137,6 +154,11 @@ public class DataRowTest {
         private String nombre = "nombre";
         private final DataRowPrbChild child = new DataRowPrbChild();
 
+        
+        public void setId(Long id) {
+            this.id = id;
+        }
+        
         public String getCodigo() {
             return codigo;
         }
@@ -173,6 +195,8 @@ public class DataRowTest {
             return child;
         }
     }
+    
+    
 
     class DataRowPrbChild extends DataRow {
         @Id

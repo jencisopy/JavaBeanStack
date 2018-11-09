@@ -52,24 +52,6 @@ public class DataRow implements IDataRow, Cloneable {
     public DataRow() {
         this.action = 0;
     }
-    
-    protected IDataRow getFieldsOldValues(){
-        return fieldsOldValues;
-    }
-    
-    @Override
-    public void setOldValues(){
-        fieldsOldValues = null;
-        fieldsOldValues = (IDataRow)this.clone();
-    }
-    
-    @Override
-    public Object getOldValue(String fieldName){
-        if (fieldsOldValues == null){
-            return this.getValue(fieldName);
-        }
-        return fieldsOldValues.getValue(fieldName);
-    }
 
     @Override
     public Object clone() {
@@ -80,6 +62,36 @@ public class DataRow implements IDataRow, Cloneable {
             ErrorManager.showError(ex, LOGGER);
         }
         return obj;
+    }
+
+    /**
+     * Devuelve un atributo con los valores originales antes de ser modificado.
+     * @return un atributo con los valores originales antes de ser modificado.
+     */
+    protected IDataRow getFieldsOldValues(){
+        return fieldsOldValues;
+    }
+    
+    /**
+     * Se guarda en un atributo los valores originales del objeto
+     */
+    @Override
+    public void setOldValues(){
+        fieldsOldValues = null;
+        fieldsOldValues = (IDataRow)this.clone();
+    }
+    
+    /**
+     * Devuelve el valor original de un campo antes de ser modificado.
+     * @param fieldName nombre del atributo o campo.
+     * @return el valor original antes de ser modificado de un campo.
+     */
+    @Override
+    public Object getOldValue(String fieldName){
+        if (fieldsOldValues == null){
+            return this.getValue(fieldName);
+        }
+        return fieldsOldValues.getValue(fieldName);
     }
 
     /**
@@ -329,6 +341,9 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void setValue(String fieldname, Object value) throws FieldException{
+        if (fieldsOldValues == null){
+            this.setOldValues();
+        }
         Boolean exito = DataInfo.setFieldValue(this, fieldname, value);
         if (!exito){
             LOGGER.error("fieldname: "+fieldname);
@@ -350,6 +365,10 @@ public class DataRow implements IDataRow, Cloneable {
         return true;
     }
 
+    /**
+     * Identificador del objeto
+     * @return identificador del objeto
+     */
     @Override
     public int hashCode() {
         int hash = 0;
@@ -358,6 +377,11 @@ public class DataRow implements IDataRow, Cloneable {
         return hash;
     }
 
+    /**
+     * Determina si este objeto es igual a uno que se recibe como parámetro
+     * @param obj objeto a comparar.
+     * @return verdadero si es igual y falso si no
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -371,16 +395,35 @@ public class DataRow implements IDataRow, Cloneable {
         return Objects.equals(this.getId(), other.getId());
     }
 
+    /**
+     * Determina si este objeto es equivalente (ciertos atributos son iguales) a 
+     * el objeto que se pasa como parámetro.
+     * @param o  objeto a comparar.
+     * @return verdadero si es equivalente y falso si no
+     */
     @Override
     public boolean equivalent(Object o) {
         throw new UnsupportedOperationException("Debe implementar el metodo equivalent en " + getClass().getName());
     }
 
+    /**
+     * Si se aplica o no el filtro por defecto en la selección de datos.
+     * Este metodo se modifica en las clases derivadas si se debe cambiar el 
+     * comportamiento.
+     * 
+     * @return verdadero si y falso no
+     */
     @Override
     public boolean isApplyDBFilter() {
-        return false;
+        return true;
     }
 
+    /**
+     * Verifica que el valor de idcompany sea válido 
+     * (En caso que corresponda, hay componentes que no se deben realizar esta validación) 
+     * @param idcompany  
+     * @return verdadero si pasa la validación y falso si no.
+     */
     @Override
     public boolean checkFieldIdcompany(Long idcompany) {
         if (!DataInfo.isFieldExist(this.getClass(), "idcompany") && 

@@ -32,7 +32,7 @@ import org.javabeanstack.ws.resources.IWebResource;
  * @author Jorge Enciso
  */
 public abstract class AbstractWebResource implements IWebResource {
-    private Long idempresa;
+    private Long idcompany;
     private Long idPerson;
     private String personRol;
     private String token;
@@ -46,13 +46,8 @@ public abstract class AbstractWebResource implements IWebResource {
     public abstract ISecManager getSecManager();
 
     @Override
-    public Long getIdempresa() {
-        return idempresa;
-    }
-
-    @Override
     public Long getIdCompany() {
-        return idempresa;
+        return idcompany;
     } 
     
     @Override
@@ -74,7 +69,7 @@ public abstract class AbstractWebResource implements IWebResource {
         verifyToken(token);
         String[] tokens = token.split("\\-");
         //TODO analizar este codigo
-        this.idempresa = Long.parseLong(tokens[0]);
+        this.idcompany = Long.parseLong(tokens[0]);
         this.idPerson = Long.parseLong(tokens[1]);
         this.token = token;
     }
@@ -88,4 +83,10 @@ public abstract class AbstractWebResource implements IWebResource {
     public String getPersonRol() {
         return personRol;
     }
+
+    public String getToken() {
+        return token;
+    }
+    
+    
 }
