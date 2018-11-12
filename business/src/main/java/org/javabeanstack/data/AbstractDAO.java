@@ -70,7 +70,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * Es el objeto responsable de la creación y gestión de los entity manager
      */
     @EJB
-    private IDBManagerLocal dbManager;
+    private IDBManager dbManager;
     /**
      * Es el objeto responsable gestión de las sesiones de usuarios
      */
@@ -270,9 +270,11 @@ public abstract class AbstractDAO implements IGenericDAO {
         // Si se va a aplicar el filtro por defecto 
         if (entity.isApplyDBFilter()) {
             String operator = (filter.isEmpty() ? "" : " and ");
-            String dbFilterExpr = dbLinkInfo.getDBFilter().getFilterExpr(entityClass, "");
-            if (!Strings.isNullorEmpty(dbFilterExpr)) {
-                filter = dbFilterExpr + operator + filter;
+            if (dbLinkInfo.getDBFilter() != null){
+                String dbFilterExpr = dbLinkInfo.getDBFilter().getFilterExpr(entityClass, "");
+                if (!Strings.isNullorEmpty(dbFilterExpr)) {
+                    filter = dbFilterExpr + operator + filter;
+                }
             }
         }
         //Filtro

@@ -21,6 +21,7 @@
 */
 package org.javabeanstack.data;
 
+import java.io.Serializable;
 import javax.persistence.EntityManager;
 
 /**
@@ -29,7 +30,7 @@ import javax.persistence.EntityManager;
  * 
  * @author Jorge Enciso
  */
-public interface IDBManager {
+public interface IDBManager extends Serializable{
     public static final String CATALOGO = "PU1";
     public static final int PERTHREAD = 1;    
     public static final int PERSESSION = 2;

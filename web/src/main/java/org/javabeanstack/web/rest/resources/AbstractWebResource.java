@@ -55,6 +55,25 @@ public abstract class AbstractWebResource implements IWebResource {
         return requestContext.getRemoteAddr();
     }
 
+    @Override    
+    public final String getRemoteHost() {
+        return requestContext.getRemoteHost();
+    }
+    
+    @Override
+    public Long getIdPerson() {
+        return idPerson;
+    }
+
+    @Override
+    public String getPersonRol() {
+        return personRol;
+    }
+
+    public String getToken() {
+        return token;
+    }
+    
     public final Boolean verifyToken(String token) {
         if (token == null){
             throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
@@ -73,20 +92,4 @@ public abstract class AbstractWebResource implements IWebResource {
         this.idPerson = Long.parseLong(tokens[1]);
         this.token = token;
     }
-
-    @Override
-    public Long getIdPerson() {
-        return idPerson;
-    }
-
-    @Override
-    public String getPersonRol() {
-        return personRol;
-    }
-
-    public String getToken() {
-        return token;
-    }
-    
-    
 }

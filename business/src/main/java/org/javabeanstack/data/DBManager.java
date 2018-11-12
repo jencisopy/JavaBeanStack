@@ -48,7 +48,7 @@ import org.javabeanstack.util.Dates;
  */
 @Startup
 @Lock(LockType.READ)
-public class DBManager implements IDBManager, IDBManagerLocal, IDBManagerRemote{
+public class DBManager implements IDBManager{
     private static final Logger LOGGER = Logger.getLogger(DBManager.class);    
     private int entityIdStrategic = IDBManager.PERSESSION;
     private Date lastPurge=new Date();

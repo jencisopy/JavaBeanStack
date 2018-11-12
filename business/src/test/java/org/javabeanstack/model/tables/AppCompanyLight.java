@@ -355,4 +355,15 @@ public class AppCompanyLight extends DataRow implements IAppCompany {
         return (this.idcompany.equals(obj.getIdcompany()));
     }
 
+    /**
+     * Si se aplica o no el filtro por defecto en la selección de datos.
+     * Este metodo se modifica en las clases derivadas si se debe cambiar el 
+     * comportamiento.
+     * 
+     * @return verdadero si y falso no
+     */
+    @Override
+    public boolean isApplyDBFilter() {
+        return false;
+    }    
 }

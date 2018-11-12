@@ -392,4 +392,16 @@ public class AppUser extends DataRow implements IAppUser {
             expiredDate = Dates.toDate("31/12/9999");
         }
     }    
+    
+    /**
+     * Si se aplica o no el filtro por defecto en la selección de datos.
+     * Este metodo se modifica en las clases derivadas si se debe cambiar el 
+     * comportamiento.
+     * 
+     * @return verdadero si y falso no
+     */
+    @Override
+    public boolean isApplyDBFilter() {
+        return false;
+    }
 }

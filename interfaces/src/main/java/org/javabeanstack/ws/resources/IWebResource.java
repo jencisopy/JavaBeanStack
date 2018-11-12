@@ -15,4 +15,5 @@ public interface IWebResource{
     Long getIdPerson();
     String getPersonRol();
     String getIpClient();     
+    String getRemoteHost();         
 }

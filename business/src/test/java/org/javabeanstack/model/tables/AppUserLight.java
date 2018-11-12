@@ -370,4 +370,16 @@ public class AppUserLight extends DataRow implements IAppUser {
     public String toString() {
         return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName + ", clave=" + pass + ", clave2=" + passConfirm + ", descripcion=" + description + ", disable=" + disable + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
     }
+    
+    /**
+     * Si se aplica o no el filtro por defecto en la selección de datos.
+     * Este metodo se modifica en las clases derivadas si se debe cambiar el 
+     * comportamiento.
+     * 
+     * @return verdadero si y falso no
+     */
+    @Override
+    public boolean isApplyDBFilter() {
+        return false;
+    }    
 }
