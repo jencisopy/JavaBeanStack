@@ -605,6 +605,49 @@ public abstract class AbstractDAO implements IGenericDAO {
 
     /**
      *
+     * @param <T>
+     * @param clazz
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia sql
+     * @param parameters parámetros de la sentencia.
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return una lista de objetos con datos de los registros solicitados
+     * @throws Exception
+     */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public <T extends IDataRow> List<T> findByNativeQuery(Class<T> clazz, String sessionId, String queryString,
+            Map<String, Object> parameters,
+            int first, int max) throws Exception {
+        LOGGER.debug(Strings.replicate("-", 50));
+        LOGGER.debug("findByNativeQuery");
+
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
+        String persistUnit;
+        if (dbLinkInfo != null) {
+            persistUnit = dbLinkInfo.getPersistUnit();
+        } else {
+            persistUnit = IDBManager.CATALOGO;
+        }
+
+        queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
+        LOGGER.debug(queryString);
+
+        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+
+        Query query = em.createNativeQuery(queryString, clazz);
+        if (parameters != null && !parameters.isEmpty()) {
+            populateQueryParameters(query, parameters, queryString);
+        }
+        query.setFirstResult(first);
+        query.setMaxResults(max);
+        return query.getResultList();
+    }
+    
+    /**
+     *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
      * @param sqlString sentencia sql

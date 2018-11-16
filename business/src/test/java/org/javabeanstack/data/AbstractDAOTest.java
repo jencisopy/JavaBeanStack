@@ -29,6 +29,8 @@ import java.util.Map;
 import org.javabeanstack.model.tables.AppResource;
 import org.javabeanstack.model.tables.AppTablesRelation;
 import org.javabeanstack.model.tables.AppUser;
+import org.javabeanstack.model.tables.Moneda;
+import org.javabeanstack.model.views.CtactemovimientodetalleView;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -250,6 +252,18 @@ public class AbstractDAOTest extends TestClass {
         // Un grupo de registros first, max
         query1 = dao.findByNativeQuery(sessionid, sqlSentence, params,0,10);
         assertTrue(!query1.isEmpty());
+        
+        // Un grupo de registros first, max
+        List<Moneda> query2 = dao.findByNativeQuery(Moneda.class, sessionid, sqlSentence, params,0,10);
+        assertTrue(!query2.isEmpty());
+        
+        sqlSentence = "SELECT b.*, a.fecha "
+                    + " FROM {schema}.ctactemovimientodetalle_view b "
+                    + " INNER JOIN {schema}.ctactemovimiento a ON a.idctactemovimiento = b.idctactemovimiento ";
+        
+        // Un grupo de registros first, max
+        List<CtactemovimientodetalleView> query3 = dao.findByNativeQuery(CtactemovimientodetalleView.class, sessionid, sqlSentence, params,0,10);
+        assertTrue(!query3.isEmpty());
     }
 
 

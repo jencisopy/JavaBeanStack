@@ -431,6 +431,22 @@ public abstract class AbstractDataService implements IDataService {
         return dao.findByNativeQuery(sessionId, queryString, parameters, first, max);
     }
 
+    /**
+     *
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param queryString sentencia sql
+     * @param parameters parámetros de la sentencia.
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return una lista de objetos con datos de los registros solicitados
+     * @throws Exception
+     */
+    @Override
+    public <T extends IDataRow> List<T> findByNativeQuery(Class<T> clazz, String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
+        return dao.findByNativeQuery(clazz, sessionId, queryString, parameters, first, max);
+    }
+    
 
     /**
      * Refresca desde la base de datos los valores de un objeto.

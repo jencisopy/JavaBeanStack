@@ -24,6 +24,7 @@ package org.javabeanstack.data;
 
 import java.util.List;
 import java.util.Map;
+import javax.json.JsonArray;
 
 
 /**

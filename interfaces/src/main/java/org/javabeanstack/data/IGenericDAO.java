@@ -325,6 +325,20 @@ public interface IGenericDAO extends Serializable {
      * @throws Exception
      */
     public List<Object> findByNativeQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
+    /**
+     * Selecciona datos de la base de datos a travez de una instrucción sql nativa
+     *
+     * @param <T>
+     * @param clazz
+     * @param sessionId identificador de la sesión del usuario 
+     * @param queryString sentencia sql
+     * @param parameters parámetros de la sentencia.
+     * @param first a partir de este nro. de registro se va a traer los datos
+     * @param max cantidad maxima de registros
+     * @return una lista de objetos con datos de los registros solicitados
+     * @throws Exception
+     */
+    public <T extends IDataRow> List<T> findByNativeQuery(Class<T> clazz, String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
 
     /**
      * Ejecuta una sentencia (select, insert, update, remove) sobre la base de
