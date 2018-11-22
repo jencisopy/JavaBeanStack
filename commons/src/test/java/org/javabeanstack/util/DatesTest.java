@@ -217,4 +217,11 @@ public class DatesTest {
         Date result = Dates.getLastTimeOfDay(date);
         assertEquals(expResult, result);
     }
+    
+    @Test
+    public void testNumberToDate() {
+        System.out.println("numberToDate");
+        Date date = new Date(1516239022);
+        System.out.println(date);
+    }
 }
