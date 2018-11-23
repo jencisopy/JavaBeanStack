@@ -33,9 +33,6 @@ public interface IAppAuthConsumerToken extends IDataRow {
     String getTokenSecret();
     void setTokenSecret(String tokenSecret);
 
-    Long getIdPerson();
-    void setIdPerson(Long idPerson);
-    
     String getData();
     void setData(String data);
     

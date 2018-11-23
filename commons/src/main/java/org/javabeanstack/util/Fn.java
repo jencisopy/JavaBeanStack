@@ -194,4 +194,13 @@ public class Fn {
     public static String bytesToBase64(byte[] text){
         return Base64.getEncoder().encodeToString(text);
     }
+    
+    /**
+     * Códifica un dato tipo byte[] a base 64 tipo url
+     * @param text datos tipo byte[]
+     * @return tipo byte[] a base 64
+     */
+    public static String bytesToBase64Url(byte[] text){
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(text);
+    }
 }

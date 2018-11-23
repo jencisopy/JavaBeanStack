@@ -43,8 +43,11 @@ public interface IAppAuthConsumer extends IDataRow {
     String getPrivateKey();
     void setPrivateKey(String privateKey);
     
-    String getSignatureMethod();
-    void setSignatureMethod(String method);
+    String getSignatureAlgorithm();
+    void setSignatureAlgorithm(String algorithm);
+
+    String getCryptoAlgorithm();
+    void setCryptoAlgorithm(String algorithm);
     
     Boolean getBlocked();
     void setBlocked(boolean blocked);

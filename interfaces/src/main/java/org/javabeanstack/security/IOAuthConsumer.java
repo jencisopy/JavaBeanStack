@@ -23,6 +23,7 @@
 package org.javabeanstack.security;
 
 import java.util.Date;
+import java.util.Map;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.services.IDataService;
@@ -33,7 +34,8 @@ import org.javabeanstack.services.IDataService;
  */
 public interface IOAuthConsumer {
     boolean createAuthConsumer(String consumerName, Date expiredDate);
-    String createToken(String consumerKey);
+    String createToken(String consumerKey, String data);
+    String createToken(String consumerKey, Map<String, String> data);    
     boolean dropAuthConsumer(String consumerKey);
     boolean dropToken(String consumerKey, String tokenSecret);
     IAppAuthConsumer getAuthConsumer();

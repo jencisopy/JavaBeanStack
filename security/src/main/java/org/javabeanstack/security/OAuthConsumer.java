@@ -24,6 +24,7 @@ package org.javabeanstack.security;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
@@ -65,7 +66,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @param consumerKey clave del consumidor
      * @return registro AppAuthConsumer
      */
-    protected final IAppAuthConsumer findAuthConsumer(String consumerKey){
+    protected IAppAuthConsumer findAuthConsumer(String consumerKey){
         String queryString = "select o from AppConsumer where consumerKey = :consumerKey";
         Map<String, Object> parameters = new HashMap();
         parameters.put("consumerKey",consumerKey);
@@ -83,7 +84,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @param token 
      * @return registro AppAuthConsumerToken
      */
-    protected final IAppAuthConsumerToken findToken(String token){
+    protected IAppAuthConsumerToken findAuthToken(String token){
         String queryString = "select o from AppConsumerToken where token = :token";
         Map<String, Object> parameters = new HashMap();
         parameters.put("token",token);
@@ -103,7 +104,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @param tokenSecret clave del token.
      * @return registro AppAuthConsumerToken
      */
-    protected final IAppAuthConsumerToken findToken(String consumerKey, String tokenSecret){
+    protected IAppAuthConsumerToken findAuthToken(String consumerKey, String tokenSecret){
         String queryString = "select o from AppConsumerToken where consumerKey = :consumerKey and tokenSecret = :tokenSecret";
         Map<String, Object> parameters = new HashMap();
         parameters.put("consumerKey", consumerKey);
@@ -146,12 +147,12 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      */
     @Override
     public boolean dropAuthConsumer(String consumerKey){
-        IAppAuthConsumer appConsumer = findAuthConsumer(consumerKey);
-        if (appConsumer == null){
+        IAppAuthConsumer authConsumer = findAuthConsumer(consumerKey);
+        if (authConsumer == null){
             return false;
         }
         try {        
-            IDataResult dataResult = dao.remove(null, appConsumer);
+            IDataResult dataResult = dao.remove(null, authConsumer);
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -167,22 +168,28 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      */
     @Override
     public final String getToken(String consumerKey, String tokenSecret){
-        IAppAuthConsumerToken authConsumerToken = findToken(consumerKey, tokenSecret);
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, tokenSecret);
         if (authConsumerToken != null){
             return authConsumerToken.getToken();
         }
         return null;
     }
     
+    /**
+     * Graba una solicitud de token, debe completarse el proceso en otro programa.
+     * @param consumerKey clave del consumidor 
+     * @return verdadero si tuvo exito y falso si no.
+     */
     @Override
     public boolean requestToken(String consumerKey){
         try {
-            IAppAuthConsumerToken appConsumerToken = getAuthConsumerToken().getClass().newInstance();            
-            appConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
-            appConsumerToken.setBlocked(true);
-            //appConsumerToken.setToken(token);
-            //appConsumerToken.setTokenSecret(token);
-            IDataResult dataResult = dao.persist(null, appConsumerToken);
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerToken().getClass().newInstance();            
+            authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
+            authConsumerToken.setBlocked(true);
+            String token = getRandomToken();
+            authConsumerToken.setToken(token);
+            authConsumerToken.setTokenSecret(token);
+            IDataResult dataResult = dao.persist(null, authConsumerToken);
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -190,11 +197,62 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
         return false;
     }
     
+    /**
+     * Crea y graba en la base de datos el registro de un token de autorización
+     * @param consumerKey clave del consumidor.
+     * @param data información del token.
+     * @return valor del token.
+     */
     @Override
-    public String createToken(String consumerKey){
+    public String createToken(String consumerKey, String data){
+        try {
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerToken().getClass().newInstance();            
+            authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
+            authConsumerToken.setBlocked(false);
+            authConsumerToken.setData(data);
+            String token = signTokenData(authConsumerToken);
+            authConsumerToken.setToken(token);
+            String tokenSecret = getTokenSecret(authConsumerToken);
+            authConsumerToken.setTokenSecret(tokenSecret);
+            IDataResult dataResult = dao.persist(null, authConsumerToken);
+            if (!dataResult.isSuccessFul()){
+                return "";
+            }
+            return authConsumerToken.getToken();
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
         return null;
     }
 
+    /**
+     * Crea un token válido.
+     * @param consumerKey clave del consumidor.
+     * @param data datos del token.
+     * @return valor del token si tuvo exito.
+     */
+    @Override
+    public String createToken(String consumerKey, Map<String, String> data){
+        try {
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerToken().getClass().newInstance();            
+            authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
+            authConsumerToken.setBlocked(false);
+            //TODO ver
+            authConsumerToken.setData(data.toString());
+            String token = signTokenData(authConsumerToken);
+            authConsumerToken.setToken(token);
+            authConsumerToken.setTokenSecret(token);
+            IDataResult dataResult = dao.persist(null, authConsumerToken);
+            if (!dataResult.isSuccessFul()){
+                return null;
+            }
+            return authConsumerToken.getToken();
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
+    }
+    
     /**
      * Elimina un token de la base de datos.
      * @param consumerKey clave del consumidor.
@@ -203,7 +261,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      */
     @Override
     public boolean dropToken(String consumerKey, String tokenSecret){
-        IAppAuthConsumerToken authConsumerToken = findToken(consumerKey, tokenSecret);
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, tokenSecret);
         if (authConsumerToken == null){
             return false;
         }
@@ -226,20 +284,22 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      */
     protected String createConsumerKey(IAppAuthConsumer authConsumer) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException{
         String consumer ;
-        String method = CipherUtil.BLOWFISH+"_HmacSHA256";
-        authConsumer.setSignatureMethod(method);
-        
+        // Seleccionar tipo de algoritmo para firmar y para encriptar
+        authConsumer.setCryptoAlgorithm(CipherUtil.BLOWFISH);
+        authConsumer.setSignatureAlgorithm(DigestUtil.SHA1);
+        // Generación de la clave en forma aleatoria
         SecretKey privateKey = CipherUtil.getSecureRandomKey(CipherUtil.BLOWFISH, 256);        
         String encodedKey = Fn.bytesToBase64(privateKey.getEncoded());        
-        authConsumer.setPrivateKey(encodedKey);        
-        authConsumer.setPublicKey(null);        
+        authConsumer.setPrivateKey(encodedKey);
+        authConsumer.setPublicKey(null);
         
         consumer = authConsumer.getConsumerName();
         consumer += ":"+authConsumer.getExpiredDate();
-        consumer += ":"+authConsumer.getSignatureMethod();
+        consumer += ":"+authConsumer.getSignatureAlgorithm();
         
-        String consumerKey = DigestUtil.digestHmacToBase64Url("HmacSHA256", consumer, privateKey.getEncoded());
-        return consumerKey;
+        MessageDigest digest = MessageDigest.getInstance(DigestUtil.SHA1);
+        byte[] digestMessage = digest.digest(consumer.getBytes("UTF-8"));
+        return Fn.bytesToBase64Url(digestMessage);
     }
     
     /**
@@ -254,5 +314,65 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
         // rebuild key using SecretKeySpec
         SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, algorithm);        
         return originalKey;
+    }
+    
+    /**
+     * Calcula el valor del token
+     * @param model detalle de la información del token.
+     * @return token
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException
+     * @throws InvalidKeyException 
+     */
+    protected String signTokenData(IAppAuthConsumerToken model) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException{
+        if (model == null || model.getAppAuthConsumer() == null){
+            return null;
+        }
+        String data;
+        data = model.getAppAuthConsumer().getConsumerKey();
+        data += ":" + model.getAppAuthConsumer().getExpiredDate();
+        data += ":" + model.getData();
+        String algorithm = model.getAppAuthConsumer().getSignatureAlgorithm();
+
+        MessageDigest digest = MessageDigest.getInstance(algorithm);
+        byte[] digestMessage = digest.digest(data.getBytes("UTF-8"));
+        return Fn.bytesToBase64Url(digestMessage);
+    }
+
+    /**
+     * Calcula el valor de la clave del token
+     * @param model detalle de la información del token.
+     * @return clavel del token
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException
+     * @throws InvalidKeyException 
+     */
+    protected String getTokenSecret(IAppAuthConsumerToken model) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException{
+        if (model == null || model.getAppAuthConsumer() == null){
+            return null;
+        }
+        String data;
+        data = model.getAppAuthConsumer().getConsumerKey();
+        data += ":" + model.getAppAuthConsumer().getExpiredDate();
+        data += ":" + model.getData();
+        data += ":" + model.getToken(); // Debio calcularse antes
+        String algorithm = model.getAppAuthConsumer().getSignatureAlgorithm();
+
+        MessageDigest digest = MessageDigest.getInstance(algorithm);
+        byte[] digestMessage = digest.digest(data.getBytes("UTF-8"));
+        return Fn.bytesToBase64Url(digestMessage);
+    }
+    
+    /**
+     * Genera un valor aleatorio para un token temporal.
+     * @return valor aleatorio para un token temporal.
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException 
+     */
+    protected String getRandomToken() throws NoSuchAlgorithmException, UnsupportedEncodingException{
+        Integer random = (int)(Math.random() * 50 + 1);
+        MessageDigest digest = MessageDigest.getInstance(DigestUtil.SHA1);
+        byte[] digestMessage = digest.digest(random.toString().getBytes());
+        return Fn.bytesToBase64Url(digestMessage);
     }
 }
