@@ -3,7 +3,7 @@ package org.javabeanstack.services;
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.tables.AppUser;
+import org.javabeanstack.model.appcatalog.AppUser;
 
 /**
  *

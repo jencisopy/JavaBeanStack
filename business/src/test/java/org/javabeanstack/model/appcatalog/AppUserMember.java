@@ -1,4 +1,4 @@
-package org.javabeanstack.model.tables;
+package org.javabeanstack.model.appcatalog;
 
 import java.util.Objects; 
 import javax.persistence.Basic;

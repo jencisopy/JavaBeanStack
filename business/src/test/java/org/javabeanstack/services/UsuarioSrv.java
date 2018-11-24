@@ -8,7 +8,7 @@ import org.javabeanstack.data.DBManager;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.tables.AppUser;
+import org.javabeanstack.model.appcatalog.AppUser;
 
 
 /**

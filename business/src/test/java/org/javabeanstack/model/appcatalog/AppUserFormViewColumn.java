@@ -12,7 +12,7 @@
 * is strictly forbidden unless prior written permission is obtained
 * from OyM System Group S.A.
  */
-package org.javabeanstack.model.tables;
+package org.javabeanstack.model.appcatalog;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;

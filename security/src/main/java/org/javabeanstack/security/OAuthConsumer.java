@@ -128,7 +128,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
     @Override
     public boolean createAuthConsumer(String consumerName, Date expiredDate){
         try {
-            IAppAuthConsumer authConsumer = getAuthConsumer().getClass().newInstance();            
+            IAppAuthConsumer authConsumer = getAuthConsumerClass().newInstance();            
             authConsumer.setConsumerName(consumerName);
             authConsumer.setExpiredDate(expiredDate);
             authConsumer.setConsumerKey(createConsumerKey(authConsumer));
@@ -183,7 +183,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
     @Override
     public boolean requestToken(String consumerKey){
         try {
-            IAppAuthConsumerToken authConsumerToken = getAuthConsumerToken().getClass().newInstance();            
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();            
             authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(true);
             String token = getRandomToken();
@@ -206,7 +206,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
     @Override
     public String createToken(String consumerKey, String data){
         try {
-            IAppAuthConsumerToken authConsumerToken = getAuthConsumerToken().getClass().newInstance();            
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();            
             authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
             authConsumerToken.setData(data);
@@ -234,7 +234,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
     @Override
     public String createToken(String consumerKey, Map<String, String> data){
         try {
-            IAppAuthConsumerToken authConsumerToken = getAuthConsumerToken().getClass().newInstance();            
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();            
             authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
             //TODO ver

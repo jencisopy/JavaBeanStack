@@ -38,8 +38,8 @@ public interface IOAuthConsumer {
     String createToken(String consumerKey, Map<String, String> data);    
     boolean dropAuthConsumer(String consumerKey);
     boolean dropToken(String consumerKey, String tokenSecret);
-    IAppAuthConsumer getAuthConsumer();
-    IAppAuthConsumerToken getAuthConsumerToken();
+    Class<IAppAuthConsumer> getAuthConsumerClass();
+    Class<IAppAuthConsumerToken> getAuthConsumerTokenClass();
     String getToken(String consumerKey, String tokenSecret);
     boolean requestToken(String consumerKey);
     void setDao(IDataService dao);

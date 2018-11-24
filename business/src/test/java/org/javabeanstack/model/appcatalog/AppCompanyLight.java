@@ -1,4 +1,4 @@
-package org.javabeanstack.model.tables;
+package org.javabeanstack.model.appcatalog;
 
 import java.util.Date;
 import java.util.List;
@@ -7,8 +7,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -20,23 +18,21 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppCompany;
 
-
 /**
  *
  * @author Jorge Enciso
  */
 @Entity
-@Table(name = "empresa") 
+@Table(name = "empresa")
 @XmlRootElement
-public class AppCompany extends DataRow implements IAppCompany {
+public class AppCompanyLight extends DataRow implements IAppCompany {
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @NotNull
     @Column(name = "idempresa")
     private Long idcompany;
-    
-
     @Column(name = "idempresamask")
     private Long idcompanymask;
     @Column(name = "idperiodo")
@@ -68,8 +64,6 @@ public class AppCompany extends DataRow implements IAppCompany {
     @Column(name = "filesystem")
     private String filesystem;
 
-    @Column(name = "logo2")
-    private byte[] logo2;
     @Size(max = 50)
     @Column(name = "motordatos")
     private String dbengine;
@@ -97,19 +91,19 @@ public class AppCompany extends DataRow implements IAppCompany {
     private String appuser;
 
     @OneToMany(mappedBy = "idcompanygroup")
-    private List<AppCompany> empresaList;
+    private List<AppCompanyLight> empresaList;
 
     @Column(name = "idempresagrupo")
     private Long idcompanygroup;
 
-    public AppCompany() {
+    public AppCompanyLight() {
     }
 
-    public AppCompany(Long idempresa) {
+    public AppCompanyLight(Long idempresa) {
         this.idcompany = idempresa;
     }
 
-    public AppCompany(Long idempresa, String nombre) {
+    public AppCompanyLight(Long idempresa, String nombre) {
         this.idcompany = idempresa;
         this.name = nombre;
     }
@@ -300,12 +294,11 @@ public class AppCompany extends DataRow implements IAppCompany {
     
     @Override
     public byte[] getLogo() {
-        return logo2;
+        return null;
     }
 
     @Override
     public void setLogo(byte[] logo) {
-        this.logo2 = logo;
     }
     
     @XmlTransient
@@ -316,7 +309,7 @@ public class AppCompany extends DataRow implements IAppCompany {
 
     @Override
     public void setCompanyList(List<IAppCompany> empresaList) {
-        this.empresaList = (List<AppCompany>) (List<?>) empresaList;
+        this.empresaList = (List<AppCompanyLight>) (List<?>) empresaList;
     }
 
     @Override
@@ -338,10 +331,10 @@ public class AppCompany extends DataRow implements IAppCompany {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof AppCompany)) {
+        if (!(object instanceof AppCompanyLight)) {
             return false;
         }
-        AppCompany other = (AppCompany) object;
+        AppCompanyLight other = (AppCompanyLight) object;
         if ((this.idcompany == null && other.idcompany != null) || (this.idcompany != null && !this.idcompany.equals(other.idcompany))) {
             return false;
         }
@@ -355,19 +348,13 @@ public class AppCompany extends DataRow implements IAppCompany {
 
     @Override
     public boolean equivalent(Object o) {
-        if (!(o instanceof AppCompany)) {
+        if (!(o instanceof AppCompanyLight)) {
             return false;
         }
-        AppCompany obj = (AppCompany) o;
+        AppCompanyLight obj = (AppCompanyLight) o;
         return (this.idcompany.equals(obj.getIdcompany()));
     }
 
-    @PreUpdate
-    @PrePersist
-    public void preUpdate() {
-        fechamodificacion = new Date();
-    }    
-    
     /**
      * Si se aplica o no el filtro por defecto en la selección de datos.
      * Este metodo se modifica en las clases derivadas si se debe cambiar el 
@@ -378,5 +365,5 @@ public class AppCompany extends DataRow implements IAppCompany {
     @Override
     public boolean isApplyDBFilter() {
         return false;
-    }
+    }    
 }

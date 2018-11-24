@@ -1,4 +1,4 @@
-package org.javabeanstack.model.tables;
+package org.javabeanstack.model.appcatalog;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,27 +11,23 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.model.IAppUserMember;
-import org.javabeanstack.util.Dates;
 
 @Entity
-@Table(name = "usuario",
-        uniqueConstraints = { @UniqueConstraint(columnNames = {"codigo"})})
-public class AppUser extends DataRow implements IAppUser {
+@Table(name = "usuario")
+public class AppUserLight extends DataRow implements IAppUser {
 
-    private static final long serialVersionUID = 0L;
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -95,9 +91,6 @@ public class AppUser extends DataRow implements IAppUser {
     @Column(name = "tipo")
     private Short type;
 
-    @Column(name = "avatar")
-    private byte[] avatar;
-
     @Column(name = "fechamodificacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechamodificacion;
@@ -108,7 +101,7 @@ public class AppUser extends DataRow implements IAppUser {
     @Column(name = "idempresa")
     private Long idcompany;
 
-    public AppUser() {
+    public AppUserLight() {
     }
 
     @Override
@@ -142,10 +135,6 @@ public class AppUser extends DataRow implements IAppUser {
         return code;
     }
 
-    public String getCodigo() {
-        return getCode();
-    }    
-    
     @Override
     public void setCode(String code) {
         this.code = code;
@@ -293,15 +282,14 @@ public class AppUser extends DataRow implements IAppUser {
     public void setAppCompanyAllowedList(List<IAppCompanyAllowed> dicPermisoEmpresaList) {
         //this.dicPermisoEmpresaList = (List<DicPermisoEmpresa>)(List<?>)dicPermisoEmpresaList;
     }
-    
+
     @Override
     public byte[] getAvatar() {
-        return avatar;
+        return null;
     }
 
     @Override
     public void setAvatar(byte[] avatar) {
-        this.avatar = avatar;
     }
 
 
@@ -345,7 +333,6 @@ public class AppUser extends DataRow implements IAppUser {
         this.celular2 = celular2;
     }
     
-
     @Override
     public int hashCode() {
         int hash = 5;
@@ -363,7 +350,7 @@ public class AppUser extends DataRow implements IAppUser {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final AppUser other = (AppUser) obj;
+        final AppUserLight other = (AppUserLight) obj;
         if (!Objects.equals(this.iduser, other.iduser)) {
             return false;
         }
@@ -372,10 +359,10 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Override
     public boolean equivalent(Object o) {
-        if (!(o instanceof AppUser)) {
+        if (!(o instanceof AppUserLight)) {
             return false;
         }
-        AppUser obj = (AppUser) o;
+        AppUserLight obj = (AppUserLight) o;
         return (this.code.trim().equals(obj.getLogin().trim()));
     }
 
@@ -383,15 +370,6 @@ public class AppUser extends DataRow implements IAppUser {
     public String toString() {
         return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName + ", clave=" + pass + ", clave2=" + passConfirm + ", descripcion=" + description + ", disable=" + disable + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
     }
-    
-    @PreUpdate
-    @PrePersist
-    public void preUpdate() {
-        fechamodificacion = new Date();
-        if (expiredDate == null){
-            expiredDate = Dates.toDate("31/12/9999");
-        }
-    }    
     
     /**
      * Si se aplica o no el filtro por defecto en la selección de datos.
@@ -403,5 +381,5 @@ public class AppUser extends DataRow implements IAppUser {
     @Override
     public boolean isApplyDBFilter() {
         return false;
-    }
+    }    
 }
