@@ -38,7 +38,7 @@ import org.junit.BeforeClass;
  *
  * @author Jorge Enciso
  */
-public class OAuthConsumerTest {
+public class OAuthConsumerTest extends TestClass{
     private static IDataService dao;
     
     public OAuthConsumerTest() {
