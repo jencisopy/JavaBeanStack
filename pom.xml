@@ -38,6 +38,7 @@
         <module>commons</module>
         <module>security</module>
         <module>web</module>
+        <module>tests</module>
     </modules>
     <distributionManagement>  
         <snapshotRepository>

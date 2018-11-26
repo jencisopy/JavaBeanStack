@@ -49,8 +49,8 @@ import static org.javabeanstack.util.Strings.*;
  */
 public class DigestAuth {
     private final Map<String, ServerAuth> serverAuthMap = new HashMap();
-    public static String BASIC = "Basic";
-    public static String DIGEST = "Digest";
+    public final static String BASIC = "Basic";
+    public final static String DIGEST = "Digest";
 
     private String type = "Basic";
     private String realm = "";

@@ -24,7 +24,7 @@ import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.model.IAppUserMember;
-import org.javabeanstack.util.Dates;
+
 
 @Entity
 @Table(name = "usuario",
@@ -389,7 +389,7 @@ public class AppUser extends DataRow implements IAppUser {
     public void preUpdate() {
         fechamodificacion = new Date();
         if (expiredDate == null){
-            expiredDate = Dates.toDate("31/12/9999");
+            //expiredDate = Dates.toDate("31/12/9999");
         }
     }    
     

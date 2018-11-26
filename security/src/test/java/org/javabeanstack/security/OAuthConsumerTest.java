@@ -25,8 +25,6 @@ package org.javabeanstack.security;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.SecretKey;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.model.IAppAuthConsumer;
@@ -40,7 +38,7 @@ import org.junit.BeforeClass;
  *
  * @author Jorge Enciso
  */
-public class OAuthConsumerTest extends TestClass{
+public class OAuthConsumerTest {
     private static IDataService dao;
     
     public OAuthConsumerTest() {

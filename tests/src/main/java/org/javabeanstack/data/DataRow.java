@@ -25,10 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.log4j.Logger;
+import org.javabeanstack.error.ErrorReg;
 
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.exceptions.FieldException;
 
 /**
@@ -59,7 +58,7 @@ public class DataRow implements IDataRow, Cloneable {
         try {
             obj = super.clone();
         } catch (CloneNotSupportedException ex) {
-            ErrorManager.showError(ex, LOGGER);
+            Logger.getLogger(DataRow.class).error(ex.getMessage());
         }
         return obj;
     }

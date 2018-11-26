@@ -22,8 +22,6 @@
  */
 package org.javabeanstack.crypto;
 
-import java.security.SecureRandom;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import org.javabeanstack.util.Fn;
 import org.junit.Assert;
