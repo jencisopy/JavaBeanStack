@@ -1,15 +1,15 @@
-package org.javabeanstack.services;
+package org.javabeanstack.data.services;
 
 import org.javabeanstack.data.services.DataService;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import org.apache.log4j.Logger;
 import org.javabeanstack.annotation.CheckMethod;
+import org.javabeanstack.data.DBManager;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.tables.Region;
-import org.javabeanstack.util.Strings;
+import org.javabeanstack.model.appcatalog.AppUser;
 
 
 /**
@@ -17,46 +17,47 @@ import org.javabeanstack.util.Strings;
  * @author Jorge Enciso
  */
 @TransactionManagement(value=TransactionManagementType.CONTAINER)
-public class RegionSrv extends DataService implements IRegionSrv {
-    private static final Logger LOGGER = Logger.getLogger(RegionSrv.class);
+public class UsuarioSrv extends DataService implements IUsuarioSrv {
+    private static final Logger LOGGER = Logger.getLogger(UsuarioSrv.class);
     
     @CheckMethod(fieldName = "codigo",
                  action   = {IDataRow.AGREGAR,
                              IDataRow.MODIFICAR,
                              IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo(String sessionId, Region row){
+    public IErrorReg checkCodigo(String sessionId, AppUser row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo");
-        if (Strings.isNullorEmpty(row.getCodigo())){
-            errorReg.setMessage("No deje en blanco el campo código");
-        }
         return errorReg;
     }
 
     @CheckMethod(fieldName = "codigo",
                  action = {IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo2(String sessionId, Region row){
+    public IErrorReg checkCodigo2(String sessionId, AppUser row){
         IErrorReg errorReg = new ErrorReg(); 
         LOGGER.info("IN validCodigo2");
         return errorReg;
     }
     
-    @CheckMethod(fieldName = "nombre", action = {IDataRow.AGREGAR, IDataRow.MODIFICAR})
+    @CheckMethod(fieldName = "nombre",
+                action   = {IDataRow.AGREGAR,
+                            IDataRow.MODIFICAR})     
     @Override
-    public IErrorReg checkNombre(String sessionId, Region row){
+    public IErrorReg checkNombre(String sessionId, AppUser row){
         IErrorReg errorReg = new ErrorReg();
         LOGGER.info("IN checkNombre");
-        if (Strings.isNullorEmpty(row.getNombre())){
-            errorReg.setMessage("No deje en blanco el campo nombre");
-        }
+        //errorReg.setMessage("prueba de error");
         return errorReg;
     }
     
+    @Override
+    protected String getPersistentUnit(String sessionId){
+        return DBManager.CATALOGO;
+    }
     
     public String hello(){
-        return "RegionSrv";
+        return "UsuarioSrv";
     }
 
 //    @PostConstruct

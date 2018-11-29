@@ -20,7 +20,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-package org.javabeanstack.services;
+package org.javabeanstack.data.services;
 
 import org.javabeanstack.data.services.IDataServiceRemote;
 import org.javabeanstack.data.services.AbstractDataService;
@@ -68,7 +68,7 @@ public class AbstractDataServiceTest extends TestClass{
     public static void setUpClass2() {
         try {
             dataService = 
-                (IDataServiceRemote) context.lookup(jndiProject+"DataService!org.javabeanstack.services.IDataServiceRemote");
+                (IDataServiceRemote) context.lookup(jndiProject+"DataService!org.javabeanstack.data.services.IDataServiceRemote");
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -83,7 +83,7 @@ public class AbstractDataServiceTest extends TestClass{
             return;
         }
         IDataServiceRemote instance  = 
-                (IDataServiceRemote) context.lookup(jndiProject+"DataService!org.javabeanstack.services.IDataServiceRemote");
+                (IDataServiceRemote) context.lookup(jndiProject+"DataService!org.javabeanstack.data.services.IDataServiceRemote");
         assertNotNull(instance);
     }
 
@@ -225,7 +225,7 @@ public class AbstractDataServiceTest extends TestClass{
             return;
         }
         IRegionSrv dataServiceRegion = 
-                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.data.services.IRegionSrvRemote");
         
         IGenericDAO dao = dataLink.getDao();
         dataLink.setDao(dataServiceRegion);
@@ -675,7 +675,7 @@ public class AbstractDataServiceTest extends TestClass{
             return;
         }
         IRegionSrv dataServiceRegion = 
-                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.data.services.IRegionSrvRemote");
         
         IGenericDAO dao = dataLink.getDao();
         //Cambiar dao por dataService.

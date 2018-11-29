@@ -1,4 +1,4 @@
-package org.javabeanstack.services;
+package org.javabeanstack.data.services;
 
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.annotation.CheckMethod;
