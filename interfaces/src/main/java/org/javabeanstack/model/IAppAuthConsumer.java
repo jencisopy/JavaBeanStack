@@ -1,8 +1,9 @@
 /*
 * JavaBeanStack FrameWork
 *
-* Copyright (C) 2018 Jorge Enciso
+* Copyright (C) 2017 - 2018 Jorge Enciso
 * Email: jorge.enciso.r@gmail.com
+*        jenciso@javabeanstack.org
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -19,32 +20,35 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-package org.javabeanstack.web.rest.resources;
-
-import javax.ejb.EJB;
-import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.data.services.IDataService;
-
-
+package org.javabeanstack.model;
+import java.util.Date;
+import org.javabeanstack.data.IDataRow;
 /**
  *
  * @author Jorge Enciso
  */
-public class WebResource extends AbstractWebResource {
-    @EJB private ISecManager secManager;
+public interface IAppAuthConsumer extends IDataRow {
+    String getConsumerKey();
+    void setConsumerKey(String consumerKey);
     
-    @Override
-    public <T extends IDataService> T getDataService() {
-        throw new UnsupportedOperationException("Debe implementar este metodo"); 
-    }
+    String getConsumerName();
+    void setConsumerName(String consumerName);
 
-    @Override
-    public ISecManager getSecManager() {
-        return secManager;
-    }
+    Date getExpiredDate();
+    void setExpiredDate(Date expiredDate);
     
-    @Override
-    public ISecManager getSecManager(String jndi) {
-        return secManager;
-    }    
+    String getPublicKey();
+    void setPublicKey(String publicKey);
+    
+    String getPrivateKey();
+    void setPrivateKey(String privateKey);
+    
+    String getSignatureAlgorithm();
+    void setSignatureAlgorithm(String algorithm);
+
+    String getCryptoAlgorithm();
+    void setCryptoAlgorithm(String algorithm);
+    
+    Boolean getBlocked();
+    void setBlocked(boolean blocked);
 }

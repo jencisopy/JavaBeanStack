@@ -1,7 +1,7 @@
 /*
 * JavaBeanStack FrameWork
 *
-* Copyright (C) 2018 Jorge Enciso
+* Copyright (C) 2017 Jorge Enciso
 * Email: jorge.enciso.r@gmail.com
 *
 * This library is free software; you can redistribute it and/or
@@ -18,33 +18,28 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
- */
-package org.javabeanstack.web.rest.resources;
+*/
 
-import javax.ejb.EJB;
-import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.data.services.IDataService;
-
+package org.javabeanstack.exceptions;
 
 /**
  *
  * @author Jorge Enciso
  */
-public class WebResource extends AbstractWebResource {
-    @EJB private ISecManager secManager;
+public class FieldException extends Exception {
+    public FieldException(){
+        super();
+    }
     
-    @Override
-    public <T extends IDataService> T getDataService() {
-        throw new UnsupportedOperationException("Debe implementar este metodo"); 
+    public FieldException(String message){
+        super(message);
     }
 
-    @Override
-    public ISecManager getSecManager() {
-        return secManager;
+    public FieldException(String message, Throwable cause){
+        super(message, cause);
     }
-    
-    @Override
-    public ISecManager getSecManager(String jndi) {
-        return secManager;
-    }    
+
+    public FieldException(Throwable cause){
+        super(cause);
+    }
 }

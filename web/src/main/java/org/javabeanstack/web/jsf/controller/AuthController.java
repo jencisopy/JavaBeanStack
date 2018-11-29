@@ -28,7 +28,7 @@ import javax.inject.Named;
 
 import org.javabeanstack.data.DataLink;
 import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.services.IAppCompanySrv;
+import org.javabeanstack.data.services.IAppCompanySrv;
 
 /**
  * Clase controller de autenticación, recibe peticiones de logeo del usuario lo

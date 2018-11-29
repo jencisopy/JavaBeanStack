@@ -1,7 +1,7 @@
 package org.javabeanstack.ws.resources;
 
 import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.services.IDataService;
+import org.javabeanstack.data.services.IDataService;
 
 /**
  *

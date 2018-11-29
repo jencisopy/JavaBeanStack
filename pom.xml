@@ -36,7 +36,6 @@
         <module>core</module>
         <module>business</module>
         <module>commons</module>
-        <module>security</module>
         <module>web</module>
     </modules>
     <distributionManagement>  

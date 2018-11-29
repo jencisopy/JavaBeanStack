@@ -37,8 +37,8 @@ import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.tables.Pais;
 import org.javabeanstack.model.tables.Region;
-import org.javabeanstack.services.IDataService;
-import org.javabeanstack.services.IRegionSrv;
+import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.data.services.IRegionSrv;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.FixMethodOrder;
@@ -190,7 +190,7 @@ public class AbstractDataObjectTest extends TestClass{
         }
         IGenericDAO dao = dataLink.getDao();
         IDataService dataservice
-                = (IDataService) context.lookup(jndiProject + "DataService!org.javabeanstack.services.IDataServiceRemote");
+                = (IDataService) context.lookup(jndiProject + "DataService!org.javabeanstack.data.services.IDataServiceRemote");
 
         dataLink.setDao(dataservice);
         IDataObject region = new DataObject(Region.class, null, dataLink, null);
@@ -252,7 +252,7 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         IRegionSrv dataServiceRegion = 
-                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.data.services.IRegionSrvRemote");
         
         IGenericDAO dao = dataLink.getDao();
         //Cambiar dao por dataService.
@@ -1600,7 +1600,7 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         IRegionSrv dataServiceRegion = 
-                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.data.services.IRegionSrvRemote");
         
         IGenericDAO dao = dataLink.getDao();
         //Cambiar dao por dataService.
@@ -1693,7 +1693,7 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         IRegionSrv dataServiceRegion = 
-                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.data.services.IRegionSrvRemote");
         
         IGenericDAO dao = dataLink.getDao();
         //Cambiar dao por dataService.
@@ -1743,7 +1743,7 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         IRegionSrv dataServiceRegion = 
-                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.services.IRegionSrvRemote");
+                (IRegionSrv) context.lookup(jndiProject+"RegionSrv!org.javabeanstack.data.services.IRegionSrvRemote");
         
         IGenericDAO dao = dataLink.getDao();
         //Cambiar dao por dataService.

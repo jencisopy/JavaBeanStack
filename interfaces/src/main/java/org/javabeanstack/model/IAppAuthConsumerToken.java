@@ -1,8 +1,9 @@
 /*
 * JavaBeanStack FrameWork
 *
-* Copyright (C) 2018 Jorge Enciso
+* Copyright (C) 2017 - 2018 Jorge Enciso
 * Email: jorge.enciso.r@gmail.com
+*        jenciso@javabeanstack.org
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -19,32 +20,25 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-package org.javabeanstack.web.rest.resources;
-
-import javax.ejb.EJB;
-import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.data.services.IDataService;
-
-
+package org.javabeanstack.model;
+import org.javabeanstack.data.IDataRow;
 /**
  *
  * @author Jorge Enciso
  */
-public class WebResource extends AbstractWebResource {
-    @EJB private ISecManager secManager;
-    
-    @Override
-    public <T extends IDataService> T getDataService() {
-        throw new UnsupportedOperationException("Debe implementar este metodo"); 
-    }
+public interface IAppAuthConsumerToken extends IDataRow {
+    String getToken();
+    void setToken(String tokenKey);
 
-    @Override
-    public ISecManager getSecManager() {
-        return secManager;
-    }
+    String getTokenSecret();
+    void setTokenSecret(String tokenSecret);
+
+    String getData();
+    void setData(String data);
     
-    @Override
-    public ISecManager getSecManager(String jndi) {
-        return secManager;
-    }    
+    Boolean getBlocked();
+    void setBlocked(boolean blocked);
+    
+    IAppAuthConsumer getAppAuthConsumer();
+    void setAppAuthConsumer(IAppAuthConsumer authConsumer);
 }
