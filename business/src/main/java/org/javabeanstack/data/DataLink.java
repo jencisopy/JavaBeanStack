@@ -23,7 +23,7 @@
 package org.javabeanstack.data;
 
 import javax.ejb.EJB;
-import org.javabeanstack.services.IDataService;
+import org.javabeanstack.data.services.IDataService;
 
 /**
  * Esta clase se encarga de la conexión con los datos, utiliza para el efecto la

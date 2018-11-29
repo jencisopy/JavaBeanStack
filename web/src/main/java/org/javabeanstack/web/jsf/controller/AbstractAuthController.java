@@ -35,7 +35,7 @@ import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppCompany;
-import org.javabeanstack.services.IAppCompanySrv;
+import org.javabeanstack.data.services.IAppCompanySrv;
 
 /**
  * Clase controller de autenticación, recibe peticiones de logeo del usuario lo

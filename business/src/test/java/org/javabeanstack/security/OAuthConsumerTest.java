@@ -30,7 +30,7 @@ import javax.crypto.SecretKey;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
-import org.javabeanstack.services.IDataService;
+import org.javabeanstack.data.services.IDataService;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;

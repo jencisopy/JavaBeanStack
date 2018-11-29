@@ -24,7 +24,7 @@ package org.javabeanstack.web.rest.resources;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.services.IDataService;
+import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.ws.resources.IWebResource;
 
 /**

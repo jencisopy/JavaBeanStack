@@ -25,7 +25,7 @@ package org.javabeanstack.data;
 import java.util.List;
 import java.util.Map;
 import org.javabeanstack.security.IUserSession;
-import org.javabeanstack.services.IDataService;
+import org.javabeanstack.data.services.IDataService;
 
 /**
  * Esta interface abstrae funcionalidades que permitiran implementar clases que ejecuten sentencias

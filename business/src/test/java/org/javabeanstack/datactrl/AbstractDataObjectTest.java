@@ -37,7 +37,7 @@ import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.tables.Pais;
 import org.javabeanstack.model.tables.Region;
-import org.javabeanstack.services.IDataService;
+import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.services.IRegionSrv;
 import org.junit.Assert;
 import org.junit.Test;

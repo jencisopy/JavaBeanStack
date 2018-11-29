@@ -1,7 +1,7 @@
 /*
 * JavaBeanStack FrameWork
 *
-* Copyright (C) 2018 Jorge Enciso
+* Copyright (C) 2017 Jorge Enciso
 * Email: jorge.enciso.r@gmail.com
 *
 * This library is free software; you can redistribute it and/or
@@ -18,33 +18,18 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
- */
-package org.javabeanstack.web.rest.resources;
+*/
+package org.javabeanstack.data.services;
 
-import javax.ejb.EJB;
-import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.data.services.IDataService;
-
+import java.util.List;
+import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.security.IUserSession;
 
 /**
  *
  * @author Jorge Enciso
  */
-public class WebResource extends AbstractWebResource {
-    @EJB private ISecManager secManager;
-    
-    @Override
-    public <T extends IDataService> T getDataService() {
-        throw new UnsupportedOperationException("Debe implementar este metodo"); 
-    }
-
-    @Override
-    public ISecManager getSecManager() {
-        return secManager;
-    }
-    
-    @Override
-    public ISecManager getSecManager(String jndi) {
-        return secManager;
-    }    
+public interface IAppCompanySrv extends IDataService {
+    List<IAppCompany> getAppCompanyLight(IUserSession userSession);
+    List<IAppCompany> getAppCompany(IUserSession userSession);
 }

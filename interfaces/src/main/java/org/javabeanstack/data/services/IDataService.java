@@ -19,7 +19,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-package org.javabeanstack.services;
+package org.javabeanstack.data.services;
 
 import java.util.List;
 import java.util.Map;

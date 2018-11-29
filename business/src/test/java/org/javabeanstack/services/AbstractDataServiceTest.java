@@ -22,6 +22,7 @@
 */
 package org.javabeanstack.services;
 
+import org.javabeanstack.data.services.IDataServiceRemote;
 import org.javabeanstack.data.services.AbstractDataService;
 import java.util.Date;
 import java.util.HashMap;

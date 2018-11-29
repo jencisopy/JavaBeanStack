@@ -19,17 +19,12 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-package org.javabeanstack.services;
-
-import java.util.List;
-import org.javabeanstack.model.IAppCompany;
-import org.javabeanstack.security.IUserSession;
+package org.javabeanstack.data.services;
 
 /**
  *
  * @author Jorge Enciso
  */
-public interface IAppCompanySrv extends IDataService {
-    List<IAppCompany> getAppCompanyLight(IUserSession userSession);
-    List<IAppCompany> getAppCompany(IUserSession userSession);
+public interface IAppCompanySrvRemote extends IAppCompanySrv {
+    
 }

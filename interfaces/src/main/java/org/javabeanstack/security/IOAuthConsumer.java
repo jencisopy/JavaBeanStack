@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.Map;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
-import org.javabeanstack.services.IDataService;
+import org.javabeanstack.data.services.IDataService;
 
 /**
  *
