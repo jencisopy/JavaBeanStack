@@ -19,7 +19,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-package org.javabeanstack.services;
+package org.javabeanstack.data.services;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -50,6 +50,7 @@ import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CheckException;
+import org.javabeanstack.services.IDataService;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 

@@ -5,6 +5,7 @@
  */
 package org.javabeanstack.services;
 
+import org.javabeanstack.data.services.DataService;
 import org.javabeanstack.data.DBManager;
 
 /**

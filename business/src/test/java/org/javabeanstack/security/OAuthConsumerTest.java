@@ -39,110 +39,63 @@ import org.junit.BeforeClass;
  *
  * @author Jorge Enciso
  */
-public class OAuthConsumerTest {
+public class OAuthConsumerTest extends TestClass {
     private static IDataService dao;
+    private static String consumerKey;
+    private static String token;
+    private static String tokenSecret;
     
     public OAuthConsumerTest() {
     }
 
-    //@BeforeClass
-//    public static void setUpClass2() {
-//        try {
-//            dao = (IDataService) context.lookup(jndiProject + "DataService!org.javabeanstack.data.IDataServiceRemote");
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//        }
-//    }    
+    @BeforeClass
+    public static void setUpClass2() {
+        try {
+            dao = (IDataService) context.lookup(jndiProject + "DataService!org.javabeanstack.services.IDataServiceRemote");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }    
 
     @Test
-    public void testInstanceClass() throws InstantiationException, IllegalAccessException{
+    public void test00InstanceClass() throws InstantiationException, IllegalAccessException{
         OAuthConsumer instance = new OAuthConsumerImpl();
         IAppAuthConsumer consumer = instance.getAuthConsumerClass().newInstance();
         assertNotNull(consumer);
     }
-    
-    /**
-     * Test of findAuthConsumer method, of class OAuthConsumer.
-     */
-    //@Test
-    public void testFindAuthConsumer() {
-        System.out.println("findAuthConsumer");
-        String consumerKey = "";
-        OAuthConsumer instance = new OAuthConsumerImpl();
-        IAppAuthConsumer expResult = null;
-        IAppAuthConsumer result = instance.findAuthConsumer(consumerKey);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
-    /**
-     * Test of findAuthToken method, of class OAuthConsumer.
-     */
-    //@Test
-    public void testFindAuthToken_String() {
-        System.out.println("findAuthToken");
-        String token = "";
-        OAuthConsumer instance = new OAuthConsumerImpl();
-        IAppAuthConsumerToken expResult = null;
-        IAppAuthConsumerToken result = instance.findAuthToken(token);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of findAuthToken method, of class OAuthConsumer.
-     */
-    //@Test
-    public void testFindAuthToken_String_String() {
-        System.out.println("findAuthToken");
-        String consumerKey = "";
-        String tokenSecret = "";
-        OAuthConsumer instance = new OAuthConsumerImpl();
-        IAppAuthConsumerToken expResult = null;
-        IAppAuthConsumerToken result = instance.findAuthToken(consumerKey, tokenSecret);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
     /**
      * Test of createAuthConsumer method, of class OAuthConsumer.
      */
-    //@Test
-    public void testCreateAuthConsumer() {
-        System.out.println("createAuthConsumer");
-        String consumerName = "";
-        Date expiredDate = null;
+    @Test
+    public void test01CreateAuthConsumer() {
+        System.out.println("1-oAuthConsumer createAuthConsumer");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        String consumerName = "OYM";
+        Date expiredDate = new Date();
         OAuthConsumer instance = new OAuthConsumerImpl();
-        boolean expResult = false;
+        instance.setDao(dao);
+        boolean expResult = true;
         boolean result = instance.createAuthConsumer(consumerName, expiredDate);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        consumerKey = instance.getLastAuthConsumer().getConsumerKey();
+        // Ya existe debe dar error
+        result = instance.createAuthConsumer(consumerName, expiredDate);
+        assertFalse(result);        
     }
 
-    /**
-     * Test of dropAuthConsumer method, of class OAuthConsumer.
-     */
-    //@Test
-    public void testDropAuthConsumer() {
-        System.out.println("dropAuthConsumer");
-        String consumerKey = "";
-        OAuthConsumer instance = new OAuthConsumerImpl();
-        boolean expResult = false;
-        boolean result = instance.dropAuthConsumer(consumerKey);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
+    
+    
     /**
      * Test of getToken method, of class OAuthConsumer.
      */
     //@Test
-    public void testGetToken() {
+    public void test05GetToken() {
         System.out.println("getToken");
         String consumerKey = "";
         String tokenSecret = "";
@@ -158,7 +111,7 @@ public class OAuthConsumerTest {
      * Test of requestToken method, of class OAuthConsumer.
      */
     //@Test
-    public void testRequestToken() {
+    public void test06RequestToken() {
         System.out.println("requestToken");
         String consumerKey = "";
         OAuthConsumer instance = new OAuthConsumerImpl();
@@ -173,7 +126,7 @@ public class OAuthConsumerTest {
      * Test of createToken method, of class OAuthConsumer.
      */
     //@Test
-    public void testCreateToken_String_String() {
+    public void test07CreateToken_String_String() {
         System.out.println("createToken");
         String consumerKey = "";
         String data = "";
@@ -189,7 +142,7 @@ public class OAuthConsumerTest {
      * Test of createToken method, of class OAuthConsumer.
      */
     //@Test
-    public void testCreateToken_String_Map() {
+    public void testCreate08Token_String_Map() {
         System.out.println("createToken");
         String consumerKey = "";
         Map<String, String> data = null;
@@ -201,27 +154,12 @@ public class OAuthConsumerTest {
         fail("The test case is a prototype.");
     }
 
-    /**
-     * Test of dropToken method, of class OAuthConsumer.
-     */
-    //@Test
-    public void testDropToken() {
-        System.out.println("dropToken");
-        String consumerKey = "";
-        String tokenSecret = "";
-        OAuthConsumer instance = new OAuthConsumerImpl();
-        boolean expResult = false;
-        boolean result = instance.dropToken(consumerKey, tokenSecret);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
     /**
      * Test of createConsumerKey method, of class OAuthConsumer.
      */
     //@Test
-    public void testCreateConsumerKey() throws Exception {
+    public void test09CreateConsumerKey() throws Exception {
         System.out.println("createConsumerKey");
         IAppAuthConsumer authConsumer = null;
         OAuthConsumer instance = new OAuthConsumerImpl();
@@ -232,11 +170,12 @@ public class OAuthConsumerTest {
         fail("The test case is a prototype.");
     }
 
+
     /**
      * Test of getSecretKey method, of class OAuthConsumer.
      */
     //@Test
-    public void testGetSecretKey() {
+    public void test10GetSecretKey() {
         System.out.println("getSecretKey");
         String encodeKey = "";
         String algorithm = "";
@@ -252,7 +191,7 @@ public class OAuthConsumerTest {
      * Test of signTokenData method, of class OAuthConsumer.
      */
     //@Test
-    public void testSignTokenData() throws Exception {
+    public void test11SignTokenData() throws Exception {
         System.out.println("signTokenData");
         IAppAuthConsumerToken model = null;
         OAuthConsumer instance = new OAuthConsumerImpl();
@@ -267,7 +206,7 @@ public class OAuthConsumerTest {
      * Test of getTokenSecret method, of class OAuthConsumer.
      */
     //@Test
-    public void testGetTokenSecret() throws Exception {
+    public void test12GetTokenSecret() throws Exception {
         System.out.println("getTokenSecret");
         IAppAuthConsumerToken model = null;
         OAuthConsumer instance = new OAuthConsumerImpl();
@@ -282,7 +221,7 @@ public class OAuthConsumerTest {
      * Test of getRandomToken method, of class OAuthConsumer.
      */
     //@Test
-    public void testGetRandomToken() throws Exception {
+    public void test13GetRandomToken() throws Exception {
         System.out.println("getRandomToken");
         OAuthConsumer instance = new OAuthConsumerImpl();
         String expResult = "";
@@ -292,6 +231,85 @@ public class OAuthConsumerTest {
         fail("The test case is a prototype.");
     }
 
+
+    /**
+     * Test of findAuthConsumer method, of class OAuthConsumer.
+     */
+    //@Test
+    public void test02FindAuthConsumer() {
+        System.out.println("2-oAuthConsumer findAuthConsumer");
+        String consumerKey = "";
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        IAppAuthConsumer expResult = null;
+        IAppAuthConsumer result = instance.findAuthConsumer(consumerKey);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of findAuthToken method, of class OAuthConsumer.
+     */
+    //@Test
+    public void test03FindAuthToken_String() {
+        System.out.println("3-oAuthConsumer findAuthToken");
+        String token = "";
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        IAppAuthConsumerToken expResult = null;
+        IAppAuthConsumerToken result = instance.findAuthToken(token);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of findAuthToken method, of class OAuthConsumer.
+     */
+    //@Test
+    public void test04FindAuthToken_String_String() {
+        System.out.println("findAuthToken");
+        String consumerKey = "";
+        String tokenSecret = "";
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        IAppAuthConsumerToken expResult = null;
+        IAppAuthConsumerToken result = instance.findAuthToken(consumerKey, tokenSecret);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    
+    /**
+     * Test of dropToken method, of class OAuthConsumer.
+     */
+    //@Test
+    public void test14DropToken() {
+        System.out.println("dropToken");
+        String consumerKey = "";
+        String tokenSecret = "";
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        boolean expResult = false;
+        boolean result = instance.dropToken(consumerKey, tokenSecret);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+    
+    /**
+     * Test of dropAuthConsumer method, of class OAuthConsumer.
+     */
+    //@Test
+    public void test15DropAuthConsumer() {
+        System.out.println("dropAuthConsumer");
+        String consumerKey = "";
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        boolean expResult = false;
+        boolean result = instance.dropAuthConsumer(consumerKey);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+    
     public class OAuthConsumerImpl extends OAuthConsumer {
         @Override
         public Class<IAppAuthConsumer> getAuthConsumerClass() {

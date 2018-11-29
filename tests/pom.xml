@@ -20,6 +20,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>jbs-commons</artifactId>
             <version>${project.version}</version>
-        </dependency>        
+        </dependency>
     </dependencies> 
 </project>

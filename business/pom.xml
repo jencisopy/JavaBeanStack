@@ -21,18 +21,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>jbs-security</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>            
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>jbs-tests</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>          
-        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb-client-bom</artifactId>
             <version>14.0.0.Final</version>            

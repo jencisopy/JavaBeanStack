@@ -20,7 +20,7 @@
 * MA 02110-1301  USA
 */
 
-package org.javabeanstack.services;
+package org.javabeanstack.data.services;
 
 /**
  *

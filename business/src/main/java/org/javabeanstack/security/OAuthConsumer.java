@@ -51,6 +51,9 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
 
     @EJB
     private IDataService dao;
+    
+    private IAppAuthConsumer lastAuthConsumer;
+    private IAppAuthConsumerToken lastAuthConsumerToken;
 
     /**
      * Asigna objeto para la conexión con la base de datos
@@ -59,6 +62,14 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
     @Override
     public void setDao(IDataService dao){
         this.dao = dao;
+    }
+
+    public IAppAuthConsumer getLastAuthConsumer() {
+        return lastAuthConsumer;
+    }
+
+    public IAppAuthConsumerToken getLastAuthConsumerToken() {
+        return lastAuthConsumerToken;
     }
     
     /**
