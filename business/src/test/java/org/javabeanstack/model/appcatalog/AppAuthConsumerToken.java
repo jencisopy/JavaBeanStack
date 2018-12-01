@@ -20,7 +20,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
- 
 package org.javabeanstack.model.appcatalog;
 
 import java.util.Date;
