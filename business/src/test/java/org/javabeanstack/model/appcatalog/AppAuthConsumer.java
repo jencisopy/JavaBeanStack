@@ -20,6 +20,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
+
 package org.javabeanstack.model.appcatalog;
 
 import java.util.Date;
@@ -34,6 +35,8 @@ import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -53,13 +56,12 @@ import org.javabeanstack.data.DataRow;
 @Table(name = "appauthconsumer")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Appauthconsumer.findAll", query = "SELECT a FROM Appauthconsumer a")})
-public class Appauthconsumer extends DataRow implements IAppAuthConsumer {
+    @NamedQuery(name = "AppAuthConsumer.findAll", query = "SELECT a FROM AppAuthConsumer a")})
+public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @NotNull
     @Column(name = "idappauthconsumer")
     private Long idappauthconsumer;
     @Basic(optional = false)
@@ -98,34 +100,33 @@ public class Appauthconsumer extends DataRow implements IAppAuthConsumer {
     
     @Transient
     @Basic(optional = false)
-    @NotNull
     @Column(name = "fechacreacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechacreacion;
     
-    @Transient
     @Basic(optional = false)
-    @NotNull
     @Column(name = "fechamodificacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechamodificacion;
+
     @Column(name = "fechareplicacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechareplicacion;
+
     @Size(max = 32)
     @Column(name = "appuser")
     private String appuser;
     @OneToMany(mappedBy = "appAuthConsumer")
-    private List<Appauthconsumertoken> appauthconsumertokenList;
+    private List<AppAuthConsumerToken> appauthconsumertokenList;
 
-    public Appauthconsumer() {
+    public AppAuthConsumer() {
     }
 
-    public Appauthconsumer(Long idappauthconsumer) {
+    public AppAuthConsumer(Long idappauthconsumer) {
         this.idappauthconsumer = idappauthconsumer;
     }
 
-    public Appauthconsumer(Long idappauthconsumer, String consumerKey, String consumerName, Date expiredDate, boolean blocked, Date fechacreacion, Date fechamodificacion) {
+    public AppAuthConsumer(Long idappauthconsumer, String consumerKey, String consumerName, Date expiredDate, boolean blocked, Date fechacreacion, Date fechamodificacion) {
         this.idappauthconsumer = idappauthconsumer;
         this.consumerKey = consumerKey;
         this.consumerName = consumerName;
@@ -256,11 +257,11 @@ public class Appauthconsumer extends DataRow implements IAppAuthConsumer {
     }
 
     @XmlTransient
-    public List<Appauthconsumertoken> getAppauthconsumertokenList() {
+    public List<AppAuthConsumerToken> getAppauthconsumertokenList() {
         return appauthconsumertokenList;
     }
 
-    public void setAppauthconsumertokenList(List<Appauthconsumertoken> appauthconsumertokenList) {
+    public void setAppauthconsumertokenList(List<AppAuthConsumerToken> appauthconsumertokenList) {
         this.appauthconsumertokenList = appauthconsumertokenList;
     }
 
@@ -274,16 +275,22 @@ public class Appauthconsumer extends DataRow implements IAppAuthConsumer {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Appauthconsumer)) {
+        if (!(object instanceof AppAuthConsumer)) {
             return false;
         }
-        Appauthconsumer other = (Appauthconsumer) object;
+        AppAuthConsumer other = (AppAuthConsumer) object;
         if ((this.idappauthconsumer == null && other.idappauthconsumer != null) || (this.idappauthconsumer != null && !this.idappauthconsumer.equals(other.idappauthconsumer))) {
             return false;
         }
         return true;
     }
 
+    @PreUpdate
+    @PrePersist
+    public void preUpdate() {
+        fechamodificacion = new Date();
+    }    
+    
     @Override
     public String toString() {
         return "org.javabeanstack.data.Appauthconsumer[ idappauthconsumer=" + idappauthconsumer + " ]";

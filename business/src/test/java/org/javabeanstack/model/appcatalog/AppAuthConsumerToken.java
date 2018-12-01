@@ -20,6 +20,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
+ 
 package org.javabeanstack.model.appcatalog;
 
 import java.util.Date;
@@ -34,6 +35,8 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -53,13 +56,12 @@ import org.javabeanstack.model.IAppAuthConsumerToken;
 @Table(name = "appauthconsumertoken")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Appauthconsumertoken.findAll", query = "SELECT a FROM Appauthconsumertoken a")})
-public class Appauthconsumertoken extends DataRow implements IAppAuthConsumerToken{
+    @NamedQuery(name = "AppAuthConsumerToken.findAll", query = "SELECT a FROM AppAuthConsumerToken a")})
+public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerToken{
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)    
     @Basic(optional = false)
-    @NotNull
     @Column(name = "idappauthconsumertoken")
     private Long idappauthconsumertoken;
     @Basic(optional = false)
@@ -83,17 +85,16 @@ public class Appauthconsumertoken extends DataRow implements IAppAuthConsumerTok
     
     @Transient
     @Basic(optional = false)
-    @NotNull
     @Column(name = "fechacreacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechacreacion;
     
-    @Transient
     @Basic(optional = false)
     @NotNull
     @Column(name = "fechamodificacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechamodificacion;
+    
     @Column(name = "fechareplicacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechareplicacion;
@@ -103,16 +104,17 @@ public class Appauthconsumertoken extends DataRow implements IAppAuthConsumerTok
 
     @JoinColumn(name = "idappauthconsumer", referencedColumnName = "idappauthconsumer")
     @ManyToOne
-    private Appauthconsumer appAuthConsumer;
+    private AppAuthConsumer appAuthConsumer;
 
-    public Appauthconsumertoken() {
+    public AppAuthConsumerToken() {
+        this.idappauthconsumertoken = 0L;
     }
 
-    public Appauthconsumertoken(Long idappauthconsumertoken) {
+    public AppAuthConsumerToken(Long idappauthconsumertoken) {
         this.idappauthconsumertoken = idappauthconsumertoken;
     }
 
-    public Appauthconsumertoken(Long idappauthconsumertoken, String token, String tokenSecret, boolean blocked, Date fechacreacion, Date fechamodificacion) {
+    public AppAuthConsumerToken(Long idappauthconsumertoken, String token, String tokenSecret, boolean blocked, Date fechacreacion, Date fechamodificacion) {
         this.idappauthconsumertoken = idappauthconsumertoken;
         this.token = token;
         this.tokenSecret = tokenSecret;
@@ -208,7 +210,7 @@ public class Appauthconsumertoken extends DataRow implements IAppAuthConsumerTok
 
     @Override
     public void setAppAuthConsumer(IAppAuthConsumer appAuthConsumer) {
-        this.appAuthConsumer = (Appauthconsumer)appAuthConsumer;
+        this.appAuthConsumer = (AppAuthConsumer)appAuthConsumer;
     }
     
     @Override
@@ -218,13 +220,19 @@ public class Appauthconsumertoken extends DataRow implements IAppAuthConsumerTok
         return hash;
     }
 
+    @PreUpdate
+    @PrePersist
+    public void preUpdate() {
+        fechamodificacion = new Date();
+    }    
+        
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Appauthconsumertoken)) {
+        if (!(object instanceof AppAuthConsumerToken)) {
             return false;
         }
-        Appauthconsumertoken other = (Appauthconsumertoken) object;
+        AppAuthConsumerToken other = (AppAuthConsumerToken) object;
         if ((this.idappauthconsumertoken == null && other.idappauthconsumertoken != null) || (this.idappauthconsumertoken != null && !this.idappauthconsumertoken.equals(other.idappauthconsumertoken))) {
             return false;
         }
