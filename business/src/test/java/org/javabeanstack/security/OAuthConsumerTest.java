@@ -25,6 +25,7 @@ package org.javabeanstack.security;
 
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import javax.crypto.SecretKey;
 import org.javabeanstack.data.TestClass;
@@ -34,11 +35,14 @@ import org.javabeanstack.data.services.IDataService;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
  *
  * @author Jorge Enciso
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OAuthConsumerTest extends TestClass {
     private static IDataService dao;
     private static String consumerKey;
@@ -68,7 +72,7 @@ public class OAuthConsumerTest extends TestClass {
     /**
      * Test of createAuthConsumer method, of class OAuthConsumer.
      */
-    //@Test
+    @Test
     public void test01CreateAuthConsumer() {
         System.out.println("1-oAuthConsumer createAuthConsumer");
         //No hubo conexión con el servidor de aplicaciones
@@ -89,22 +93,61 @@ public class OAuthConsumerTest extends TestClass {
         assertFalse(result);        
     }
 
-    
-    
+    /**
+     * Test of createToken method, of class OAuthConsumer.
+     */
+    @Test
+    public void test02CreateToken_String_String() {
+        System.out.println("2-oAuthConsumer createToken");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        String data = "dato1=prueba\ndato2=prueba2\n";
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        instance.setDao(dao);
+        token = instance.createToken(consumerKey, data);
+        assertFalse(token.isEmpty());
+        tokenSecret = instance.getLastAuthConsumerToken().getTokenSecret();
+    }
+
+    /**
+     * Test of createToken method, of class OAuthConsumer.
+     */
+    @Test
+    public void test03CreateToken_String_Map() {
+        System.out.println("3-oAuthConsumer createToken");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        Map<String, String> data = new HashMap();
+        data.put("dato1", "prueba");
+        data.put("dato2", "prueba2");
+        
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        instance.setDao(dao);        
+        String result = instance.createToken(consumerKey, data);
+        assertFalse(result.isEmpty());
+    }
+
     /**
      * Test of getToken method, of class OAuthConsumer.
      */
-    //@Test
+    @Test
     public void test05GetToken() {
-        System.out.println("getToken");
-        String consumerKey = "";
-        String tokenSecret = "";
+        System.out.println("4-oAuthConsumer getToken");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         OAuthConsumer instance = new OAuthConsumerImpl();
-        String expResult = "";
+        instance.setDao(dao);
         String result = instance.getToken(consumerKey, tokenSecret);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertFalse(result.isEmpty());        
     }
 
     /**
@@ -117,38 +160,6 @@ public class OAuthConsumerTest extends TestClass {
         OAuthConsumer instance = new OAuthConsumerImpl();
         boolean expResult = false;
         boolean result = instance.requestToken(consumerKey);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of createToken method, of class OAuthConsumer.
-     */
-    //@Test
-    public void test07CreateToken_String_String() {
-        System.out.println("createToken");
-        String consumerKey = "";
-        String data = "";
-        OAuthConsumer instance = new OAuthConsumerImpl();
-        String expResult = "";
-        String result = instance.createToken(consumerKey, data);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of createToken method, of class OAuthConsumer.
-     */
-    //@Test
-    public void testCreate08Token_String_Map() {
-        System.out.println("createToken");
-        String consumerKey = "";
-        Map<String, String> data = null;
-        OAuthConsumer instance = new OAuthConsumerImpl();
-        String expResult = "";
-        String result = instance.createToken(consumerKey, data);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -314,7 +325,7 @@ public class OAuthConsumerTest extends TestClass {
         @Override
         public Class<IAppAuthConsumer> getAuthConsumerClass() {
             try {
-                return (Class<IAppAuthConsumer>)Class.forName("org.javabeanstack.model.appcatalog.Appauthconsumer");
+                return (Class<IAppAuthConsumer>)Class.forName("org.javabeanstack.model.appcatalog.AppAuthConsumer");
             } catch (ClassNotFoundException ex) {
                 System.out.println(ex.getMessage());                
             }
@@ -324,7 +335,7 @@ public class OAuthConsumerTest extends TestClass {
         @Override
         public Class<IAppAuthConsumerToken> getAuthConsumerTokenClass() {
             try {            
-                return (Class<IAppAuthConsumerToken>)Class.forName("org.javabeanstack.model.appcatalog.Appauthconsumertoken");
+                return (Class<IAppAuthConsumerToken>)Class.forName("org.javabeanstack.model.appcatalog.AppAuthConsumerToken");
             } catch (ClassNotFoundException ex) {
                 System.out.println(ex.getMessage());
             }
