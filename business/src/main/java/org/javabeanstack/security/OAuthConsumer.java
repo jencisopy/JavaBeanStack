@@ -78,7 +78,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @return registro AppAuthConsumer
      */
     protected IAppAuthConsumer findAuthConsumer(String consumerKey){
-        String queryString = "select o from AppConsumer where consumerKey = :consumerKey";
+        String queryString = "select o from AppAuthConsumer o where consumerKey = :consumerKey";
         Map<String, Object> parameters = new HashMap();
         parameters.put("consumerKey",consumerKey);
         try {
@@ -96,7 +96,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @return registro AppAuthConsumerToken
      */
     protected IAppAuthConsumerToken findAuthToken(String token){
-        String queryString = "select o from AppConsumerToken where token = :token";
+        String queryString = "select o from AppAuthConsumerToken o where token = :token";
         Map<String, Object> parameters = new HashMap();
         parameters.put("token",token);
         try {
@@ -116,7 +116,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @return registro AppAuthConsumerToken
      */
     protected IAppAuthConsumerToken findAuthToken(String consumerKey, String tokenSecret){
-        String queryString = "select o from AppConsumerToken where consumerKey = :consumerKey and tokenSecret = :tokenSecret";
+        String queryString = "select o from AppAuthConsumerToken o where appAuthConsumer.consumerKey = :consumerKey and tokenSecret = :tokenSecret";
         Map<String, Object> parameters = new HashMap();
         parameters.put("consumerKey", consumerKey);
         parameters.put("tokenSecret", tokenSecret);
@@ -144,6 +144,9 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
             authConsumer.setExpiredDate(expiredDate);
             authConsumer.setConsumerKey(createConsumerKey(authConsumer));
             IDataResult dataResult = dao.persist(null, authConsumer);
+            if (dataResult.isSuccessFul()){
+                lastAuthConsumer = dataResult.getRowUpdated();
+            }
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -183,7 +186,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
         if (authConsumerToken != null){
             return authConsumerToken.getToken();
         }
-        return null;
+        return "";
     }
     
     /**
@@ -229,11 +232,12 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
             if (!dataResult.isSuccessFul()){
                 return "";
             }
+            lastAuthConsumerToken = dataResult.getRowUpdated();
             return authConsumerToken.getToken();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
-        return null;
+        return "";
     }
 
     /**
@@ -257,6 +261,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
             if (!dataResult.isSuccessFul()){
                 return null;
             }
+            lastAuthConsumerToken = dataResult.getRowUpdated();            
             return authConsumerToken.getToken();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -381,7 +386,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @throws UnsupportedEncodingException 
      */
     protected String getRandomToken() throws NoSuchAlgorithmException, UnsupportedEncodingException{
-        Integer random = (int)(Math.random() * 50 + 1);
+        Integer random = (int)(Math.random() * 1000000 + 1);
         MessageDigest digest = MessageDigest.getInstance(DigestUtil.SHA1);
         byte[] digestMessage = digest.digest(random.toString().getBytes());
         return Fn.bytesToBase64Url(digestMessage);
