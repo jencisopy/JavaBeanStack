@@ -386,7 +386,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @throws UnsupportedEncodingException 
      */
     protected String getRandomToken() throws NoSuchAlgorithmException, UnsupportedEncodingException{
-        Integer random = (int)(Math.random() * 50 + 1);
+        Integer random = (int)(Math.random() * 1000000 + 1);
         MessageDigest digest = MessageDigest.getInstance(DigestUtil.SHA1);
         byte[] digestMessage = digest.digest(random.toString().getBytes());
         return Fn.bytesToBase64Url(digestMessage);
