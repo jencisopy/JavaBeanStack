@@ -22,9 +22,12 @@
  */
 package org.javabeanstack.security;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import javax.crypto.SecretKey;
 import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.data.TestClass;
@@ -267,13 +270,35 @@ public class OAuthConsumerTest extends TestClass {
         assertNotNull(result);
     }
 
+
+    /**
+     * Test of load property from data, load map from property, load map from data
+     */
+    @Test
+    public void test12LoadData() throws IOException {
+        System.out.println("12-oAuthConsumer load data");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        instance.setDao(dao);        
+        IAppAuthConsumerToken result = instance.findAuthToken(consumerKey, tokenSecret);
+        assertNotNull(result);
+        Properties prop = new Properties();
+        prop.load(new StringReader(result.getData()));
+        assertNotNull(prop.getProperty("dato1"));
+        Map<String, String> data = new HashMap(prop);
+        assertNotNull(data.get("dato1"));
+    }
     
     /**
      * Test of dropToken method, of class OAuthConsumer.
      */
     @Test
-    public void test12DropToken() {
-        System.out.println("12-oAuthConsumer dropToken");
+    public void test13DropToken() {
+        System.out.println("13-oAuthConsumer dropToken");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -289,8 +314,8 @@ public class OAuthConsumerTest extends TestClass {
      * Test of dropAuthConsumer method, of class OAuthConsumer.
      */
     @Test
-    public void test13DropAuthConsumer() {
-        System.out.println("13-oAuthConsumer dropAuthConsumer");
+    public void test14DropAuthConsumer() {
+        System.out.println("14-oAuthConsumer dropAuthConsumer");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);

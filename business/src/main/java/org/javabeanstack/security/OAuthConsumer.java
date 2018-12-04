@@ -252,8 +252,7 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();            
             authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
-            //TODO ver
-            authConsumerToken.setData(data.toString());
+            authConsumerToken.setData(getDataString(data));
             String token = signTokenData(authConsumerToken);
             authConsumerToken.setToken(token);
             authConsumerToken.setTokenSecret(token);
@@ -267,6 +266,20 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
             ErrorManager.showError(ex, LOGGER);
         }
         return null;
+    }
+    
+    /**
+     * Convierte una map<String,String> a un formato standard string para guardar
+     * en la base 
+     * @param data map con los datos.
+     * @return dato convertido.
+     */
+    protected String getDataString(Map<String, String> data){
+        String result = "";
+        for (Map.Entry<String, String> entry : data.entrySet()){
+            result += entry.getKey().trim()+"="+entry.getValue().trim()+"\n";
+        }
+        return result;
     }
     
     /**
