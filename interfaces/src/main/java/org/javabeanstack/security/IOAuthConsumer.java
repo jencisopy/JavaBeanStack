@@ -24,9 +24,11 @@ package org.javabeanstack.security;
 
 import java.util.Date;
 import java.util.Map;
+import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.model.IAppUser;
 
 /**
  *
@@ -34,7 +36,7 @@ import org.javabeanstack.data.services.IDataService;
  */
 public interface IOAuthConsumer {
     boolean createAuthConsumer(String consumerName, Date expiredDate);
-    String createToken(String consumerKey, String data);
+    String createToken(String consumerKey, IOAuthConsumerData data);
     String createToken(String consumerKey, Map<String, String> data);    
     boolean dropAuthConsumer(String consumerKey);
     boolean dropToken(String consumerKey, String tokenSecret);
@@ -42,5 +44,10 @@ public interface IOAuthConsumer {
     Class<IAppAuthConsumerToken> getAuthConsumerTokenClass();
     String getToken(String consumerKey, String tokenSecret);
     boolean requestToken(String consumerKey);
+    boolean isValidToken(String token);
+    String getDataKeyValue(String token, String property);
+    String getDataKeyValue(IAppAuthConsumerToken token, String property);
+    IAppUser getUserMapped(String token);
+    IDBFilter getDBFilter(IAppAuthConsumerToken token);
     void setDao(IDataService dao);
 }

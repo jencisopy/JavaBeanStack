@@ -21,9 +21,8 @@
 */
 package org.javabeanstack.data;
 
-import org.javabeanstack.data.IDBFilter;
-import org.javabeanstack.data.IDBLinkInfo;
-import org.javabeanstack.data.IDBManager;
+import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.IUserSession;
 
 /**
@@ -34,7 +33,8 @@ import org.javabeanstack.security.IUserSession;
  */
 public class DBLinkInfo implements IDBLinkInfo {
     private IUserSession userSession;
-    
+    private IAppAuthConsumerToken token;
+    private IOAuthConsumer oAuthConsumer;
     /**
      * Devuelve DBFilter conteniendo los filtros que deben ser aplicados
      * en los queries.
@@ -45,6 +45,9 @@ public class DBLinkInfo implements IDBLinkInfo {
         if (userSession != null){
             return userSession.getDBFilter();
         }
+        if (token != null && oAuthConsumer != null){
+            return oAuthConsumer.getDBFilter(token);
+        }
         return null;
     }
 
@@ -54,10 +57,16 @@ public class DBLinkInfo implements IDBLinkInfo {
      */
     @Override
     public String getPersistUnit() {
-        if (userSession == null){
+        if (userSession == null && token == null){
             return IDBManager.CATALOGO;
         }
-        return userSession.getPersistenceUnit();
+        if (userSession != null){
+            return userSession.getPersistenceUnit();
+        }
+        if (token != null && oAuthConsumer != null){
+            return oAuthConsumer.getDataKeyValue(token, "persistunit");
+        }
+        return null;
     }
 
     /**
@@ -76,5 +85,18 @@ public class DBLinkInfo implements IDBLinkInfo {
     @Override
     public void setUserSession(IUserSession userSession) {
         this.userSession = userSession;
+    }
+    
+    /**
+     * Asigna un objeto con información autorizaciones de acceso
+     * @param token
+     */
+    @Override
+    public void setToken(IAppAuthConsumerToken token) {
+        this.token = token;
+    }
+
+    public void setoAuthConsumer(IOAuthConsumer oAuthConsumer) {
+        this.oAuthConsumer = oAuthConsumer;
     }
 }

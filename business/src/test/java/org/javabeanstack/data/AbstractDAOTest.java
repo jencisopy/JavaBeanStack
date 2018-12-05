@@ -565,8 +565,9 @@ public class AbstractDAOTest extends TestClass {
             System.out.println(error);
             return;
         }
-        IDBLinkInfo info = dao.getUserSession(sessionId).getDbLinkInfo();
-        assertNotNull(info);
+        IDBLinkInfo info = new DBLinkInfo();
+        info.setUserSession(dao.getUserSession(sessionId));
+        assertNotNull(info.getUserSession());
     }
     
     public class AbstractDAOImpl extends AbstractDAO {

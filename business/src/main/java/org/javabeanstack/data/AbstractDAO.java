@@ -747,6 +747,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         String appUser = "";
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         // Sesión del usuario
+        // TODO variante token
         if (dbLinkInfo.getUserSession() != null) {
             sessionId = dbLinkInfo.getUserSession().getSessionId();
         }
@@ -1235,6 +1236,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     protected IDBLinkInfo getDBLinkInfo(String sessionId) {
         IDBLinkInfo dbInfo = new DBLinkInfo();
+        //TODO variante token
         dbInfo.setUserSession(getUserSession(sessionId));
         return dbInfo;
     }

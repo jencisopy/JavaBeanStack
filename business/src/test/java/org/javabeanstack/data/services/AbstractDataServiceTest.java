@@ -22,13 +22,12 @@
 */
 package org.javabeanstack.data.services;
 
-import org.javabeanstack.data.services.IDataServiceRemote;
-import org.javabeanstack.data.services.AbstractDataService;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.javabeanstack.annotation.CheckMethod;
+import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
@@ -889,8 +888,9 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDBLinkInfo info = dataService.getUserSession(sessionId).getDbLinkInfo();
-        assertNotNull(info);
+        IDBLinkInfo info = new DBLinkInfo();
+        info.setUserSession(dataService.getUserSession(sessionId));
+        assertNotNull(info.getUserSession());
     }
 
     
