@@ -98,7 +98,7 @@ public class AbstractDataServiceTest extends TestClass{
         }
         Moneda row = dataService.find(Moneda.class,sessionId).get(0);
         // Va a pasar la prueba porque es el mismo objeto
-        assertTrue(dataService.checkUniqueKey("", row));
+        assertTrue(dataService.checkUniqueKey(sessionId, row));
     }
 
     /** Prueba control de los unique keys
@@ -495,7 +495,7 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getDataRows method, of class AbstractDataService.
      */
     @Test
-    public void get20DataRows() throws Exception{
+    public void test20GetDataRows() throws Exception{
         System.out.println("20-DataService - getDataRows");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {

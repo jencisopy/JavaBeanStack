@@ -23,6 +23,7 @@ package org.javabeanstack.data;
 
 import java.io.Serializable;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.IUserSession;
 
 /**
@@ -31,8 +32,12 @@ import org.javabeanstack.security.IUserSession;
  */
 public interface IDBLinkInfo extends Serializable {
     IDBFilter getDBFilter();
+    Long getIdCompany();
     String getPersistUnit();
     IUserSession getUserSession();
     void setUserSession(IUserSession userSession);
-    void setToken(IAppAuthConsumerToken token);
+    void setToken(IAppAuthConsumerToken token)  throws Exception;
+    void setoAuthConsumer(IOAuthConsumer oAuthConsumer);
+    String getAppUserId();
+    String getSessionOrTokenId();
 }

@@ -44,12 +44,14 @@ import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.IDBConnectFactory;
+import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CheckException;
+import org.javabeanstack.security.ISessions;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 
@@ -66,6 +68,10 @@ public abstract class AbstractDataService implements IDataService {
     protected List<Method> methodList = this.getListCheckMethods();
     @EJB
     protected IGenericDAO dao;
+    
+    @EJB
+    private ISessions sessions;
+    
 
     /**
      * Devuelve la unidad de persistencia asociado a la empresa en la cual
@@ -76,11 +82,8 @@ public abstract class AbstractDataService implements IDataService {
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     protected String getPersistentUnit(String sessionId) {
-        IUserSession userSession = getUserSession(sessionId);
-        if (userSession == null || userSession.getUser() == null) {
-            return null;
-        }
-        return userSession.getPersistenceUnit();
+        IDBLinkInfo dbInfo = sessions.getDBLinkInfo(sessionId);
+        return dbInfo.getPersistUnit();
     }
 
     /**
@@ -506,8 +509,8 @@ public abstract class AbstractDataService implements IDataService {
         if (isNullorEmpty(sessionId)){ 
             return;
         }
-        IUserSession userSession = getUserSession(sessionId);
-        if (userSession == null || userSession.getUser() == null) {
+        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        if (isNullorEmpty(dbLinkInfo.getSessionOrTokenId())) {
             throw new SessionError("El identificador de la sesión es inválido");
         }
     }
@@ -831,13 +834,11 @@ public abstract class AbstractDataService implements IDataService {
         
         filter = Fn.nvl(filter, "");
         order = Fn.nvl(order, "");
-        
-        IUserSession userSession = getUserSession(sessionId);        
+        IDBLinkInfo dbInfo = sessions.getDBLinkInfo(sessionId);
         comando = "select o from " + type.getSimpleName() + " o ";
-        if (userSession != null 
-                        && !userSession.getPersistenceUnit().equals(IDBManager.CATALOGO)
-                        && userSession.getDBFilter() != null){
-            filtro = userSession.getDBFilter().getFilterExpr(type, "");
+        if (!dbInfo.getPersistUnit().equals(IDBManager.CATALOGO)
+                        && dbInfo.getDBFilter() != null){
+            filtro = dbInfo.getDBFilter().getFilterExpr(type, "");
             if (!"".equals(filter)) {
                 filtro += " and " + filter;
             }

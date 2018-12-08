@@ -44,6 +44,7 @@ import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Fn.nvl;
@@ -105,7 +106,8 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
      * @param token
      * @return registro AppAuthConsumerToken
      */
-    protected IAppAuthConsumerToken findAuthToken(String token) {
+    @Override
+    public IAppAuthConsumerToken findAuthToken(String token) {
         String queryString = "select o from AppAuthConsumerToken o where token = :token";
         Map<String, Object> parameters = new HashMap();
         parameters.put("token", token);
@@ -507,6 +509,28 @@ public abstract class OAuthConsumer implements IOAuthConsumer {
         return null;
     }
 
+    /**
+     * Devuelve el objeto AppCompany mapeado a este token
+     * @param token token
+     * @return objeto AppCompany mapeado al token o nulo si el token es inválido o
+     * el user no existe.
+     */
+    @Override
+    public IAppCompany getCompanyMapped(IAppAuthConsumerToken token) {
+        try{
+            if (!isValidToken(token.getToken())){
+                return null;
+            }
+            Long idcompany = Long.parseLong(getDataKeyValue(token,"idcompany"));
+            IAppCompany company = dao.findByQuery(null,"select o from AppCompany o where idcompany = "+idcompany,null);
+            return company;
+        }
+        catch (Exception exp){
+            ErrorManager.showError(exp, LOGGER);
+        }
+        return null;
+    }
+    
     @Override
     public IDBFilter getDBFilter(IAppAuthConsumerToken token){
         // Implementar

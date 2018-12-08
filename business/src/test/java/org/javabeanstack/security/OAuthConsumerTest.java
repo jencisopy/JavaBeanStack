@@ -26,15 +26,20 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import javax.crypto.SecretKey;
 import org.javabeanstack.crypto.CipherUtil;
+import org.javabeanstack.data.DBLinkInfo;
+import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.data.services.IDataServiceRemote;
+import org.javabeanstack.model.tables.Moneda;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -109,8 +114,7 @@ public class OAuthConsumerTest extends TestClass {
         }
         IOAuthConsumerData data = new OAuthConsumerData();
         data.setIdAppUser(1L);
-        data.setIdCompany(1L);
-        data.setPersistUnit("prueba");
+        data.setIdCompany(2L);
         data.addOtherDataValue("dato1", "dato1");
         data.addOtherDataValue("dato2", "dato2");
         OAuthConsumer instance = new OAuthConsumerImpl();
@@ -342,13 +346,47 @@ public class OAuthConsumerTest extends TestClass {
         assertNotNull(instance.getUserMapped(token));
         assertNull(instance.getUserMapped("noexiste"));
     }
+
+    @Test
+    public void test16GetDBLinkInfo() throws Exception{
+        System.out.println("16-oAuthConsumer getDBLinkInfo");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        OAuthConsumer instance = new OAuthConsumerImpl();
+        instance.setDao(dao);        
+        IDBLinkInfo info = new DBLinkInfo();
+        IAppAuthConsumerToken tokenRecord = instance.findAuthToken(token);
+        info.setoAuthConsumer(instance);
+        info.setToken(tokenRecord);
+        assertNotNull(info.getSessionOrTokenId());
+        assertNotNull(info.getAppUserId());
+        assertNotNull(info.getIdCompany());
+    }
     
+    
+    @Test
+    public void test17GetDataRows() throws Exception{
+        System.out.println("17-oAuthConsumer getDataRows");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IDataServiceRemote dataService = 
+                (IDataServiceRemote) context.lookup(jndiProject+"DataService!org.javabeanstack.data.services.IDataServiceRemote");
+        
+        List<Moneda> monedas = dataService.getDataRows(token, Moneda.class,"" , "", null,0,1000);
+        assertFalse(monedas.isEmpty());
+    }    
     /**
      * Test of dropToken method, of class OAuthConsumer.
      */
     @Test
-    public void test16DropToken() {
-        System.out.println("16-oAuthConsumer dropToken");
+    public void test18DropToken() {
+        System.out.println("18-oAuthConsumer dropToken");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -364,8 +402,8 @@ public class OAuthConsumerTest extends TestClass {
      * Test of dropAuthConsumer method, of class OAuthConsumer.
      */
     @Test
-    public void test17DropAuthConsumer() {
-        System.out.println("17-oAuthConsumer dropAuthConsumer");
+    public void test19DropAuthConsumer() {
+        System.out.println("19-oAuthConsumer dropAuthConsumer");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
@@ -377,6 +415,7 @@ public class OAuthConsumerTest extends TestClass {
         assertTrue(result);
     }
     
+   
     public class OAuthConsumerImpl extends OAuthConsumer {
         @Override
         public Class<IAppAuthConsumer> getAuthConsumerClass() {

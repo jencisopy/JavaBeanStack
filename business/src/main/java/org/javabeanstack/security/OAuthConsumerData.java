@@ -33,7 +33,6 @@ import static org.javabeanstack.util.Fn.nvl;
 public class OAuthConsumerData implements IOAuthConsumerData{
     private Long idAppUser=0L;
     private Long idCompany=0L;
-    private String persistUnit="";
     private Map<String, String> otherData = new TreeMap();
 
     @Override
@@ -54,16 +53,6 @@ public class OAuthConsumerData implements IOAuthConsumerData{
     @Override
     public void setIdCompany(Long idcompany) {
         this.idCompany = idcompany;
-    }
-
-    @Override
-    public String getPersistUnit() {
-        return persistUnit;
-    }
-
-    @Override
-    public void setPersistUnit(String persistUnit) {
-        this.persistUnit = persistUnit;
     }
 
     @Override
@@ -90,7 +79,6 @@ public class OAuthConsumerData implements IOAuthConsumerData{
     public String toString() {
         String result = "idappuser="+nvl(idAppUser,"0").toString().trim()+"\n";
         result += "idcompany="+nvl(idCompany,0).toString().trim()+"\n";
-        result += "persistunit="+nvl(persistUnit,"").trim()+"\n";
         result += getOtherDataString(otherData);
         return result;
     }

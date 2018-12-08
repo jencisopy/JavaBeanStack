@@ -33,8 +33,6 @@ public interface IOAuthConsumerData {
     void setIdAppUser(Long iduser);
     Long getIdCompany();
     void setIdCompany(Long idcompany);
-    String getPersistUnit();
-    void setPersistUnit(String persistUnit);
     Map<String, String> getOtherData();
     void setOtherData(Map<String, String> otherData);
     void addOtherDataValue(String key, String value);

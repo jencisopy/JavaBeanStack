@@ -21,9 +21,14 @@
 */
 package org.javabeanstack.data;
 
+import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
 
 /**
  * Clase que contiene información necesaria para el acceso a los datos. 
@@ -35,6 +40,9 @@ public class DBLinkInfo implements IDBLinkInfo {
     private IUserSession userSession;
     private IAppAuthConsumerToken token;
     private IOAuthConsumer oAuthConsumer;
+    private IAppCompany appCompanyToken;
+    private IAppUser appUserToken;
+            
     /**
      * Devuelve DBFilter conteniendo los filtros que deben ser aplicados
      * en los queries.
@@ -51,6 +59,30 @@ public class DBLinkInfo implements IDBLinkInfo {
         return null;
     }
 
+    
+    /**
+     * 
+     * @return idcompany
+     */
+    @Override
+    public Long getIdCompany() {
+        if (userSession == null && token == null){
+            return null;
+        }
+        if (userSession != null){
+            return userSession.getIdCompany();
+        }
+        if (token != null && oAuthConsumer != null){
+            if (appCompanyToken != null){
+                if (appCompanyToken.getIdcompanymask() != null){
+                    return appCompanyToken.getIdcompanymask();
+                }
+                return appCompanyToken.getIdcompany();
+            }
+        }
+        return null;
+    }
+    
     /**
      * 
      * @return unidad de persistencia.
@@ -64,7 +96,9 @@ public class DBLinkInfo implements IDBLinkInfo {
             return userSession.getPersistenceUnit();
         }
         if (token != null && oAuthConsumer != null){
-            return oAuthConsumer.getDataKeyValue(token, "persistunit");
+            if (appCompanyToken != null){
+                return Fn.nvl(appCompanyToken.getPersistentUnit(),"").trim();
+            }
         }
         return null;
     }
@@ -90,13 +124,46 @@ public class DBLinkInfo implements IDBLinkInfo {
     /**
      * Asigna un objeto con información autorizaciones de acceso
      * @param token
+     * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public void setToken(IAppAuthConsumerToken token) {
+    public void setToken(IAppAuthConsumerToken token) throws SessionError {
+        if (!oAuthConsumer.isValidToken(token.getToken())){
+            throw new SessionError("Token inválido");
+        }
         this.token = token;
+        this.appCompanyToken = oAuthConsumer.getCompanyMapped(token);
+        this.appUserToken = oAuthConsumer.getUserMapped(token.getToken());        
     }
 
+    @Override
     public void setoAuthConsumer(IOAuthConsumer oAuthConsumer) {
         this.oAuthConsumer = oAuthConsumer;
+    }
+    
+    @Override
+    public String getAppUserId(){
+        String result = "";
+        if (getUserSession() != null) {
+            result = getUserSession().getUser().getPass();
+        }
+        if (Strings.isNullorEmpty(result) && token != null) {
+            if (appUserToken != null){
+                result = appUserToken.getPass();
+            }
+        }
+        return result;
+    }
+    
+    @Override
+    public String getSessionOrTokenId(){
+        String result = "";
+        if (getUserSession() != null) {
+            result = getUserSession().getSessionId();
+        }
+        if (Strings.isNullorEmpty(result) && token != null) {
+            result = token.getToken();
+        }
+        return result;
     }
 }
