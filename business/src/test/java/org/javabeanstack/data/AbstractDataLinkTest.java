@@ -729,7 +729,8 @@ public class AbstractDataLinkTest extends TestClass {
             System.out.println(error);
             return;
         }
-        IDBLinkInfo info = dataLink.getUserSession().getDbLinkInfo();
+        IDBLinkInfo info = new DBLinkInfo();
+        info.setUserSession(dataLink.getUserSession());
         assertNotNull(info);
     }
 

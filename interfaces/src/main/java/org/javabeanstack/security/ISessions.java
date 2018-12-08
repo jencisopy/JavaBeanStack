@@ -1,5 +1,7 @@
 package org.javabeanstack.security;
 
+import org.javabeanstack.data.IDBLinkInfo;
+
 
 /**
  *
@@ -11,5 +13,6 @@ public interface ISessions {
     IUserSession reCreateSession(String sessionId, Object idcompany);
     IUserSession getUserSession(String sessionId);
     IUserSession login(String userLogin, String password) throws Exception;
+    IDBLinkInfo getDBLinkInfo(String sessionId);
     void logout(String sessionId);
 }

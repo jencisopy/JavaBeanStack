@@ -25,9 +25,7 @@ package org.javabeanstack.security;
 
 
 import java.util.Date;
-import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBFilter;
-import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.model.IAppCompany;
@@ -266,13 +264,6 @@ public class UserSession implements IUserSession{
         this.idleSessionExpireInMinutes = minutes;
     }
     
-    @Override
-    public IDBLinkInfo getDbLinkInfo(){
-        IDBLinkInfo dbInfo = new DBLinkInfo();
-        dbInfo.setUserSession(this);
-        return dbInfo;
-    }
-
     @Override
     public IDBFilter getDBFilter() {
         return dbFilter;

@@ -22,13 +22,12 @@
 */
 package org.javabeanstack.data.services;
 
-import org.javabeanstack.data.services.IDataServiceRemote;
-import org.javabeanstack.data.services.AbstractDataService;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.javabeanstack.annotation.CheckMethod;
+import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
@@ -99,7 +98,7 @@ public class AbstractDataServiceTest extends TestClass{
         }
         Moneda row = dataService.find(Moneda.class,sessionId).get(0);
         // Va a pasar la prueba porque es el mismo objeto
-        assertTrue(dataService.checkUniqueKey("", row));
+        assertTrue(dataService.checkUniqueKey(sessionId, row));
     }
 
     /** Prueba control de los unique keys
@@ -496,7 +495,7 @@ public class AbstractDataServiceTest extends TestClass{
      * Test of getDataRows method, of class AbstractDataService.
      */
     @Test
-    public void get20DataRows() throws Exception{
+    public void test20GetDataRows() throws Exception{
         System.out.println("20-DataService - getDataRows");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -889,8 +888,9 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        IDBLinkInfo info = dataService.getUserSession(sessionId).getDbLinkInfo();
-        assertNotNull(info);
+        IDBLinkInfo info = new DBLinkInfo();
+        info.setUserSession(dataService.getUserSession(sessionId));
+        assertNotNull(info.getUserSession());
     }
 
     

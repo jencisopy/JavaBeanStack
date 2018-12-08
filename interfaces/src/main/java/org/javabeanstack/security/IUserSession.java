@@ -3,7 +3,6 @@ package org.javabeanstack.security;
 import java.io.Serializable;
 import java.util.Date;
 import org.javabeanstack.data.IDBFilter;
-import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
@@ -72,7 +71,6 @@ public interface IUserSession extends Serializable {
     Integer getIdleSessionExpireInMinutes();
     <T extends IDBFilter> T getDBFilter();
     IAppUser getUser();
-    IDBLinkInfo getDbLinkInfo();    
     void setCompany(IAppCompany company);    
     void setEmpresa(IAppCompany empresa);
     void setIdCompany(Long idcompany);        

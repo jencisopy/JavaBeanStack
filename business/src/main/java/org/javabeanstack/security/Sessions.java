@@ -37,18 +37,24 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Startup;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.crypto.DigestUtil;
+import org.javabeanstack.data.DBLinkInfo;
+import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.util.Dates;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
 
 /**
  * Es la clase encargada de todas las sesiones de usuarios. Guarda información
@@ -71,6 +77,10 @@ public class Sessions implements ISessions{
 
     @EJB
     protected IGenericDAO dao;
+    
+    @EJB
+    private IOAuthConsumer oAuthConsumer;
+    
 
     /**
      * Se ejecuta al instanciarse esta clase.
@@ -321,9 +331,15 @@ public class Sessions implements ISessions{
         if (sessionIdEncrypted == null) {
             return null;
         }
-        String sessionId = decrypt(sessionIdEncrypted);
-        LOGGER.debug("SESSION ENCRYPTADA: "+sessionIdEncrypted);                
-        LOGGER.debug("SESSION : "+sessionId);                
+        String sessionId;
+        try{
+            sessionId = decrypt(sessionIdEncrypted);
+            LOGGER.debug("SESSION ENCRYPTADA: "+sessionIdEncrypted);                
+            LOGGER.debug("SESSION : "+sessionId);                
+        }
+        catch (Exception exp){
+            return null;
+        }
         UserSession sesion = (UserSession) sessionVar.get(sessionId);
         if (sesion != null) {
             Integer expireInMinutes = sesion.getIdleSessionExpireInMinutes();
@@ -351,6 +367,33 @@ public class Sessions implements ISessions{
         return sesion;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public IDBLinkInfo getDBLinkInfo(String sessionId) {
+        IDBLinkInfo dbLinkInfo = new DBLinkInfo();
+        if (!Strings.isNullorEmpty(sessionId)){
+            IUserSession userSession = getUserSession(sessionId);
+            if (userSession != null){
+                dbLinkInfo.setUserSession(userSession);
+            }
+            else{
+                if (oAuthConsumer.isValidToken(sessionId)){
+                    dbLinkInfo.setoAuthConsumer(oAuthConsumer);
+                    IAppAuthConsumerToken token = oAuthConsumer.findAuthToken(sessionId);
+                    if (token != null){
+                        try{
+                            dbLinkInfo.setToken(token);
+                        }
+                        catch (Exception exp){
+                            ErrorManager.showError(exp, LOGGER);                            
+                        }
+                    }
+                }
+            }
+        }
+        return dbLinkInfo;
+    }
+    
     /**
      * Devuelve un texto que identificará a la sesión de forma unica.
      *
