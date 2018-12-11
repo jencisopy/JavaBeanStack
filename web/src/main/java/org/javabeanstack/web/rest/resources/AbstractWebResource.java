@@ -21,10 +21,13 @@
  */
 package org.javabeanstack.web.rest.resources;
 
+import javax.ejb.EJB;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.ws.resources.IWebResource;
 
 /**
@@ -32,12 +35,17 @@ import org.javabeanstack.ws.resources.IWebResource;
  * @author Jorge Enciso
  */
 public abstract class AbstractWebResource implements IWebResource {
+
+    @EJB
+    private IOAuthConsumer oAuthConsumer;
+
     private Long idcompany;
     private Long idPerson;
     private String personRol;
     private String token;
-    
-    @Context HttpServletRequest requestContext;    
+
+    @Context
+    HttpServletRequest requestContext;
 
     @Override
     public abstract <T extends IDataService> T getDataService();
@@ -48,18 +56,18 @@ public abstract class AbstractWebResource implements IWebResource {
     @Override
     public Long getIdCompany() {
         return idcompany;
-    } 
-    
+    }
+
     @Override
     public final String getIpClient() {
         return requestContext.getRemoteAddr();
     }
 
-    @Override    
+    @Override
     public final String getRemoteHost() {
         return requestContext.getRemoteHost();
     }
-    
+
     @Override
     public Long getIdPerson() {
         return idPerson;
@@ -73,23 +81,33 @@ public abstract class AbstractWebResource implements IWebResource {
     public String getToken() {
         return token;
     }
-    
+
     public final Boolean verifyToken(String token) {
-        if (token == null){
+        if (token == null) {
             throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
         }
-        if (!getSecManager().isSesionIdValid(token)){
+        if (!oAuthConsumer.isValidToken(token)) {
             throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es es incorrecto");
         }
         return true;
     }
-    
-    protected void setToken(String token) {
-        verifyToken(token);
-        String[] tokens = token.split("\\-");
-        //TODO analizar este codigo
-        this.idcompany = Long.parseLong(tokens[0]);
-        this.idPerson = Long.parseLong(tokens[1]);
-        this.token = token;
+
+    protected void setToken(String tokenHeader) {
+        String[] tokens = tokenHeader.split("\\ ");
+        this.token = tokens[1];
+        this.idPerson = 0L;
+        this.idcompany = 0L;
+        verifyToken(this.token);
+        
+        IAppCompany appCompanyToken = oAuthConsumer.getCompanyMapped(this.token);
+        if (appCompanyToken != null) {
+            if (appCompanyToken.getIdcompanymask() != null) {
+                this.idcompany = appCompanyToken.getIdcompanymask();
+            }
+            else{
+                this.idcompany = appCompanyToken.getIdcompany();
+            }
+        }
+        // this.idPerson = Long.parseLong(oAuthConsumer.getDataKeyValue(this.token, "idperson"));
     }
 }

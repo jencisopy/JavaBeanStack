@@ -71,7 +71,7 @@ public class OAuthConsumerTest extends TestClass {
 
     @Test
     public void test00InstanceClass() throws InstantiationException, IllegalAccessException{
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         IAppAuthConsumer consumer = instance.getAuthConsumerClass().newInstance();
         assertNotNull(consumer);
     }
@@ -90,7 +90,7 @@ public class OAuthConsumerTest extends TestClass {
         }
         String consumerName = "OYM";
         Date expiredDate = new Date();
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         boolean expResult = true;
         boolean result = instance.createAuthConsumer(consumerName, expiredDate);
@@ -117,7 +117,7 @@ public class OAuthConsumerTest extends TestClass {
         data.setIdCompany(2L);
         data.addOtherDataValue("dato1", "dato1");
         data.addOtherDataValue("dato2", "dato2");
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         token = instance.createToken(consumerKey, data);
         assertFalse(token.isEmpty());
@@ -139,7 +139,7 @@ public class OAuthConsumerTest extends TestClass {
         data.put("dato1", "prueba");
         data.put("dato2", "prueba2");
         
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         String result = instance.createToken(consumerKey, data);
         assertFalse(result.isEmpty());
@@ -156,7 +156,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         String result = instance.getToken(consumerKey, tokenSecret);
         assertFalse(result.isEmpty());        
@@ -173,7 +173,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         boolean expResult = true;
         boolean result = instance.requestToken(consumerKey);
@@ -192,7 +192,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         IAppAuthConsumer authConsumer = instance.findAuthConsumer(consumerKey);
         String encodeKey = authConsumer.getPrivateKey();
@@ -222,7 +222,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         String result = instance.getRandomToken();
         assertFalse(result.isEmpty());
@@ -240,7 +240,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         IAppAuthConsumer result = instance.findAuthConsumer(consumerKey);
         assertNotNull(result);
@@ -257,7 +257,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         IAppAuthConsumerToken result = instance.findAuthToken(token);
         assertNotNull(result);
@@ -274,7 +274,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         IAppAuthConsumerToken result = instance.findAuthToken(consumerKey, tokenSecret);
         assertNotNull(result);
@@ -292,7 +292,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         IAppAuthConsumerToken result = instance.findAuthToken(consumerKey, tokenSecret);
         assertNotNull(result);
@@ -313,7 +313,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         assertTrue(instance.isValidToken(token));
         assertFalse(instance.isValidToken("noexiste"));
@@ -327,7 +327,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         assertFalse(instance.getDataKeyValue(token,"idappuser").isEmpty());
         assertTrue(instance.getDataKeyValue(token,"noexiste").isEmpty());
@@ -341,7 +341,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         assertNotNull(instance.getUserMapped(token));
         assertNull(instance.getUserMapped("noexiste"));
@@ -355,7 +355,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);        
         IDBLinkInfo info = new DBLinkInfo();
         IAppAuthConsumerToken tokenRecord = instance.findAuthToken(token);
@@ -392,7 +392,7 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);                
         boolean result = instance.dropToken(consumerKey, tokenSecret);
         assertTrue(result);
@@ -409,14 +409,14 @@ public class OAuthConsumerTest extends TestClass {
             System.out.println(error);
             return;
         }
-        OAuthConsumer instance = new OAuthConsumerImpl();
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         boolean result = instance.dropAuthConsumer(consumerKey);
         assertTrue(result);
     }
     
    
-    public class OAuthConsumerImpl extends OAuthConsumer {
+    public class OAuthConsumerImpl extends OAuthConsumerBase {
         @Override
         public Class<IAppAuthConsumer> getAuthConsumerClass() {
             try {

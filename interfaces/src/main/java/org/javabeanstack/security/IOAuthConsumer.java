@@ -51,6 +51,7 @@ public interface IOAuthConsumer {
     String getDataKeyValue(IAppAuthConsumerToken token, String property);
     IAppUser getUserMapped(String token);
     IAppCompany getCompanyMapped(IAppAuthConsumerToken token);
+    IAppCompany getCompanyMapped(String token);
     IDBFilter getDBFilter(IAppAuthConsumerToken token);
     void setDao(IDataService dao);
 }
