@@ -39,12 +39,13 @@ public interface IOAuthConsumer {
     boolean createAuthConsumer(String consumerName, Date expiredDate);
     String createToken(String consumerKey, IOAuthConsumerData data);
     String createToken(String consumerKey, Map<String, String> data);    
+    String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice);
     IAppAuthConsumerToken findAuthToken(String token);
     boolean dropAuthConsumer(String consumerKey);
     boolean dropToken(String consumerKey, String tokenSecret);
     Class<IAppAuthConsumer> getAuthConsumerClass();
     Class<IAppAuthConsumerToken> getAuthConsumerTokenClass();
-    String getToken(String consumerKey, String tokenSecret);
+    String getToken(String consumerKey, String uuidOrTokenSecret);
     boolean requestToken(String consumerKey);
     boolean isValidToken(String token);
     String getDataKeyValue(String token, String property);

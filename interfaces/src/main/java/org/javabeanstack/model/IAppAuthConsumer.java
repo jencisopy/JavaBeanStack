@@ -51,4 +51,17 @@ public interface IAppAuthConsumer extends IDataRow {
     
     Boolean getBlocked();
     void setBlocked(boolean blocked);
+    
+    String getAuthURL();
+    void setAuthURL(String authURL);
+    
+    String getTokenURL();
+    void setTokenURL(String tokenURL);
+    
+    String getCallbackURL();
+    void setCallbackURL(String callbackURL);
+    
+    String getScope();
+    void setScope(String scope);
 }
+
