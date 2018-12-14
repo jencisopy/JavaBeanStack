@@ -96,6 +96,18 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     @NotNull
     @Column(name = "blocked")
     private boolean blocked;
+    @Size(max = 250)
+    @Column(name = "authURL")
+    private String authURL;
+    @Size(max = 250)
+    @Column(name = "tokenURL")
+    private String tokenURL;
+    @Size(max = 250)
+    @Column(name = "callbackURL")
+    private String callbackURL;
+    @Size(max = 200)
+    @Column(name = "scope")
+    private String scope;
     
     @Transient
     @Basic(optional = false)
@@ -223,6 +235,46 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
         this.blocked = blocked;
     }
 
+    @Override
+    public String getAuthURL() {
+        return authURL;
+    }
+
+    @Override
+    public void setAuthURL(String authURL) {
+        this.authURL = authURL;
+    }
+
+    @Override
+    public String getTokenURL() {
+        return tokenURL;
+    }
+
+    @Override
+    public void setTokenURL(String tokenURL) {
+        this.tokenURL = tokenURL;
+    }
+
+    @Override
+    public String getCallbackURL() {
+        return callbackURL;
+    }
+
+    @Override
+    public void setCallbackURL(String callbackURL) {
+        this.callbackURL = callbackURL;
+    }
+
+    @Override
+    public String getScope() {
+        return scope;
+    }
+
+    @Override
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+    
     public Date getFechacreacion() {
         return fechacreacion;
     }

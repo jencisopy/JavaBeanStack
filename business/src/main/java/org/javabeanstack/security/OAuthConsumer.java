@@ -23,6 +23,7 @@
 
 package org.javabeanstack.security;
 
+import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 
@@ -31,7 +32,6 @@ import org.javabeanstack.model.IAppAuthConsumerToken;
  * @author Jorge Enciso
  */
 public class OAuthConsumer extends OAuthConsumerBase {
-
     @Override
     public Class<IAppAuthConsumer> getAuthConsumerClass() {
         try {
@@ -51,4 +51,10 @@ public class OAuthConsumer extends OAuthConsumerBase {
         }
         return null;
     }
+    
+    @Override
+    public IDBFilter getDBFilter(IAppAuthConsumerToken token){
+        //TODO implementar
+        return null;
+    }    
 }

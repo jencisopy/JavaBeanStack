@@ -124,16 +124,22 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * token
      *
      * @param consumerKey clave del consumidor
-     * @param tokenSecret clave del token.
+     * @param uuidOrTokenSecret clave del token o uuid del dispositivo.
      * @return registro AppAuthConsumerToken
      */
-    protected IAppAuthConsumerToken findAuthToken(String consumerKey, String tokenSecret) {
-        String queryString = "select o from AppAuthConsumerToken o where appAuthConsumer.consumerKey = :consumerKey and tokenSecret = :tokenSecret";
-        Map<String, Object> parameters = new HashMap();
-        parameters.put("consumerKey", consumerKey);
-        parameters.put("tokenSecret", tokenSecret);
+    protected IAppAuthConsumerToken findAuthToken(String consumerKey, String uuidOrTokenSecret) {
         try {
+            String queryString = "select o from AppAuthConsumerToken o where appAuthConsumer.consumerKey = :consumerKey and tokenSecret = :uuidOrTokenSecret";
+            Map<String, Object> parameters = new HashMap();
+            parameters.put("consumerKey", consumerKey);
+            parameters.put("uuidOrTokenSecret", uuidOrTokenSecret);
+            //Busca por tokensecret
             IAppAuthConsumerToken auth = dao.findByQuery(null, queryString, parameters);
+            if (auth == null){
+                //Busca por uuidDevice
+                queryString = "select o from AppAuthConsumerToken o where appAuthConsumer.consumerKey = :consumerKey and uuidDevice = :uuidOrTokenSecret";
+                auth = dao.findByQuery(null, queryString, parameters);                
+            }
             return auth;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -191,12 +197,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * Devuelve un token dado un consumerKey y un tokenSecret.
      *
      * @param consumerKey clave del consumidor
-     * @param tokenSecret clave del token.
+     * @param uuidOrTokenSecret clave del token o uuid del dispositivo.
      * @return token
      */
     @Override
-    public final String getToken(String consumerKey, String tokenSecret) {
-        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, tokenSecret);
+    public final String getToken(String consumerKey, String uuidOrTokenSecret) {
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
         if (authConsumerToken != null) {
             return authConsumerToken.getToken();
         }
@@ -219,6 +225,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             String token = getRandomToken();
             authConsumerToken.setToken(token);
             authConsumerToken.setTokenSecret(token);
+            authConsumerToken.setUuidDevice(token);
             IDataResult dataResult = dao.persist(null, authConsumerToken);
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
@@ -245,6 +252,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerToken.setToken(token);
             String tokenSecret = getTokenSecret(authConsumerToken);
             authConsumerToken.setTokenSecret(tokenSecret);
+            authConsumerToken.setUuidDevice(tokenSecret);
             IDataResult dataResult = dao.persist(null, authConsumerToken);
             if (!dataResult.isSuccessFul()) {
                 return "";
@@ -257,6 +265,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         return "";
     }
 
+    
     /**
      * Crea un token válido.
      *
@@ -273,7 +282,9 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerToken.setData(getDataString(data));
             String token = signTokenData(authConsumerToken);
             authConsumerToken.setToken(token);
-            authConsumerToken.setTokenSecret(token);
+            String tokenSecret = getTokenSecret(authConsumerToken);            
+            authConsumerToken.setTokenSecret(tokenSecret);
+            authConsumerToken.setUuidDevice(tokenSecret);
             IDataResult dataResult = dao.persist(null, authConsumerToken);
             if (!dataResult.isSuccessFul()) {
                 return null;
@@ -286,6 +297,38 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         return null;
     }
 
+    /**
+     * Crea y graba en la base de datos el registro de un token de autorización
+     *
+     * @param consumerKey clave del consumidor.
+     * @param data información del token.
+     * @param uuidDevice identificador unico del dispositivo.
+     * @return valor del token.
+     */
+    @Override
+    public String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice) {
+        try {
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
+            authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
+            authConsumerToken.setBlocked(false);
+            authConsumerToken.setData(data.toString());
+            String token = signTokenData(authConsumerToken);
+            authConsumerToken.setToken(token);
+            String tokenSecret = getTokenSecret(authConsumerToken);
+            authConsumerToken.setTokenSecret(tokenSecret);
+            authConsumerToken.setUuidDevice(uuidDevice);            
+            IDataResult dataResult = dao.persist(null, authConsumerToken);
+            if (!dataResult.isSuccessFul()) {
+                return "";
+            }
+            lastAuthConsumerToken = dataResult.getRowUpdated();
+            return authConsumerToken.getToken();
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return "";
+    }
+    
     /**
      * Convierte una map<String,String> a un formato standard string para
      * guardar en la base

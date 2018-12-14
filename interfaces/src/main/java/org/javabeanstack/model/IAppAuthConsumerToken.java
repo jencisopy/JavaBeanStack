@@ -27,6 +27,9 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  */
 public interface IAppAuthConsumerToken extends IDataRow {
+    String getUuidDevice();
+    void setUuidDevice(String uuidDevice);
+    
     String getToken();
     void setToken(String tokenKey);
 

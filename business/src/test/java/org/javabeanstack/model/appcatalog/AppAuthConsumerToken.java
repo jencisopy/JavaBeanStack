@@ -63,6 +63,12 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     @Basic(optional = false)
     @Column(name = "idappauthconsumertoken")
     private Long idappauthconsumertoken;
+    
+    @Basic(optional = false)
+    @NotNull
+    @Column(name = "uuidDevice")
+    private String uuidDevice;
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 500)
@@ -128,6 +134,16 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
 
     public void setIdappauthconsumertoken(Long idappauthconsumertoken) {
         this.idappauthconsumertoken = idappauthconsumertoken;
+    }
+
+    @Override
+    public String getUuidDevice() {
+        return uuidDevice;
+    }
+
+    @Override
+    public void setUuidDevice(String uuidDevice) {
+        this.uuidDevice = uuidDevice;
     }
 
     @Override

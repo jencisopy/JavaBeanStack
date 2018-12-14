@@ -56,6 +56,7 @@ public class OAuthConsumerTest extends TestClass {
     private static String consumerKey;
     private static String token;
     private static String tokenSecret;
+    private static String uuidDevice = "xxxx1111133333";    
     
     public OAuthConsumerTest() {
     }
@@ -119,9 +120,12 @@ public class OAuthConsumerTest extends TestClass {
         data.addOtherDataValue("dato2", "dato2");
         OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
-        token = instance.createToken(consumerKey, data);
+        token = instance.createToken(consumerKey, data, uuidDevice);
         assertFalse(token.isEmpty());
         tokenSecret = instance.getLastAuthConsumerToken().getTokenSecret();
+        data.addOtherDataValue("dato3", "dato3");
+        String token2 = instance.createToken(consumerKey, data);
+        assertFalse(token2.isEmpty());        
     }
 
     /**
@@ -159,6 +163,8 @@ public class OAuthConsumerTest extends TestClass {
         OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         String result = instance.getToken(consumerKey, tokenSecret);
+        assertFalse(result.isEmpty());        
+        result = instance.getToken(consumerKey, uuidDevice);
         assertFalse(result.isEmpty());        
     }
 
