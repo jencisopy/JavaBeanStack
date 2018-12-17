@@ -36,7 +36,7 @@ import org.javabeanstack.model.IAppUser;
  * @author Jorge Enciso
  */
 public interface IOAuthConsumer {
-    boolean createAuthConsumer(String consumerName, Date expiredDate);
+    String createAuthConsumer(String consumerName, Date expiredDate);
     String createToken(String consumerKey, IOAuthConsumerData data);
     String createToken(String consumerKey, Map<String, String> data);    
     String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice);
@@ -46,7 +46,9 @@ public interface IOAuthConsumer {
     Class<IAppAuthConsumer> getAuthConsumerClass();
     Class<IAppAuthConsumerToken> getAuthConsumerTokenClass();
     String getToken(String consumerKey, String uuidOrTokenSecret);
+    Date getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret);
     boolean requestToken(String consumerKey);
+    boolean requestToken(String consumerKey, String uuidDevice);    
     boolean isValidToken(String token);
     String getDataKeyValue(String token, String property);
     String getDataKeyValue(IAppAuthConsumerToken token, String property);

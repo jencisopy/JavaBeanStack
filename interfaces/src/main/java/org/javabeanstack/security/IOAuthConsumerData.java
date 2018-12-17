@@ -22,13 +22,14 @@
  */
 package org.javabeanstack.security;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  *
  * @author Jorge Enciso
  */
-public interface IOAuthConsumerData {
+public interface IOAuthConsumerData extends Serializable {
     Long getIdAppUser();
     void setIdAppUser(Long iduser);
     Long getIdCompany();
@@ -37,4 +38,8 @@ public interface IOAuthConsumerData {
     void setOtherData(Map<String, String> otherData);
     void addOtherDataValue(String key, String value);
     void removeOtherDataValue(String key);
+    String getUserLogin();
+    void setUserLogin(String userLogin);
+    String getUserPass();
+    void setUserPass(String userPass);
 }

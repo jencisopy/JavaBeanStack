@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.json.JsonArray;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;

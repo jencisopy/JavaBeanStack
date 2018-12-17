@@ -40,6 +40,7 @@ import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.data.services.IDataServiceRemote;
 import org.javabeanstack.model.tables.Moneda;
+import org.javabeanstack.util.Dates;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -91,15 +92,15 @@ public class OAuthConsumerTest extends TestClass {
         }
         String consumerName = "OYM";
         Date expiredDate = new Date();
+        expiredDate = Dates.sumDays(expiredDate, 5000);
         OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
-        boolean expResult = true;
-        boolean result = instance.createAuthConsumer(consumerName, expiredDate);
-        assertEquals(expResult, result);
+        String result = instance.createAuthConsumer(consumerName, expiredDate);
+        assertNotNull(result);
         consumerKey = instance.getLastAuthConsumer().getConsumerKey();
         // Ya existe debe dar error
         result = instance.createAuthConsumer(consumerName, expiredDate);
-        assertFalse(result);        
+        assertNull(result);        
     }
 
     /**

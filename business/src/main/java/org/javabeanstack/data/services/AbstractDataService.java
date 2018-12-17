@@ -51,6 +51,7 @@ import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CheckException;
+import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.security.ISessions;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
@@ -919,6 +920,18 @@ public abstract class AbstractDataService implements IDataService {
         return dao.update(sessionId, dataSet);        
     }
 
+    /**
+     * Verifica los datos (usuario, contraseña y empresa a la que se quiere loguear)
+     * Si pasa la válidación se puede crear el token.
+     * @param data datos conteniendo valores de usuario, pass y empresa
+     * @throws SessionError
+     */
+    @Override
+    public void checkAuthConsumerData(IOAuthConsumerData data) throws Exception{
+        dao.checkAuthConsumerData(data);
+    }
+    
+    
     @Deprecated    
     @Override
     public Connection getConnection(String sessionId) {
