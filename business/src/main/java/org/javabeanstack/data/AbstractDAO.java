@@ -44,7 +44,9 @@ import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CompanyError;
+import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Fn;
@@ -1265,5 +1267,17 @@ public abstract class AbstractDAO implements IGenericDAO {
                 throw new CompanyError("Valor de idcompany inválido");                
             }
         }
+    }
+    
+    /**
+     * Verifica los datos (usuario, contraseña y empresa a la que se quiere loguear)
+     * Si pasa la válidación se puede crear el token.
+     * @param data datos conteniendo valores de usuario, pass y empresa
+     * @throws SessionError
+     */
+    @Override
+    public void checkAuthConsumerData(IOAuthConsumerData data) throws SessionError{
+        //TODO login y checkAccessCompany de Sessions
+        //throw new SessionError();
     }
 }

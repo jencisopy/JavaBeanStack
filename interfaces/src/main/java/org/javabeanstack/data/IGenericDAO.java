@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import javax.persistence.Query;
 import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.security.IUserSession;
 
 
@@ -483,4 +484,11 @@ public interface IGenericDAO extends Serializable {
      * @return el objeto userSession con la información de la sesión
      */
     public IUserSession getUserSession(String sessionId);
+    /**
+     * Verifica los datos (usuario, contraseña y empresa a la que se quiere loguear)
+     * Si pasa la válidación se puede crear el token.
+     * @param data datos conteniendo valores de usuario, pass y empresa
+     * @throws Exception 
+     */
+    public void checkAuthConsumerData(IOAuthConsumerData data) throws Exception;    
 }

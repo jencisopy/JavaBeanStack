@@ -155,7 +155,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return
      */
     @Override
-    public boolean createAuthConsumer(String consumerName, Date expiredDate) {
+    public String createAuthConsumer(String consumerName, Date expiredDate) {
         try {
             IAppAuthConsumer authConsumer = getAuthConsumerClass().newInstance();
             authConsumer.setConsumerName(consumerName);
@@ -164,12 +164,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             IDataResult dataResult = dao.persist(null, authConsumer);
             if (dataResult.isSuccessFul()) {
                 lastAuthConsumer = dataResult.getRowUpdated();
+                return lastAuthConsumer.getConsumerKey();
             }
-            return dataResult.isSuccessFul();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
-        return false;
+        return null;
     }
 
     /**
@@ -201,13 +201,30 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return token
      */
     @Override
-    public final String getToken(String consumerKey, String uuidOrTokenSecret) {
+    public String getToken(String consumerKey, String uuidOrTokenSecret) {
         IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
         if (authConsumerToken != null) {
             return authConsumerToken.getToken();
         }
         return "";
     }
+
+    /**
+     * Devuelve un token dado un consumerKey y un tokenSecret.
+     *
+     * @param consumerKey clave del consumidor
+     * @param uuidOrTokenSecret clave del token o uuid del dispositivo.
+     * @return token
+     */
+    @Override
+    public Date getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret) {
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
+        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumer() != null) {
+            return authConsumerToken.getAppAuthConsumer().getExpiredDate();
+        }
+        return null;
+    }
+    
 
     /**
      * Graba una solicitud de token, debe completarse el proceso en otro
@@ -218,6 +235,19 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean requestToken(String consumerKey) {
+        return requestToken(consumerKey, null);
+    }    
+    
+    /**
+     * Graba una solicitud de token, debe completarse el proceso en otro
+     * programa.
+     *
+     * @param consumerKey clave del consumidor
+     * @param uuidDevice identificador unico del dispositivo
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    @Override
+    public boolean requestToken(String consumerKey, String uuidDevice) {
         try {
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
             authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
@@ -225,7 +255,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             String token = getRandomToken();
             authConsumerToken.setToken(token);
             authConsumerToken.setTokenSecret(token);
-            authConsumerToken.setUuidDevice(token);
+            authConsumerToken.setUuidDevice(token);            
+            if (uuidDevice != null){
+                authConsumerToken.setUuidDevice(uuidDevice);
+            }
             IDataResult dataResult = dao.persist(null, authConsumerToken);
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
@@ -244,6 +277,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public String createToken(String consumerKey, IOAuthConsumerData data) {
         try {
+            dao.checkAuthConsumerData(data);
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
             authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
@@ -485,6 +519,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         if (result == null){
             return false;
         }
+        //TODO Chequear fecha de expiración también
         return !result.getBlocked();
     }
 

@@ -761,7 +761,6 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      */
     protected final IDBLinkInfo getDBLinkInfo(){
         IDBLinkInfo dbInfo = new DBLinkInfo();
-        //TODO variante token
         dbInfo.setUserSession(userSession);
         return dbInfo;
     }

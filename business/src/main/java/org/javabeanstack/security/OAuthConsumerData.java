@@ -24,17 +24,24 @@ package org.javabeanstack.security;
 
 import java.util.Map;
 import java.util.TreeMap;
+import javax.xml.bind.annotation.XmlRootElement;
 import static org.javabeanstack.util.Fn.nvl;
 
 /**
  *
  * @author Jorge Enciso
  */
+@XmlRootElement
 public class OAuthConsumerData implements IOAuthConsumerData{
-    private Long idAppUser=0L;
-    private Long idCompany=0L;
+    private String userLogin = "";    
+    private String userPass = "";
+    private Long idAppUser = 0L;
+    private Long idCompany = 0L;
     private Map<String, String> otherData = new TreeMap();
 
+    public OAuthConsumerData(){
+    }
+    
     @Override
     public Long getIdAppUser() {
         return idAppUser;
@@ -82,6 +89,26 @@ public class OAuthConsumerData implements IOAuthConsumerData{
         result += getOtherDataString(otherData);
         return result;
     }
+
+    @Override    
+    public String getUserLogin() {
+        return userLogin;
+    }
+
+    @Override    
+    public void setUserLogin(String userLogin) {
+        this.userLogin = userLogin;
+    }
+
+    @Override    
+    public String getUserPass() {
+        return userPass;
+    }
+
+    @Override    
+    public void setUserPass(String userPass) {
+        this.userPass = userPass;
+    }
     
     
     protected String getOtherDataString(Map<String, String> data){
@@ -94,5 +121,4 @@ public class OAuthConsumerData implements IOAuthConsumerData{
         }
         return result;
     }    
-    
 }
