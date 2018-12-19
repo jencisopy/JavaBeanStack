@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.javabeanstack.data.DataInfo;
+import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataResult;
@@ -521,14 +522,16 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         sqlComando = "select o from " + getType().getSimpleName() + " o ";
         if (!getDAO().getPersistUnit().equals(IDBManager.CATALOGO)
-                && getDAO().getUserSession() != null
-                && getDAO().getUserSession().getDBFilter() != null) {
-            filtro = getDAO().getUserSession().getDBFilter().getFilterExpr(type, "");
-            String separador = "";
-            if (!Strings.isNullorEmpty(filter) && !Strings.isNullorEmpty(filtro)){
-                separador = " and ";
-            } 
-            filtro += separador + filter;
+                && getDAO().getUserSession() != null) {
+            IDBFilter dbFilter = getDAO().getUserSession().getDBFilter();
+            if (dbFilter != null){
+                filtro = dbFilter.getFilterExpr(type, "");
+                String separador = "";
+                if (!Strings.isNullorEmpty(filter) && !Strings.isNullorEmpty(filtro)){
+                    separador = " and ";
+                } 
+                filtro += separador + filter;
+            }
         } else {
             filtro = filter;
         }

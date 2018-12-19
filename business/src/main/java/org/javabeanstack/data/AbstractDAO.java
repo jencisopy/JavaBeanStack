@@ -272,8 +272,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         // Si se va a aplicar el filtro por defecto 
         if (entity.isApplyDBFilter()) {
             String operator = (filter.isEmpty() ? "" : " and ");
-            if (dbLinkInfo.getDBFilter() != null){
-                String dbFilterExpr = dbLinkInfo.getDBFilter().getFilterExpr(entityClass, "");
+            IDBFilter dbFilter = dbLinkInfo.getDBFilter();
+            if (dbFilter != null){
+                String dbFilterExpr = dbFilter.getFilterExpr(entityClass, "");
                 if (!Strings.isNullorEmpty(dbFilterExpr)) {
                     filter = dbFilterExpr + operator + filter;
                 }

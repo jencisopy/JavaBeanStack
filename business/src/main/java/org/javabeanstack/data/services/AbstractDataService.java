@@ -44,6 +44,7 @@ import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.IDBConnectFactory;
+import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.datactrl.IDataObject;
@@ -835,11 +836,12 @@ public abstract class AbstractDataService implements IDataService {
         
         filter = Fn.nvl(filter, "");
         order = Fn.nvl(order, "");
+        comando = "select o from " + type.getSimpleName() + " o ";        
         IDBLinkInfo dbInfo = sessions.getDBLinkInfo(sessionId);
-        comando = "select o from " + type.getSimpleName() + " o ";
+        IDBFilter dbFilter = dbInfo.getDBFilter();
         if (!dbInfo.getPersistUnit().equals(IDBManager.CATALOGO)
-                        && dbInfo.getDBFilter() != null){
-            filtro = dbInfo.getDBFilter().getFilterExpr(type, "");
+                        && dbFilter != null){
+            filtro = dbFilter.getFilterExpr(type, "");
             if (!"".equals(filter)) {
                 filtro += " and " + filter;
             }
