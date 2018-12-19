@@ -81,6 +81,10 @@ public abstract class AbstractWebResource implements IWebResource {
     public String getToken() {
         return token;
     }
+    
+    protected IOAuthConsumer getOAuthConsumer(){
+        return oAuthConsumer;
+    }
 
     public final Boolean verifyToken(String token) {
         if (token == null) {
@@ -108,6 +112,13 @@ public abstract class AbstractWebResource implements IWebResource {
                 this.idcompany = appCompanyToken.getIdcompany();
             }
         }
-        // this.idPerson = Long.parseLong(oAuthConsumer.getDataKeyValue(this.token, "idperson"));
+    }
+    
+    protected void setIdPerson(Long idPerson) {
+        this.idPerson = idPerson;
+    }
+
+    protected void setPersonRol(String personRol) {
+        this.personRol = personRol;
     }
 }
