@@ -491,4 +491,11 @@ public interface IGenericDAO extends Serializable {
      * @throws Exception 
      */
     public void checkAuthConsumerData(IOAuthConsumerData data) throws Exception;    
+    /**
+     * Verifica si la combinación iduser, idcompany es válido para una sesión
+     * @param iduser   identificador del usuario
+     * @param idcompany  identificador de la empresa
+     * @return verdadero si cumple y falso si no
+     */
+    public boolean isCredentialValid(Long iduser, Long idcompany);
 }

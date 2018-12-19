@@ -276,60 +276,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public String createToken(String consumerKey, IOAuthConsumerData data) {
-        try {
-            dao.checkAuthConsumerData(data);
-            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
-            authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
-            authConsumerToken.setBlocked(false);
-            authConsumerToken.setData(data.toString());
-            String token = signTokenData(authConsumerToken);
-            authConsumerToken.setToken(token);
-            String tokenSecret = getTokenSecret(authConsumerToken);
-            authConsumerToken.setTokenSecret(tokenSecret);
-            authConsumerToken.setUuidDevice(tokenSecret);
-            IDataResult dataResult = dao.persist(null, authConsumerToken);
-            if (!dataResult.isSuccessFul()) {
-                return "";
-            }
-            lastAuthConsumerToken = dataResult.getRowUpdated();
-            return authConsumerToken.getToken();
-        } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
-        }
-        return "";
+        return createToken(consumerKey, data, null);
     }
 
     
-    /**
-     * Crea un token válido.
-     *
-     * @param consumerKey clave del consumidor.
-     * @param data datos del token.
-     * @return valor del token si tuvo exito.
-     */
-    @Override
-    public String createToken(String consumerKey, Map<String, String> data) {
-        try {
-            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
-            authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
-            authConsumerToken.setBlocked(false);
-            authConsumerToken.setData(getDataString(data));
-            String token = signTokenData(authConsumerToken);
-            authConsumerToken.setToken(token);
-            String tokenSecret = getTokenSecret(authConsumerToken);            
-            authConsumerToken.setTokenSecret(tokenSecret);
-            authConsumerToken.setUuidDevice(tokenSecret);
-            IDataResult dataResult = dao.persist(null, authConsumerToken);
-            if (!dataResult.isSuccessFul()) {
-                return null;
-            }
-            lastAuthConsumerToken = dataResult.getRowUpdated();
-            return authConsumerToken.getToken();
-        } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
-        }
-        return null;
-    }
 
     /**
      * Crea y graba en la base de datos el registro de un token de autorización
@@ -342,6 +292,16 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice) {
         try {
+            dao.checkAuthConsumerData(data);
+            //Si no esta la información del id del usuario
+            if (nvl(data.getIdAppUser(),0L) == 0L){
+                Map<String, Object> params = new HashMap<>();
+                params.put("userLogin", data.getUserLogin());
+                IAppUser usuario = dao.findByQuery(null,
+                        "select o from AppUserLight o where code = :userLogin",
+                        params);
+                data.setIdAppUser(usuario.getIduser());
+            }
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
             authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
@@ -350,7 +310,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerToken.setToken(token);
             String tokenSecret = getTokenSecret(authConsumerToken);
             authConsumerToken.setTokenSecret(tokenSecret);
-            authConsumerToken.setUuidDevice(uuidDevice);            
+            if (uuidDevice == null){
+                authConsumerToken.setUuidDevice(tokenSecret);
+            }
+            else{
+                authConsumerToken.setUuidDevice(uuidDevice);                            
+            }
             IDataResult dataResult = dao.persist(null, authConsumerToken);
             if (!dataResult.isSuccessFul()) {
                 return "";
@@ -519,8 +484,22 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         if (result == null){
             return false;
         }
-        //TODO Chequear fecha de expiración también
-        return !result.getBlocked();
+        //Si el token esta bloqueado
+        if (result.getBlocked()){
+            return false;
+        }
+        if (result.getAppAuthConsumer() == null){
+            return false;
+        }
+        //Si el consumerKey esta bloqueado
+        if (result.getAppAuthConsumer().getBlocked()){
+            return false;
+        }
+        //Si expiro el customerKey
+        if (!result.getAppAuthConsumer().getExpiredDate().after(new Date())){
+            return false;
+        }
+        return dao.isCredentialValid(getUserMapped(result).getIduser(), getCompanyMapped(result).getIdcompany());
     }
 
     /**
@@ -572,9 +551,6 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public IAppUser getUserMapped(String token) {
-        if (!isValidToken(token)){
-            return null;
-        }
         try{
             Long iduser = Long.parseLong(getDataKeyValue(token,"idappuser"));            
             IAppUser user = dao.findByQuery(null,"select o from AppUser o where iduser = "+iduser,null);
@@ -587,6 +563,25 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     }
 
     /**
+     * Devuelve el objeto AppUser mapeado a este token
+     * @param token token
+     * @return objeto AppUser mapeado al token o nulo si el token es inválido o
+     * el user no existe.
+     */
+    @Override
+    public IAppUser getUserMapped(IAppAuthConsumerToken token) {
+        try{
+            Long iduser = Long.parseLong(getDataKeyValue(token,"idappuser"));            
+            IAppUser user = dao.findByQuery(null,"select o from AppUser o where iduser = "+iduser,null);
+            return user;
+        }
+        catch (Exception exp){
+            ErrorManager.showError(exp, LOGGER);
+        }
+        return null;
+    }
+    
+    /**
      * Devuelve el objeto AppCompany mapeado a este token
      * @param token token
      * @return objeto AppCompany mapeado al token o nulo si el token es inválido o
@@ -595,9 +590,6 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppCompany getCompanyMapped(IAppAuthConsumerToken token) {
         try{
-            if (!isValidToken(token.getToken())){
-                return null;
-            }
             Long idcompany = Long.parseLong(getDataKeyValue(token,"idcompany"));
             IAppCompany company = dao.findByQuery(null,"select o from AppCompany o where idcompany = "+idcompany,null);
             return company;
@@ -617,11 +609,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppCompany getCompanyMapped(String token) {
         try{
-            if (!isValidToken(token)){
-                return null;
-            }
-            IAppAuthConsumerToken tokenRecord = findAuthToken(token);
-            Long idcompany = Long.parseLong(getDataKeyValue(tokenRecord,"idcompany"));
+            Long idcompany = Long.parseLong(getDataKeyValue(token,"idcompany"));
             IAppCompany company = dao.findByQuery(null,"select o from AppCompany o where idcompany = "+idcompany,null);
             return company;
         }

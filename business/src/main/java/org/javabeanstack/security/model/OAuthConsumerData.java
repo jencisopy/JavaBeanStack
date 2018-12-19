@@ -20,11 +20,12 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-package org.javabeanstack.security;
+package org.javabeanstack.security.model;
 
 import java.util.Map;
 import java.util.TreeMap;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.javabeanstack.security.IOAuthConsumerData;
 import static org.javabeanstack.util.Fn.nvl;
 
 /**

@@ -3,6 +3,7 @@ package org.javabeanstack.security;
 import org.javabeanstack.data.IDBLinkInfo;
 
 
+
 /**
  *
  * @author Jorge Enciso
@@ -14,5 +15,7 @@ public interface ISessions {
     IUserSession getUserSession(String sessionId);
     IUserSession login(String userLogin, String password) throws Exception;
     IDBLinkInfo getDBLinkInfo(String sessionId);
+    boolean isUserValid(Long iduser) throws Exception;
+    boolean checkAuthConsumerData(IOAuthConsumerData data);        
     void logout(String sessionId);
 }

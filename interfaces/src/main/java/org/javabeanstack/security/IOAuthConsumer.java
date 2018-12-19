@@ -23,7 +23,6 @@
 package org.javabeanstack.security;
 
 import java.util.Date;
-import java.util.Map;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
@@ -38,7 +37,6 @@ import org.javabeanstack.model.IAppUser;
 public interface IOAuthConsumer {
     String createAuthConsumer(String consumerName, Date expiredDate);
     String createToken(String consumerKey, IOAuthConsumerData data);
-    String createToken(String consumerKey, Map<String, String> data);    
     String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice);
     IAppAuthConsumerToken findAuthToken(String token);
     boolean dropAuthConsumer(String consumerKey);
@@ -52,6 +50,7 @@ public interface IOAuthConsumer {
     boolean isValidToken(String token);
     String getDataKeyValue(String token, String property);
     String getDataKeyValue(IAppAuthConsumerToken token, String property);
+    IAppUser getUserMapped(IAppAuthConsumerToken token);
     IAppUser getUserMapped(String token);
     IAppCompany getCompanyMapped(IAppAuthConsumerToken token);
     IAppCompany getCompanyMapped(String token);
