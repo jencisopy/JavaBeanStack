@@ -223,6 +223,61 @@ public class Sessions implements ISessions{
     }
 
     /**
+     * Verifica si el iduser proporcionado es válido
+     *
+     * @param iduser id del usuario
+     * @return una variable ErrorReg si es nulo es válido si no hubo algún error
+     * @throws java.lang.Exception
+     */
+    @Override
+    public boolean isUserValid(Long iduser) throws Exception {
+        return (checkUser(iduser) == null);
+    }
+    
+    /**
+     * Verifica si el iduser proporcionado es válido
+     *
+     * @param iduser id del usuario
+     * @return una variable ErrorReg si es nulo es válido si no hubo algún error
+     * @throws Exception
+     */
+    protected ErrorReg checkUser(Long iduser) throws Exception {
+        LOGGER.debug("IsUserValid IN");
+        String mensaje;
+        Map<String, Object> params = new HashMap<>();
+        params.put("iduser", iduser);
+        if (Fn.nvl(iduser,0L) != 0L) {
+            // Verificar existencia del usuario
+            IAppUser usuario = dao.findByQuery(null,
+                    "select o from AppUserLight o where iduser = :iduser",
+                    params);
+
+            // Verificar que exista el usuario
+            if (usuario == null) {
+                mensaje = "Este usuario " + iduser + " no existe";
+                LOGGER.debug(mensaje);
+                return new ErrorReg(mensaje, 1, "");
+            }
+            // Verificar que el usuario este activo.
+            if (usuario.getDisable()) {
+                mensaje = "La cuenta " + usuario.getLogin().trim() + " esta inactivo";
+                LOGGER.info(mensaje);
+                return new ErrorReg(mensaje, 2, "");
+            }
+            // Verificar que no expiro la cuenta
+            if (usuario.getExpiredDate().before(Dates.now())) {
+                mensaje = "La cuenta " + usuario.getLogin() + " expiro";
+                LOGGER.debug(mensaje);
+                return new ErrorReg(mensaje, 2, "");
+            }
+            return null;
+        }
+        mensaje = "Este usuario " + iduser + " no existe";
+        LOGGER.debug(mensaje);
+        return new ErrorReg(mensaje, 1, "");
+    }
+    
+    /**
      * Devuelve verdadero si sus credenciales para el logeo son válidas o falso
      * si no
      *
@@ -392,6 +447,36 @@ public class Sessions implements ISessions{
             }
         }
         return dbLinkInfo;
+    }
+
+    @Override 
+    public boolean checkAuthConsumerData(IOAuthConsumerData data){    
+        if (data == null){
+            return false;
+        }
+        try{
+            Long iduser = data.getIdAppUser();
+            Long idcompany = data.getIdCompany();
+            String userLogin = data.getUserLogin();
+            String userPass = data.getUserPass();
+            if (!Fn.nvl(userLogin, "").isEmpty()){
+                IUserSession session = login(userLogin, userPass);
+                if (session == null){
+                    return false;
+                }
+                iduser = session.getUser().getIduser();
+            }
+            else{
+                if (checkUser(iduser) != null){
+                    return false;
+                }
+            }
+            return checkCompanyAccess(iduser, idcompany);
+        }
+        catch (Exception exp){
+            ErrorManager.showError(exp, LOGGER);
+        }
+        return false;
     }
     
     /**

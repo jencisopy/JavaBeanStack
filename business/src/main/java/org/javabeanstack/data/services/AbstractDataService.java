@@ -932,6 +932,17 @@ public abstract class AbstractDataService implements IDataService {
     }
     
     
+    /**
+     * Verifica si la combinación iduser, idcompany es válido para una sesión
+     * @param iduser   identificador del usuario
+     * @param idcompany  identificador de la empresa
+     * @return verdadero si cumple y falso si no
+     */
+    @Override
+    public boolean isCredentialValid(Long iduser, Long idcompany){
+        return dao.isCredentialValid(iduser, idcompany);
+    }
+    
     @Deprecated    
     @Override
     public Connection getConnection(String sessionId) {

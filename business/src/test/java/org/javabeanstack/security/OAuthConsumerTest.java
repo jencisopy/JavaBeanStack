@@ -22,6 +22,7 @@
  */
 package org.javabeanstack.security;
 
+import org.javabeanstack.security.model.OAuthConsumerData;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
@@ -29,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 import javax.crypto.SecretKey;
 import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.data.DBLinkInfo;
@@ -115,7 +115,9 @@ public class OAuthConsumerTest extends TestClass {
             return;
         }
         IOAuthConsumerData data = new OAuthConsumerData();
-        data.setIdAppUser(1L);
+        data.setIdAppUser(0L);
+        data.setUserLogin("J");
+        data.setUserPass("");
         data.setIdCompany(2L);
         data.addOtherDataValue("dato1", "dato1");
         data.addOtherDataValue("dato2", "dato2");
@@ -127,27 +129,6 @@ public class OAuthConsumerTest extends TestClass {
         data.addOtherDataValue("dato3", "dato3");
         String token2 = instance.createToken(consumerKey, data);
         assertFalse(token2.isEmpty());        
-    }
-
-    /**
-     * Test of createToken method, of class OAuthConsumer.
-     */
-    @Test
-    public void test03CreateToken_String_Map() {
-        System.out.println("3-oAuthConsumer createToken");
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        Map<String, String> data = new TreeMap();
-        data.put("dato1", "prueba");
-        data.put("dato2", "prueba2");
-        
-        OAuthConsumerBase instance = new OAuthConsumerImpl();
-        instance.setDao(dao);        
-        String result = instance.createToken(consumerKey, data);
-        assertFalse(result.isEmpty());
     }
 
     /**

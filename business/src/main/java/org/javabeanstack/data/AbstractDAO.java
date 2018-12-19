@@ -1249,7 +1249,6 @@ public abstract class AbstractDAO implements IGenericDAO {
             return;
         }
         // Verificar valor de idcompany
-        // TODO verificar 
         if (!ejb.checkFieldIdcompany(idcompany)){
             IUserSession userSession = dbLinkInfo.getUserSession();
             boolean exito = false;
@@ -1277,7 +1276,29 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @Override
     public void checkAuthConsumerData(IOAuthConsumerData data) throws SessionError{
-        //TODO login y checkAccessCompany de Sessions
-        //throw new SessionError();
+        //Login y checkAccessCompany de Sessions
+        if (!sessions.checkAuthConsumerData(data)){
+            throw new SessionError();
+        }
+    }
+    
+    /**
+     * Verifica si la combinación iduser, idcompany es válido para una sesión
+     * @param iduser   identificador del usuario
+     * @param idcompany  identificador de la empresa
+     * @return verdadero si cumple y falso si no
+     */
+    @Override
+    public boolean isCredentialValid(Long iduser, Long idcompany){
+        try{
+            if (!sessions.isUserValid(iduser)){
+                return false;
+            }
+            return sessions.checkCompanyAccess(iduser, idcompany);
+        }
+        catch (Exception exp){
+            ErrorManager.showError(exp, LOGGER);
+        }
+        return false;
     }
 }
