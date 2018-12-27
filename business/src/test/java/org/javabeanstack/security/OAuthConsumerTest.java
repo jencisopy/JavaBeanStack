@@ -35,6 +35,7 @@ import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.TestClass;
+import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
@@ -422,6 +423,11 @@ public class OAuthConsumerTest extends TestClass {
             } catch (ClassNotFoundException ex) {
                 System.out.println(ex.getMessage());
             }
+            return null;
+        }
+        
+        @Override
+        protected IAppCompanySrv getAppCompanySrv() {
             return null;
         }
     }

@@ -23,6 +23,7 @@
 package org.javabeanstack.security;
 
 import java.util.Date;
+import java.util.List;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
@@ -54,6 +55,8 @@ public interface IOAuthConsumer {
     IAppUser getUserMapped(String token);
     IAppCompany getCompanyMapped(IAppAuthConsumerToken token);
     IAppCompany getCompanyMapped(String token);
+    List<IAppCompany> getCompaniesAllowed(String userLogin);
     IDBFilter getDBFilter(IAppAuthConsumerToken token);
+    boolean checkAuthConsumerData(IOAuthConsumerData data);
     void setDao(IDataService dao);
 }

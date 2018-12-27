@@ -30,6 +30,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.crypto.SecretKey;
@@ -40,6 +41,7 @@ import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.crypto.DigestUtil;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDataResult;
+import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
@@ -58,10 +60,13 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
 
     @EJB
     private IDataService dao;
+    
+    @EJB
+    private IAppCompanySrv appCompanySrv;
 
     private IAppAuthConsumer lastAuthConsumer;
     private IAppAuthConsumerToken lastAuthConsumerToken;
-
+    
     /**
      * Asigna objeto para la conexión con la base de datos
      *
@@ -591,7 +596,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     public IAppCompany getCompanyMapped(IAppAuthConsumerToken token) {
         try{
             Long idcompany = Long.parseLong(getDataKeyValue(token,"idcompany"));
-            IAppCompany company = dao.findByQuery(null,"select o from AppCompany o where idcompany = "+idcompany,null);
+            IAppCompany company = dao.findByQuery(null,"select o from AppCompanyLight o where idcompany = "+idcompany,null);
             return company;
         }
         catch (Exception exp){
@@ -610,7 +615,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     public IAppCompany getCompanyMapped(String token) {
         try{
             Long idcompany = Long.parseLong(getDataKeyValue(token,"idcompany"));
-            IAppCompany company = dao.findByQuery(null,"select o from AppCompany o where idcompany = "+idcompany,null);
+            IAppCompany company = dao.findByQuery(null,"select o from AppCompanyLight o where idcompany = "+idcompany,null);
             return company;
         }
         catch (Exception exp){
@@ -618,10 +623,59 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         return null;
     }
+
+    
+    /**
+     * Devuelve lista de empresas que el usuario puede acceder
+     * @param userLogin usuario
+     * @return lista de empresas que el usuario puede acceder
+     */
+    @Override
+    public List<IAppCompany> getCompaniesAllowed(String userLogin) {
+        try{
+            Map<String, Object> params = new HashMap<>();
+            params.put("userLogin", userLogin);
+            // Verificar existencia del usuario
+            IAppUser user = dao.findByQuery(null,
+                    "select o from AppUserLight o where code = :userLogin",
+                    params);
+
+            IUserSession userSession = new UserSession();
+            userSession.setUser(user);
+            return getAppCompanySrv().getAppCompanyLight(userSession);
+        }    
+        catch (Exception exp){
+            ErrorManager.showError(exp, LOGGER);
+        }
+        return null;
+    }
+    
+    
+    /**
+     * Verifica válidez de los datos contenidos en el modelo AuthConsumerData
+     * (usuario, contraseña, empresa)
+     * @param data modelo AuthConsumerData
+     * @return verdadero o falso si pasa o no la validación.
+     */
+    @Override
+    public boolean checkAuthConsumerData(IOAuthConsumerData data) {
+        try{
+            dao.checkAuthConsumerData(data);
+            return true;
+        }
+        catch (Exception exp){
+            //
+        }
+        return false;
+    }
     
     @Override
     public IDBFilter getDBFilter(IAppAuthConsumerToken token){
         // Implementar
         return null;
+    }
+    
+    protected IAppCompanySrv getAppCompanySrv(){
+        return appCompanySrv;
     }
 }

@@ -63,6 +63,8 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     @Basic(optional = false)
     @Column(name = "idappauthconsumer")
     private Long idappauthconsumer;
+    @Column(name = "idempresa")
+    private Long idempresa;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 100)
@@ -154,6 +156,15 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     public void setIdappauthconsumer(Long idappauthconsumer) {
         this.idappauthconsumer = idappauthconsumer;
     }
+
+    public Long getIdempresa() {
+        return idempresa;
+    }
+
+    public void setIdempresa(Long idempresa) {
+        this.idempresa = idempresa;
+    }
+
 
     @Override
     public String getConsumerKey() {
@@ -325,6 +336,7 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
 
     @Override
     public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof AppAuthConsumer)) {
             return false;
         }

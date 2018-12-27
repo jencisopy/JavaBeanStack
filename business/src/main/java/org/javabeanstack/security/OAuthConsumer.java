@@ -23,11 +23,11 @@
 
 package org.javabeanstack.security;
 
-import org.javabeanstack.data.DBFilter;
+import javax.ejb.EJB;
 import org.javabeanstack.data.IDBFilter;
+import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
-import org.javabeanstack.model.IAppCompany;
 
 /**
  *
