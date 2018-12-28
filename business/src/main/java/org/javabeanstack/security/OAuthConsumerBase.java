@@ -215,11 +215,11 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     }
 
     /**
-     * Devuelve un token dado un consumerKey y un tokenSecret.
+     * Devuelve la fecha de expiración del token
      *
      * @param consumerKey clave del consumidor
      * @param uuidOrTokenSecret clave del token o uuid del dispositivo.
-     * @return token
+     * @return fecha expiración del token
      */
     @Override
     public Date getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret) {
@@ -230,7 +230,38 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         return null;
     }
     
+    /**
+     * Devuelve el url de autenticación
+     *
+     * @param consumerKey clave del consumidor
+     * @param uuidOrTokenSecret clave del token o uuid del dispositivo.
+     * @return url de autenticación
+     */
+    @Override
+    public String getTokenAuthUrl(String consumerKey, String uuidOrTokenSecret) {
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
+        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumer() != null) {
+            return authConsumerToken.getAppAuthConsumer().getAuthURL();
+        }
+        return "";
+    }
 
+    /**
+     * Devuelve el url de los servicios
+     *
+     * @param consumerKey clave del consumidor
+     * @param uuidOrTokenSecret clave del token o uuid del dispositivo.
+     * @return url de los servicios
+     */
+    @Override
+    public String getTokenCallbackUrl(String consumerKey, String uuidOrTokenSecret) {
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
+        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumer() != null) {
+            return authConsumerToken.getAppAuthConsumer().getCallbackURL();
+        }
+        return "";
+    }
+    
     /**
      * Graba una solicitud de token, debe completarse el proceso en otro
      * programa.

@@ -46,6 +46,8 @@ public interface IOAuthConsumer {
     Class<IAppAuthConsumerToken> getAuthConsumerTokenClass();
     String getToken(String consumerKey, String uuidOrTokenSecret);
     Date getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret);
+    String getTokenAuthUrl(String consumerKey, String uuidOrTokenSecret);
+    String getTokenCallbackUrl(String consumerKey, String uuidOrTokenSecret);
     boolean requestToken(String consumerKey);
     boolean requestToken(String consumerKey, String uuidDevice);    
     boolean isValidToken(String token);
