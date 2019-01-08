@@ -268,7 +268,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         String result="";
         if (getApplyDBFilter() 
                 && this.getDataLink() != null
-                && this.getDataLink().getUserSession() != null
+                && (this.getDataLink().getUserSession() != null || !isNullorEmpty(this.getDataLink().getToken()))
                 && !this.getDataLink().getPersistUnit().equals(IDBManager.CATALOGO)){
             
             String operador = isNullorEmpty(filterExpr) ? "" : " and ";
@@ -278,8 +278,8 @@ public class DataNativeQuery implements IDataNativeQuery {
                 
                 String entity = entityExp.substring(0,pos);
                 String entityAlias = Strings.substr(entityExp, pos+1);
-                        
-                IDBFilter dbFilter = getDataLink().getUserSession().getDBFilter();
+                
+                IDBFilter dbFilter = getDataLink().getDBLinkInfo().getDBFilter();
 
                 Class clazz = getClassModel(dbFilter.getModelPackagePath(), entity);
                 if (clazz != null){
@@ -292,7 +292,6 @@ public class DataNativeQuery implements IDataNativeQuery {
             catch (Exception exp){
                 result = "";
             }
-            
         }
         return result;
     }
@@ -523,15 +522,15 @@ public class DataNativeQuery implements IDataNativeQuery {
         }
         if (!queryParams.containsKey("idempresa")) {
             if (Strings.findString(":idempresa", querySentence.toLowerCase()) >= 0) {
-                if (getDataLink().getUserSession() != null) {
-                    queryParams.put("idempresa", getDataLink().getUserSession().getIdEmpresa());
+                if (getDataLink().getUserSession() != null || !isNullorEmpty(getDataLink().getToken())) {
+                    queryParams.put("idempresa", getDataLink().getIdCompany());
                 }
             }
         }
         if (!queryParams.containsKey("idcompany")) {
             if (Strings.findString(":idcompany", querySentence.toLowerCase()) >= 0) {
-                if (getDataLink().getUserSession() != null) {
-                    queryParams.put("idcompany", getDataLink().getUserSession().getIdCompany());
+                if (getDataLink().getUserSession() != null || !isNullorEmpty(getDataLink().getToken())) {
+                    queryParams.put("idcompany", getDataLink().getIdCompany());
                 }
             }
         }
@@ -955,7 +954,12 @@ public class DataNativeQuery implements IDataNativeQuery {
     public static <T extends IGenericDAO> IDataNativeQuery create(T dao, String sessionId) throws Exception{
         IDataLink data = new DataLink(dao);
         IUserSession userSession = dao.getUserSession(sessionId);
-        data.setUserSession(userSession);
+        if (userSession != null){
+            data.setUserSession(userSession);
+        }
+        else{
+            data.setToken(sessionId);
+        }
         return data.newDataNativeQuery();
     }
     

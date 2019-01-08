@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -40,6 +41,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.Parameter;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.transaction.Status;
+import javax.transaction.TransactionSynchronizationRegistry;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorReg;
@@ -63,10 +66,14 @@ import org.javabeanstack.util.Strings;
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public abstract class AbstractDAO implements IGenericDAO {
+
     private static final Logger LOGGER = Logger.getLogger(AbstractDAO.class);
-    private static final String DEFAULT_SCHEMA_PROPERTY="hibernate.default_schema";
+    private static final String DEFAULT_SCHEMA_PROPERTY = "hibernate.default_schema";
     public static final String FALSE = "false";
     public static final String TRUE = "true";
+
+    @Resource
+    TransactionSynchronizationRegistry tsr;
 
     /**
      * Es el objeto responsable de la creación y gestión de los entity manager
@@ -80,6 +87,12 @@ public abstract class AbstractDAO implements IGenericDAO {
     private ISessions sessions;
 
     public AbstractDAO() {
+    }
+
+    @Override
+    public IDBLinkInfo getDBLinkInfo(String sessionId) {
+        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        return dbLinkInfo;
     }
 
     /**
@@ -116,7 +129,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug("findAll");
         LOGGER.debug(entityClass.toString());
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         CriteriaQuery<T> cq = em.getCriteriaBuilder().createQuery(entityClass);
@@ -148,8 +161,12 @@ public abstract class AbstractDAO implements IGenericDAO {
         IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         T row = em.find(entityClass, id);
-        if (row == null){
+        if (row == null) {
             return null;
+        }
+        // Si no hay transacción activada
+        if (Status.STATUS_NO_TRANSACTION == tsr.getTransactionStatus()) {
+            return row;
         }
         // Refrescar lazy members
         List<Field> fields = DataInfo.getLazyMembers(row.getClass());
@@ -196,6 +213,10 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         try {
             row = (T) q.getSingleResult();
+            // Si no hay transacción activada
+            if (Status.STATUS_NO_TRANSACTION == tsr.getTransactionStatus()) {
+                return row;
+            }
             // Refrescar lazy members
             List<Field> fields = DataInfo.getLazyMembers(row.getClass());
             if (!fields.isEmpty()) {
@@ -273,7 +294,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (entity.isApplyDBFilter()) {
             String operator = (filter.isEmpty() ? "" : " and ");
             IDBFilter dbFilter = dbLinkInfo.getDBFilter();
-            if (dbFilter != null){
+            if (dbFilter != null) {
                 String dbFilterExpr = dbFilter.getFilterExpr(entityClass, "");
                 if (!Strings.isNullorEmpty(dbFilterExpr)) {
                     filter = dbFilterExpr + operator + filter;
@@ -319,6 +340,10 @@ public abstract class AbstractDAO implements IGenericDAO {
         T result;
         try {
             result = (T) query.getSingleResult();
+            // Si no hay transacción activada
+            if (Status.STATUS_NO_TRANSACTION == tsr.getTransactionStatus()) {
+                return result;
+            }
             // Refrescar lazy members
             List<Field> fields = DataInfo.getLazyMembers(result.getClass());
             if (!fields.isEmpty()) {
@@ -648,7 +673,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         query.setMaxResults(max);
         return query.getResultList();
     }
-    
+
     /**
      *
      * @param sessionId identificador de la sesión que permite realizar las
@@ -699,7 +724,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      *
      */
     @Override
-    public <T extends IDataRow> IDataResult update(String sessionId, T ejb)  {
+    public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
         List<T> ejbs = new ArrayList<>();
         ejbs.add(ejb);
         return update(sessionId, ejbs);
@@ -743,7 +768,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(String sessionId, IDataSet dataSet)  {
+    public IDataResult update(String sessionId, IDataSet dataSet) {
         if (dataSet == null || dataSet.size() == 0) {
             return null;
         }
@@ -765,10 +790,10 @@ public abstract class AbstractDAO implements IGenericDAO {
                         case IDataRow.INSERT:
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
-                            checkFieldIdcompany(dbLinkInfo, ejb);                            
+                            checkFieldIdcompany(dbLinkInfo, ejb);
                             em.persist(ejb);
                             em.flush();
-                            dataResult.setRowUpdated(ejb);                             
+                            dataResult.setRowUpdated(ejb);
                             break;
                         case IDataRow.UPDATE:
                             setAppUser(ejb, appUser);
@@ -784,7 +809,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                             em.remove(em.merge(ejb));
                             ejbsRes.remove(ejb);
                             em.flush();
-                            dataResult.setRowUpdated(ejb);                                                         
+                            dataResult.setRowUpdated(ejb);
                             break;
                         default:
                             break;
@@ -827,7 +852,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     public <T extends IDataRow> IDataResult persist(String sessionId, T ejb) {
         ejb.setAction(IDataRow.INSERT);
         return update(sessionId, ejb);
-        
+
     }
 
     /**
@@ -897,7 +922,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> T refreshRow(String sessionId, T row) throws Exception {
         row = this.findById((Class<T>) row.getClass(), sessionId, DataInfo.getIdvalue(row));
-        if (row == null){
+        if (row == null) {
             return null;
         }
         // Refrescar lazy members
@@ -1031,7 +1056,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 return null;
             }
             Map<String, Object> result2 = em.getEntityManagerFactory().getProperties();
-            result2.entrySet().forEach( e -> {
+            result2.entrySet().forEach(e -> {
                 Object object = e.getValue().toString();
                 result.put(e.getKey(), object);
             });
@@ -1063,7 +1088,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getSchema(String persistentUnit) {
-        return (String)getPersistUnitProp(persistentUnit).get(DEFAULT_SCHEMA_PROPERTY);
+        return (String) getPersistUnitProp(persistentUnit).get(DEFAULT_SCHEMA_PROPERTY);
     }
 
     /**
@@ -1099,7 +1124,7 @@ public abstract class AbstractDAO implements IGenericDAO {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private void populateQueryParameters(Query query, Map<String, Object> parameters, String queryString) {
-        parameters.entrySet().forEach( entry -> {
+        parameters.entrySet().forEach(entry -> {
             if (queryString != null) {
                 if (Strings.findString(":" + entry.getKey(), queryString) >= 0) {
                     query.setParameter(entry.getKey(), entry.getValue());
@@ -1171,12 +1196,11 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private void setAppUser(IDataRow ejb, String appUser) {
-        try{
+        try {
             if (DataInfo.isFieldExist(ejb.getClass(), "appuser")) {
                 ejb.setValue("appuser", appUser);
             }
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             //
         }
     }
@@ -1228,21 +1252,21 @@ public abstract class AbstractDAO implements IGenericDAO {
         return persistUnit + ":";
     }
 
-    
     /**
-     * Verifica que el valor del campo idcompany (identificador de la empresa
-     * a la que esta logueada) sea válido. No puede grabar o borrar registros
-     * que corresponde a una empresa que no esta logueada.
+     * Verifica que el valor del campo idcompany (identificador de la empresa a
+     * la que esta logueada) sea válido. No puede grabar o borrar registros que
+     * corresponde a una empresa que no esta logueada.
+     *
      * @param <T>
      * @param dbLinkInfo
      * @param ejb
-     * @throws CompanyError 
+     * @throws CompanyError
      */
-    private <T extends IDataRow> void checkFieldIdcompany(IDBLinkInfo dbLinkInfo, T ejb) throws CompanyError{
-        if (dbLinkInfo == null || ejb == null){
+    private <T extends IDataRow> void checkFieldIdcompany(IDBLinkInfo dbLinkInfo, T ejb) throws CompanyError {
+        if (dbLinkInfo == null || ejb == null) {
             return;
         }
-        if (ejb.getAction() == 0){
+        if (ejb.getAction() == 0) {
             return;
         }
         Long idcompany = dbLinkInfo.getIdCompany();
@@ -1250,54 +1274,55 @@ public abstract class AbstractDAO implements IGenericDAO {
             return;
         }
         // Verificar valor de idcompany
-        if (!ejb.checkFieldIdcompany(idcompany)){
+        if (!ejb.checkFieldIdcompany(idcompany)) {
             IUserSession userSession = dbLinkInfo.getUserSession();
             boolean exito = false;
             // Si la empresa en la que esta logueada agrupa varias empresas
-            if (userSession != null && userSession.getCompany() != null 
+            if (userSession != null && userSession.getCompany() != null
                     && !userSession.getCompany().getCompanyList().isEmpty()) {
                 for (IAppCompany company : userSession.getCompany().getCompanyList()) {
-                     if (ejb.checkFieldIdcompany(company.getIdcompany())){
-                         exito = true;
-                         break;
-                     }
+                    if (ejb.checkFieldIdcompany(company.getIdcompany())) {
+                        exito = true;
+                        break;
+                    }
                 }
             }
-            if (!exito){
-                throw new CompanyError("Valor de idcompany inválido");                
+            if (!exito) {
+                throw new CompanyError("Valor de idcompany inválido");
             }
         }
     }
-    
+
     /**
-     * Verifica los datos (usuario, contraseña y empresa a la que se quiere loguear)
-     * Si pasa la válidación se puede crear el token.
+     * Verifica los datos (usuario, contraseña y empresa a la que se quiere
+     * loguear) Si pasa la válidación se puede crear el token.
+     *
      * @param data datos conteniendo valores de usuario, pass y empresa
      * @throws SessionError
      */
     @Override
-    public void checkAuthConsumerData(IOAuthConsumerData data) throws SessionError{
+    public void checkAuthConsumerData(IOAuthConsumerData data) throws SessionError {
         //Login y checkAccessCompany de Sessions
-        if (!sessions.checkAuthConsumerData(data)){
+        if (!sessions.checkAuthConsumerData(data)) {
             throw new SessionError();
         }
     }
-    
+
     /**
      * Verifica si la combinación iduser, idcompany es válido para una sesión
-     * @param iduser   identificador del usuario
-     * @param idcompany  identificador de la empresa
+     *
+     * @param iduser identificador del usuario
+     * @param idcompany identificador de la empresa
      * @return verdadero si cumple y falso si no
      */
     @Override
-    public boolean isCredentialValid(Long iduser, Long idcompany){
-        try{
-            if (!sessions.isUserValid(iduser)){
+    public boolean isCredentialValid(Long iduser, Long idcompany) {
+        try {
+            if (!sessions.isUserValid(iduser)) {
                 return false;
             }
             return sessions.checkCompanyAccess(iduser, idcompany);
-        }
-        catch (Exception exp){
+        } catch (Exception exp) {
             ErrorManager.showError(exp, LOGGER);
         }
         return false;

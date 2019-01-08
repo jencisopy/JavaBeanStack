@@ -51,6 +51,14 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * de la base el usuario debe estar logeado
      */
     private IUserSession userSession;
+    /**
+     * Token, más utilizado desde webservices donde no hay sesión de usuario
+     */
+    private String token;
+    /**
+     * Identificador de la empresa
+     */
+    private Long idCompany;
 
     /**
      * Es el objeto responsable del acceso a los datos
@@ -675,6 +683,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @throws SessionError 
      */
     private String checkUserSession() throws SessionError {
+        if (!Strings.isNullorEmpty(token)){
+            return token;
+        }
         if (getUserSession() != null) {
             IUserSession sesion = getDao().getUserSession(getUserSession().getSessionId());
             if (sesion == null) {
@@ -706,11 +717,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         }
         if (Strings.findString(":idempresa", queryString.toLowerCase()) >= 0 
                 && getUserSession() != null) {
-            parameters.put("idempresa", getUserSession().getIdEmpresa());
+            parameters.put("idempresa", getIdCompany());
         }
         if (Strings.findString(":idcompany", queryString.toLowerCase()) >= 0
                 && getUserSession() != null) {                
-            parameters.put("idcompany", getUserSession().getIdCompany());
+            parameters.put("idcompany", getIdCompany());
         }
         if (Strings.findString(":today", queryString.toLowerCase()) >= 0) {
             parameters.put("today", Dates.today());
@@ -759,16 +770,49 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * (persistunit, session del usuario)
      * @return DBLinkInfo()
      */
-    protected final IDBLinkInfo getDBLinkInfo(){
-        IDBLinkInfo dbInfo = new DBLinkInfo();
-        dbInfo.setUserSession(userSession);
-        return dbInfo;
+    @Override
+    public IDBLinkInfo getDBLinkInfo(){
+        String sessionId=null;
+        if (!Strings.isNullorEmpty(token)){
+            sessionId = token;
+        }
+        else if(userSession != null){
+            sessionId = userSession.getSessionId();
+        }
+        return getDao().getDBLinkInfo(sessionId);
     }
     
     protected final String getSessionId(){
+        if (!Strings.isNullorEmpty(token)){
+            return token;
+        }
         if (userSession == null){
             return null;
         }
         return userSession.getSessionId();
+    }
+
+    @Override
+    public String getToken() {
+        return token;
+    }
+    
+    @Override
+    public void setToken(String token) {
+        this.token = token;
+        IDBLinkInfo dbInfo = getDBLinkInfo();
+        this.persistUnit = dbInfo.getPersistUnit();
+        this.idCompany = dbInfo.getIdCompany();
+    }
+    
+    @Override
+    public Long getIdCompany(){
+        if (!Strings.isNullorEmpty(token)){
+            return idCompany;
+        }
+        if (userSession == null){
+            return null;
+        }
+        return userSession.getIdCompany();
     }
 }

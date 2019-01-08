@@ -348,8 +348,7 @@ public class OAuthConsumerTest extends TestClass {
         instance.setDao(dao);        
         IDBLinkInfo info = new DBLinkInfo();
         IAppAuthConsumerToken tokenRecord = instance.findAuthToken(token);
-        info.setoAuthConsumer(instance);
-        info.setToken(tokenRecord);
+        info.setToken(tokenRecord,instance);
         assertNotNull(info.getSessionOrTokenId());
         assertNotNull(info.getAppUserId());
         assertNotNull(info.getIdCompany());

@@ -53,7 +53,6 @@ import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CheckException;
 import org.javabeanstack.security.IOAuthConsumerData;
-import org.javabeanstack.security.ISessions;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 
@@ -71,8 +70,10 @@ public abstract class AbstractDataService implements IDataService {
     @EJB
     protected IGenericDAO dao;
     
-    @EJB
-    private ISessions sessions;
+    @Override
+    public IDBLinkInfo getDBLinkInfo(String sessionId) {
+        return dao.getDBLinkInfo(sessionId);
+    }
     
 
     /**
@@ -84,7 +85,7 @@ public abstract class AbstractDataService implements IDataService {
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     protected String getPersistentUnit(String sessionId) {
-        IDBLinkInfo dbInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbInfo = getDBLinkInfo(sessionId);
         return dbInfo.getPersistUnit();
     }
 
@@ -96,7 +97,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public IUserSession getUserSession(String sessionId) {
         return dao.getUserSession(sessionId);
-    }    
+    }
 
     /**
      * Busca y devuelve el valor de una propiedad solicitada del entity manager
@@ -511,7 +512,7 @@ public abstract class AbstractDataService implements IDataService {
         if (isNullorEmpty(sessionId)){ 
             return;
         }
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         if (isNullorEmpty(dbLinkInfo.getSessionOrTokenId())) {
             throw new SessionError("El identificador de la sesión es inválido");
         }
@@ -837,7 +838,7 @@ public abstract class AbstractDataService implements IDataService {
         filter = Fn.nvl(filter, "");
         order = Fn.nvl(order, "");
         comando = "select o from " + type.getSimpleName() + " o ";        
-        IDBLinkInfo dbInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbInfo = getDBLinkInfo(sessionId);
         IDBFilter dbFilter = dbInfo.getDBFilter();
         if (!dbInfo.getPersistUnit().equals(IDBManager.CATALOGO)
                         && dbFilter != null){

@@ -230,6 +230,7 @@ public class Sessions implements ISessions{
      * @throws java.lang.Exception
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)    
     public boolean isUserValid(Long iduser) throws Exception {
         return (checkUser(iduser) == null);
     }
@@ -433,11 +434,10 @@ public class Sessions implements ISessions{
             }
             else{
                 if (oAuthConsumer.isValidToken(sessionId)){
-                    dbLinkInfo.setoAuthConsumer(oAuthConsumer);
                     IAppAuthConsumerToken token = oAuthConsumer.findAuthToken(sessionId);
                     if (token != null){
                         try{
-                            dbLinkInfo.setToken(token);
+                            dbLinkInfo.setToken(token, oAuthConsumer, true);
                         }
                         catch (Exception exp){
                             ErrorManager.showError(exp, LOGGER);                            

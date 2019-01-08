@@ -36,8 +36,8 @@ public interface IDBLinkInfo extends Serializable {
     String getPersistUnit();
     IUserSession getUserSession();
     void setUserSession(IUserSession userSession);
-    void setToken(IAppAuthConsumerToken token)  throws Exception;
-    void setoAuthConsumer(IOAuthConsumer oAuthConsumer);
+    void setToken(IAppAuthConsumerToken token, IOAuthConsumer oAuthConsumer, boolean noValid)  throws Exception;        
+    void setToken(IAppAuthConsumerToken token, IOAuthConsumer oAuthConsumer)  throws Exception;
     String getAppUserId();
     String getSessionOrTokenId();
 }

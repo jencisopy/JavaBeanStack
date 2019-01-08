@@ -463,6 +463,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         data = model.getAppAuthConsumer().getConsumerKey();
         data += ":" + model.getAppAuthConsumer().getExpiredDate();
         data += ":" + model.getData();
+        data += ":" + Fn.nvl(model.getUuidDevice(),"");
         String algorithm = model.getAppAuthConsumer().getSignatureAlgorithm();
 
         MessageDigest digest = MessageDigest.getInstance(algorithm);
@@ -516,6 +517,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean isValidToken(String token) {
+        //TODO Verificar en la session
         IAppAuthConsumerToken result = findAuthToken(token);
         if (result == null){
             return false;
@@ -535,6 +537,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         if (!result.getAppAuthConsumer().getExpiredDate().after(new Date())){
             return false;
         }
+        //TODO agregar en la variable sessión
         return dao.isCredentialValid(getUserMapped(result).getIduser(), getCompanyMapped(result).getIdcompany());
     }
 
@@ -589,7 +592,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     public IAppUser getUserMapped(String token) {
         try{
             Long iduser = Long.parseLong(getDataKeyValue(token,"idappuser"));            
-            IAppUser user = dao.findByQuery(null,"select o from AppUser o where iduser = "+iduser,null);
+            IAppUser user = dao.findByQuery(null,"select o from AppUserLight o where iduser = "+iduser,null);
             return user;
         }
         catch (Exception exp){
@@ -608,7 +611,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     public IAppUser getUserMapped(IAppAuthConsumerToken token) {
         try{
             Long iduser = Long.parseLong(getDataKeyValue(token,"idappuser"));            
-            IAppUser user = dao.findByQuery(null,"select o from AppUser o where iduser = "+iduser,null);
+            IAppUser user = dao.findByQuery(null,"select o from AppUserLight o where iduser = "+iduser,null);
             return user;
         }
         catch (Exception exp){

@@ -18,8 +18,10 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
+ */
 package org.javabeanstack.data;
+
+import org.apache.log4j.Logger;
 
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppAuthConsumerToken;
@@ -31,80 +33,81 @@ import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 
 /**
- * Clase que contiene información necesaria para el acceso a los datos. 
- * ej. unidad de persistencia, sesión id del usuario etc.
- * 
+ * Clase que contiene información necesaria para el acceso a los datos. ej.
+ * unidad de persistencia, sesión id del usuario etc.
+ *
  * @author Jorge Enciso
  */
 public class DBLinkInfo implements IDBLinkInfo {
+
+    private static final Logger LOGGER = Logger.getLogger(DBLinkInfo.class);
     private IUserSession userSession;
     private IAppAuthConsumerToken token;
-    private IOAuthConsumer oAuthConsumer;
     private IAppCompany appCompanyToken;
     private IAppUser appUserToken;
-            
+    private IDBFilter dbFilterToken;
+
     /**
-     * Devuelve DBFilter conteniendo los filtros que deben ser aplicados
-     * en los queries.
+     * Devuelve DBFilter conteniendo los filtros que deben ser aplicados en los
+     * queries.
+     *
      * @return DBFilter.
      */
     @Override
     public IDBFilter getDBFilter() {
-        if (userSession != null){
+        LOGGER.debug("getDBFilter in");
+        if (userSession != null) {
             return userSession.getDBFilter();
         }
-        if (token != null && oAuthConsumer != null){
-            return oAuthConsumer.getDBFilter(token);
+        if (token != null) {
+            return dbFilterToken;
         }
         return null;
     }
 
-    
     /**
-     * 
+     *
      * @return idcompany
      */
     @Override
     public Long getIdCompany() {
-        if (userSession == null && token == null){
+        LOGGER.debug("getIdCompany in");
+        if (userSession == null && token == null) {
             return null;
         }
-        if (userSession != null){
+        if (userSession != null) {
             return userSession.getIdCompany();
         }
-        if (token != null && oAuthConsumer != null){
-            if (appCompanyToken != null){
-                if (appCompanyToken.getIdcompanymask() != null){
-                    return appCompanyToken.getIdcompanymask();
-                }
-                return appCompanyToken.getIdcompany();
+        if (token != null && appCompanyToken != null) {
+            if (appCompanyToken.getIdcompanymask() != null) {
+                return appCompanyToken.getIdcompanymask();
             }
-        }
-        return null;
-    }
-    
-    /**
-     * 
-     * @return unidad de persistencia.
-     */
-    @Override
-    public String getPersistUnit() {
-        if (userSession == null && token == null){
-            return IDBManager.CATALOGO;
-        }
-        if (userSession != null){
-            return userSession.getPersistenceUnit();
-        }
-        if (token != null && oAuthConsumer != null){
-            if (appCompanyToken != null){
-                return Fn.nvl(appCompanyToken.getPersistentUnit(),"").trim();
-            }
+            return appCompanyToken.getIdcompany();
         }
         return null;
     }
 
     /**
-     * 
+     *
+     * @return unidad de persistencia.
+     */
+    @Override
+    public String getPersistUnit() {
+        LOGGER.debug("getPersistUnit in");
+        if (userSession == null && token == null) {
+            return IDBManager.CATALOGO;
+        }
+        if (userSession != null) {
+            return userSession.getPersistenceUnit();
+        }
+        if (token != null && appCompanyToken != null) {
+            return Fn.nvl(appCompanyToken.getPersistentUnit(), "").trim();
+        }
+        return null;
+    }
+
+    /**
+     *
      * @return objeto con información de la sesión del usuario.
      */
     @Override
@@ -114,49 +117,76 @@ public class DBLinkInfo implements IDBLinkInfo {
 
     /**
      * Asigna un objeto con información de la sesión del usuario.
-     * @param userSession 
+     *
+     * @param userSession
      */
     @Override
     public void setUserSession(IUserSession userSession) {
         this.userSession = userSession;
     }
-    
+
     /**
      * Asigna un objeto con información autorizaciones de acceso
+     *
      * @param token
+     * @param oAuthConsumer
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public void setToken(IAppAuthConsumerToken token) throws SessionError {
-        if (!oAuthConsumer.isValidToken(token.getToken())){
+    public void setToken(IAppAuthConsumerToken token, IOAuthConsumer oAuthConsumer) throws SessionError {
+        LOGGER.debug("setToken in");
+        setToken(token, oAuthConsumer, false);
+    }
+
+    /**
+     * Asigna un objeto con información autorizaciones de acceso
+     *
+     * @param token
+     * @param oAuthConsumer
+     * @param noValid
+     * @throws org.javabeanstack.exceptions.SessionError
+     */
+    @Override
+    public void setToken(IAppAuthConsumerToken token, IOAuthConsumer oAuthConsumer, boolean noValid) throws SessionError {
+        LOGGER.debug("setToken in");
+        if (!noValid && !oAuthConsumer.isValidToken(token.getToken())) {
             throw new SessionError("Token inválido");
         }
         this.token = token;
         this.appCompanyToken = oAuthConsumer.getCompanyMapped(token);
-        this.appUserToken = oAuthConsumer.getUserMapped(token.getToken());        
+        this.appUserToken = oAuthConsumer.getUserMapped(token.getToken());
+        this.dbFilterToken = oAuthConsumer.getDBFilter(token);
     }
 
+
+    /**
+     * Devuelve el identificador del usuario
+     *
+     * @return identificador del usuario
+     */
     @Override
-    public void setoAuthConsumer(IOAuthConsumer oAuthConsumer) {
-        this.oAuthConsumer = oAuthConsumer;
-    }
-    
-    @Override
-    public String getAppUserId(){
+    public String getAppUserId() {
+        LOGGER.debug("getAppUserId in");
         String result = "";
         if (getUserSession() != null) {
             result = getUserSession().getUser().getPass();
         }
         if (Strings.isNullorEmpty(result) && token != null) {
-            if (appUserToken != null){
+            if (appUserToken != null) {
                 result = appUserToken.getPass();
             }
         }
         return result;
     }
-    
+
+    /**
+     * Devuelve el identificador de la sesión o el token
+     *
+     * @return el identificador de la sesión o el token
+     */
     @Override
-    public String getSessionOrTokenId(){
+    public String getSessionOrTokenId() {
+        LOGGER.debug("getSessionOrTokenId in");
         String result = "";
         if (getUserSession() != null) {
             result = getUserSession().getSessionId();

@@ -29,14 +29,24 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static org.javabeanstack.data.TestClass.context;
 import static org.javabeanstack.data.TestClass.error;
+import org.javabeanstack.data.services.IAppCompanySrv;
+import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.model.IAppAuthConsumer;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.model.appcatalog.AppResource;
 import org.javabeanstack.model.appcatalog.AppTablesRelation;
 import org.javabeanstack.model.appcatalog.AppUser;
 import org.javabeanstack.model.tables.Moneda;
+import org.javabeanstack.security.IOAuthConsumerData;
+import org.javabeanstack.security.OAuthConsumerBase;
+import org.javabeanstack.security.model.OAuthConsumerData;
+import org.javabeanstack.util.Dates;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
@@ -46,10 +56,24 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AbstractDataLinkTest extends TestClass {
-
+    private String token;
+    private static IDataService dao;    
+    private String consumerKey;
+    private final String uuidDevice = "xxxx1111133333";     
+    
+    
     public AbstractDataLinkTest() {
     }
 
+    @BeforeClass
+    public static void setUpClass2() {
+        try {
+            dao = (IDataService) context.lookup(jndiProject + "DataService!org.javabeanstack.data.services.IDataServiceRemote");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }    
+    
     /**
      * Test of getPersistUnit method, of class AbstractDataLink.
      */
@@ -746,5 +770,133 @@ public class AbstractDataLinkTest extends TestClass {
             return;
         }
         assertNotNull(dataLink.getUserSession().getSessionId());
+    }
+    
+    /**
+     * Test of getPersistUnit method, of class AbstractDataLink.
+     */
+    @Test
+    public void test28Token() throws Exception{
+        System.out.println("28-DataLink - getPersistUnit - token");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        createAuthConsumer();
+        createToken();
+        
+        dataLink.setToken(token);
+        
+        String result = dataLink.getToken();
+        assertNotNull(result);
+        
+        result = dataLink.getPersistUnit();
+        String expResult = "PU2";
+        assertEquals(expResult, result);
+        
+//        Long result2 = dataLink.getIdCompany();
+//        Long expResult2 = 2L;
+//        assertEquals(expResult2, result2);
+        
+        IDBLinkInfo dbInfo = dataLink.getDBLinkInfo();
+        assertNotNull(dbInfo);
+
+        String sqlSentence = "select * from {schema}.moneda";
+        List<Object> query1 = dataLink.findByNativeQuery(sqlSentence, null);
+        assertTrue(!query1.isEmpty());
+        
+        dropToken();
+        dropAuthConsumer();
+        dataLink.setToken(null);
+    }
+    
+    /**
+     * Test of createAuthConsumer method, of class OAuthConsumer.
+     */
+    public void createAuthConsumer() {
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        String consumerName = "OYM";
+        Date expiredDate = new Date();
+        expiredDate = Dates.sumDays(expiredDate, 5000);
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
+        instance.setDao(dao);
+        String result = instance.createAuthConsumer(consumerName, expiredDate);
+        assertNotNull(result);
+        consumerKey = instance.getLastAuthConsumer().getConsumerKey();
+    }
+    
+    
+    public void createToken() {
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        IOAuthConsumerData data = new OAuthConsumerData();
+        data.setIdAppUser(0L);
+        data.setUserLogin("J");
+        data.setUserPass("");
+        data.setIdCompany(2L);
+        data.addOtherDataValue("dato1", "dato1");
+        data.addOtherDataValue("dato2", "dato2");
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
+        instance.setDao(dao);
+        token = instance.createToken(consumerKey, data, uuidDevice);
+    }
+    
+    public void dropToken() {
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
+        instance.setDao(dao);                
+        instance.dropToken(consumerKey, uuidDevice);
+    }
+
+    public void dropAuthConsumer() {
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
+        instance.setDao(dao);
+        instance.dropAuthConsumer(consumerKey);
+    }
+    
+    public class OAuthConsumerImpl extends OAuthConsumerBase {
+        private IAppCompanySrv appCompanySrv;
+        
+        public OAuthConsumerImpl(){
+            try{
+                appCompanySrv = (IAppCompanySrv) context.lookup(jndiProject + "AppCompanySrv!org.javabeanstack.data.services.IAppCompanySrv");
+            }
+            catch (Exception exp){
+                System.out.println("Error instanciación appCompanySrv");
+            }
+        }
+                
+                
+        @Override
+        public Class<IAppAuthConsumer> getAuthConsumerClass() {
+            try {
+                return (Class<IAppAuthConsumer>)Class.forName("org.javabeanstack.model.appcatalog.AppAuthConsumer");
+            } catch (ClassNotFoundException ex) {
+                System.out.println(ex.getMessage());                
+            }
+            return null;
+        }
+
+        @Override
+        public Class<IAppAuthConsumerToken> getAuthConsumerTokenClass() {
+            try {            
+                return (Class<IAppAuthConsumerToken>)Class.forName("org.javabeanstack.model.appcatalog.AppAuthConsumerToken");
+            } catch (ClassNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            }
+            return null;
+        }
+        
+        @Override
+        protected IAppCompanySrv getAppCompanySrv() {
+            return appCompanySrv;
+        }
     }
 }

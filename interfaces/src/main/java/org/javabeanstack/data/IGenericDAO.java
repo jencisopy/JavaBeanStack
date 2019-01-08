@@ -39,6 +39,13 @@ import org.javabeanstack.security.IUserSession;
  * @author Jorge Enciso
  */
 public interface IGenericDAO extends Serializable {
+
+    /**
+     * Devuelve el objeto DBLinkInfo(info de la conexión) a partir del sessionid o token
+     * @param sessionId identificador de la sesión o token 
+     * @return objeto DBLinkInfo(info de la conexión) a partir del sessionid o token
+     */
+    public IDBLinkInfo getDBLinkInfo(String sessionId);
     /**
      * Sincroniza un ejb con la base de datos.
      *

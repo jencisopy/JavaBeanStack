@@ -39,6 +39,7 @@ public interface IDataLink  {
     <T extends IDataService> T getDataService();
     
     String getPersistUnit();    
+    Long getIdCompany();
     IUserSession getUserSession();
     Map<String, Object> getEntityManagerProp();
     Map<String, Object> getPersistUnitProp();
@@ -73,4 +74,7 @@ public interface IDataLink  {
     <T extends IGenericDAO> void setDao(T dao);
     
     String getEntitiesRelation(String entities, String typeRela, String schema) throws Exception;
+    String getToken();
+    void setToken(String token);
+    IDBLinkInfo getDBLinkInfo();
 }

@@ -65,7 +65,7 @@ public class JsonUtil {
                 } else if (classMember.getSimpleName().equals("Long")) {
                     objectBuilder.add(columnName, (Long)value);
                 } else if (classMember.getSimpleName().equals("Date") || classMember.getSimpleName().equals("Timestamp")) {
-                    value = Dates.toString((Date) row.getColumn(columnName), "yyyy-mm-dd hh:mm:ss");                    
+                    value = Dates.toString((Date) row.getColumn(columnName), "yyyy-MM-dd HH:mm:ss");                    
                     objectBuilder.add(columnName, (String)value);
                 } else if (classMember.getSimpleName().equals("Short")) {
                     objectBuilder.add(columnName, (Short)value);
