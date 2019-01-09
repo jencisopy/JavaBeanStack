@@ -989,12 +989,24 @@ public abstract class AbstractDataService implements IDataService {
         throw new UnsupportedOperationException("Not supported.");
     }
     
+    /**
+     * Si el ejb o registro paso por el proceso de validación.
+     * @param <T>
+     * @param ejb  ejb o registro 
+     * @throws CheckException 
+     */
     protected <T extends IDataRow> void isChecked(T ejb) throws CheckException{
         if (ejb != null && ejb.getAction() > 0 && !ejb.isRowChecked()){
             throw new CheckException("El registro no fue verificado");
         }
     }
     
+    /**
+     * Si los ejbs fuerón validados
+     * @param <T>
+     * @param ejbs  ejbs o registros 
+     * @throws CheckException 
+     */
     protected <T extends IDataRow> void isChecked(List<T> ejbs) throws CheckException {
         if (ejbs != null){
             ejbs.forEach((ejb) -> {

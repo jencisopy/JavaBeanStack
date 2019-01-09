@@ -23,17 +23,21 @@
 
 package org.javabeanstack.security;
 
-import javax.ejb.EJB;
 import org.javabeanstack.data.IDBFilter;
-import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**
- *
+ * Implementa la clase abstract OAuthConsumerBase y define la funcionalidad de 
+ * ciertos metodos como getAuthConsumerClass, getAuthConsumerTokenClass
+ * 
  * @author Jorge Enciso
  */
 public class OAuthConsumer extends OAuthConsumerBase {
+    /**
+     * Devuelve la clase AppAuthConsumer
+     * @return clase AppAuthConsumer
+     */
     @Override
     public Class<IAppAuthConsumer> getAuthConsumerClass() {
         try {
@@ -44,6 +48,10 @@ public class OAuthConsumer extends OAuthConsumerBase {
         return null;
     }
 
+    /**
+     * Devuelve la clase AppAuthConsumerToken 
+     * @return clase AppAuthConsumerToken 
+     */
     @Override
     public Class<IAppAuthConsumerToken> getAuthConsumerTokenClass() {
         try {

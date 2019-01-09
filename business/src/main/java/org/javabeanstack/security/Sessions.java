@@ -423,6 +423,12 @@ public class Sessions implements ISessions{
         return sesion;
     }
 
+    /**
+     * Objeto con la información necesaria para acceder a la base de datos.
+     * (persistunit, session del usuario)
+     * @param sessionId identificador de la sesión o el token
+     * @return DBLinkInfo
+     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
@@ -449,6 +455,11 @@ public class Sessions implements ISessions{
         return dbLinkInfo;
     }
 
+    /**
+     * Verifica consistencia de el modelo AuthConsumerData
+     * @param data modelo OAuthConsumerData
+     * @return verdadero si es válido o falso si no
+     */
     @Override 
     public boolean checkAuthConsumerData(IOAuthConsumerData data){    
         if (data == null){

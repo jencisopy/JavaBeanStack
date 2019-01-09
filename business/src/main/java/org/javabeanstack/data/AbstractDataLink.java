@@ -781,7 +781,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         }
         return getDao().getDBLinkInfo(sessionId);
     }
-    
+
+    /**
+     * Devuelve el identificador de la sesión o el token
+     * @return el identificador de la sesión o el token
+     */
     protected final String getSessionId(){
         if (!Strings.isNullorEmpty(token)){
             return token;
@@ -792,11 +796,19 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         return userSession.getSessionId();
     }
 
+    /**
+     * Devuelve el token string
+     * @return token
+     */
     @Override
     public String getToken() {
         return token;
     }
     
+    /**
+     * Asigna el token al objeto
+     * @param token 
+     */
     @Override
     public void setToken(String token) {
         this.token = token;
@@ -805,6 +817,10 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         this.idCompany = dbInfo.getIdCompany();
     }
     
+    /**
+     * Devuelve el identificador de la empresa
+     * @return identificador de la empresa
+     */
     @Override
     public Long getIdCompany(){
         if (!Strings.isNullorEmpty(token)){

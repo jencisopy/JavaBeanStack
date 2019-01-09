@@ -295,7 +295,13 @@ public class DataNativeQuery implements IDataNativeQuery {
         }
         return result;
     }
-    
+ 
+    /**
+     * Devuelve la clase del entity solicitado
+     * @param packagePath camino de busqueda de paquetes (lista de paquetes separado por ;)
+     * @param entity entidad
+     * @return la clase del entity solicitado
+     */
     public static Class getClassModel(String packagePath, String entity){
         String className = "";
         String[] partes = entity.split("_");
@@ -430,6 +436,10 @@ public class DataNativeQuery implements IDataNativeQuery {
         queryCreated = true;
     }
 
+    /**
+     * Devuelve la expresión from
+     * @return expresión from
+     */
     @Override
     public final String getFromExpr() {
         String fromExpr = "";        
@@ -470,6 +480,10 @@ public class DataNativeQuery implements IDataNativeQuery {
         return fromExpr;
     }
 
+    /**
+     * Devuelve la expresión join 
+     * @return expresión join 
+     */
     protected final String getJoinExpr(){
         String result="";
         String entity; 
@@ -489,6 +503,11 @@ public class DataNativeQuery implements IDataNativeQuery {
         return result;
     }
     
+    /**
+     * Devuelve la entidad con el prefijo del schema de la base
+     * @param entity nombre de la entidad
+     * @return la entidad con el prefijo del schema de la base
+     */
     protected final String getEntityWithSchema(String entity) {
         if (occurs(".", entity) == 0) {
             entity = "{schema}." + entity;
@@ -876,6 +895,10 @@ public class DataNativeQuery implements IDataNativeQuery {
         return this.dataLink.getCount2(query, queryParams);
     }
 
+    /**
+     * Query string que cuenta la cantidad de registros
+     * @return 
+     */
     protected String getQueryCount() {
         String query;
         String fromExpr = getFromExpr(); 
@@ -910,11 +933,19 @@ public class DataNativeQuery implements IDataNativeQuery {
         return devolver;
     }
 
+    /**
+     * Devuelve una propiedad que indica si se va a aplicar el dbfilter si o no
+     * @return propiedad que indica si se va a aplicar el dbfilter si o no
+     */
     @Override
     public boolean getApplyDBFilter() {
         return applyDBQueryFilter;
     }
 
+    /**
+     * Asigna el valor a la propiedad que indica si se va a aplicar el dbfilter si o no
+     * @param apply 
+     */
     @Override
     public void setApplyDBFilter(boolean apply) {
         this.applyDBQueryFilter = apply;
