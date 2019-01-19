@@ -40,6 +40,8 @@ import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.data.services.IDataServiceRemote;
+import org.javabeanstack.model.appcatalog.AppAuthConsumer;
+import org.javabeanstack.model.appcatalog.AppAuthConsumerToken;
 import org.javabeanstack.model.tables.Moneda;
 import org.javabeanstack.util.Dates;
 import org.junit.Test;
@@ -58,7 +60,8 @@ public class OAuthConsumerTest extends TestClass {
     private static String consumerKey;
     private static String token;
     private static String tokenSecret;
-    private static String uuidDevice = "xxxx1111133333";    
+    private static String uuidDevice = "xxxx1111133333";
+    private static IAppAuthConsumerToken appConsumerToken;
     
     public OAuthConsumerTest() {
     }
@@ -101,7 +104,8 @@ public class OAuthConsumerTest extends TestClass {
         consumerKey = instance.getLastAuthConsumer().getConsumerKey();
         // Ya existe debe dar error
         result = instance.createAuthConsumer(consumerName, expiredDate);
-        assertNull(result);        
+        assertNull(result);
+        //
     }
 
     /**
@@ -127,9 +131,14 @@ public class OAuthConsumerTest extends TestClass {
         token = instance.createToken(consumerKey, data, uuidDevice);
         assertFalse(token.isEmpty());
         tokenSecret = instance.getLastAuthConsumerToken().getTokenSecret();
+        //
+        appConsumerToken = instance.getLastAuthConsumerToken();
+        //
         data.addOtherDataValue("dato3", "dato3");
         String token2 = instance.createToken(consumerKey, data);
         assertFalse(token2.isEmpty());        
+        //
+        
     }
 
     /**
@@ -403,6 +412,23 @@ public class OAuthConsumerTest extends TestClass {
         assertTrue(result);
     }
     
+    
+    @Test
+    public void test20CreateToken() {
+        System.out.println("20-oAuthConsumer createToken");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        OAuthConsumerBase instance = new OAuthConsumerImpl();
+        instance.setDao(dao);
+        ((AppAuthConsumer)appConsumerToken.getAppAuthConsumer()).setIdappauthconsumer(0L);
+        ((AppAuthConsumer)appConsumerToken.getAppAuthConsumer()).setAppauthconsumertokenList(null);
+        ((AppAuthConsumerToken)appConsumerToken).setIdappauthconsumertoken(0L);
+        assertTrue(instance.createToken(appConsumerToken) != null);
+        test19DropAuthConsumer();
+    }
    
     public class OAuthConsumerImpl extends OAuthConsumerBase {
         @Override

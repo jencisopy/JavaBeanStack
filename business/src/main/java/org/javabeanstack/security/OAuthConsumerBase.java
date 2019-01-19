@@ -178,6 +178,31 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     }
 
     /**
+     * Crea y guarda en la base de datos el registro de AuthConsumer
+     *
+     * @param authConsumer datos del consumer
+     * @return consumer creado
+     */    
+    @Override
+    public IAppAuthConsumer createAuthConsumer(IAppAuthConsumer authConsumer) {
+        try{
+            IAppAuthConsumer authConsumerNew = getAuthConsumerClass().newInstance();
+            authConsumerNew.setConsumerName(authConsumer.getConsumerName());
+            authConsumerNew.setExpiredDate(authConsumer.getExpiredDate());
+            authConsumerNew.setConsumerKey(authConsumer.getConsumerKey());
+            
+            IDataResult dataResult = dao.persist(null, authConsumerNew);
+            if (!dataResult.isSuccessFul()) {
+                return null;
+            }
+            return dataResult.getRowUpdated();
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
+    }
+    
+    /**
      * Elimina un registro de AuthConsumer de la base de datos.
      *
      * @param consumerKey clave del consumidor
@@ -363,6 +388,32 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         return "";
     }
+
+    /**
+     * Crea y graba en la base de datos el registro de un token de autorización
+     * @param authConsumerToken objeto token
+     * @return tokenString
+     */
+    @Override
+    public String createToken(IAppAuthConsumerToken authConsumerToken) {
+        try{
+            IAppAuthConsumer appConsumer = findAuthConsumer(authConsumerToken.getAppAuthConsumer().getConsumerKey());
+            //No existe el consumer key
+            if (appConsumer == null){
+                appConsumer = createAuthConsumer(authConsumerToken.getAppAuthConsumer());
+            }
+            authConsumerToken.setAppAuthConsumer(appConsumer);                        
+            IDataResult dataResult = dao.persist(null, authConsumerToken);
+            if (!dataResult.isSuccessFul()) {
+                return null;
+            }
+            lastAuthConsumerToken = dataResult.getRowUpdated();
+            return authConsumerToken.getToken();
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
+    }
     
     /**
      * Convierte una map<String,String> a un formato standard string para
@@ -510,6 +561,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         return Fn.bytesToBase64Url(digestMessage);
     }
 
+    
     /**
      * Determina si un token es válido o no
      * @param token token
@@ -517,6 +569,17 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean isValidToken(String token) {
+        return isValidToken(token, false);
+    }
+    
+    /**
+     * Determina si un token es válido o no
+     * @param token token
+     * @param noCheckCredentials
+     * @return verdadero si es válido y falso si no.
+     */
+    @Override
+    public boolean isValidToken(String token, boolean noCheckCredentials) {
         //TODO Verificar en la session
         IAppAuthConsumerToken result = findAuthToken(token);
         if (result == null){
@@ -536,6 +599,9 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         //Si expiro el customerKey
         if (!result.getAppAuthConsumer().getExpiredDate().after(new Date())){
             return false;
+        }
+        if (noCheckCredentials){
+            return true;
         }
         //TODO agregar en la variable sessión
         return dao.isCredentialValid(getUserMapped(result).getIduser(), getCompanyMapped(result).getIdcompany());

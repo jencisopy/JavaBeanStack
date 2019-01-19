@@ -21,6 +21,7 @@
  */
 package org.javabeanstack.web.rest.resources;
 
+import com.google.common.base.Strings;
 import javax.ejb.EJB;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
@@ -86,14 +87,8 @@ public abstract class AbstractWebResource implements IWebResource {
         return oAuthConsumer;
     }
 
-    public final Boolean verifyToken(String token) {
-        if (token == null) {
-            throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
-        }
-        if (!oAuthConsumer.isValidToken(token)) {
-            throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es es incorrecto");
-        }
-        return true;
+    public Boolean verifyToken(String token) {
+        return oAuthConsumer.isValidToken(token);
     }
 
     protected void setToken(String tokenHeader) {
@@ -101,8 +96,21 @@ public abstract class AbstractWebResource implements IWebResource {
         this.token = tokens[1];
         this.idPerson = 0L;
         this.idcompany = 0L;
-        verifyToken(this.token);
-        
+        //Si el token es null
+        if (Strings.isNullOrEmpty(token)) {
+            throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
+        }
+        //Verificar válidez del token
+        if (!verifyToken(this.token)){
+            // Verificar y traer credenciales del servidor y grabar en el local
+            if (!verifyTokenInMainServer(this.token)){
+                throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");                
+            }
+            //Reverificar en el local
+            if (!verifyToken(this.token)){
+                throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");                
+            }
+        }
         IAppCompany appCompanyToken = oAuthConsumer.getCompanyMapped(this.token);
         if (appCompanyToken != null) {
             if (appCompanyToken.getIdcompanymask() != null) {
@@ -112,6 +120,11 @@ public abstract class AbstractWebResource implements IWebResource {
                 this.idcompany = appCompanyToken.getIdcompany();
             }
         }
+    }
+
+    protected boolean verifyTokenInMainServer(String token){
+        //Implementar en clases hijas
+        return false;
     }
     
     protected void setIdPerson(Long idPerson) {
