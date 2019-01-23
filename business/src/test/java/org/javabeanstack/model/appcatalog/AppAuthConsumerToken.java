@@ -219,12 +219,12 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     }
 
     @Override
-    public IAppAuthConsumer getAppAuthConsumer() {
+    public IAppAuthConsumer getAppAuthConsumerKey() {
         return appAuthConsumer;
     }
 
     @Override
-    public void setAppAuthConsumer(IAppAuthConsumer appAuthConsumer) {
+    public void setAppAuthConsumerKey(IAppAuthConsumer appAuthConsumer) {
         this.appAuthConsumer = (AppAuthConsumer)appAuthConsumer;
     }
     

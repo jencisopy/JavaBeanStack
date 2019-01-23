@@ -24,6 +24,7 @@ package org.javabeanstack.data;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.xml.bind.annotation.XmlTransient;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.IErrorReg;
@@ -40,11 +41,17 @@ public class DataRow implements IDataRow, Cloneable {
 
     private static final Logger LOGGER = Logger.getLogger(DataRow.class);
 
+    @XmlTransient
     private int action = 0;
+    @XmlTransient    
     private String queryUK = "";
+    @XmlTransient
     private String idFunctionFind = "";
+    @XmlTransient
     private boolean rowChecked = false;
+    @XmlTransient
     private Map<String, Boolean> fieldsChecked = null;
+    @XmlTransient    
     private Map<String, IErrorReg> errors = new HashMap();
     protected IDataRow fieldsOldValues;    
 
@@ -284,6 +291,7 @@ public class DataRow implements IDataRow, Cloneable {
      *
      * @return identificador del componente.
      */
+    @XmlTransient    
     @Override
     public Object getId() {
         return DataInfo.getIdvalue(this);
@@ -294,6 +302,7 @@ public class DataRow implements IDataRow, Cloneable {
      *
      * @return identificador del componente.
      */
+    @XmlTransient
     @Override
     public Object getRowkey() {
         Object obj = DataInfo.getIdvalue(this);
@@ -309,6 +318,7 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldname
      * @return valor de un atributo o campo.
      */
+    @XmlTransient
     @Override
     public Object getValue(String fieldname) {
         if (fieldsOldValues == null){
@@ -323,6 +333,7 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldname nombre del campo
      * @return tipo de dato del campo solicitado.
      */
+    @XmlTransient
     @Override
     public Class getFieldType(String fieldname) {
         Class result = DataInfo.getFieldType(this.getClass(), fieldname);
@@ -413,6 +424,7 @@ public class DataRow implements IDataRow, Cloneable {
      * 
      * @return verdadero si y falso no
      */
+    @XmlTransient
     @Override
     public boolean isApplyDBFilter() {
         return true;

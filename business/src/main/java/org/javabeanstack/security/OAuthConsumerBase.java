@@ -249,8 +249,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public Date getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret) {
         IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
-        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumer() != null) {
-            return authConsumerToken.getAppAuthConsumer().getExpiredDate();
+        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumerKey() != null) {
+            return authConsumerToken.getAppAuthConsumerKey().getExpiredDate();
         }
         return null;
     }
@@ -265,8 +265,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public String getTokenAuthUrl(String consumerKey, String uuidOrTokenSecret) {
         IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
-        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumer() != null) {
-            return authConsumerToken.getAppAuthConsumer().getAuthURL();
+        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumerKey() != null) {
+            return authConsumerToken.getAppAuthConsumerKey().getAuthURL();
         }
         return "";
     }
@@ -281,8 +281,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public String getTokenCallbackUrl(String consumerKey, String uuidOrTokenSecret) {
         IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
-        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumer() != null) {
-            return authConsumerToken.getAppAuthConsumer().getCallbackURL();
+        if (authConsumerToken != null && authConsumerToken.getAppAuthConsumerKey() != null) {
+            return authConsumerToken.getAppAuthConsumerKey().getCallbackURL();
         }
         return "";
     }
@@ -311,7 +311,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     public boolean requestToken(String consumerKey, String uuidDevice) {
         try {
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
-            authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
+            authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(true);
             String token = getRandomToken();
             authConsumerToken.setToken(token);
@@ -364,7 +364,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 data.setIdAppUser(usuario.getIduser());
             }
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
-            authConsumerToken.setAppAuthConsumer(findAuthConsumer(consumerKey));
+            authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
             authConsumerToken.setData(data.toString());
             String token = signTokenData(authConsumerToken);
@@ -397,13 +397,20 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public String createToken(IAppAuthConsumerToken authConsumerToken) {
         try{
-            IAppAuthConsumer appConsumer = findAuthConsumer(authConsumerToken.getAppAuthConsumer().getConsumerKey());
+            IAppAuthConsumer appConsumer = findAuthConsumer(authConsumerToken.getAppAuthConsumerKey().getConsumerKey());
             //No existe el consumer key
             if (appConsumer == null){
-                appConsumer = createAuthConsumer(authConsumerToken.getAppAuthConsumer());
+                appConsumer = createAuthConsumer(authConsumerToken.getAppAuthConsumerKey());
             }
-            authConsumerToken.setAppAuthConsumer(appConsumer);                        
-            IDataResult dataResult = dao.persist(null, authConsumerToken);
+            IAppAuthConsumerToken authConsumerTokenNew = getAuthConsumerTokenClass().newInstance();
+            authConsumerTokenNew.setBlocked(authConsumerToken.getBlocked());
+            authConsumerTokenNew.setData(authConsumerToken.getData());
+            authConsumerTokenNew.setToken(authConsumerToken.getToken());
+            authConsumerTokenNew.setAppAuthConsumerKey(appConsumer);
+            authConsumerTokenNew.setTokenSecret(authConsumerToken.getTokenSecret());
+            authConsumerTokenNew.setUuidDevice(authConsumerToken.getUuidDevice());
+
+            IDataResult dataResult = dao.persist(null, authConsumerTokenNew);
             if (!dataResult.isSuccessFul()) {
                 return null;
             }
@@ -507,15 +514,15 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @throws InvalidKeyException
      */
     protected String signTokenData(IAppAuthConsumerToken model) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
-        if (model == null || model.getAppAuthConsumer() == null) {
+        if (model == null || model.getAppAuthConsumerKey() == null) {
             return null;
         }
         String data;
-        data = model.getAppAuthConsumer().getConsumerKey();
-        data += ":" + model.getAppAuthConsumer().getExpiredDate();
+        data = model.getAppAuthConsumerKey().getConsumerKey();
+        data += ":" + model.getAppAuthConsumerKey().getExpiredDate();
         data += ":" + model.getData();
         data += ":" + Fn.nvl(model.getUuidDevice(),"");
-        String algorithm = model.getAppAuthConsumer().getSignatureAlgorithm();
+        String algorithm = model.getAppAuthConsumerKey().getSignatureAlgorithm();
 
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         byte[] digestMessage = digest.digest(data.getBytes("UTF-8"));
@@ -532,15 +539,15 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @throws InvalidKeyException
      */
     protected String getTokenSecret(IAppAuthConsumerToken model) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
-        if (model == null || model.getAppAuthConsumer() == null) {
+        if (model == null || model.getAppAuthConsumerKey() == null) {
             return null;
         }
         String data;
-        data = model.getAppAuthConsumer().getConsumerKey();
-        data += ":" + model.getAppAuthConsumer().getExpiredDate();
+        data = model.getAppAuthConsumerKey().getConsumerKey();
+        data += ":" + model.getAppAuthConsumerKey().getExpiredDate();
         data += ":" + model.getData();
         data += ":" + model.getToken(); // Debio calcularse antes
-        String algorithm = model.getAppAuthConsumer().getSignatureAlgorithm();
+        String algorithm = model.getAppAuthConsumerKey().getSignatureAlgorithm();
 
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         byte[] digestMessage = digest.digest(data.getBytes("UTF-8"));
@@ -589,15 +596,15 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         if (result.getBlocked()){
             return false;
         }
-        if (result.getAppAuthConsumer() == null){
+        if (result.getAppAuthConsumerKey() == null){
             return false;
         }
         //Si el consumerKey esta bloqueado
-        if (result.getAppAuthConsumer().getBlocked()){
+        if (result.getAppAuthConsumerKey().getBlocked()){
             return false;
         }
         //Si expiro el customerKey
-        if (!result.getAppAuthConsumer().getExpiredDate().after(new Date())){
+        if (!result.getAppAuthConsumerKey().getExpiredDate().after(new Date())){
             return false;
         }
         if (noCheckCredentials){

@@ -42,6 +42,6 @@ public interface IAppAuthConsumerToken extends IDataRow {
     Boolean getBlocked();
     void setBlocked(boolean blocked);
     
-    IAppAuthConsumer getAppAuthConsumer();
-    void setAppAuthConsumer(IAppAuthConsumer authConsumer);
+    IAppAuthConsumer getAppAuthConsumerKey();
+    void setAppAuthConsumerKey(IAppAuthConsumer authConsumer);
 }

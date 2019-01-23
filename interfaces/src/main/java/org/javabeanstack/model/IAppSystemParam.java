@@ -29,7 +29,7 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  */
 public interface IAppSystemParam extends IDataRow {
-    Long getIdsystemparam();
+    Long getIdAppSystemParam();
     String getParam();
     String getParamDescrip();
     Character getParamType();
@@ -39,7 +39,7 @@ public interface IAppSystemParam extends IDataRow {
     Date getValueDate();
     Long getValueNumber();
 
-    void setIdsystemparam(Long idsystemparam);
+    void setIdAppSystemParam(Long idsystemparam);
     void setParam(String param);
     void setParamDescrip(String paramDescrip);
     void setParamType(Character paramType);

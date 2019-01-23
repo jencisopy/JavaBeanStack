@@ -423,8 +423,8 @@ public class OAuthConsumerTest extends TestClass {
         }
         OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
-        ((AppAuthConsumer)appConsumerToken.getAppAuthConsumer()).setIdappauthconsumer(0L);
-        ((AppAuthConsumer)appConsumerToken.getAppAuthConsumer()).setAppauthconsumertokenList(null);
+        ((AppAuthConsumer)appConsumerToken.getAppAuthConsumerKey()).setIdappauthconsumer(0L);
+        ((AppAuthConsumer)appConsumerToken.getAppAuthConsumerKey()).setAppauthconsumertokenList(null);
         ((AppAuthConsumerToken)appConsumerToken).setIdappauthconsumertoken(0L);
         assertTrue(instance.createToken(appConsumerToken) != null);
         test19DropAuthConsumer();

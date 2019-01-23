@@ -41,7 +41,7 @@ import org.javabeanstack.data.DataRow;
  * @author Jorge Enciso
  */
 @Entity
-@Table(name = "systemparam")
+@Table(name = "appsystemparam")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "AppSystemParam.findAll", query = "SELECT s FROM AppSystemParam s")})
@@ -52,8 +52,8 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @GeneratedValue(strategy=GenerationType.IDENTITY)            
     @Basic(optional = false)
     @NotNull
-    @Column(name = "idsystemparam")
-    private Long idsystemparam;
+    @Column(name = "idappsystemparam")
+    private Long idAppSystemParam;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 50)
@@ -113,11 +113,11 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     }
 
     public AppSystemParam(Long idsystemparam) {
-        this.idsystemparam = idsystemparam;
+        this.idAppSystemParam = idsystemparam;
     }
 
     public AppSystemParam(Long idsystemparam, String systemgroup, String param, String paramDescrip, Character paramType, Date fechacreacion, Date fechamodificacion) {
-        this.idsystemparam = idsystemparam;
+        this.idAppSystemParam = idsystemparam;
         this.systemgroup = systemgroup;
         this.param = param;
         this.paramDescrip = paramDescrip;
@@ -127,13 +127,13 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     }
 
     @Override
-    public Long getIdsystemparam() {
-        return idsystemparam;
+    public Long getIdAppSystemParam() {
+        return idAppSystemParam;
     }
 
     @Override
-    public void setIdsystemparam(Long idsystemparam) {
-        this.idsystemparam = idsystemparam;
+    public void setIdAppSystemParam(Long idAppSystemParam) {
+        this.idAppSystemParam = idAppSystemParam;
     }
 
     @Override
@@ -252,6 +252,6 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
 
     @Override
     public String toString() {
-        return "net.makerapp.model.tables.Systemparam[ idsystemparam=" + idsystemparam + " ]";
+        return "net.makerapp.model.tables.Systemparam[ idsystemparam=" + idAppSystemParam + " ]";
     }
 }
