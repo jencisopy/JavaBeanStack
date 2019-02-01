@@ -103,6 +103,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     private Boolean noLazyRowsLoad = false;
     private String refreshUIComponent;
     private String formViewSelected = "DEFAULT";
+    private Boolean tableDetailShow = true;
+    
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
      * metodo onCompleteText
@@ -319,6 +321,14 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     public void setTableTextFooter(String tableTextFooter) {
         this.tableTextFooter = tableTextFooter;
+    }
+
+    public Boolean getTableDetailShow() {
+        return tableDetailShow;
+    }
+
+    public void setTableDetailShow(Boolean tableDetailShow) {
+        this.tableDetailShow = tableDetailShow;
     }
 
     /**
