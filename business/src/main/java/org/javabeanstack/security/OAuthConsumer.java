@@ -23,6 +23,7 @@
 
 package org.javabeanstack.security;
 
+import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;

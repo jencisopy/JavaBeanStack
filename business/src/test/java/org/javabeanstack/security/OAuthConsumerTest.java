@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.crypto.SecretKey;
+import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBLinkInfo;

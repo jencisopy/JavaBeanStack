@@ -66,7 +66,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
 
     private IAppAuthConsumer lastAuthConsumer;
     private IAppAuthConsumerToken lastAuthConsumerToken;
-    
+
     /**
      * Asigna objeto para la conexión con la base de datos
      *
