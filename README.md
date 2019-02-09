@@ -1,7 +1,7 @@
 # JavaBeanStack
 [![Build Status](https://travis-ci.org/jencisopy/JavaBeanStack.svg?branch=master)](https://travis-ci.org/jencisopy/JavaBeanStack) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.javabeanstack/jbs-parent/badge.svg)](https://search.maven.org/search?q=org.javabeanstack)
 
-Framework para construcción de aplicaciones Java EE 7
+Framework para construcción de aplicaciones Java EE 7 y 8
 
 Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y estandarizar el desarrollo de aplicaciones empresariales. 
 
