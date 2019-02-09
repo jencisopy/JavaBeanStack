@@ -44,7 +44,7 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     private int action = 0;
     @XmlTransient    
-    private String queryUK = "";
+    protected String queryUK = "";
     @XmlTransient
     private String idFunctionFind = "";
     @XmlTransient
