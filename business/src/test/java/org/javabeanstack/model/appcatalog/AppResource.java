@@ -60,8 +60,8 @@ public class AppResource extends DataRow implements IAppResource {
     @Column(name = "idparent")
     private Long idparent;
 
-    @Column(name = "idobjeto")
-    private Long idobject;
+    @Column(name = "idappobject")
+    private Long idappobject;
 
     
     @Basic(optional = false)
@@ -326,13 +326,13 @@ public class AppResource extends DataRow implements IAppResource {
     }
 
     @Override
-    public Long getIdobject() {
-        return idobject;
+    public Long getIdAppObject() {
+        return idappobject;
     }
 
     @Override
-    public void setIdobject(Long idobject) {
-        this.idobject = idobject;
+    public void setIdAppObject(Long idappobject) {
+        this.idappobject = idappobject;
     }
 
     @Override

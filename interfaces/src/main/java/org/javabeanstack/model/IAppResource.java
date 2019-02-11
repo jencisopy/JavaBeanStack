@@ -36,8 +36,8 @@ public interface IAppResource extends IDataRow {
     Long getIdparent();
     void setIdparent(Long idparent);
 
-    Long getIdobject();
-    void setIdobject(Long idobject);
+    Long getIdAppObject();
+    void setIdAppObject(Long idobject);
     
     String getCode();    
     void setCode(String code);    
