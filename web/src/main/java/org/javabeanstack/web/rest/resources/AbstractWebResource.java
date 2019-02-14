@@ -91,7 +91,7 @@ public abstract class AbstractWebResource implements IWebResource {
         return oAuthConsumer.isValidToken(token);
     }
 
-    protected void setToken(String tokenHeader) {
+    protected void setToken(String tokenHeader){
         String[] tokens = tokenHeader.split("\\ ");
         this.token = tokens[1];
         this.idPerson = 0L;

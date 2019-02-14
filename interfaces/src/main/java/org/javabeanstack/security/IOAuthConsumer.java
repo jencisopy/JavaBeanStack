@@ -38,10 +38,11 @@ import org.javabeanstack.model.IAppUser;
 public interface IOAuthConsumer {
     String createAuthConsumer(String consumerName, Date expiredDate);
     IAppAuthConsumer createAuthConsumer(IAppAuthConsumer authConsumer);
-    String createToken(String consumerKey, IOAuthConsumerData data);
-    String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice);
-    String createToken(IAppAuthConsumerToken authConsumerToken);
+    String createToken(String consumerKey, IOAuthConsumerData data)  throws Exception ;
+    String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice)  throws Exception;
+    String createToken(IAppAuthConsumerToken authConsumerToken) throws Exception;
     IAppAuthConsumerToken findAuthToken(String token);
+    IAppAuthConsumerToken findAuthToken(String consumerKey, String uuidOrTokenSecret);
     boolean dropAuthConsumer(String consumerKey);
     boolean dropToken(String consumerKey, String tokenSecret);
     Class<IAppAuthConsumer> getAuthConsumerClass();
