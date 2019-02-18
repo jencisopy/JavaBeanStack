@@ -26,10 +26,10 @@ import java.util.Date;
 import java.util.List;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
-import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**
  *
@@ -41,6 +41,7 @@ public interface IOAuthConsumer {
     String createToken(String consumerKey, IOAuthConsumerData data)  throws Exception ;
     String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice)  throws Exception;
     String createToken(IAppAuthConsumerToken authConsumerToken) throws Exception;
+    IAppAuthConsumer findAuthConsumer(String consumerKey);
     IAppAuthConsumerToken findAuthToken(String token);
     IAppAuthConsumerToken findAuthToken(String consumerKey, String uuidOrTokenSecret);
     boolean dropAuthConsumer(String consumerKey);

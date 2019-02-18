@@ -48,13 +48,13 @@ import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.data.IGenericDAO;
-import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.util.Dates;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**
  * Es la clase encargada de todas las sesiones de usuarios. Guarda información

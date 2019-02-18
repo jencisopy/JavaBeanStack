@@ -653,6 +653,9 @@ public class DataNativeQuery implements IDataNativeQuery {
         } catch (Exception ex) {
             ErrorManager.showError(ex, Logger.getLogger(DataNativeQuery.class));
         }
+        if (result == null){
+            result = new ArrayList<>();
+        }
         return result;
     }
 

@@ -36,7 +36,6 @@ import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IAppAuthConsumer;
-import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.model.appcatalog.AppResource;
 import org.javabeanstack.model.appcatalog.AppTablesRelation;
 import org.javabeanstack.model.appcatalog.AppUser;
@@ -50,6 +49,7 @@ import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**
  *

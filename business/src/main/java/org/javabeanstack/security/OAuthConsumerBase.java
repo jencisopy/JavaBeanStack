@@ -44,13 +44,13 @@ import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppAuthConsumer;
-import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.exceptions.TokenGenericException;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Fn.nvl;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**
  *
@@ -93,7 +93,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @param consumerKey clave del consumidor
      * @return registro AppAuthConsumer
      */
-    protected IAppAuthConsumer findAuthConsumer(String consumerKey) {
+    @Override
+    public IAppAuthConsumer findAuthConsumer(String consumerKey) {
         String queryString = "select o from AppAuthConsumer o where consumerKey = :consumerKey";
         Map<String, Object> parameters = new HashMap();
         parameters.put("consumerKey", consumerKey);

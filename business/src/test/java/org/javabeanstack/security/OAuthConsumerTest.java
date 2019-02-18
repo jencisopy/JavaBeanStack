@@ -38,7 +38,6 @@ import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.model.IAppAuthConsumer;
-import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.data.services.IDataServiceRemote;
 import org.javabeanstack.model.appcatalog.AppAuthConsumer;
@@ -50,6 +49,7 @@ import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**
  *

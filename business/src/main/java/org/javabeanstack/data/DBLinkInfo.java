@@ -24,13 +24,13 @@ package org.javabeanstack.data;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.exceptions.SessionError;
-import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**
  * Clase que contiene información necesaria para el acceso a los datos. ej.
