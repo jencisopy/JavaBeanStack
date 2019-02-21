@@ -995,7 +995,7 @@ public abstract class AbstractDataService implements IDataService {
      * @param ejb  ejb o registro 
      * @throws CheckException 
      */
-    protected <T extends IDataRow> void isChecked(T ejb) throws CheckException{
+    protected final <T extends IDataRow> void isChecked(T ejb) throws CheckException{
         if (ejb != null && ejb.getAction() > 0 && !ejb.isRowChecked()){
             throw new CheckException("El registro no fue verificado");
         }
@@ -1007,7 +1007,7 @@ public abstract class AbstractDataService implements IDataService {
      * @param ejbs  ejbs o registros 
      * @throws CheckException 
      */
-    protected <T extends IDataRow> void isChecked(List<T> ejbs) throws CheckException {
+    protected final <T extends IDataRow> void isChecked(List<T> ejbs) throws CheckException {
         if (ejbs != null){
             ejbs.forEach((ejb) -> {
                 isChecked(ejb);
