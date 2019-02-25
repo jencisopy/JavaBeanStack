@@ -387,14 +387,15 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
             authConsumerToken.setData(data.toString());
+            if (uuidDevice != null) {
+                authConsumerToken.setUuidDevice(uuidDevice);                
+            }
             String token = signTokenData(authConsumerToken);
             authConsumerToken.setToken(token);
             String tokenSecret = getTokenSecret(authConsumerToken);
             authConsumerToken.setTokenSecret(tokenSecret);
             if (uuidDevice == null) {
                 authConsumerToken.setUuidDevice(tokenSecret);
-            } else {
-                authConsumerToken.setUuidDevice(uuidDevice);
             }
             IDataResult dataResult = dao.persist(null, authConsumerToken);
             if (!dataResult.isSuccessFul()) {
