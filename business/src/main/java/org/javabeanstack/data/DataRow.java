@@ -31,6 +31,7 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.exceptions.FieldException;
+import org.javabeanstack.util.Fn;
 
 /**
  * Es la clase base de todos los modelos ejb mapeados a las tablas o vistas.
@@ -442,6 +443,8 @@ public class DataRow implements IDataRow, Cloneable {
                !DataInfo.isFieldExist(this.getClass(), "idempresa")){
             return true;
         }
-        return this.getValue("idcompany") == idcompany || this.getValue("idempresa") == idcompany;
+        Long idempresaThis = Fn.nvl((Long)this.getValue("idempresa"),0L);
+        Long idcompanyThis = Fn.nvl((Long)this.getValue("idcompany"),0L);
+        return idcompanyThis.equals(idcompany) || idempresaThis.equals(idcompany);
     }
 }
