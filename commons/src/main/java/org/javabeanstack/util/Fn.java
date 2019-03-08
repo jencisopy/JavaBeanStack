@@ -22,6 +22,8 @@
 package org.javabeanstack.util;
 
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -202,5 +204,26 @@ public class Fn {
      */
     public static String bytesToBase64Url(byte[] text){
         return Base64.getUrlEncoder().withoutPadding().encodeToString(text);
+    }
+    
+    /**
+     * 
+     * @param params
+     * @return 
+     */
+    public static Map<String, Object> queryParams(Object... params){
+        Map<String, Object> result = new HashMap();
+        int c = 0;
+        Object key = null;
+        for (Object param:params){
+            c++;
+            if (c%2 != 0){
+                key = param;
+            }
+            else if (key != null && !key.toString().isEmpty()){
+                result.put(key.toString(), param);                
+            }
+        }
+        return result;
     }
 }

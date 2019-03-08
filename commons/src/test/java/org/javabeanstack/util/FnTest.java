@@ -25,6 +25,8 @@ package org.javabeanstack.util;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import org.javabeanstack.crypto.CipherUtil;
@@ -234,6 +236,25 @@ public class FnTest {
         String expResult = CipherUtil.encryptBlowfishToBase64(clearText, key);
         String result = Fn.bytesToBase64(bytes);
         
+        assertEquals(expResult, result);
+    }
+    
+    /**
+     * Test of bytesToBase64 method, of class Fn.
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testQueryParams() throws Exception {
+        System.out.println("queryParams");
+        Map<String, Object> expResult = new HashMap();
+        expResult.put("idempresa", 1L);
+        expResult.put("idmoneda", 2L);
+        Map<String, Object> result = Fn.queryParams("idempresa",1L,"idmoneda",2L);
+        assertEquals(expResult, result);
+
+        expResult = new HashMap();
+        expResult.put("idempresa", 1L);
+        result = Fn.queryParams("idempresa",1L,"idmoneda");
         assertEquals(expResult, result);
     }
 }
