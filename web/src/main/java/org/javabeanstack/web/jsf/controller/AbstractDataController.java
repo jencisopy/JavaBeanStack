@@ -308,7 +308,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      *
      * @return archivo xhtml linkeado a este controller
      */
-    protected String getWebFileName() {
+    public String getWebFileName() {
         String uri = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getRequestURI();
         int indexat = uri.lastIndexOf("/");
         uri = uri.substring(indexat + 1).toLowerCase();

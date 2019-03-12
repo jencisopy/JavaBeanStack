@@ -50,7 +50,7 @@ public interface IAppAuthConsumer extends IDataRow {
     void setCryptoAlgorithm(String algorithm);
     
     Boolean getBlocked();
-    void setBlocked(boolean blocked);
+    void setBlocked(Boolean blocked);
     
     String getAuthURL();
     void setAuthURL(String authURL);

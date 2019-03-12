@@ -242,7 +242,7 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     }
 
     @Override
-    public void setBlocked(boolean blocked) {
+    public void setBlocked(Boolean blocked) {
         this.blocked = blocked;
     }
 
