@@ -169,6 +169,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             IAppAuthConsumer authConsumer = getAuthConsumerClass().newInstance();
             authConsumer.setConsumerName(consumerName);
             authConsumer.setExpiredDate(expiredDate);
+            authConsumer.setBlocked(false);
             authConsumer.setConsumerKey(createConsumerKey(authConsumer));
             IDataResult dataResult = dao.persist(null, authConsumer);
             if (dataResult.isSuccessFul()) {
@@ -194,6 +195,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerNew.setConsumerName(authConsumer.getConsumerName());
             authConsumerNew.setExpiredDate(authConsumer.getExpiredDate());
             authConsumerNew.setConsumerKey(authConsumer.getConsumerKey());
+            authConsumerNew.setBlocked(authConsumer.getBlocked());
 
             IDataResult dataResult = dao.persist(null, authConsumerNew);
             if (!dataResult.isSuccessFul()) {
