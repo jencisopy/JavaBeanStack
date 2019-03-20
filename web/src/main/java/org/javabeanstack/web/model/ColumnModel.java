@@ -1,13 +1,12 @@
 package org.javabeanstack.web.model;
 
-import java.io.Serializable;
 import org.javabeanstack.util.Fn;
 
 /**
  * Modelo de columnas utilizado para manejar dataTables con columnas dinamicas
  * @author mtrinidad
  */ 
-public class ColumnModel implements Serializable {
+public class ColumnModel implements IColumnModel {
 
     private String header;
     private Integer property;
@@ -69,6 +68,7 @@ public class ColumnModel implements Serializable {
      * Devuelve encabezado de la columna
      * @return 
      */
+    @Override
     public String getHeader() {
         return header;
     }
@@ -77,6 +77,7 @@ public class ColumnModel implements Serializable {
      * Devuelve el nro de elemento al cual corresponde una columna
      * @return 
      */
+    @Override
     public Integer getProperty() {
         return property;
     }
@@ -85,6 +86,7 @@ public class ColumnModel implements Serializable {
      * Establece la cabecera para una columna
      * @param header 
      */
+    @Override
     public void setHeader(String header) {
         this.header = header;
     }
@@ -93,6 +95,7 @@ public class ColumnModel implements Serializable {
      * Establece el nro de elemento al cual corresponde una columna
      * @param property 
      */
+    @Override
     public void setProperty(Integer property) {
         this.property = property;
     }
@@ -101,6 +104,7 @@ public class ColumnModel implements Serializable {
      * Devuelve nombre de la columna, esto cuando se tienen valores fijos y no dinamicos
      * @return 
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -109,66 +113,82 @@ public class ColumnModel implements Serializable {
      * Establece valores de la columna, cuando se tienen valores fijos y no dinamicos
      * @param name 
      */
+    @Override
     public void setName(String name) {
         this.name = name;
     }    
 
+    @Override
     public Boolean getVisible() {
         return visible;
     }
 
+    @Override
     public void setVisible(Boolean visible) {
         this.visible = visible;
     }    
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }    
 
+    @Override
     public String getLink() {
         return link;
     }
 
+    @Override
     public void setLink(String link) {
         this.link = link;
     }
 
+    @Override
     public String getStyle() {
         return style;
     }
 
+    @Override
     public void setStyle(String style) {
         this.style = style;
     }
 
+    @Override
     public int getWidth() {
         return width;
     }
 
+    @Override
     public void setWidth(int width) {
         this.width = width;
     }
 
+    @Override
     public String getFilterFunction() {
         return filterFunction;
     }
 
+    @Override
     public void setFilterFunction(String filterFunction) {
         this.filterFunction = filterFunction;
     }
 
+    @Override
     public String getMask() {
         return mask;
     }
 
+    @Override
     public void setMask(String mask) {
         this.mask = mask;
     }
 
+    @Override
     public String getOrder() {
         if (Fn.nvl(order, "").isEmpty()){
             order = name;
@@ -176,10 +196,12 @@ public class ColumnModel implements Serializable {
         return order;
     }
 
+    @Override
     public void setOrder(String order) {
         this.order = order;
     }
 
+    @Override
     public String getFilter() {
         if (Fn.nvl(filter, "").isEmpty()){
             filter = name;
@@ -187,38 +209,47 @@ public class ColumnModel implements Serializable {
         return filter;
     }
 
+    @Override
     public void setFilter(String filter) {
         this.filter = filter;
     }
 
+    @Override
     public Boolean getSortable() {
         return sortable;
     }
 
+    @Override
     public void setSortable(Boolean sortable) {
         this.sortable = sortable;
     }
 
+    @Override
     public Boolean getFilterable() {
         return filterable;
     }
 
+    @Override
     public void setFilterable(Boolean filterable) {
         this.filterable = filterable;
     }
 
+    @Override
     public Boolean getExportable() {
         return exportable;
     }
 
+    @Override
     public void setExportable(Boolean exportable) {
         this.exportable = exportable;
     }
 
+    @Override
     public Boolean getToggleable() {
         return toggleable;
     }
 
+    @Override
     public void setToggleable(Boolean toggleable) {
         this.toggleable = toggleable;
     }

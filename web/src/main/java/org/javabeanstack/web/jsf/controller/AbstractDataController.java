@@ -21,7 +21,6 @@
  */
 package org.javabeanstack.web.jsf.controller;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,18 +38,19 @@ import org.primefaces.event.SelectEvent;
 import org.primefaces.event.ToggleEvent;
 import org.primefaces.model.Visibility;
 
-
 import org.javabeanstack.datactrl.AbstractDataObject;
 import org.javabeanstack.web.util.FacesContextUtil;
 
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
+import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.security.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.events.IDataCtrlEvents;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.web.model.ColumnModel;
-
+import org.javabeanstack.web.model.IColumnModel;
 
 /**
  * Controller para los ABMs de las tablas, hereda funcionalidades de
@@ -102,9 +102,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     private Boolean noLazyRowsLoad = false;
     private String refreshUIComponent;
-    private String formViewSelected = "DEFAULT";
-    private Boolean tableDetailShow = true;
-    
+    private String formViewSelected = "VIEW";
+    private Boolean tableDetailShow = false;
+    private IDataCtrlEvents dataCtrlEvents = new DataCtrlEventLocal();
+
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
      * metodo onCompleteText
@@ -121,6 +122,15 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.setType(type);
     }
 
+    public IDataCtrlEvents getDataCtrlEvents() {
+        return dataCtrlEvents;
+    }
+
+    public void setDataCtrlEvents(IDataCtrlEvents dataCtrlEvents) {
+        this.dataCtrlEvents = dataCtrlEvents;
+    }
+
+    
     /**
      * Acción a realizar o en ejecución, (agregar, modificar, borrar, consultar
      * etc)
@@ -337,9 +347,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @param event
      */
     public void onRowSelect(SelectEvent event) {
-        int recno = this.getDataRows().indexOf((T) event.getObject());
-        if (this.goTo(recno)) {
-            this.rowSelected = getRow();
+        if (dataCtrlEvents != null) {
+            dataCtrlEvents.onRowSelect(this, event);
         }
     }
 
@@ -347,18 +356,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Se ejecuta posterior a la ejecución del filtrado de la grilla
      */
     public void onRowFilter() {
-        if (Strings.isNullorEmpty(tableTextFooter)) {
-            return;
+        if (dataCtrlEvents != null) {
+            dataCtrlEvents.onRowFilter(this);
         }
-        UIComponent text = facesCtx.findComponent(tableTextFooter);
-        if (lazyDataRows != null) {
-            text.getAttributes().put("value", lazyDataRows.getRowCount());
-        } else if (rowsFiltered == null) {
-            text.getAttributes().put("value", getDataRows().size());
-        } else {
-            text.getAttributes().put("value", rowsFiltered.size());
-        }
-        FacesContext.getCurrentInstance().getPartialViewContext().getRenderIds().add(tableTextFooter);
     }
 
     /**
@@ -366,13 +366,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      *
      * @param event
      */
-    public void onColReorder(javax.faces.event.AjaxBehaviorEvent event) {
-        tableUIColumns = new ArrayList<>();
-        DataTable table = (DataTable) event.getSource();
-        tableUIColumns.clear();
-        for (org.primefaces.component.api.UIColumn column : table.getColumns()) {
-            UIComponent colComponent = (UIComponent) column;
-            tableUIColumns.add((UIColumn) colComponent);
+    public void onColumnReorder(javax.faces.event.AjaxBehaviorEvent event) {
+        if (dataCtrlEvents != null) {
+            dataCtrlEvents.onColumnReorder(this, event);
         }
     }
 
@@ -382,22 +378,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @param pToggleEvent
      */
     public void onColumnToggle(ToggleEvent pToggleEvent) {
-        Map<String, String> params = facesCtx.getRequestParameterMap();
-
-        String nameComponent = params.get("nameComponent");
-
-        Boolean visible = pToggleEvent.getVisibility() == Visibility.VISIBLE;
-        Integer index = (Integer) pToggleEvent.getData();
-
-        UIComponent table = facesCtx.findComponent(nameComponent);
-        if (tableUIColumns == null) {
-            table.getChildren().get(index).getAttributes().put("exportable", visible);
-        } else {
-            String idcolumn;
-            idcolumn = tableUIColumns.get(index).getAttributes().get("id").toString();
-            if (idcolumn != null) {
-                table.findComponent(idcolumn).getAttributes().put("exportable", visible);
-            }
+        if (dataCtrlEvents != null) {
+            dataCtrlEvents.onColumnToggle(this, pToggleEvent);
         }
     }
 
@@ -408,15 +390,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @return lista de registros que cumplen la condición del filtro.
      */
     public List<T> onCompleteText(String text) {
-        if (text.isEmpty()) {
-            this.setFilter("");
-        } else {
-            String filter = getCompleteTextFilter(text);
-            this.setFilter(filter);
+        if (dataCtrlEvents != null) {
+            return dataCtrlEvents.onCompleteText(this, text);
         }
-        this.requery();
-        List<T> rows = this.getDataRows();
-        return rows;
+        return null;
     }
 
     /**
@@ -675,10 +652,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
     }
 
-    protected void loadViewColumns() {
-    }
-
-    public List<ColumnModel> getColumns() {
+    public List<IColumnModel> getColumns() {
         return new ArrayList();
     }
 
@@ -686,16 +660,14 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return facesCtx.logout();
     }
 
-
-
     public void setRowForDetail(T rowForDetail) {
         setRowSelected(rowForDetail);
         int recno = this.getDataRows().indexOf((T) rowForDetail);
-        this.recnoIndex=recno;        
+        this.recnoIndex = recno;
         this.goTo(recno);
         PrimeFaces instance = PrimeFaces.current();
-        String command = "selectRow("+recno+")";        
-        instance.executeScript(command);        
+        String command = "selectRow(" + recno + ")";
+        instance.executeScript(command);
     }
 
     public Integer getRecnoIndex() {
@@ -706,5 +678,89 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.recnoIndex = recnoIndex;
     }
 
-    
+    class DataCtrlEventLocal implements IDataCtrlEvents<IDataObject> {
+
+        @Override
+        public Map<String, List<IColumnModel>> getFormViewsColumns() {
+            return null;
+        }
+        
+        @Override
+        public void onRowSelect(IDataObject context, Object event) {
+            int recno = getDataRows()
+                    .indexOf((T) ((org.primefaces.event.SelectEvent) event).getObject());
+            if (context.goTo(recno)) {
+                rowSelected = getRow();
+            }
+        }
+
+        @Override
+        public void onRowFilter(IDataObject context) {
+            if (Strings.isNullorEmpty(tableTextFooter)) {
+                return;
+            }
+            UIComponent text = facesCtx.findComponent(tableTextFooter);
+            if (lazyDataRows != null) {
+                text.getAttributes().put("value", lazyDataRows.getRowCount());
+            } else if (rowsFiltered == null) {
+                text.getAttributes().put("value", getDataRows().size());
+            } else {
+                text.getAttributes().put("value", rowsFiltered.size());
+            }
+            FacesContext.getCurrentInstance().getPartialViewContext().getRenderIds().add(tableTextFooter);
+        }
+
+        @Override
+        public void onColumnSetView(IDataObject context, String form, String viewName) {
+        }
+
+        @Override
+        public void onColumnReorder(IDataObject context, Object event) {
+            tableUIColumns = new ArrayList<>();
+            DataTable table = (DataTable) ((javax.faces.event.AjaxBehaviorEvent) event).getSource();
+            tableUIColumns.clear();
+            for (org.primefaces.component.api.UIColumn column : table.getColumns()) {
+                UIComponent colComponent = (UIComponent) column;
+                tableUIColumns.add((UIColumn) colComponent);
+            }
+        }
+
+        @Override
+        public void onColumnToggle(IDataObject context, Object pToggleEvent) {
+            Map<String, String> params = facesCtx.getRequestParameterMap();
+
+            String nameComponent = params.get("nameComponent");
+
+            Boolean visible = ((ToggleEvent) pToggleEvent).getVisibility() == Visibility.VISIBLE;
+            Integer index = (Integer) ((ToggleEvent) pToggleEvent).getData();
+
+            UIComponent table = facesCtx.findComponent(nameComponent);
+            if (tableUIColumns == null) {
+                table.getChildren().get(index).getAttributes().put("exportable", visible);
+            } else {
+                String idcolumn;
+                idcolumn = tableUIColumns.get(index).getAttributes().get("id").toString();
+                if (idcolumn != null) {
+                    table.findComponent(idcolumn).getAttributes().put("exportable", visible);
+                }
+            }
+        }
+
+        @Override
+        public void onChange(IDataObject context, String fieldname) {
+        }
+
+        @Override
+        public List<T> onCompleteText(IDataObject context, String text) {
+            if (text.isEmpty()) {
+                setFilter("");
+            } else {
+                String filter = getCompleteTextFilter(text);
+                setFilter(filter);
+            }
+            requery();
+            List<T> rows = getDataRows();
+            return rows;
+        }
+    }
 }
