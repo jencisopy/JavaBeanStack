@@ -49,8 +49,10 @@ import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.events.IDataCtrlEvents;
 import org.javabeanstack.util.Strings;
-import org.javabeanstack.web.model.ColumnModel;
 import org.javabeanstack.web.model.IColumnModel;
+import org.javabeanstack.xml.IXmlDom;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Controller para los ABMs de las tablas, hereda funcionalidades de
@@ -761,6 +763,15 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             requery();
             List<T> rows = getDataRows();
             return rows;
+        }
+
+        @Override
+        public IXmlDom<Document, Element> getXmlResource() {
+            return null;
+        }
+
+        @Override
+        public void setXmlResource(IDataObject context) {
         }
     }
 }
