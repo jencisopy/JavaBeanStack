@@ -22,6 +22,8 @@
 
 package org.javabeanstack.web.jsf.controller;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,7 @@ import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.util.Dates;
 
 /**
  *
@@ -205,7 +208,11 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 params.put(key, Integer.valueOf((String) e.getValue()));
             } else if (Short.class.isAssignableFrom(clase)) {
                 params.put(key, Short.valueOf((String) e.getValue()));
-            } else  {
+            } else if (BigDecimal.class.isAssignableFrom(clase)){
+                params.put(key, new BigDecimal((String)e.getValue()));
+            } else if (Date.class.isAssignableFrom(clase)){
+                params.put(key, Dates.toDate((String)e.getValue()));
+            }else  {
                 params.put(key, e.getValue());
             }
             

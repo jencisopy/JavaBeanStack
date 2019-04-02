@@ -1127,7 +1127,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         parameters.entrySet().forEach(entry -> {
             if (queryString != null) {
                 if (Strings.findString(":" + entry.getKey(), queryString) >= 0) {
-                    query.setParameter(entry.getKey(), entry.getValue());
+                    query.setParameter(entry.getKey(), entry.getValue());                        
                 }
             } else {
                 query.setParameter(entry.getKey(), entry.getValue());
