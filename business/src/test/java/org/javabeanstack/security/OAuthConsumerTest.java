@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.crypto.SecretKey;
-import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBLinkInfo;
@@ -129,7 +128,7 @@ public class OAuthConsumerTest extends TestClass {
         data.addOtherDataValue("dato2", "dato2");
         OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
-        token = instance.createToken(consumerKey, data, uuidDevice);
+        token = instance.createToken(consumerKey, data, uuidDevice,"Juan Perez","juan@prueba.com");
         assertFalse(token.isEmpty());
         tokenSecret = instance.getLastAuthConsumerToken().getTokenSecret();
         //

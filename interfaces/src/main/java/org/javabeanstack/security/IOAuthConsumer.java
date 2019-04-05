@@ -40,6 +40,7 @@ public interface IOAuthConsumer {
     IAppAuthConsumer createAuthConsumer(IAppAuthConsumer authConsumer);
     String createToken(String consumerKey, IOAuthConsumerData data)  throws Exception ;
     String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice)  throws Exception;
+    String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice, String userName, String userEmail)  throws Exception;    
     String createToken(IAppAuthConsumerToken authConsumerToken) throws Exception;
     IAppAuthConsumer findAuthConsumer(String consumerKey);
     IAppAuthConsumerToken findAuthToken(String token);

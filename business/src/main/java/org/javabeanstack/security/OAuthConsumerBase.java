@@ -356,7 +356,23 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice) throws TokenGenericException {
-        if (uuidDevice != null){
+        return createToken(consumerKey, data, uuidDevice, null, null);
+    }
+
+    /**
+     * Crea y graba en la base de datos el registro de un token de autorización
+     *
+     * @param consumerKey clave del consumidor.
+     * @param data información del token.
+     * @param uuidDevice identificador unico del dispositivo.
+     * @param userName
+     * @param userEmail
+     * @return valor del token.
+     */
+    @Override
+    public String createToken(String consumerKey, IOAuthConsumerData data, 
+            String uuidDevice, String userName, String userEmail) throws TokenGenericException {
+        if (uuidDevice != null) {
             //Verificar existencia de un token anterior generado con las mismas especificaciones
             // ConsumerKey + uuidDevice
             IAppAuthConsumerToken tokenExists = findAuthToken(consumerKey, uuidDevice);
@@ -365,11 +381,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 if (tokenExists.getBlocked()) {
                     throw new TokenGenericException("Este token ya existe y fue bloqueado");
                 }
-                try{
+                try {
                     // si no eliminar token para crear uno nuevo.
                     dao.remove(null, tokenExists);
-                }
-                catch (Exception ex){
+                } catch (Exception ex) {
                     ErrorManager.showError(ex, LOGGER);
                 }
             }
@@ -384,13 +399,18 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                         "select o from AppUserLight o where code = :userLogin",
                         params);
                 data.setIdAppUser(usuario.getIduser());
+                data.setAdministrator(false);
+                //Si es administrador o analista
+                if (usuario.getRol().contains("20") || usuario.getRol().contains("00")){
+                    data.setAdministrator(true);
+                }
             }
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
             authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
             authConsumerToken.setData(data.toString());
             if (uuidDevice != null) {
-                authConsumerToken.setUuidDevice(uuidDevice);                
+                authConsumerToken.setUuidDevice(uuidDevice);
             }
             String token = signTokenData(authConsumerToken);
             authConsumerToken.setToken(token);
@@ -399,6 +419,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             if (uuidDevice == null) {
                 authConsumerToken.setUuidDevice(tokenSecret);
             }
+            authConsumerToken.setUserEmail(userEmail);
+            authConsumerToken.setUserName(userName);
             IDataResult dataResult = dao.persist(null, authConsumerToken);
             if (!dataResult.isSuccessFul()) {
                 return "";
@@ -419,8 +441,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public String createToken(IAppAuthConsumerToken authConsumerToken) throws TokenGenericException {
-        if (authConsumerToken.getAppAuthConsumerKey() != null &&
-                authConsumerToken.getUuidDevice() != null) {
+        if (authConsumerToken.getAppAuthConsumerKey() != null
+                && authConsumerToken.getUuidDevice() != null) {
             //Verificar existencia de un token anterior generado con las mismas especificaciones
             // ConsumerKey + uuiDevice
             IAppAuthConsumerToken tokenExists
@@ -431,11 +453,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 if (tokenExists.getBlocked()) {
                     throw new TokenGenericException("Este token fue bloqueado");
                 }
-                try{
+                try {
                     // si no eliminar token para crear uno nuevo.
                     dao.remove(null, tokenExists);
-                }
-                catch (Exception ex){
+                } catch (Exception ex) {
                     ErrorManager.showError(ex, LOGGER);
                 }
             }

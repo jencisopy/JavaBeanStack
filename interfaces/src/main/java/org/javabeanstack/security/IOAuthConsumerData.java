@@ -34,6 +34,8 @@ public interface IOAuthConsumerData extends Serializable {
     void setIdAppUser(Long iduser);
     Long getIdCompany();
     void setIdCompany(Long idcompany);
+    boolean isAdministrator();
+    void setAdministrator(boolean value);
     Map<String, String> getOtherData();
     void setOtherData(Map<String, String> otherData);
     void addOtherDataValue(String key, String value);

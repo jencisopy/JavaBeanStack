@@ -21,6 +21,7 @@
 * MA 02110-1301  USA
  */
 package org.javabeanstack.model;
+import java.util.Date;
 import org.javabeanstack.data.IDataRow;
 
 /**
@@ -42,7 +43,16 @@ public interface IAppAuthConsumerToken extends IDataRow {
     
     Boolean getBlocked();
     void setBlocked(boolean blocked);
-    
+
+    String getUserName();
+    void setUserName(String userName);
+
+    String getUserEmail();
+    void setUserEmail(String userEmail);
+
+    Date getLastUsed();
+    void setLastUsed(Date lastUsed);
+
     IAppAuthConsumer getAppAuthConsumerKey();
     void setAppAuthConsumerKey(IAppAuthConsumer authConsumer);
 }

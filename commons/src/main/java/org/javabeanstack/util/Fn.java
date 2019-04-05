@@ -130,6 +130,8 @@ public class Fn {
             return true;
         } else if ("0".equals(value.toString())) {
             return false;
+        } else if ("".equals(value.toString())) {
+            return false;
         }
         return false;
     }

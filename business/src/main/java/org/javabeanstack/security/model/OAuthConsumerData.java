@@ -38,6 +38,7 @@ public class OAuthConsumerData implements IOAuthConsumerData{
     private String userPass = "";
     private Long idAppUser = 0L;
     private Long idCompany = 0L;
+    private boolean administrator = false;
     private Map<String, String> otherData = new TreeMap();
 
     public OAuthConsumerData(){
@@ -87,6 +88,7 @@ public class OAuthConsumerData implements IOAuthConsumerData{
     public String toString() {
         String result = "idappuser="+nvl(idAppUser,"0").toString().trim()+"\n";
         result += "idcompany="+nvl(idCompany,0).toString().trim()+"\n";
+        result += "administrator="+nvl(administrator,false).toString().trim()+"\n";
         result += getOtherDataString(otherData);
         return result;
     }
@@ -122,4 +124,14 @@ public class OAuthConsumerData implements IOAuthConsumerData{
         }
         return result;
     }    
+
+    @Override
+    public boolean isAdministrator() {
+        return administrator;
+    }
+
+    @Override
+    public void setAdministrator(boolean value) {
+        administrator = value;
+    }
 }
