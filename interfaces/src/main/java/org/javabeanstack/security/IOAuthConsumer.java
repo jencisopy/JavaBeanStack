@@ -47,7 +47,7 @@ public interface IOAuthConsumer {
     IAppAuthConsumerToken findAuthToken(String consumerKey, String uuidOrTokenSecret);
     boolean dropAuthConsumer(String consumerKey);
     boolean dropToken(String consumerKey, String uuidOrTokenSecret);
-    boolean blockToken(String consumerKey, String uuidOrTokenSecret);
+    boolean changeTokenStatus(String consumerKey, String uuidOrTokenSecret, String status);
     Class<IAppAuthConsumer> getAuthConsumerClass();
     Class<IAppAuthConsumerToken> getAuthConsumerTokenClass();
     String getToken(String consumerKey, String uuidOrTokenSecret);

@@ -547,16 +547,22 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      *
      * @param consumerKey clave del consumidor.
      * @param uuidOrTokenSecret identificador del dispositivo.
+     * @param status (block,unblock)
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public boolean blockToken(String consumerKey, String uuidOrTokenSecret) {
+    public boolean changeTokenStatus(String consumerKey, String uuidOrTokenSecret, String status) {
         IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
         if (authConsumerToken == null) {
             return false;
         }
         try {
-            authConsumerToken.setBlocked(true);
+            if (status.equalsIgnoreCase("block")){
+                authConsumerToken.setBlocked(true);
+            }
+            if (status.equalsIgnoreCase("unblock")){
+                authConsumerToken.setBlocked(false);
+            }
             IDataResult dataResult = dao.merge(null, authConsumerToken);
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
