@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import org.apache.log4j.Logger;
 
 /**
@@ -33,9 +34,10 @@ import org.apache.log4j.Logger;
  * @author Jorge Enciso
  */
 public class Dates {
-    private Dates(){
+
+    private Dates() {
     }
-    
+
     /**
      * Convierte una cadena a una fecha
      *
@@ -139,12 +141,15 @@ public class Dates {
 
         return calendar.getTime();
     }
+
     /**
      * Suma un periodo a una fecha
-     * @param date  fecha
-     * @param quantity  periodo
-     * @param interval  tipo de intervalo (dias, segundos, meses) ejemplo Calendar.DAY_OF_YEAR
-     * @return fecha resultado de la suma del periodo 
+     *
+     * @param date fecha
+     * @param quantity periodo
+     * @param interval tipo de intervalo (dias, segundos, meses) ejemplo
+     * Calendar.DAY_OF_YEAR
+     * @return fecha resultado de la suma del periodo
      */
     public static Date sum(Date date, int quantity, int interval) {
         if (quantity == 0) {
@@ -155,12 +160,13 @@ public class Dates {
         calendar.add(interval, quantity);
         return calendar.getTime();
     }
-    
+
     /**
      * Suma días a una fecha
+     *
      * @param date fecha
      * @param days dias a sumar
-     * @return fecha resultante de la suma de los días 
+     * @return fecha resultante de la suma de los días
      */
     public static Date sumDays(Date date, int days) {
         if (days == 0) {
@@ -174,6 +180,7 @@ public class Dates {
 
     /**
      * Suma segundos a una fecha
+     *
      * @param date fecha
      * @param seconds segundos
      * @return fecha resultante de la suma de los segundos.
@@ -187,15 +194,31 @@ public class Dates {
         calendar.add(Calendar.SECOND, seconds);
         return calendar.getTime();
     }
-    
+
     /**
      * Devuelve el ultimo momento de una fecha
+     *
      * @param date fecha
      * @return ultimo momento de una fecha ejemplo 31/12/2017 23:59:59
      */
-    public static Date getLastTimeOfDay(Date date){
+    public static Date getLastTimeOfDay(Date date) {
         date = Dates.sum(date, 1, Calendar.DAY_OF_YEAR);
         date = Dates.sum(date, -1, Calendar.SECOND);
         return date;
+    }
+
+    public static Long daysInterval(Date start, Date end) {
+        if (start == null || end == null){
+            return null;
+        }
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(start);
+        cal2.setTime(end);
+        long time1 = cal1.getTimeInMillis();
+        long time2 = cal2.getTimeInMillis();
+        // Diferencias en dias
+        long days = (time2 - time1) / (60 * 1000 * 60 * 24);
+        return days;
     }
 }

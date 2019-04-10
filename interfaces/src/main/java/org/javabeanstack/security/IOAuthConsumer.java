@@ -46,7 +46,8 @@ public interface IOAuthConsumer {
     IAppAuthConsumerToken findAuthToken(String token);
     IAppAuthConsumerToken findAuthToken(String consumerKey, String uuidOrTokenSecret);
     boolean dropAuthConsumer(String consumerKey);
-    boolean dropToken(String consumerKey, String tokenSecret);
+    boolean dropToken(String consumerKey, String uuidOrTokenSecret);
+    boolean blockToken(String consumerKey, String uuidOrTokenSecret);
     Class<IAppAuthConsumer> getAuthConsumerClass();
     Class<IAppAuthConsumerToken> getAuthConsumerTokenClass();
     String getToken(String consumerKey, String uuidOrTokenSecret);
@@ -55,6 +56,7 @@ public interface IOAuthConsumer {
     String getTokenCallbackUrl(String consumerKey, String uuidOrTokenSecret);
     boolean requestToken(String consumerKey);
     boolean requestToken(String consumerKey, String uuidDevice);    
+    boolean requestToken(String consumerKey, String uuidDevice, String userName, String userEmail);    
     boolean isValidToken(String token);
     boolean isValidToken(String token, boolean noCheckCredentials);
     String getDataKeyValue(String token, String property);

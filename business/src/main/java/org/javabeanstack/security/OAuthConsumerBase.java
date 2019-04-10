@@ -302,9 +302,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean requestToken(String consumerKey) {
-        return requestToken(consumerKey, null);
+        return requestToken(consumerKey, null, null, null);
     }
 
+    
     /**
      * Graba una solicitud de token, debe completarse el proceso en otro
      * programa.
@@ -315,6 +316,21 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean requestToken(String consumerKey, String uuidDevice) {
+        return requestToken(consumerKey, uuidDevice, null, null);
+    }    
+    
+    /**
+     * Graba una solicitud de token, debe completarse el proceso en otro
+     * programa.
+     *
+     * @param consumerKey clave del consumidor
+     * @param uuidDevice identificador unico del dispositivo
+     * @param userName
+     * @param userEmail
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    @Override
+    public boolean requestToken(String consumerKey, String uuidDevice, String userName, String userEmail) {
         try {
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
             authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
@@ -323,6 +339,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerToken.setToken(token);
             authConsumerToken.setTokenSecret(token);
             authConsumerToken.setUuidDevice(token);
+            authConsumerToken.setUserName(userName);
+            authConsumerToken.setUserEmail(userEmail);
             if (uuidDevice != null) {
                 authConsumerToken.setUuidDevice(uuidDevice);
             }
@@ -506,12 +524,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * Elimina un token de la base de datos.
      *
      * @param consumerKey clave del consumidor.
-     * @param tokenSecret clave del token.
+     * @param uuidOrTokenSecret identificador del dispositivo.
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public boolean dropToken(String consumerKey, String tokenSecret) {
-        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, tokenSecret);
+    public boolean dropToken(String consumerKey, String uuidOrTokenSecret) {
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
         if (authConsumerToken == null) {
             return false;
         }
@@ -524,6 +542,29 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         return false;
     }
 
+    /**
+     * Bloquea un token de la base de datos.
+     *
+     * @param consumerKey clave del consumidor.
+     * @param uuidOrTokenSecret identificador del dispositivo.
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    @Override
+    public boolean blockToken(String consumerKey, String uuidOrTokenSecret) {
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
+        if (authConsumerToken == null) {
+            return false;
+        }
+        try {
+            authConsumerToken.setBlocked(true);
+            IDataResult dataResult = dao.merge(null, authConsumerToken);
+            return dataResult.isSuccessFul();
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return false;
+    }
+    
     /**
      * Crea un consumerKey y configura el registro AppAuthConsumer para que
      * valide el consumerKey

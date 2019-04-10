@@ -128,7 +128,11 @@ public class Fn {
             return (Boolean) value;
         } else if ("1".equals(value.toString())) {
             return true;
+        } else if ("true".equalsIgnoreCase(value.toString())) {
+            return true;
         } else if ("0".equals(value.toString())) {
+            return false;
+        } else if ("false".equalsIgnoreCase(value.toString())) {            
             return false;
         } else if ("".equals(value.toString())) {
             return false;

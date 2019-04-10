@@ -11,6 +11,7 @@ import org.javabeanstack.ws.model.IMessageResponse;
 public class MessageResponse implements IMessageResponse {
     private String id;
     private String link;    
+    private String message;
 
     @Override
     public String getId() {
@@ -30,6 +31,14 @@ public class MessageResponse implements IMessageResponse {
     @Override
     public void setLink(String link) {
         this.link = link;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
 
