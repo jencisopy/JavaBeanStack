@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.time.DateUtils;
 import org.javabeanstack.crypto.DigestUtil;
-import org.javabeanstack.security.exceptions.TypeAuthInvalid;
+import org.javabeanstack.exceptions.TypeAuthInvalid;
 import org.javabeanstack.security.model.ClientAuth;
 import org.javabeanstack.security.model.ServerAuth;
 import org.javabeanstack.util.Dates;
@@ -72,7 +72,7 @@ public class DigestAuth {
      * @param realm entorno, grupo o base donde se autentica.
      * @param qop quality of protection (para digest los valores posibles
      * "auth","auth-int")
-     * @throws org.javabeanstack.security.exceptions.TypeAuthInvalid
+     * @throws org.javabeanstack.exceptions.TypeAuthInvalid
      */
     public DigestAuth(String typeAuth, String realm, String qop) throws TypeAuthInvalid {
         defaultAttributes();
@@ -151,7 +151,7 @@ public class DigestAuth {
      * Crea un objeto que se utilizará para autenticar la petición del cliente.
      *
      * @return objeto que se utilizará para autenticar la petición.
-     * @throws org.javabeanstack.security.exceptions.TypeAuthInvalid
+     * @throws org.javabeanstack.exceptions.TypeAuthInvalid
      */
     public ServerAuth createResponseAuth() throws TypeAuthInvalid {
         return DigestAuth.this.createResponseAuth(type, null, realm);
@@ -161,7 +161,7 @@ public class DigestAuth {
      * Crea un objeto que se utilizará para autenticar la petición del cliente.
      *
      * @return objeto que se utilizará para autenticar la petición.
-     * @throws org.javabeanstack.security.exceptions.TypeAuthInvalid
+     * @throws org.javabeanstack.exceptions.TypeAuthInvalid
      *
      * @param typeAuth tipo de autenticación ("Basic","Digest")
      * @param nonce codigo identificador del objeto autenticador. Si es nulo se
@@ -484,7 +484,7 @@ public class DigestAuth {
      * Setea tipo de autenticación. Valores válidos positbles "Basic" o "Digest"
      *
      * @param type tipo de autenticación.
-     * @throws org.javabeanstack.security.exceptions.TypeAuthInvalid
+     * @throws org.javabeanstack.exceptions.TypeAuthInvalid
      */
     public void setType(String type) throws TypeAuthInvalid {
         // Validar si esta permitido el tipo de autenticación "Digest"                

@@ -25,7 +25,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 import org.apache.log4j.Logger;
 
 /**
@@ -207,6 +206,12 @@ public class Dates {
         return date;
     }
 
+    /**
+     * Dias entre dos fechas
+     * @param start fecha inicial
+     * @param end fecha final
+     * @return cantidad de dias entre las fechas dadas
+     */
     public static Long daysInterval(Date start, Date end) {
         if (start == null || end == null){
             return null;

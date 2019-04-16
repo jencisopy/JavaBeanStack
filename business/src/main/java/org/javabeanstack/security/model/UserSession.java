@@ -21,7 +21,7 @@
 */
 
 
-package org.javabeanstack.security;
+package org.javabeanstack.security.model;
 
 
 import java.util.Date;
@@ -30,6 +30,7 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
+import org.javabeanstack.security.IUserSession;
 
 /**
  * Esta clase guarda información de la sesión de un usuario.

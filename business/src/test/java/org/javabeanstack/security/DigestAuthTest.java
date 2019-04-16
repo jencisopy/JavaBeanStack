@@ -25,7 +25,7 @@ package org.javabeanstack.security;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.javabeanstack.security.exceptions.TypeAuthInvalid;
+import org.javabeanstack.exceptions.TypeAuthInvalid;
 import org.javabeanstack.security.model.ClientAuth;
 import org.javabeanstack.security.model.ServerAuth;
 import org.javabeanstack.util.Strings;
