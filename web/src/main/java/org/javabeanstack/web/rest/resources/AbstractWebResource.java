@@ -88,7 +88,7 @@ public abstract class AbstractWebResource implements IWebResource {
     }
 
     public Boolean verifyToken(String token) {
-        return oAuthConsumer.isValidToken(token);
+        return getOAuthConsumer().isValidToken(token);
     }
 
     protected void setToken(String tokenHeader){
@@ -111,7 +111,7 @@ public abstract class AbstractWebResource implements IWebResource {
                 throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");                
             }
         }
-        IAppCompany appCompanyToken = oAuthConsumer.getCompanyMapped(this.token);
+        IAppCompany appCompanyToken = getOAuthConsumer().getCompanyMapped(this.token);
         if (appCompanyToken != null) {
             if (appCompanyToken.getIdcompanymask() != null) {
                 this.idcompany = appCompanyToken.getIdcompanymask();

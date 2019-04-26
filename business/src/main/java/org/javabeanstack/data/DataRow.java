@@ -447,4 +447,24 @@ public class DataRow implements IDataRow, Cloneable {
         Long idcompanyThis = Fn.nvl((Long)this.getValue("idcompany"),0L);
         return idcompanyThis.equals(idcompany) || idempresaThis.equals(idcompany);
     }
+    
+    /**
+     * Para ejecutarse al llamar a un getter
+     * @param fieldName nombre del atributo
+     */
+    @Override
+    public void onGetter(String fieldName){
+        //Implementar en clases derivadas
+    }
+    
+    /**
+     * Se ejecuta en el setter despues de la asignación 
+     * @param fieldName nombre del atributo
+     * @param fieldValueNew valor nuevo
+     * @param fieldValueOld valor anterior 
+     */
+    @Override
+    public void onSetter(String fieldName, Object fieldValueNew, Object fieldValueOld){
+        //Implementar en clases derivadas
+    }
 }

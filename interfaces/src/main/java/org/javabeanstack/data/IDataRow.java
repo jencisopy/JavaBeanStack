@@ -67,4 +67,6 @@ public interface IDataRow extends Serializable{
     public boolean   equivalent(Object o);
     public boolean   isApplyDBFilter();
     public boolean   checkFieldIdcompany(Long idcompany);
+    public void onGetter(String fieldName);
+    public void onSetter(String fieldName, Object fieldValueNew, Object fieldValueOld);
 }

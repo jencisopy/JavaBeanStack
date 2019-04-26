@@ -28,12 +28,12 @@ import org.javabeanstack.data.DataRow;
 @Table(name = "region", 
         uniqueConstraints = { @UniqueConstraint(columnNames = 
                                                { "idempresa", "codigo"}) })
-@SequenceGenerator(name = "SOME_SEQUENCE", allocationSize = 1, sequenceName = "SOME_SEQUENCE")
+@SequenceGenerator(name = "REGION_SEQ", allocationSize = 1, sequenceName = "REGION_SEQ")
 public class Region extends DataRow implements Serializable {
     private static final Long serialVersionUID = 1L;
     
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SOME_SEQUENCE")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "REGION_SEQ")
     @Basic(optional = false)
     @Column(name = "idregion", unique=true)
     private Long idregion;
