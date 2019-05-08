@@ -28,6 +28,7 @@ import javax.ejb.EJB;
 import org.apache.log4j.Logger;
 import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.log.ILogManager;
+import org.javabeanstack.util.Fn;
 
 /**
  * Su función es la de gestionar los errores del sistema
@@ -102,7 +103,8 @@ public class ErrorManager {
      * @param logger
      */
     public static void showError(Exception ex, Logger logger) {
-        logger.error(getStackCause(ex));
+        String msg = getStackCause(ex);
+        logger.error(msg);
     }
 
     /**
@@ -140,11 +142,11 @@ public class ErrorManager {
      * @return error producido.
      */
     public static String getStackCause(final Throwable err) {
-        String errorMsg = "";
+        String errorMsg = ""; 
         if (err.getCause() != null) {
             errorMsg = ErrorManager.getStackCause(err.getCause());
         }
-        errorMsg += err.getMessage() + "\n";
+        errorMsg += Fn.nvl(err.getMessage(),"") + "\n";
         return errorMsg;
     }
 }
