@@ -51,7 +51,7 @@ import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.security.ISessions;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Fn.nvl;
 import org.javabeanstack.util.Strings;

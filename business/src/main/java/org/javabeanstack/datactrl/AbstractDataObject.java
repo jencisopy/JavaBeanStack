@@ -41,7 +41,7 @@ import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.FieldException;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Strings;
 
 /**

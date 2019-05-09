@@ -1,4 +1,4 @@
-package org.javabeanstack.security;
+package org.javabeanstack.security.model;
 
 import java.io.Serializable;
 import java.util.Date;

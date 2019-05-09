@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.security.ISecManager;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppCompany;
@@ -301,9 +301,9 @@ public abstract class AbstractAuthController extends AbstractController {
                 IUserSession userSession = getSecManager().login2(userLogin, password);
                 if (userSession.getUser() != null) {
                     result = true;
-                    userSession.setIp(getFacesCtx().getIp());
-                    userSession.setHost(getFacesCtx().getHost());
-                    getFacesCtx().getSessionMap().put("userSession", userSession);
+                    if (getFacesCtx().getSessionMap().get("userSession") == null){
+                        getFacesCtx().getSessionMap().put("userSession", userSession);                        
+                    }
                     if (company == null) {
                         // Traer lista de empresas a la que el usuario esta permitido ingresar
                         loadCompanyList(userSession);
@@ -355,6 +355,8 @@ public abstract class AbstractAuthController extends AbstractController {
                 result = false;
                 getFacesCtx().showError("", userSession.getError().getMessage());
             } else {
+                userSession.setIp(getFacesCtx().getIp());
+                userSession.setHost(getFacesCtx().getHost());
                 getFacesCtx().getSessionMap().put("userSession", userSession);
             }
             userSession.setCompany(company);

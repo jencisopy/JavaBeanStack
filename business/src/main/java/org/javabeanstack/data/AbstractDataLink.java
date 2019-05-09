@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppTablesRelation;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Strings;

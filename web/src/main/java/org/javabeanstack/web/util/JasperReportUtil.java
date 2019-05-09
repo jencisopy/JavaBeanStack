@@ -55,7 +55,7 @@ import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.resources.IAppResource;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 
 
 /**

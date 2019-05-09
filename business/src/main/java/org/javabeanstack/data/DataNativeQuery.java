@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.exceptions.SessionError;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;

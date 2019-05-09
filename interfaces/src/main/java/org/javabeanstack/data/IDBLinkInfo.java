@@ -23,7 +23,7 @@ package org.javabeanstack.data;
 
 import java.io.Serializable;
 import org.javabeanstack.security.IOAuthConsumer;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**

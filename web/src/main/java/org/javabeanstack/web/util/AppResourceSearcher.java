@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import org.javabeanstack.resources.IAppResource;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.xml.IXmlDom;
 import org.javabeanstack.xml.XmlDomW3c;
 import org.w3c.dom.Document;

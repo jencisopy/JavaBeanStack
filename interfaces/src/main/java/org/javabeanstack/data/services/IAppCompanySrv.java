@@ -23,7 +23,7 @@ package org.javabeanstack.data.services;
 
 import java.util.List;
 import org.javabeanstack.model.IAppCompany;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 
 /**
  *

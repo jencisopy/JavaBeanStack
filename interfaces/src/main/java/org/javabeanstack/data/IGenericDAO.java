@@ -29,7 +29,7 @@ import java.util.Map;
 import javax.persistence.Query;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.security.IOAuthConsumerData;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 
 
 /**

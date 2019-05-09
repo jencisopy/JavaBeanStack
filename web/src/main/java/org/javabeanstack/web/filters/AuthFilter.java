@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.javabeanstack.io.IOUtil;
 
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 
 
 /**

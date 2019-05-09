@@ -22,6 +22,7 @@
  */
 package org.javabeanstack.security;
 
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.security.model.UserSession;
 import java.io.IOException;
 import java.io.StringReader;

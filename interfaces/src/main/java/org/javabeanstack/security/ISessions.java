@@ -1,5 +1,6 @@
 package org.javabeanstack.security;
 
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.data.IDBLinkInfo;
 
 

@@ -33,7 +33,7 @@ import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.resources.IAppResource;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.io.IOUtil;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import static org.javabeanstack.data.DataNativeQuery.getClassModel;
 
 /**

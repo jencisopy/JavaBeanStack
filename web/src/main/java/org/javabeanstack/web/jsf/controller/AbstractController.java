@@ -24,7 +24,7 @@ package org.javabeanstack.web.jsf.controller;
 
 import org.javabeanstack.web.util.FacesContextUtil;
 import java.io.Serializable;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 
 /**
  * Clase base controller.

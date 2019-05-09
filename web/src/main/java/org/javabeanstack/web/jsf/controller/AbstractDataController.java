@@ -44,7 +44,7 @@ import org.javabeanstack.web.util.FacesContextUtil;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.datactrl.IDataObject;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.events.IDataCtrlEvents;

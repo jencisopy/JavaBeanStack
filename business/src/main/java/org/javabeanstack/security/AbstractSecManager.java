@@ -22,6 +22,7 @@
 
 package org.javabeanstack.security;
 
+import org.javabeanstack.security.model.IUserSession;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;

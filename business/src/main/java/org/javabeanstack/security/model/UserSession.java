@@ -30,7 +30,6 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
-import org.javabeanstack.security.IUserSession;
 
 /**
  * Esta clase guarda información de la sesión de un usuario.
@@ -38,7 +37,7 @@ import org.javabeanstack.security.IUserSession;
  * 
  * @author Jorge Enciso
  */
-public class UserSession implements IUserSession{
+public class UserSession implements IUserSession{ 
     private IAppUser user;
     private Date timeLogin = new Date();
     private Date lastReference = new Date();

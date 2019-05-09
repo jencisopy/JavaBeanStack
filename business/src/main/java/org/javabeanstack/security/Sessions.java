@@ -21,6 +21,7 @@
  */
 package org.javabeanstack.security;
 
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.security.model.UserSession;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

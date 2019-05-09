@@ -24,7 +24,7 @@ package org.javabeanstack.data;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.model.IAppCompany;
 import static org.javabeanstack.util.Fn.nvl;
 import static org.javabeanstack.util.Strings.isNullorEmpty;

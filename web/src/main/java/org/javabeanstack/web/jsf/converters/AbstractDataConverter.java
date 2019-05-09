@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataRow;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.error.ErrorManager;
 
 /**

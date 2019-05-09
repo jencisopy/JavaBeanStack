@@ -27,7 +27,7 @@ import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.xml.IXmlDom;
 
 /**

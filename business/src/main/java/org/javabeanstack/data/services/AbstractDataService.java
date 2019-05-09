@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.exceptions.SessionError;
-import org.javabeanstack.security.IUserSession;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.model.DataResult;
 import org.javabeanstack.data.IDataResult;
