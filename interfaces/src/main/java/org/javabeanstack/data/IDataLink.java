@@ -45,7 +45,8 @@ public interface IDataLink  {
     Map<String, Object> getPersistUnitProp();
     IDataNativeQuery newDataNativeQuery();
     
-    <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception;
+    <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception;    
+    <T extends IDataRow> T findById(Class<T> entityClass, Object id) throws Exception;
     <T extends IDataRow> T findByUk(T ejb) throws Exception;    
     List<Object> findByNativeQuery(String queryString, Map<String, Object> parameters) throws Exception;
     List<Object> findByNativeQuery(String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
