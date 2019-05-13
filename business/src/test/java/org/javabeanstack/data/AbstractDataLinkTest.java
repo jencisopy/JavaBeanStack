@@ -102,7 +102,7 @@ public class AbstractDataLinkTest extends TestClass {
             System.out.println(error);
             return;
         }
-        AppUser user = dataLinkCat.find(AppUser.class, 1L);
+        AppUser user = dataLinkCat.findById(AppUser.class, 1L);
         assertNotNull(user);
     }
 

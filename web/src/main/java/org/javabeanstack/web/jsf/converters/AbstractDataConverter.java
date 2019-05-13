@@ -62,7 +62,7 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
 
         try {
             getDAO().setUserSession(getUserSession());
-            T row = getDAO().find(clase,Long.parseLong(value));
+            T row = getDAO().findById(clase,Long.parseLong(value));
             return row;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);

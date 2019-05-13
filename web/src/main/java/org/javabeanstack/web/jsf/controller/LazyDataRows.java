@@ -68,7 +68,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         }
         T row;
         try {
-            row = (T)context.getDAO().find(getEntityClass(), id);
+            row = (T)context.getDAO().findById(getEntityClass(), id);
             context.getDataRows().add(row);
             context.moveLast();
             return row;

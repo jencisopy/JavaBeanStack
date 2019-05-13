@@ -254,6 +254,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         return dataResult;
     }
 
+    
     /**
      * Devuelve un registro de datos.
      *
@@ -266,6 +267,23 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      */
     @Override 
     public <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception, SessionError {
+        // Verificar si la sesión es válida
+        checkUserSession();
+        return getDao().findById(entityClass, getSessionId(), id);
+    }
+    
+    /**
+     * Devuelve un registro de datos.
+     *
+     * @param <T> tipo de dato generalmente hereda de DataRow
+     * @param entityClass tipo de dato o clase solicitada
+     * @param id identificador del registro (clave primaria).
+     * @return Objeto con los datos del registro.
+     * @throws Exception
+     * @throws org.javabeanstack.exceptions.SessionError
+     */
+    @Override 
+    public <T extends IDataRow> T findById(Class<T> entityClass, Object id) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
         return getDao().findById(entityClass, getSessionId(), id);
