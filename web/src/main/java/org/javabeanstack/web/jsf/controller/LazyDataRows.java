@@ -23,6 +23,7 @@
 package org.javabeanstack.web.jsf.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Dates;
+import org.javabeanstack.util.LocalDates;
 
 /**
  *
@@ -210,6 +212,8 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 params.put(key, Short.valueOf((String) e.getValue()));
             } else if (BigDecimal.class.isAssignableFrom(clase)){
                 params.put(key, new BigDecimal((String)e.getValue()));
+            } else if (LocalDateTime.class.isAssignableFrom(clase)){
+                params.put(key, LocalDates.toDateTime((String)e.getValue()));
             } else if (Date.class.isAssignableFrom(clase)){
                 params.put(key, Dates.toDate((String)e.getValue()));
             }else  {

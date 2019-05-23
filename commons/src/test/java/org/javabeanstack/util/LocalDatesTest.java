@@ -188,8 +188,8 @@ public class LocalDatesTest {
     @Test
     public void testToday() {
         System.out.println("today");
-        LocalDate expResult = LocalDate.now();
-        LocalDate result = LocalDates.today();
+        LocalDateTime expResult = LocalDate.now().atStartOfDay();
+        LocalDateTime result = LocalDates.today();
         assertEquals(expResult, result);
     }
 

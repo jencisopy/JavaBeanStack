@@ -32,7 +32,7 @@ import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppTablesRelation;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.data.services.IDataService;
-import org.javabeanstack.util.Dates;
+import org.javabeanstack.util.LocalDates;
 import org.javabeanstack.util.Strings;
 
 /**
@@ -742,10 +742,10 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
             parameters.put("idcompany", getIdCompany());
         }
         if (Strings.findString(":today", queryString.toLowerCase()) >= 0) {
-            parameters.put("today", Dates.today());
+            parameters.put("today", LocalDates.today());
         }
         if (Strings.findString(":now", queryString.toLowerCase()) >= 0) {
-            parameters.put("now", Dates.now());
+            parameters.put("now", LocalDates.now());
         }
         return parameters;
     }
