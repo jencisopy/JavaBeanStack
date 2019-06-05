@@ -23,6 +23,7 @@
 package org.javabeanstack.datactrl;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap; 
 import java.util.Map;
@@ -65,6 +66,8 @@ public class AbstractDataObjectTest extends TestClass{
             System.out.println(error);
             return;
         }
+        test02BorrarData();
+        //
         IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
         region.open();
         region.insertRow();
@@ -87,6 +90,17 @@ public class AbstractDataObjectTest extends TestClass{
             return;
         }
         boolean result;
+        IDataObject<Pais> pais = new DataObject(Pais.class, null, dataLink, null);
+        pais.open();
+        if (pais.find("codigo", "ZZZ")){
+            pais.deleteRow();
+            result = pais.update(false);
+            if (!result) {
+                System.out.println(pais.getErrorMsg(true));
+            }
+            assertTrue(result);
+        }
+        
         IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
         region.open();
         if (region.find("codigo", "ZZZ")){
@@ -1085,7 +1099,7 @@ public class AbstractDataObjectTest extends TestClass{
     /**
      * Test of getFieldDefaultValue method, of class AbstractDataObject.
      */
-    @Test
+    //@Test
     public void test47GetFieldDefaultValue() {
         System.out.println("47-DataObject - getFieldDefaultValue");
         //No hubo conexión con el servidor de aplicaciones
@@ -1152,8 +1166,8 @@ public class AbstractDataObjectTest extends TestClass{
         region.setField("nombre", "MODIFICADO");
         assertEquals(expResult, region.getFieldOld("nombre"));
         
-        Date newValue = new Date();
-        Date oldValue = (Date)region.getField("fechareplicacion");
+        LocalDateTime newValue = LocalDateTime.now();
+        LocalDateTime oldValue = (LocalDateTime)region.getField("fechareplicacion");
         region.setField("fechareplicacion", newValue);
         assertEquals(oldValue, region.getFieldOld("fechareplicacion"));
 
@@ -1265,7 +1279,7 @@ public class AbstractDataObjectTest extends TestClass{
         params.put("codigo", "AS");
         //Va a buscar el registro con el código "AS" si encuentra va a asignar al campo region
         pais.setField("region", params);
-        assertEquals(pais.getRow().getRegion().getCodigo(),"AS");
+        assertEquals(pais.getRow().getRegion().getCodigo().trim(),"AS");
         assertEquals(pais.getRow().getRegion().getCodigo(),pais.getField("region.codigo"));        
         assertEquals(pais.getRow().getRegion().getNombre(),pais.getField("region.nombre"));
     }

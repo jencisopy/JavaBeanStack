@@ -181,8 +181,8 @@ public class LocalDates {
      *
      * @return fecha de hoy
      */
-    public static LocalDate today() {
-        return LocalDate.now();
+    public static LocalDateTime today() {
+        return LocalDate.now().atStartOfDay();
     }
 
 

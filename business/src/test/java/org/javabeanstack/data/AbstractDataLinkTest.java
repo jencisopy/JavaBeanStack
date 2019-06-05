@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.javabeanstack.config.IAppConfig;
 import static org.javabeanstack.data.TestClass.context;
 import static org.javabeanstack.data.TestClass.error;
 import org.javabeanstack.data.services.IAppCompanySrv;
