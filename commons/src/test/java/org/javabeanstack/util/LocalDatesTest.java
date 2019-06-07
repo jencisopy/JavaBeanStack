@@ -145,6 +145,16 @@ public class LocalDatesTest {
         assertEquals(expResult, result);
     }
 
+    @Test
+    public void testToString_LocalDateTime_DateTimeFormatter2() {
+        System.out.println("toString");
+        LocalDateTime dateTime = LocalDates.toDateTime("1972/05/19T15:00:15","yyyy/MM/dd'T'HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss");
+        String expResult = "1972/05/19T15:00:15";
+        String result = LocalDates.toString(dateTime, formatter);
+        assertEquals(expResult, result);
+    }
+    
     /**
      * Test of toString method, of class LocalDates.
      */
