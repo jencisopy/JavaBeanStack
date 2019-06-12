@@ -64,8 +64,10 @@ public class JsonUtil {
                     objectBuilder.add(columnName, (BigDecimal)value);
                 } else if (classMember.getSimpleName().equals("Long")) {
                     objectBuilder.add(columnName, (Long)value);
-                } else if (classMember.getSimpleName().equals("Date") || classMember.getSimpleName().equals("Timestamp")) {
-                    value = Dates.toString((Date) row.getColumn(columnName), "yyyy-MM-dd HH:mm:ss");                    
+                } else if (classMember.getSimpleName().equals("Date") 
+                        || classMember.getSimpleName().equals("Timestamp") 
+                        || classMember.getSimpleName().equals("LocalDateTime")) {
+                    value = Dates.toString((Date) row.getColumn(columnName), "yyyy-MM-dd'T'HH:mm:ss");                    
                     objectBuilder.add(columnName, (String)value);
                 } else if (classMember.getSimpleName().equals("Short")) {
                     objectBuilder.add(columnName, (Short)value);

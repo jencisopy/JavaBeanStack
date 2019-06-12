@@ -91,7 +91,13 @@ public class DatesTest {
         String format = "yyyy-MM-dd";
         String expResult = "1972-05-19";
         String result = Dates.toString(date, format);
+        assertEquals(expResult, result); 
+        
+        format = "yyyy-MM-dd'T'HH:mm:ss";
+        expResult = "1972-05-19T00:00:00";
+        result = Dates.toString(date, format);
         assertEquals(expResult, result);
+        
     }
 
     /**
