@@ -25,7 +25,7 @@ package org.javabeanstack.security;
 import org.javabeanstack.security.model.OAuthConsumerData;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,6 @@ import org.javabeanstack.data.services.IDataServiceRemote;
 import org.javabeanstack.model.appcatalog.AppAuthConsumer;
 import org.javabeanstack.model.appcatalog.AppAuthConsumerToken;
 import org.javabeanstack.model.tables.Moneda;
-import org.javabeanstack.util.Dates;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -95,8 +94,7 @@ public class OAuthConsumerTest extends TestClass {
             return;
         }
         String consumerName = "OYM";
-        Date expiredDate = new Date();
-        expiredDate = Dates.sumDays(expiredDate, 5000);
+        LocalDateTime expiredDate = LocalDateTime.now().plusDays(5000L);
         OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         String result = instance.createAuthConsumer(consumerName, expiredDate);

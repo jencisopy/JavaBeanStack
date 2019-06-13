@@ -22,6 +22,8 @@
  */
 package org.javabeanstack.model.appcatalog;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
@@ -40,6 +42,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -52,7 +55,7 @@ import org.javabeanstack.data.DataRow;
  * @author JORGE
  */
 @Entity
-@Table(name = "appauthconsumer")
+@Table(name = "appauthconsumer",uniqueConstraints = { @UniqueConstraint(columnNames = {"consumerKey"})})
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "AppAuthConsumer.findAll", query = "SELECT a FROM AppAuthConsumer a")})
@@ -78,8 +81,7 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     @Basic(optional = false)
     @NotNull
     @Column(name = "expiredDate")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date expiredDate;
+    private LocalDateTime expiredDate;
     @Lob
     @Size(max = 2147483647)
     @Column(name = "publicKey")
@@ -95,9 +97,8 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     @Column(name = "cryptoAlgorithm")
     private String cryptoAlgorithm;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "blocked")
-    private boolean blocked;
+    private Boolean blocked;
     @Size(max = 250)
     @Column(name = "authURL")
     private String authURL;
@@ -129,8 +130,9 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     @Size(max = 32)
     @Column(name = "appuser")
     private String appuser;
+    
     @OneToMany(mappedBy = "appAuthConsumer")
-    private List<AppAuthConsumerToken> appauthconsumertokenList;
+    private List<AppAuthConsumerToken> appauthconsumertokenList = new ArrayList<>();
 
     public AppAuthConsumer() {
     }
@@ -139,7 +141,7 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
         this.idappauthconsumer = idappauthconsumer;
     }
 
-    public AppAuthConsumer(Long idappauthconsumer, String consumerKey, String consumerName, Date expiredDate, boolean blocked, Date fechacreacion, Date fechamodificacion) {
+    public AppAuthConsumer(Long idappauthconsumer, String consumerKey, String consumerName, LocalDateTime expiredDate, Boolean blocked, Date fechacreacion, Date fechamodificacion) {
         this.idappauthconsumer = idappauthconsumer;
         this.consumerKey = consumerKey;
         this.consumerName = consumerName;
@@ -187,12 +189,12 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     }
 
     @Override
-    public Date getExpiredDate() {
+    public LocalDateTime getExpiredDate() {
         return expiredDate;
     }
 
     @Override
-    public void setExpiredDate(Date expiredDate) {
+    public void setExpiredDate(LocalDateTime expiredDate) {
         this.expiredDate = expiredDate;
     }
 
@@ -334,6 +336,15 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
         return hash;
     }
 
+    @Override
+    public boolean equivalent(Object o) {
+        if (!(o instanceof AppAuthConsumer)) {
+            return false;
+        }
+        AppAuthConsumer obj = (AppAuthConsumer) o;
+        return (this.consumerKey.trim().equals(obj.consumerKey.trim()));
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

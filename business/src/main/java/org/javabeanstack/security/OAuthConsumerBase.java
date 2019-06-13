@@ -30,7 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,7 +166,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return
      */
     @Override
-    public String createAuthConsumer(String consumerName, Date expiredDate) {
+    public String createAuthConsumer(String consumerName, LocalDateTime expiredDate) {
         try {
             IAppAuthConsumer authConsumer = getAuthConsumerClass().newInstance();
             authConsumer.setConsumerName(consumerName);
@@ -255,7 +255,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return fecha expiración del token
      */
     @Override
-    public Date getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret) {
+    public LocalDateTime getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret) {
         IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
         if (authConsumerToken != null && authConsumerToken.getAppAuthConsumerKey() != null) {
             return authConsumerToken.getAppAuthConsumerKey().getExpiredDate();
@@ -721,7 +721,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             return false;
         }
         //Si expiro el customerKey
-        if (!result.getAppAuthConsumerKey().getExpiredDate().after(new Date())) {
+        if (!result.getAppAuthConsumerKey().getExpiredDate().isAfter(LocalDateTime.now())) {
             return false;
         }
         if (noCheckCredentials) {

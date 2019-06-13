@@ -23,6 +23,7 @@
 package org.javabeanstack.data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import org.javabeanstack.data.model.DataSet;
 import java.util.ArrayList;
 import java.util.Date;
@@ -821,8 +822,8 @@ public class AbstractDataLinkTest extends TestClass {
             return;
         }
         String consumerName = "OYM";
-        Date expiredDate = new Date();
-        expiredDate = Dates.sumDays(expiredDate, 5000);
+        LocalDateTime expiredDate = LocalDateTime.now();
+        expiredDate = expiredDate.plusDays(5000L);
         OAuthConsumerBase instance = new OAuthConsumerImpl();
         instance.setDao(dao);
         String result = instance.createAuthConsumer(consumerName, expiredDate);

@@ -21,7 +21,7 @@
 * MA 02110-1301  USA
  */
 package org.javabeanstack.model;
-import java.util.Date;
+import java.time.LocalDateTime;
 import org.javabeanstack.data.IDataRow;
 /**
  *
@@ -34,8 +34,8 @@ public interface IAppAuthConsumer extends IDataRow {
     String getConsumerName();
     void setConsumerName(String consumerName);
 
-    Date getExpiredDate();
-    void setExpiredDate(Date expiredDate);
+    LocalDateTime getExpiredDate();
+    void setExpiredDate(LocalDateTime expiredDate);
     
     String getPublicKey();
     void setPublicKey(String publicKey);

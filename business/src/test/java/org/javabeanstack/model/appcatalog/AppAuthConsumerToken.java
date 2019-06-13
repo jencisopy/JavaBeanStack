@@ -22,7 +22,7 @@
  */
 package org.javabeanstack.model.appcatalog;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,6 +42,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppAuthConsumer;
@@ -97,25 +98,21 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     private String userEmail;
     
     @Column(name = "lastUsed")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastUsed;
+    private LocalDateTime lastUsed;
 
     
     @Transient
     @Basic(optional = false)
     @Column(name = "fechacreacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechacreacion;
+    private LocalDateTime fechacreacion;
     
     @Basic(optional = false)
     @NotNull
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    private LocalDateTime fechamodificacion;
     
     @Column(name = "fechareplicacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechareplicacion;
+    private LocalDateTime fechareplicacion;
     @Size(max = 32)
     @Column(name = "appuser")
     private String appuser;
@@ -132,14 +129,6 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
         this.idappauthconsumertoken = idappauthconsumertoken;
     }
 
-    public AppAuthConsumerToken(Long idappauthconsumertoken, String token, String tokenSecret, boolean blocked, Date fechacreacion, Date fechamodificacion) {
-        this.idappauthconsumertoken = idappauthconsumertoken;
-        this.token = token;
-        this.tokenSecret = tokenSecret;
-        this.blocked = blocked;
-        this.fechacreacion = fechacreacion;
-        this.fechamodificacion = fechamodificacion;
-    }
 
     public Long getIdappauthconsumertoken() {
         return idappauthconsumertoken;
@@ -220,36 +209,36 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     }
 
     @Override
-    public Date getLastUsed() {
+    public LocalDateTime getLastUsed() {
         return lastUsed;
     }
 
     @Override
-    public void setLastUsed(Date lastUsed) {
+    public void setLastUsed(LocalDateTime lastUsed) {
         this.lastUsed = lastUsed;
     }
 
-    public Date getFechacreacion() {
+    public LocalDateTime getFechacreacion() {
         return fechacreacion;
     }
 
-    public void setFechacreacion(Date fechacreacion) {
+    public void setFechacreacion(LocalDateTime fechacreacion) {
         this.fechacreacion = fechacreacion;
     }
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
-    public void setFechamodificacion(Date fechamodificacion) {
+    public void setFechamodificacion(LocalDateTime fechamodificacion) {
         this.fechamodificacion = fechamodificacion;
     }
 
-    public Date getFechareplicacion() {
+    public LocalDateTime getFechareplicacion() {
         return fechareplicacion;
     }
 
-    public void setFechareplicacion(Date fechareplicacion) {
+    public void setFechareplicacion(LocalDateTime fechareplicacion) {
         this.fechareplicacion = fechareplicacion;
     }
 
@@ -261,6 +250,7 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
         this.appuser = appuser;
     }
 
+    @XmlElement(type = AppAuthConsumer.class)
     @Override
     public IAppAuthConsumer getAppAuthConsumerKey() {
         return appAuthConsumer;
@@ -281,7 +271,7 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     @PreUpdate
     @PrePersist
     public void preUpdate() {
-        fechamodificacion = new Date();
+        fechamodificacion = LocalDateTime.now();
     }    
         
     @Override

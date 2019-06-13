@@ -22,7 +22,7 @@
  */
 package org.javabeanstack.security;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
@@ -36,7 +36,7 @@ import org.javabeanstack.model.IAppAuthConsumerToken;
  * @author Jorge Enciso
  */
 public interface IOAuthConsumer {
-    String createAuthConsumer(String consumerName, Date expiredDate);
+    String createAuthConsumer(String consumerName, LocalDateTime expiredDate);
     IAppAuthConsumer createAuthConsumer(IAppAuthConsumer authConsumer);
     String createToken(String consumerKey, IOAuthConsumerData data)  throws Exception ;
     String createToken(String consumerKey, IOAuthConsumerData data, String uuidDevice)  throws Exception;
@@ -51,7 +51,7 @@ public interface IOAuthConsumer {
     Class<IAppAuthConsumer> getAuthConsumerClass();
     Class<IAppAuthConsumerToken> getAuthConsumerTokenClass();
     String getToken(String consumerKey, String uuidOrTokenSecret);
-    Date getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret);
+    LocalDateTime getTokenExpiredDate(String consumerKey, String uuidOrTokenSecret);
     String getTokenAuthUrl(String consumerKey, String uuidOrTokenSecret);
     String getTokenCallbackUrl(String consumerKey, String uuidOrTokenSecret);
     boolean requestToken(String consumerKey);
