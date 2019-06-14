@@ -1,7 +1,7 @@
 package org.javabeanstack.model.appcatalog;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.Basic;
@@ -12,8 +12,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -81,8 +79,7 @@ public class AppUserLight extends DataRow implements IAppUser {
     private Boolean disable = false;
 
     @Column(name = "expira")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date expiredDate;
+    private LocalDateTime expiredDate;
 
     @Size(max = 2)
     @Column(name = "rol")
@@ -92,8 +89,7 @@ public class AppUserLight extends DataRow implements IAppUser {
     private Short type;
 
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    private LocalDateTime fechamodificacion;
 
     @OneToMany(mappedBy = "usermember")
     private List<AppUserMember> listaUsuarioMiembro = new ArrayList<>();
@@ -203,12 +199,12 @@ public class AppUserLight extends DataRow implements IAppUser {
     }
 
     @Override
-    public Date getExpiredDate() {
+    public LocalDateTime getExpiredDate() {
         return expiredDate;
     }
 
     @Override
-    public void setExpiredDate(Date expira) {
+    public void setExpiredDate(LocalDateTime expira) {
         this.expiredDate = expira;
     }
 
@@ -245,11 +241,11 @@ public class AppUserLight extends DataRow implements IAppUser {
         this.type = tipo;
     }
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
-    public void setFechamodificacion(Date fechamodificacion) {
+    public void setFechamodificacion(LocalDateTime fechamodificacion) {
         this.fechamodificacion = fechamodificacion;
     }
 
@@ -381,5 +377,5 @@ public class AppUserLight extends DataRow implements IAppUser {
     @Override
     public boolean isApplyDBFilter() {
         return false;
-    }    
+    }
 }

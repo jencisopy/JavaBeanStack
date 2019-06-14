@@ -22,7 +22,7 @@
 package org.javabeanstack.model;
 
 import java.math.BigInteger;
-import java.util.Date;
+import java.time.LocalDateTime;
 import org.javabeanstack.data.IDataRow;
 
 /**
@@ -35,7 +35,7 @@ public interface IAppXmlSource extends IDataRow {
     String getXmlName();
     String getXmlSource();
     String getXmlCompiled();
-    Date getProcessTime();
+    LocalDateTime getProcessTime();
     BigInteger getReferencetime();
     String getXmlPath();
     boolean isValid();
@@ -45,7 +45,7 @@ public interface IAppXmlSource extends IDataRow {
     void setXmlName(String xmlname);
     void setXmlSource(String xmlsource);    
     void setXmlCompiled(String xmlcompile);    
-    void setProcessTime(Date processtime);    
+    void setProcessTime(LocalDateTime processtime);    
     void setReferencetime(BigInteger referencetime);
     void setXmlPath(String xmlpath);
 }

@@ -24,7 +24,6 @@ package org.javabeanstack.model.appcatalog;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -39,8 +38,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
@@ -52,7 +49,7 @@ import org.javabeanstack.data.DataRow;
 
 /**
  *
- * @author JORGE
+ * @author Jorge Enciso
  */
 @Entity
 @Table(name = "appauthconsumer",uniqueConstraints = { @UniqueConstraint(columnNames = {"consumerKey"})})
@@ -115,17 +112,14 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     @Transient
     @Basic(optional = false)
     @Column(name = "fechacreacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechacreacion;
+    private LocalDateTime fechacreacion;
     
     @Basic(optional = false)
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    private LocalDateTime fechamodificacion;
 
     @Column(name = "fechareplicacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechareplicacion;
+    private LocalDateTime fechareplicacion;
 
     @Size(max = 32)
     @Column(name = "appuser")
@@ -141,15 +135,6 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
         this.idappauthconsumer = idappauthconsumer;
     }
 
-    public AppAuthConsumer(Long idappauthconsumer, String consumerKey, String consumerName, LocalDateTime expiredDate, Boolean blocked, Date fechacreacion, Date fechamodificacion) {
-        this.idappauthconsumer = idappauthconsumer;
-        this.consumerKey = consumerKey;
-        this.consumerName = consumerName;
-        this.expiredDate = expiredDate;
-        this.blocked = blocked;
-        this.fechacreacion = fechacreacion;
-        this.fechamodificacion = fechamodificacion;
-    }
 
     public Long getIdappauthconsumer() {
         return idappauthconsumer;
@@ -288,27 +273,27 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
         this.scope = scope;
     }
     
-    public Date getFechacreacion() {
+    public LocalDateTime getFechacreacion() {
         return fechacreacion;
     }
 
-    public void setFechacreacion(Date fechacreacion) {
+    public void setFechacreacion(LocalDateTime fechacreacion) {
         this.fechacreacion = fechacreacion;
     }
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
-    public void setFechamodificacion(Date fechamodificacion) {
+    public void setFechamodificacion(LocalDateTime fechamodificacion) {
         this.fechamodificacion = fechamodificacion;
     }
 
-    public Date getFechareplicacion() {
+    public LocalDateTime getFechareplicacion() {
         return fechareplicacion;
     }
 
-    public void setFechareplicacion(Date fechareplicacion) {
+    public void setFechareplicacion(LocalDateTime fechareplicacion) {
         this.fechareplicacion = fechareplicacion;
     }
 
@@ -361,7 +346,7 @@ public class AppAuthConsumer extends DataRow implements IAppAuthConsumer {
     @PreUpdate
     @PrePersist
     public void preUpdate() {
-        fechamodificacion = new Date();
+        fechamodificacion = LocalDateTime.now();
     }    
     
     @Override

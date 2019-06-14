@@ -1,7 +1,7 @@
 package org.javabeanstack.model;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.javabeanstack.data.IDataRow;
 
@@ -20,7 +20,7 @@ public interface IAppUser extends IDataRow, Serializable {
     String getPass();
     String getPassConfirm();
     Boolean getDisable();
-    Date getExpiredDate();
+    LocalDateTime getExpiredDate();
     
     Long getIdcompany();        
     List<IAppCompanyAllowed> getAppCompanyAllowedList();
@@ -45,7 +45,7 @@ public interface IAppUser extends IDataRow, Serializable {
     void setUserMemberList(List<IAppUserMember> userMemberList);
     
     void setDisable(Boolean disable);
-    void setExpiredDate(Date expira);
+    void setExpiredDate(LocalDateTime expira);
 
     void setRol(String rol);
     void setAppRol(String appRol);    

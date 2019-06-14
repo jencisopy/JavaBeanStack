@@ -1,7 +1,7 @@
 package org.javabeanstack.model.appcatalog;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.Basic;
@@ -14,24 +14,20 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.model.IAppUserMember;
-
+import org.javabeanstack.util.LocalDates;
 
 @Entity
-@Table(name = "usuario",
-        uniqueConstraints = { @UniqueConstraint(columnNames = {"codigo"})})
+@Table(name = "usuario")
 public class AppUser extends DataRow implements IAppUser {
 
-    private static final long serialVersionUID = 0L;
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -85,8 +81,7 @@ public class AppUser extends DataRow implements IAppUser {
     private Boolean disable = false;
 
     @Column(name = "expira")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date expiredDate;
+    private LocalDateTime expiredDate;
 
     @Size(max = 2)
     @Column(name = "rol")
@@ -99,8 +94,7 @@ public class AppUser extends DataRow implements IAppUser {
     private byte[] avatar;
 
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    private LocalDateTime fechamodificacion;
 
     @OneToMany(mappedBy = "usermember")
     private List<AppUserMember> listaUsuarioMiembro = new ArrayList<>();
@@ -142,10 +136,6 @@ public class AppUser extends DataRow implements IAppUser {
         return code;
     }
 
-    public String getCodigo() {
-        return getCode();
-    }    
-    
     @Override
     public void setCode(String code) {
         this.code = code;
@@ -214,12 +204,12 @@ public class AppUser extends DataRow implements IAppUser {
     }
 
     @Override
-    public Date getExpiredDate() {
+    public LocalDateTime getExpiredDate() {
         return expiredDate;
     }
 
     @Override
-    public void setExpiredDate(Date expira) {
+    public void setExpiredDate(LocalDateTime expira) {
         this.expiredDate = expira;
     }
 
@@ -256,11 +246,11 @@ public class AppUser extends DataRow implements IAppUser {
         this.type = tipo;
     }
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
-    public void setFechamodificacion(Date fechamodificacion) {
+    public void setFechamodificacion(LocalDateTime fechamodificacion) {
         this.fechamodificacion = fechamodificacion;
     }
 
@@ -293,7 +283,7 @@ public class AppUser extends DataRow implements IAppUser {
     public void setAppCompanyAllowedList(List<IAppCompanyAllowed> dicPermisoEmpresaList) {
         //this.dicPermisoEmpresaList = (List<DicPermisoEmpresa>)(List<?>)dicPermisoEmpresaList;
     }
-    
+
     @Override
     public byte[] getAvatar() {
         return avatar;
@@ -387,9 +377,9 @@ public class AppUser extends DataRow implements IAppUser {
     @PreUpdate
     @PrePersist
     public void preUpdate() {
-        fechamodificacion = new Date();
+        fechamodificacion = LocalDateTime.now();
         if (expiredDate == null){
-            //expiredDate = Dates.toDate("31/12/9999");
+            expiredDate = LocalDates.toDateTime("31/12/9999 00:00:00");
         }
     }    
     

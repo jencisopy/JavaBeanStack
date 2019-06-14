@@ -21,7 +21,7 @@
 */
 package org.javabeanstack.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import org.javabeanstack.data.IDataRow;
 
 /**
@@ -36,7 +36,7 @@ public interface IAppSystemParam extends IDataRow {
     String getSystemgroup();
     Boolean getValueBoolean();
     String getValueChar();
-    Date getValueDate();
+    LocalDateTime getValueDate();
     Long getValueNumber();
 
     void setIdAppSystemParam(Long idsystemparam);
@@ -46,6 +46,6 @@ public interface IAppSystemParam extends IDataRow {
     void setSystemgroup(String systemgroup);
     void setValueBoolean(Boolean valueBoolean);
     void setValueChar(String valueChar);
-    void setValueDate(Date valueDate);
+    void setValueDate(LocalDateTime valueDate);
     void setValueNumber(Long valueNumber);
 }

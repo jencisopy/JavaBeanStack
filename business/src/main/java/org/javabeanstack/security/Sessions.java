@@ -57,6 +57,7 @@ import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.util.LocalDates;
 
 /**
  * Es la clase encargada de todas las sesiones de usuarios. Guarda información
@@ -268,7 +269,7 @@ public class Sessions implements ISessions{
                 return new ErrorReg(mensaje, 2, "");
             }
             // Verificar que no expiro la cuenta
-            if (usuario.getExpiredDate().before(Dates.now())) {
+            if (usuario.getExpiredDate().isBefore(LocalDates.now())) {
                 mensaje = "La cuenta " + usuario.getLogin() + " expiro";
                 LOGGER.debug(mensaje);
                 return new ErrorReg(mensaje, 2, "");
@@ -318,7 +319,7 @@ public class Sessions implements ISessions{
                 return userSession;
             }
             // Verificar que no expiro la cuenta
-            if (usuario.getExpiredDate().before(Dates.now())) {
+            if (usuario.getExpiredDate().isBefore(LocalDates.now())) {
                 mensaje = "La cuenta " + usuario.getLogin() + " expiro";
                 LOGGER.debug(mensaje);
                 userSession.setError(new ErrorReg(mensaje, 2, ""));

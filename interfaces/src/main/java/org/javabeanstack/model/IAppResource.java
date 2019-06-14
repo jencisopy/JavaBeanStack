@@ -22,7 +22,7 @@
 package org.javabeanstack.model;
 
 import java.math.BigInteger;
-import java.util.Date;
+import java.time.LocalDateTime;
 import org.javabeanstack.data.IDataRow;
 
 /**
@@ -60,11 +60,11 @@ public interface IAppResource extends IDataRow {
     String getCompiled();
     void setCompiled(String compiled);    
     
-    Date getProcesstime();    
-    void setProcesstime(Date processtime);    
+    LocalDateTime getProcesstime();    
+    void setProcesstime(LocalDateTime processtime);    
     
-    Date getLastreference();
-    void setLastreference(Date lastreference);    
+    LocalDateTime getLastreference();
+    void setLastreference(LocalDateTime lastreference);    
 
     BigInteger getReferencetime();
     void setReferencetime(BigInteger referencetime);    

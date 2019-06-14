@@ -15,7 +15,7 @@
 package org.javabeanstack.model.appcatalog;
 
 import java.math.BigInteger;
-import java.util.Date;
+import java.time.LocalDateTime;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,8 +26,6 @@ import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
@@ -103,15 +101,13 @@ public class AppResource extends DataRow implements IAppResource {
     private String compiled;
     
     @Column(name = "processtime")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date processtime;
+    private LocalDateTime processtime;
 
     @Column(name = "referencetime")
     private BigInteger referencetime;
     
     @Column(name = "lastreference")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastreference;
+    private LocalDateTime lastreference;
 
     @Size(max = 32)
     @Column(name = "checksum")
@@ -120,18 +116,15 @@ public class AppResource extends DataRow implements IAppResource {
     
     @Transient
     @Column(name = "fechacreacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechacreacion;
+    private LocalDateTime fechacreacion;
     
     @Basic(optional = false)
     @NotNull
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    private LocalDateTime fechamodificacion;
     
     @Column(name = "fechareplicacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechareplicacion;
+    private LocalDateTime fechareplicacion;
     
     @Size(max = 32)
     @Column(name = "appuser")
@@ -145,16 +138,6 @@ public class AppResource extends DataRow implements IAppResource {
 
     public AppResource(Long idappresource) {
         this.idappresource = idappresource;
-    }
-
-    public AppResource(Long idappresource, String code, String name, String source, String compiled, Date fechacreacion, Date fechamodificacion) {
-        this.idappresource = idappresource;
-        this.code = code;
-        this.name = name;
-        this.source = source;
-        this.compiled = compiled;
-        this.fechacreacion = fechacreacion;
-        this.fechamodificacion = fechamodificacion;
     }
 
     @Override
@@ -248,12 +231,12 @@ public class AppResource extends DataRow implements IAppResource {
     }
 
     @Override
-    public Date getProcesstime() {
+    public LocalDateTime getProcesstime() {
         return processtime;
     }
 
     @Override
-    public void setProcesstime(Date processtime) {
+    public void setProcesstime(LocalDateTime processtime) {
         this.processtime = processtime;
     }
 
@@ -268,26 +251,26 @@ public class AppResource extends DataRow implements IAppResource {
     }
 
     @Override
-    public Date getLastreference() {
+    public LocalDateTime getLastreference() {
         return lastreference;
     }
 
     @Override
-    public void setLastreference(Date lastreference) {
+    public void setLastreference(LocalDateTime lastreference) {
         this.lastreference = lastreference;
     }
 
     
-    public Date getFechacreacion() {
+    public LocalDateTime getFechacreacion() {
         return fechacreacion;
     }
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
 
-    public Date getFechareplicacion() {
+    public LocalDateTime getFechareplicacion() {
         return fechareplicacion;
     }
 
@@ -307,7 +290,7 @@ public class AppResource extends DataRow implements IAppResource {
         if (isNullorEmpty(compiled) || processtime == null){
             return false;
         }
-        return processtime.after(fechamodificacion);
+        return processtime.isAfter(fechamodificacion);
     }
 
     public byte[] getBdata() {

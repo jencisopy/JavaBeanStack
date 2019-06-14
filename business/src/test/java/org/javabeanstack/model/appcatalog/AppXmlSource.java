@@ -15,7 +15,7 @@
 package org.javabeanstack.model.appcatalog;
 
 import java.math.BigInteger;
-import java.util.Date;
+import java.time.LocalDateTime;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,8 +24,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -80,8 +78,7 @@ public class AppXmlSource extends DataRow implements IAppXmlSource {
     private String xmlCompiled;
     
     @Column(name = "processtime")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date processTime;
+    private LocalDateTime processTime;
     @Basic(optional = false)
     
     @Column(name = "referencetime")
@@ -90,17 +87,14 @@ public class AppXmlSource extends DataRow implements IAppXmlSource {
 
     @Transient
     @Column(name = "fechacreacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechacreacion;
+    private LocalDateTime fechacreacion;
     
     @Basic(optional = false)
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    private LocalDateTime fechamodificacion;
     
     @Column(name = "fechareplicacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechareplicacion;
+    private LocalDateTime fechareplicacion;
     
     @Size(max = 32)
     @Column(name = "appuser")
@@ -113,14 +107,6 @@ public class AppXmlSource extends DataRow implements IAppXmlSource {
         this.idxmlSource = idxmlsource;
     }
 
-    public AppXmlSource(Long idxmlsource, String xmlname, String xmlsource, String xmlcompile, Date fechacreacion, Date fechamodificacion) {
-        this.idxmlSource = idxmlsource;
-        this.xmlName = xmlname;
-        this.xmlSource = xmlsource;
-        this.xmlCompiled = xmlcompile;
-        this.fechacreacion = fechacreacion;
-        this.fechamodificacion = fechamodificacion;
-    }
 
     @Override
     public Long getIdXmlSource() {
@@ -184,12 +170,12 @@ public class AppXmlSource extends DataRow implements IAppXmlSource {
     }
 
     @Override
-    public Date getProcessTime() {
+    public LocalDateTime getProcessTime() {
         return processTime;
     }
 
     @Override
-    public void setProcessTime(Date processtime) {
+    public void setProcessTime(LocalDateTime processtime) {
         this.processTime = processtime;
     }
     
@@ -203,19 +189,19 @@ public class AppXmlSource extends DataRow implements IAppXmlSource {
         this.referencetime = referencetime;
     }    
 
-    public Date getFechacreacion() {
+    public LocalDateTime getFechacreacion() {
         return fechacreacion;
     }
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
-    public Date getFechareplicacion() {
+    public LocalDateTime getFechareplicacion() {
         return fechareplicacion;
     }
 
-    public void setFechareplicacion(Date fechareplicacion) {
+    public void setFechareplicacion(LocalDateTime fechareplicacion) {
         this.fechareplicacion = fechareplicacion;
     }
 
@@ -232,7 +218,7 @@ public class AppXmlSource extends DataRow implements IAppXmlSource {
         if (isNullorEmpty(xmlCompiled)){
             return false;
         }
-        return processTime.after(fechamodificacion);
+        return processTime.isAfter(fechamodificacion);
     }
     
 

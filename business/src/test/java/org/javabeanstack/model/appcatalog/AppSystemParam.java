@@ -15,7 +15,7 @@
 package org.javabeanstack.model.appcatalog;
 
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,8 +25,6 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -68,18 +66,22 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @NotNull
     @Size(min = 1, max = 100)
     @Column(name = "paramDescrip")
-    private String paramDescrip;
+    private String paramDescrip
+            ;
     @Basic(optional = false)
     @NotNull
     @Column(name = "paramType")
     private Character paramType;
+    
     @Column(name = "valueDate")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date valueDate;
+    private LocalDateTime valueDate;
+    
     @Column(name = "valueNumber")
     private Long valueNumber;
+    
     @Column(name = "valueBoolean")
     private Boolean valueBoolean;
+    
     @Size(max = 200)
     @Column(name = "valueChar")
     private String valueChar;
@@ -88,18 +90,15 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @Basic(optional = false)
     @NotNull
     @Column(name = "fechacreacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechacreacion;
+    private LocalDateTime fechacreacion;
     
     @Basic(optional = false)
     @NotNull
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    private LocalDateTime fechamodificacion;
     
     @Column(name = "fechareplicacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechareplicacion;
+    private LocalDateTime fechareplicacion;
     
     @Size(max = 32)
     @Column(name = "firma")
@@ -116,15 +115,6 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
         this.idAppSystemParam = idsystemparam;
     }
 
-    public AppSystemParam(Long idsystemparam, String systemgroup, String param, String paramDescrip, Character paramType, Date fechacreacion, Date fechamodificacion) {
-        this.idAppSystemParam = idsystemparam;
-        this.systemgroup = systemgroup;
-        this.param = param;
-        this.paramDescrip = paramDescrip;
-        this.paramType = paramType;
-        this.fechacreacion = fechacreacion;
-        this.fechamodificacion = fechamodificacion;
-    }
 
     @Override
     public Long getIdAppSystemParam() {
@@ -177,12 +167,12 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     }
 
     @Override
-    public Date getValueDate() {
+    public LocalDateTime getValueDate() {
         return valueDate;
     }
 
     @Override
-    public void setValueDate(Date valueDate) {
+    public void setValueDate(LocalDateTime valueDate) {
         this.valueDate = valueDate;
     }
 
@@ -216,20 +206,20 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
         this.valueChar = valueChar;
     }
 
-    public Date getFechacreacion() {
+    public LocalDateTime getFechacreacion() {
         return fechacreacion;
     }
 
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
-    public Date getFechareplicacion() {
+    public LocalDateTime getFechareplicacion() {
         return fechareplicacion;
     }
 
-    public void setFechareplicacion(Date fechareplicacion) {
+    public void setFechareplicacion(LocalDateTime fechareplicacion) {
         this.fechareplicacion = fechareplicacion;
     }
 
