@@ -263,7 +263,7 @@ public class Sessions implements ISessions{
                 return new ErrorReg(mensaje, 1, "");
             }
             // Verificar que el usuario este activo.
-            if (usuario.getDisable()) {
+            if (usuario.getDisabled()) {
                 mensaje = "La cuenta " + usuario.getLogin().trim() + " esta inactivo";
                 LOGGER.info(mensaje);
                 return new ErrorReg(mensaje, 2, "");
@@ -312,7 +312,7 @@ public class Sessions implements ISessions{
                 return userSession;
             }
             // Verificar que el usuario este activo.
-            if (usuario.getDisable()) {
+            if (usuario.getDisabled()) {
                 mensaje = "La cuenta " + usuario.getLogin().trim() + " esta inactivo";
                 LOGGER.info(mensaje);
                 userSession.setError(new ErrorReg(mensaje, 2, ""));

@@ -18,8 +18,12 @@ public interface IAppUser extends IDataRow, Serializable {
     String getDescription();
     
     String getPass();
+    
     String getPassConfirm();
-    Boolean getDisable();
+    String getPassConfirm2();
+    
+    
+    Boolean getDisabled();
     LocalDateTime getExpiredDate();
     
     Long getIdcompany();        
@@ -39,12 +43,13 @@ public interface IAppUser extends IDataRow, Serializable {
     
     void setPass(String password);
     void setPassConfirm(String passwordConfirm);
+    void setPassConfirm2(String passwordConfirm2);    
 
     void setIdcompany(Long idcompany);    
     void setAppCompanyAllowedList(List<IAppCompanyAllowed> appCompanyAllowedList);
     void setUserMemberList(List<IAppUserMember> userMemberList);
     
-    void setDisable(Boolean disable);
+    void setDisabled(Boolean disable);
     void setExpiredDate(LocalDateTime expira);
 
     void setRol(String rol);

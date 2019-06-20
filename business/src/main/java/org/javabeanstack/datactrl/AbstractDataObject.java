@@ -1611,6 +1611,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     protected boolean beforeUpdate(IDataSet dataSet) {
         boolean result = true;
         Map<String, IDataObject> map = dataSet.getMapDataObject();
+        if (map.isEmpty()){
+            if (this.getDataEvents() != null){
+                result = this.getDataEvents().beforeUpdate(true);
+            }
+        }
         for (Map.Entry<String, IDataObject> entry : map.entrySet()) {
             if (entry.getValue().getDataEvents() != null) {
                 result = entry.getValue().getDataEvents().beforeUpdate(true);
@@ -1697,6 +1702,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     protected boolean checkData(IDataSet dataSet) {
         boolean result = true;
         Map<String, IDataObject> map = dataSet.getMapDataObject();
+        if (map.isEmpty()){
+            if (!this.checkData(true)){
+                result = false;
+            }
+        }
         for (Map.Entry<String, IDataObject> entry : map.entrySet()) {
             if (!entry.getValue().checkData(true)){
                 result = false;
@@ -1838,6 +1848,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     protected void afterUpdate(IDataSet dataSet) {
         Map<String, IDataObject> map = dataSet.getMapDataObject();
+        if (map.isEmpty()){
+            if (this.getDataEvents() != null){
+                this.getDataEvents().afterUpdate(true);
+            }
+        }
         for (Map.Entry<String, IDataObject> entry : map.entrySet()) {
             if (entry.getValue().getDataEvents() != null) {
                 entry.getValue().getDataEvents().afterUpdate(true);

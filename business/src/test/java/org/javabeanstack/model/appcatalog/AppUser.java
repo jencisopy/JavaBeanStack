@@ -15,18 +15,24 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import org.javabeanstack.data.DataRow;
+import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.model.IAppUserMember;
+import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.LocalDates;
+import org.javabeanstack.util.Strings;
+import org.apache.log4j.Logger;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuario", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"codigo"})})
 public class AppUser extends DataRow implements IAppUser {
-
+    private static final Logger LOGGER = Logger.getLogger(AppUser.class);
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -51,7 +57,11 @@ public class AppUser extends DataRow implements IAppUser {
     private String pass;
 
     @Transient
-    private String passConfirm;
+    private String passConfirm=Strings.replicate("*", 20);
+    
+    @Transient
+    private String passConfirm2=Strings.replicate("*", 20);
+    
 
     @Size(max = 50)
     @Column(name = "descripcion")
@@ -78,7 +88,7 @@ public class AppUser extends DataRow implements IAppUser {
     private String celular2;
     
     @Column(name = "disable")
-    private Boolean disable = false;
+    private Boolean disabled = false;
 
     @Column(name = "expira")
     private LocalDateTime expiredDate;
@@ -97,12 +107,13 @@ public class AppUser extends DataRow implements IAppUser {
     private LocalDateTime fechamodificacion;
 
     @OneToMany(mappedBy = "usermember")
-    private List<AppUserMember> listaUsuarioMiembro = new ArrayList<>();
+    private List<AppUserMember> usuarioMiembroList = new ArrayList<>();
 
     @Column(name = "idempresa")
     private Long idcompany;
 
     public AppUser() {
+        queryUK = "select o from AppUser o where code = :code";
     }
 
     @Override
@@ -176,10 +187,23 @@ public class AppUser extends DataRow implements IAppUser {
     }
 
     @Override
-    public void setPassConfirm(String clave2) {
-        this.passConfirm = clave2;
+    public void setPassConfirm(String passConfirm) {
+        this.passConfirm = passConfirm;
     }
 
+    @Override
+    public String getPassConfirm2() {
+        if (passConfirm2 != null) {
+            passConfirm2 = passConfirm2.trim();
+        }
+        return passConfirm2;
+    }
+
+    @Override
+    public void setPassConfirm2(String passConfirm2) {
+        this.passConfirm2 = passConfirm2;
+    }
+    
     @Override
     public String getDescription() {
         if (description != null) {
@@ -194,13 +218,13 @@ public class AppUser extends DataRow implements IAppUser {
     }
 
     @Override
-    public Boolean getDisable() {
-        return disable;
+    public Boolean getDisabled() {
+        return disabled;
     }
 
     @Override
-    public void setDisable(Boolean disable) {
-        this.disable = disable;
+    public void setDisabled(Boolean disable) {
+        this.disabled = disable;
     }
 
     @Override
@@ -215,10 +239,24 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Override
     public String getRol() {
-        if (rol != null) {
-            rol = rol.trim();
+        // Este es el valor del usuario normal
+        String result="30";    
+        try{
+            if (this.getUserMemberList() == null || this.getUserMemberList().isEmpty()){
+                return Fn.nvl(rol,"30").trim();
+            }
+            for (IAppUserMember userMember: this.getUserMemberList()){
+                String role = Fn.nvl(userMember.getUserGroup().getRol(),"30").trim();
+                if (Integer.parseInt(role) < Integer.parseInt(result)){
+                    result = role;
+                }
+            }
         }
-        return rol;
+        catch (Exception exp)    {
+            ErrorManager.showError(exp, LOGGER);
+            result = Fn.nvl(rol,"30").trim();            
+        }
+        return result.toUpperCase();
     }
 
     @Override
@@ -256,12 +294,12 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Override
     public List<IAppUserMember> getUserMemberList() {
-        return (List<IAppUserMember>) (List<?>) listaUsuarioMiembro;
+        return (List<IAppUserMember>) (List<?>) usuarioMiembroList;
     }
 
     @Override
     public void setUserMemberList(List<IAppUserMember> listaUsuarioMiembro) {
-        this.listaUsuarioMiembro = (List<AppUserMember>) (List<?>) listaUsuarioMiembro;
+        this.usuarioMiembroList = (List<AppUserMember>) (List<?>) listaUsuarioMiembro;
     }
 
     @Override
@@ -371,7 +409,7 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Override
     public String toString() {
-        return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName + ", clave=" + pass + ", clave2=" + passConfirm + ", descripcion=" + description + ", disable=" + disable + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
+        return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName +  ", descripcion=" + description + ", disable=" + disabled + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
     }
     
     @PreUpdate

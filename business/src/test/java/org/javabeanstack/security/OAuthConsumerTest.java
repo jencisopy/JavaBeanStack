@@ -119,8 +119,8 @@ public class OAuthConsumerTest extends TestClass {
         }
         IOAuthConsumerData data = new OAuthConsumerData();
         data.setIdAppUser(0L);
-        data.setUserLogin("J");
-        data.setUserPass("");
+        data.setUserLogin("test1");
+        data.setUserPass("test1");
         data.setIdCompany(2L);
         data.addOtherDataValue("dato1", "dato1");
         data.addOtherDataValue("dato2", "dato2");
