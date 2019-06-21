@@ -327,6 +327,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return uri;
     }
 
+    public Map<String, String> getCompleteTextSearchFields() {
+        return completeTextSearchFields;
+    }
+
+    
     public String getTableTextFooter() {
         return tableTextFooter;
     }
@@ -435,10 +440,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             }
             separador = " or ";
         }
-        //TODO revisar este codigo
-        if (Strings.isNullorEmpty(filter)) {
-            filter = " nombre like '%" + text + "%' or codigo like '%" + text + "%'";
-        }
         return filter;
     }
 
@@ -526,6 +527,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * datos.
      */
     public boolean allowEditField(String fieldName) {
+        if (getRow() == null){
+            return false;
+        }
         return !(getRow().getAction() != IDataRow.AGREGAR
                 && getRow().getAction() != IDataRow.MODIFICAR);
     }
