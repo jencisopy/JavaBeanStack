@@ -944,9 +944,12 @@ public class AbstractDataServiceTest extends TestClass{
         Long idempresa = dataLink.getUserSession().getIdEmpresa();
         PaisView paisView = dataService.findByQuery(sessionId, 
                 "select o from PaisView o where idempresa = "+idempresa+ " and codigo = 'PY'", null);
+        Long idregion = paisView.getIdregion();
+        paisView.setIdregion(null);
         Pais pais = new Pais();
         pais = dataService.copyTo(sessionId, paisView, pais);
         assertNotNull(pais);
+        paisView.setIdregion(idregion);
         assertTrue(pais.getRegion().getId().equals(paisView.getIdregion()));
         assertTrue(pais.getMoneda().getId().equals(paisView.getIdmoneda()));        
     }

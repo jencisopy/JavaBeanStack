@@ -44,8 +44,6 @@ import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.annotation.ColumnFunction;
-import org.javabeanstack.data.DataRow;
-import org.javabeanstack.data.GenericDAO;
 import org.javabeanstack.data.IDBConnectFactory;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBLinkInfo;
@@ -57,6 +55,7 @@ import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CheckException;
 import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.ParamsUtil;
 import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 
@@ -1050,7 +1049,7 @@ public abstract class AbstractDataService implements IDataService {
                 else if (Strings.left(fn, 3).equals("fn_")) {
                     Object id = source.getValue(fieldName);
                     if (id == null){
-                        id = ((GenericDAO)dao).getValueFromFn(sessionId, source, fieldName, fn);                        
+                        id = getValueFromFn(sessionId, source, fieldName, fn);                        
                     }
                     if (id != null){
                         Class clazz = Class.forName(annotation.classMapped());
@@ -1075,5 +1074,44 @@ public abstract class AbstractDataService implements IDataService {
             }
         }
         return target;
+    }
+    
+    protected <T extends IDataRow> Object getValueFromFn(String sessionId, T source, String fieldId, String fn) throws Exception {
+        Map<String, Object> params;
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
+        String dbEngine = getDataEngine(dbLinkInfo.getPersistUnit());
+        String queryString = "";
+        // Componer el comando a ejecutar en la base de datos.
+        if (Fn.inList(dbEngine, "SQLSERVER", "Microsoft SQL Server", "SYBASE")) {
+            queryString = "select {schema}." + fn;
+        } else if (Fn.inList(dbEngine, "ORACLE", "ORACLE8")) {
+            queryString = "select {schema}." + fn + " FROM DUAL";
+        } else if ("POSTGRES".equals(dbEngine)) {
+            queryString = "select {schema}." + fn;
+        } else if ("DB2".equals(dbEngine)) {
+            queryString = "select {schema}." + fn + " FROM SYSIBM.SYSDUMMY1";
+        }
+        
+        params = ParamsUtil.DataRowToMap(source);
+        
+        List<Object> result = findByNativeQuery(sessionId, queryString, params);
+        if (result == null || result.isEmpty()){
+            return null;
+        }
+        Class fieldType = source.getFieldType(fieldId);
+        Object id;
+        if (fieldType.isAssignableFrom(Long.class)){
+            id = Long.parseLong(result.get(0).toString());
+        }
+        else if (fieldType.isAssignableFrom(Integer.class)){
+            id = Integer.parseInt(result.get(0).toString());            
+        }
+        else if (fieldType.isAssignableFrom(Short.class)){
+            id = Short.parseShort(result.get(0).toString());
+        }
+        else{
+            id = result.get(0).toString();
+        }
+        return id;
     }
 }
