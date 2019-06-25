@@ -43,6 +43,9 @@ import org.javabeanstack.data.model.DataResult;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.annotation.CheckMethod;
+import org.javabeanstack.annotation.ColumnFunction;
+import org.javabeanstack.data.DataRow;
+import org.javabeanstack.data.GenericDAO;
 import org.javabeanstack.data.IDBConnectFactory;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBLinkInfo;
@@ -54,6 +57,7 @@ import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CheckException;
 import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 
 /**
@@ -61,20 +65,20 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
  * graban los registros en la base de datos. Es un ejb que se ejecuta en la capa
  * de la lógica del negocio.
  *
-  * @author Jorge Enciso
+ * @author Jorge Enciso
  */
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public abstract class AbstractDataService implements IDataService {
+
     private static final Logger LOGGER = Logger.getLogger(AbstractDataService.class);
     protected List<Method> methodList = this.getListCheckMethods();
     @EJB
     protected IGenericDAO dao;
-    
+
     @Override
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         return dao.getDBLinkInfo(sessionId);
     }
-    
 
     /**
      * Devuelve la unidad de persistencia asociado a la empresa en la cual
@@ -141,8 +145,7 @@ public abstract class AbstractDataService implements IDataService {
     public String getSchema(String persistentUnit) {
         return dao.getSchema(persistentUnit);
     }
-    
-    
+
     /**
      * Genera una lista de los metodos que existen con el proposito de validar
      * datos.
@@ -163,12 +166,13 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
-     * Asigna el map fieldsChecked, que básicamente va a informar que campos se 
+     * Asigna el map fieldsChecked, que básicamente va a informar que campos se
      * verificarón y cuales no
+     *
      * @param <T>
      * @param row objeto ejb
-     * @return Objeto ejb con atributo fieldsChecked preparado para recibir
-     * la información de las validaciones.
+     * @return Objeto ejb con atributo fieldsChecked preparado para recibir la
+     * información de las validaciones.
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -190,7 +194,6 @@ public abstract class AbstractDataService implements IDataService {
         }
         return row;
     }
-
 
     /**
      * Devuelve un registro de una tabla dada
@@ -253,9 +256,8 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Override
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params) throws Exception {
-        return dao.find(entityClass, sessionId, order, filter, params);        
+        return dao.find(entityClass, sessionId, order, filter, params);
     }
-
 
     /**
      * Devuelve una lista de registro de una tabla dada
@@ -452,7 +454,6 @@ public abstract class AbstractDataService implements IDataService {
     public <T extends IDataRow> List<T> findByNativeQuery(Class<T> clazz, String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
         return dao.findByNativeQuery(clazz, sessionId, queryString, parameters, first, max);
     }
-    
 
     /**
      * Refresca desde la base de datos los valores de un objeto.
@@ -499,7 +500,6 @@ public abstract class AbstractDataService implements IDataService {
         return dao.getCount2(sessionId, queryString, parameters);
     }
 
-    
     /**
      * Verifica que sea valida la sesión de usuario para poder realizar las
      * operaciones.
@@ -509,7 +509,7 @@ public abstract class AbstractDataService implements IDataService {
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     protected final void checkUserSession(String sessionId) throws SessionError {
-        if (isNullorEmpty(sessionId)){ 
+        if (isNullorEmpty(sessionId)) {
             return;
         }
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
@@ -518,7 +518,6 @@ public abstract class AbstractDataService implements IDataService {
         }
     }
 
-    
     /**
      * Válida que la clave del registro no exista en la tabla.
      *
@@ -584,7 +583,7 @@ public abstract class AbstractDataService implements IDataService {
                 } // Buscar valor del foreignkey
                 else if (row.getValue(fieldName) != null) {
                     Class fieldType = row.getFieldType(fieldName);
-                    Object id = ((IDataRow)row.getValue(fieldName)).getId();
+                    Object id = ((IDataRow) row.getValue(fieldName)).getId();
                     IDataRow fieldValue = findById(fieldType, sessionId, id);
                     if (fieldValue == null) {
                         result = false;
@@ -619,7 +618,7 @@ public abstract class AbstractDataService implements IDataService {
         CheckMethod anotation;
         row.setRowChecked(false);
         // Preparar el registro para las verificaciones.
-        if (row.getFieldsChecked() == null || row.getFieldsChecked().isEmpty()){
+        if (row.getFieldsChecked() == null || row.getFieldsChecked().isEmpty()) {
             setFieldsToCheck(row);
         }
         try {
@@ -640,7 +639,7 @@ public abstract class AbstractDataService implements IDataService {
                     fieldName = field.getName();
                     if (!checkForeignKey(sessionId, row, fieldName)) {
                         errors.put(fieldName.toLowerCase(),
-                                new ErrorReg("Dejo en blanco este dato o no existe el registro - "+fieldName,
+                                new ErrorReg("Dejo en blanco este dato o no existe el registro - " + fieldName,
                                         50013,
                                         fieldName));
                     }
@@ -667,26 +666,24 @@ public abstract class AbstractDataService implements IDataService {
                     if (result != null && !"".equals(result.getMessage())) {
                         errors.put(fieldName.toLowerCase(), result);
                         row.setFieldChecked(fieldName, false);
-                    }
-                    else{
+                    } else {
                         // Paso la verificación del atributo
                         row.setFieldChecked(fieldName, true);
                     }
                 }
             } catch (Exception ex) {
                 row.setFieldChecked(fieldName, false);
-                result = new ErrorReg(ErrorManager.getStackCause(ex),0, fieldName);
+                result = new ErrorReg(ErrorManager.getStackCause(ex), 0, fieldName);
                 errors.put(fieldName.toLowerCase(), result);
                 ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
             }
         }
         row.setErrors(errors);
-        if (errors.isEmpty()){
-            row.setRowChecked(true);            
+        if (errors.isEmpty()) {
+            row.setRowChecked(true);
         }
         return errors;
     }
-
 
     /**
      * Se ejecuta en el metodo save, valida los datos del registro
@@ -697,7 +694,7 @@ public abstract class AbstractDataService implements IDataService {
      * @param sessionId identificador de la sesión.
      * @return objeto con el resultado del proceso de validación.
      */
-    protected final <T extends IDataRow>  IDataResult checkDataResult(String sessionId, T row) {
+    protected final <T extends IDataRow> IDataResult checkDataResult(String sessionId, T row) {
         IDataResult dataResult = new DataResult();
         dataResult.setSuccess(Boolean.TRUE);
         List<IDataRow> ejbsRes = new ArrayList();
@@ -723,7 +720,7 @@ public abstract class AbstractDataService implements IDataService {
      * @throws SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError  {
+    public <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError {
         checkUserSession(sessionId);
         IDataResult dataResult;
         // Validar registro
@@ -785,14 +782,14 @@ public abstract class AbstractDataService implements IDataService {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult remove(String sessionId, T row) throws SessionError{
+    public <T extends IDataRow> IDataResult remove(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.DELETE);
         return save(sessionId, row);
     }
 
     /**
      * Prepara y envia los registros de una tabla según los parámetros asignados
-     * 
+     *
      * @param <T>
      * @param sessionId identificador de la sesión.
      * @param type tipo de registro.
@@ -802,11 +799,11 @@ public abstract class AbstractDataService implements IDataService {
      * @param firstRow
      * @param maxRows maxima cantidad de registros.
      * @return una lista con los objetos/registros solicitados
-     * @throws Exception 
+     * @throws Exception
      */
     @Override
-    public <T extends IDataRow> List<T> getDataRows(String sessionId, Class<T> type, 
-            String order, String filter, Map<String, Object> params, int firstRow, int maxRows) throws Exception{
+    public <T extends IDataRow> List<T> getDataRows(String sessionId, Class<T> type,
+            String order, String filter, Map<String, Object> params, int firstRow, int maxRows) throws Exception {
         String query = getSelectCmd(sessionId, type, order, filter);
         if (maxRows == -1) {
             maxRows = 999999999;
@@ -815,33 +812,34 @@ public abstract class AbstractDataService implements IDataService {
         if (maxRows == 0) {
             dataRows = new ArrayList();
         } else {
-            dataRows = (ArrayList<T>) dao.findListByQuery(sessionId, query, params, firstRow, maxRows);                
+            dataRows = (ArrayList<T>) dao.findListByQuery(sessionId, query, params, firstRow, maxRows);
         }
         return dataRows;
     }
-    
+
     /**
      * Setea el atributo selectcmd, sentencia que se ejecutara para recuperar
      * los datos
+     *
      * @param <T>
      * @param sessionId
      * @param type
      * @param order
      * @param filter
-     * @return 
+     * @return
      */
     @Override
     public <T extends IDataRow> String getSelectCmd(String sessionId, Class<T> type, String order, String filter) {
-        String comando; 
-        String filtro="";
-        
+        String comando;
+        String filtro = "";
+
         filter = Fn.nvl(filter, "");
         order = Fn.nvl(order, "");
-        comando = "select o from " + type.getSimpleName() + " o ";        
+        comando = "select o from " + type.getSimpleName() + " o ";
         IDBLinkInfo dbInfo = getDBLinkInfo(sessionId);
         IDBFilter dbFilter = dbInfo.getDBFilter();
         if (!dbInfo.getPersistUnit().equals(IDBManager.CATALOGO)
-                        && dbFilter != null){
+                && dbFilter != null) {
             filtro = dbFilter.getFilterExpr(type, "");
             if (!"".equals(filter)) {
                 filtro += " and " + filter;
@@ -859,7 +857,6 @@ public abstract class AbstractDataService implements IDataService {
         }
         return comando;
     }
-    
 
     /**
      * Sincroniza un ejb con la base de datos.
@@ -886,9 +883,9 @@ public abstract class AbstractDataService implements IDataService {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(String sessionId, IDataObject ejbs)  {
+    public IDataResult update(String sessionId, IDataObject ejbs) {
         isChecked(ejbs.getDataRows());
-        return dao.update(sessionId,ejbs);
+        return dao.update(sessionId, ejbs);
     }
 
     /**
@@ -919,56 +916,56 @@ public abstract class AbstractDataService implements IDataService {
         // Recorrer los objetos a actualizar en la base
         dataSet.getMapListSet().entrySet().forEach((entry) -> {
             isChecked(entry.getValue());
-        });        
-        return dao.update(sessionId, dataSet);        
+        });
+        return dao.update(sessionId, dataSet);
     }
 
     /**
-     * Verifica los datos (usuario, contraseña y empresa a la que se quiere loguear)
-     * Si pasa la válidación se puede crear el token.
+     * Verifica los datos (usuario, contraseña y empresa a la que se quiere
+     * loguear) Si pasa la válidación se puede crear el token.
+     *
      * @param data datos conteniendo valores de usuario, pass y empresa
      * @throws SessionError
      */
     @Override
-    public void checkAuthConsumerData(IOAuthConsumerData data) throws Exception{
+    public void checkAuthConsumerData(IOAuthConsumerData data) throws Exception {
         dao.checkAuthConsumerData(data);
     }
-    
-    
+
     /**
      * Verifica si la combinación iduser, idcompany es válido para una sesión
-     * @param iduser   identificador del usuario
-     * @param idcompany  identificador de la empresa
+     *
+     * @param iduser identificador del usuario
+     * @param idcompany identificador de la empresa
      * @return verdadero si cumple y falso si no
      */
     @Override
-    public boolean isCredentialValid(Long iduser, Long idcompany){
+    public boolean isCredentialValid(Long iduser, Long idcompany) {
         return dao.isCredentialValid(iduser, idcompany);
     }
-    
-    @Deprecated    
+
+    @Deprecated
     @Override
     public Connection getConnection(String sessionId) {
         throw new UnsupportedOperationException("Not supported");
-}
+    }
 
     @Deprecated
     @Override
     public Connection getConnection(String sessionId, IDBConnectFactory conn) {
         throw new UnsupportedOperationException("Not supportedt");
     }
-    
 
     @Deprecated
     @Override
     public <T> List<T> findAll(Class<T> entityClass, String sessionId) throws Exception {
-        throw new UnsupportedOperationException("Not supported."); 
+        throw new UnsupportedOperationException("Not supported.");
     }
-    
+
     @Deprecated
     @Override
     public IErrorReg sqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
-        throw new UnsupportedOperationException("Not supported"); 
+        throw new UnsupportedOperationException("Not supported");
     }
 
     @Deprecated
@@ -977,41 +974,106 @@ public abstract class AbstractDataService implements IDataService {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    @Deprecated    
+    @Deprecated
     @Override
     public <T extends IDataRow> List<T> getData(Query query) throws Exception {
         throw new UnsupportedOperationException("Not supported.");
     }
-    
-    @Deprecated    
+
+    @Deprecated
     @Override
     public <T extends IDataRow> List<T> refreshAll(String sessionId, List<T> rows) throws Exception {
         throw new UnsupportedOperationException("Not supported.");
     }
-    
+
     /**
      * Si el ejb o registro paso por el proceso de validación.
+     *
      * @param <T>
-     * @param ejb  ejb o registro 
-     * @throws CheckException 
+     * @param ejb ejb o registro
+     * @throws CheckException
      */
-    protected final <T extends IDataRow> void isChecked(T ejb) throws CheckException{
-        if (ejb != null && ejb.getAction() > 0 && !ejb.isRowChecked()){
+    protected final <T extends IDataRow> void isChecked(T ejb) throws CheckException {
+        if (ejb != null && ejb.getAction() > 0 && !ejb.isRowChecked()) {
             throw new CheckException("El registro no fue verificado");
         }
     }
-    
+
     /**
      * Si los ejbs fuerón validados
+     *
      * @param <T>
-     * @param ejbs  ejbs o registros 
-     * @throws CheckException 
+     * @param ejbs ejbs o registros
+     * @throws CheckException
      */
     protected final <T extends IDataRow> void isChecked(List<T> ejbs) throws CheckException {
-        if (ejbs != null){
+        if (ejbs != null) {
             ejbs.forEach((ejb) -> {
                 isChecked(ejb);
             });
         }
+    }
+
+    /**
+     * Copiar de un modelo origen tipo vista a uno destino tipo tabla
+     *
+     * @param <T>
+     * @param <X>
+     * @param sessionId identificador de la sesión
+     * @param source modelo origen 
+     * @param target modelo destino
+     * @return modelo destino
+     * @throws Exception
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public <T extends IDataRow, X extends IDataRow> X copyTo(String sessionId, T source, X target) throws Exception {
+        if (source == null || target == null) {
+            return target;
+        }
+        Field[] fields = source.getClass().getDeclaredFields();
+        //Recorrer atributos del origen para pasar al destino
+        for (Field field : fields) {
+            //Si tiene una anotación @ColumnFunction            
+            ColumnFunction annotation = field.getAnnotation(ColumnFunction.class);
+            if (annotation != null) {
+                String fieldName = field.getName();
+                Object fieldValue = source.getValue(fieldName);
+                String fn = annotation.formula();
+                //Si la función de conversión esta vacio devolver el valor del campo del modelo origen
+                if (fn.isEmpty()) {
+                    fieldValue = source.getValue(fieldName);
+                } //Si la función de conversión es igual al nombre del campo devolver el valor del campo del modelo origen
+                else if (fn.equals(":" + fieldName)) {
+                    fieldValue = source.getValue(fieldName);
+                } //Si la función de conversión comienza con "fn_" 
+                else if (Strings.left(fn, 3).equals("fn_")) {
+                    Object id = source.getValue(fieldName);
+                    if (id == null){
+                        id = ((GenericDAO)dao).getValueFromFn(sessionId, source, fieldName, fn);                        
+                    }
+                    if (id != null){
+                        Class clazz = Class.forName(annotation.classMapped());
+                        fieldValue = dao.findById(clazz, sessionId, id);
+                        if (Strings.left(fieldName, 2).equals("id")){
+                            fieldName = fieldName.substring(2);
+                        }
+                    }
+                } 
+                if (fieldValue == null){
+                    target.setValue(fieldName, null);
+                    continue;
+                }
+                Class fieldClass = target.getFieldType(fieldName);
+                //Si existe el campo en el destino                
+                if (fieldClass != null) {
+                    //Verificar que sea del mismo tipo                    
+                    if (fieldClass.isAssignableFrom(fieldValue.getClass())) {
+                        target.setValue(fieldName, fieldValue);
+                    }
+                }
+            }
+        }
+        return target;
     }
 }

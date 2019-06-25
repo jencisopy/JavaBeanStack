@@ -40,4 +40,5 @@ public interface IDataService extends IGenericDAO{
     <T extends IDataRow> IDataResult save(String sessionId, T row) throws Exception;
     <T extends IDataRow> List<T> getDataRows(String sessionId, Class<T> type, String order, String filter, Map<String, Object> params, int firstRow, int maxRows) throws Exception;
     <T extends IDataRow> String getSelectCmd(String sessionId, Class<T> type, String order, String filter);
+    <T extends IDataRow, X extends IDataRow> X copyTo(String sessionId, T source, X target) throws Exception;
 }

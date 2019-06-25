@@ -46,6 +46,7 @@ import org.javabeanstack.model.appcatalog.AppUserMember;
 import org.javabeanstack.model.tables.Moneda;
 import org.javabeanstack.model.tables.Pais;
 import org.javabeanstack.model.tables.Region;
+import org.javabeanstack.model.views.PaisView;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -926,6 +927,28 @@ public class AbstractDataServiceTest extends TestClass{
 
         String expResult = dataService.getSchema("PU1");
         assertNotNull(expResult);
+    }
+
+
+    /**
+     * Test of copyTo method, of class AbstractDataService.
+     */
+    @Test
+    public void test35copyTo() throws Exception {
+        System.out.println("35-DataService - copyTo");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        Long idempresa = dataLink.getUserSession().getIdEmpresa();
+        PaisView paisView = dataService.findByQuery(sessionId, 
+                "select o from PaisView o where idempresa = "+idempresa+ " and codigo = 'PY'", null);
+        Pais pais = new Pais();
+        pais = dataService.copyTo(sessionId, paisView, pais);
+        assertNotNull(pais);
+        assertTrue(pais.getRegion().getId().equals(paisView.getIdregion()));
+        assertTrue(pais.getMoneda().getId().equals(paisView.getIdmoneda()));        
     }
     
     public class AbstractDataServiceImpl extends AbstractDataService {

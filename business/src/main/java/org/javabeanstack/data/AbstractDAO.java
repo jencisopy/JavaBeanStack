@@ -356,6 +356,9 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
         } catch (NoResultException exp) {
             result = null;
+        } catch (Exception exp){
+            ErrorManager.showError(exp, LOGGER);
+            throw exp;
         }
         LOGGER.debug("-RESULT-");
         LOGGER.debug(result);
@@ -1326,5 +1329,44 @@ public abstract class AbstractDAO implements IGenericDAO {
             ErrorManager.showError(exp, LOGGER);
         }
         return false;
+    }
+    
+    public <T extends IDataRow> Object getValueFromFn(String sessionId, T source, String fieldId, String fn) throws Exception {
+        Map<String, Object> params = new HashMap();
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
+        String dbEngine = getDataEngine(dbLinkInfo.getPersistUnit());
+        String queryString = "";
+        // Componer el comando a ejecutar en la base de datos.
+        if (Fn.inList(dbEngine, "SQLSERVER", "Microsoft SQL Server", "SYBASE")) {
+            queryString = "select {schema}." + fn;
+        } else if (Fn.inList(dbEngine, "ORACLE", "ORACLE8")) {
+            queryString = "select {schema}." + fn + " FROM DUAL";
+        } else if ("POSTGRES".equals(dbEngine)) {
+            queryString = "select {schema}." + fn;
+        } else if ("DB2".equals(dbEngine)) {
+            queryString = "select {schema}." + fn + " FROM SYSIBM.SYSDUMMY1";
+        }
+        Query q = getEntityManager(getEntityId(dbLinkInfo)).createQuery(queryString);
+
+        for (Parameter param : q.getParameters()) {
+            q.setParameter(param, source.getValue(param.getName()));
+        }        
+
+        Object idresult = findByNativeQuery(sessionId, queryString, params);
+        Object idfind = source.getValue(fieldId);
+        Object id;
+        if (idfind instanceof Long){
+            id = Long.parseLong(idresult.toString());
+        }
+        else if (idfind instanceof Integer){
+            id = Integer.parseInt(idresult.toString());
+        }
+        else if (idfind instanceof Short){
+            id = Short.parseShort(idresult.toString());
+        }
+        else{
+            id = idresult;
+        }
+        return id;
     }
 }

@@ -34,4 +34,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 public @interface ColumnFunction {
     String formula();
+    String classMapped() default "";
 }

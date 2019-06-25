@@ -117,6 +117,13 @@ public class LocalDatesTest {
         LocalDateTime expResult = LocalDateTime.of(1972, 5, 19, 0, 0);        
         LocalDateTime result = LocalDates.toDateTime(dateString, formatter);
         assertEquals(expResult, result);
+        
+        dateString = "20191231T00:00:00";
+        expResult = LocalDateTime.of(2019, 12, 31, 0, 0);        
+        formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HH:mm:ss");        
+        result = LocalDates.toDateTime(dateString, formatter);
+        assertEquals(expResult, result);
+        
     }
 
     /**
