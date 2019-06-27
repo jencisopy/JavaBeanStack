@@ -37,9 +37,9 @@ import org.javabeanstack.data.IDataRow;
 public class ParamsUtil {
 
     /**
-     * Pasa los datos que se encuentran en un objeto deribado de DataRow a un 
+     * Pasa los datos que se encuentran en un objeto derivado de DataRow a un 
      * Map<String, Object>
-     * @param <T>  tipo de objeto deribado de DataRow
+     * @param <T>  tipo de objeto derivado de DataRow
      * @param source objeto DataRow
      * @return Map<String, Object> desde el origen
      * @throws IllegalArgumentException

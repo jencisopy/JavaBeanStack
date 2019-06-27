@@ -40,6 +40,12 @@ import org.javabeanstack.data.IDataQueryModel;
  * @author Jorge Enciso
  */
 public class JsonUtil {
+    /**
+     * Convierte una lista de objetos tipo IDataQueryModel a un array tipo json
+     * @param <T> 
+     * @param data lista de datos.
+     * @return array json.
+     */
     public static <T extends IDataQueryModel> JsonArray create(List<T> data) {
         if (data == null){
             return null;

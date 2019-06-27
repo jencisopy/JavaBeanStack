@@ -50,7 +50,6 @@ import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.data.IGenericDAO;
-import org.javabeanstack.util.Dates;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;

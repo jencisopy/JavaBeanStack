@@ -18,7 +18,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.time.LocalDateTime;
 
 /**
- *
+ * Convierte en objeto LocalDateTime a partir de un string
+ * Convierte un string a formato LocalDateTime
  * @author Jorge Enciso
  */
 public class LocalDateTimeAdapter extends XmlAdapter<String, LocalDateTime> {
