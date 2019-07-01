@@ -29,8 +29,13 @@ public class LocalDateTimeAdapter extends XmlAdapter<String, LocalDateTime> {
         if (v == null){
             return null;
         }
+        //yyyy-MM-dd'T'HH:mm:ss.SSS
         if (v.length() > 20){
             return LocalDates.toDateTime(v, "yyyy-MM-dd'T'HH:mm:ss.SSS");
+        }
+        //Igual a yyyy-MM-dd
+        if (v.length() == 10){
+            v += "T00:00:00";
         }
         return LocalDates.toDateTime(v, "yyyy-MM-dd'T'HH:mm:ss");
     }
