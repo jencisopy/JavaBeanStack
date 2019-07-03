@@ -34,7 +34,6 @@ import org.primefaces.model.SortMeta;
 import org.primefaces.model.SortOrder;
 
 import org.javabeanstack.data.DataInfo;
-import org.javabeanstack.data.DataRow;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.error.ErrorManager;
@@ -84,17 +83,6 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 return row;
             }
         }
-        //TODO analizar este codigo
-        T row;
-        try {
-            // Si no encontro buscar en en la base de datos
-            row = (T)context.getDAO().findById(getEntityClass(), id);
-            context.getDataRows().add(row);
-            context.moveLast();
-            return row;
-        } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
-        }
         return null;
     }
     
@@ -104,6 +92,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         }
         if (type.equals("Integer")){
             return Integer.parseInt(value);
+        }
+        if (type.equals("Short")){
+            return Short.parseShort(value);
         }
         if (type.equals("String")){
             return value;
