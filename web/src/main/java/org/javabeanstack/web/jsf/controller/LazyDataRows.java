@@ -34,6 +34,7 @@ import org.primefaces.model.SortMeta;
 import org.primefaces.model.SortOrder;
 
 import org.javabeanstack.data.DataInfo;
+import org.javabeanstack.data.DataRow;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.error.ErrorManager;
@@ -62,14 +63,31 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
 
     @Override
     public T getRowData(String rowKey) {
-        Long id = Long.parseLong(rowKey);
+        //Si no hay rowKey
+        if (rowKey == null || rowKey.isEmpty()){
+            return null;
+        }
+        Object id;
+        String rowKeyValue = rowKey.substring(rowKey.indexOf("}")+1);
+        String rowKeyType = rowKey.substring(1,rowKey.indexOf("}"));
+        if (context.getRow() != null){
+            //Verificar si el registro actual posicionado es igual al rowKeyValue
+            id = context.getRow().getId();
+            if (rowKeyValue.equals(id.toString())){
+                return (T)context.getRow();
+            }
+        }
+        id = getIdValue(rowKeyType, rowKeyValue);
+        //Buscar el registro que coincida con el id en la lista de registros       
         for (T row : getRows()) {
             if (row.getId().equals(id)) {
                 return row;
             }
         }
+        //TODO analizar este codigo
         T row;
         try {
+            // Si no encontro buscar en en la base de datos
             row = (T)context.getDAO().findById(getEntityClass(), id);
             context.getDataRows().add(row);
             context.moveLast();
@@ -79,10 +97,33 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         }
         return null;
     }
-
+    
+    protected Object getIdValue(String type, String value){
+        if (type.equals("Long")){
+            return Long.parseLong(value);
+        }
+        if (type.equals("Integer")){
+            return Integer.parseInt(value);
+        }
+        if (type.equals("String")){
+            return value;
+        }
+        try {
+            //Tipo DataRow
+            Class clazz = Class.forName(type);
+            Long id = Long.parseLong(value);
+            Object row = context.getDAO().findById(clazz, id);
+            return row;
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
+    }
+    
+    
     @Override
     public Object getRowKey(T row) {
-        return row.getId();
+        return row.getRowkey();
     }
 
     public Class<T> getEntityClass() {

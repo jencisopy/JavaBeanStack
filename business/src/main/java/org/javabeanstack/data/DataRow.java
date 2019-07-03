@@ -56,7 +56,6 @@ public class DataRow implements IDataRow, Cloneable {
     private Map<String, IErrorReg> errors = new HashMap();
     protected IDataRow fieldsOldValues;    
 
-    //TODO implementar parent, beforesetvalue, aftersetvalue
     public DataRow() {
         this.action = 0;
     }
@@ -306,11 +305,17 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     @Override
     public Object getRowkey() {
-        Object obj = DataInfo.getIdvalue(this);
+        Object obj = getId();
         if (obj == null) {
-            return 0;
+            return "";
         }
-        return obj;
+        String fieldType;
+        if (obj instanceof DataRow){
+            fieldType = obj.getClass().getName();
+            return "{"+fieldType+"}"+((DataRow)obj).getId();
+        }
+        fieldType = obj.getClass().getSimpleName();
+        return "{"+fieldType+"}"+obj;
     }
 
     /**
