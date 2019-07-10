@@ -44,6 +44,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.transaction.Status;
 import javax.transaction.TransactionSynchronizationRegistry;
 import org.apache.log4j.Logger;
+import org.javabeanstack.data.events.IDAOEvents;
 
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CompanyError;
@@ -787,7 +788,12 @@ public abstract class AbstractDAO implements IGenericDAO {
             List<? extends IDataRow> ejbs = entry.getValue();
             List<IDataRow> ejbsRes = new ArrayList();
             try {
+                IDAOEvents event = dataSet.getEvent(entry.getKey());
                 for (IDataRow ejb : ejbs) {
+                    //Ejecutar evento pre grabación
+                    if (event != null){
+                        event.beforeSave(sessionId, ejb);
+                    }
                     lastEjb = ejb;
                     switch (ejb.getAction()) {
                         case IDataRow.INSERT:
@@ -818,6 +824,10 @@ public abstract class AbstractDAO implements IGenericDAO {
                             break;
                     }
                     ejb.setErrors((Map<String, IErrorReg>) null);
+                    //Ejecutar evento post grabación
+                    if (event != null){
+                        event.afterSave(sessionId, ejb);
+                    }
                 }
                 for (IDataRow ejb : ejbs) {
                     if (ejb.getAction() != IDataRow.DELETE) {

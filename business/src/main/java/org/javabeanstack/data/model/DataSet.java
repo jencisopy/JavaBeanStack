@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
+import org.javabeanstack.data.events.IDAOEvents;
 
 /**
  * Esta clase se utiliza para enviar los set de datos para la actualización en 
@@ -44,6 +45,7 @@ public class DataSet implements IDataSet {
     private final Map<String, IDataObject> listDataObject = new LinkedHashMap();
     private List<List<? extends IDataRow>> listSet  = new LinkedList();
     private final Map<String, List<? extends IDataRow>> mapSet = new LinkedHashMap();
+    private final Map<String, IDAOEvents> mapSetEvents = new LinkedHashMap();
 
     /**
      * Devuelve de cada set de datos los registros que fuerón modificados y que
@@ -55,7 +57,7 @@ public class DataSet implements IDataSet {
     public IDataSet getChanged() {
         IDataSet dataSet = new DataSet();
         mapSet.entrySet().forEach( entry -> {
-            dataSet.add(entry.getKey(), getRowsChanged((List<IDataRow>)entry.getValue()));
+            dataSet.add(entry.getKey(), getRowsChanged((List<IDataRow>)entry.getValue()),getEvent(entry.getKey()));
         });
         return dataSet;
     }
@@ -97,7 +99,23 @@ public class DataSet implements IDataSet {
     public List<? extends IDataRow> get(String key) {
         return mapSet.get(key);
     }
-   
+
+    /**
+     * Devuelve un set de eventos.
+     * @param key clave del map conteniendo el set de eventos.
+     * @return set de eventos solicitado.
+     */
+    @Override
+    public IDAOEvents getEvent(String key) {
+        return mapSetEvents.get(key);
+    }
+    
+    
+    @Override
+    public void addEvents(String key, IDAOEvents events){
+        mapSetEvents.put(key, events);
+    }
+    
     /**
      * Devuelve un set de datos.
      * @param setNumber nro de set de datos.
@@ -164,6 +182,24 @@ public class DataSet implements IDataSet {
         }
     }
 
+    /**
+     * Agrega un set de datos al map.
+     * @param key   clave recuperar luego el set de datos.
+     * @param set   lista con los registros
+     * @param events eventos pre y post grabación
+     */
+    @Override
+    public void add(String key, List<? extends IDataRow> set, IDAOEvents events) {
+        List old = mapSet.put(key, set);
+        mapSetEvents.put(key, events);
+        if (old == null){
+            listSet.add(set);
+        }
+        else{
+            reCreateList();
+        }
+    }
+    
     /**
      * Agrega un dataobject a la lista de DataObjects.
      * @param key   clave que luego se utilizará para recuperar el dataObject

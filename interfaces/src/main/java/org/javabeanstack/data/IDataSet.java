@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.javabeanstack.data.events.IDAOEvents;
 
 /**
  *
@@ -41,6 +42,9 @@ public interface IDataSet extends Serializable {
     public Map<String, IDataObject> getMapDataObject();        
     public void add(String key, List<? extends IDataRow> set);
     public void add(String key, IDataRow row);    
+    public void add(String key, List<? extends IDataRow> set, IDAOEvents events);    
     public void addDataObject(String key, IDataObject dataObject);        
+    public IDAOEvents getEvent(String key);
+    public void addEvents(String key, IDAOEvents events);
     public int size();
 }
