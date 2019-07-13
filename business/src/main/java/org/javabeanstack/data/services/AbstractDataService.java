@@ -51,6 +51,7 @@ import org.javabeanstack.data.IDBManager;
 import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.data.model.DataSet;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CheckException;
 import org.javabeanstack.security.IOAuthConsumerData;
@@ -730,7 +731,15 @@ public abstract class AbstractDataService implements IDataService {
         }
         try {
             // Grabar registro en la base de datos.
-            dataResult = update(sessionId, row);
+            IDataSet dataSet = new DataSet();
+            List<IDataRow> rows = new ArrayList();
+            rows.add(row);
+            String setKey = "1";
+            if (row != null){
+                setKey = row.getClass().getSimpleName().toLowerCase();
+            }
+            dataSet.add(setKey, (List<IDataRow>) rows);
+            dataResult = update(sessionId, dataSet);
             return dataResult;
         } catch (Exception ex) {
             dataResult.setSuccess(false);
@@ -821,11 +830,11 @@ public abstract class AbstractDataService implements IDataService {
      * los datos
      *
      * @param <T>
-     * @param sessionId
-     * @param type
-     * @param order
-     * @param filter
-     * @return
+     * @param sessionId identificador de la sesión
+     * @param type tipo o modelo de dato
+     * @param order orden de la selección
+     * @param filter filtro de la selección
+     * @return sentencia JPQL que se ejecutará para recuperar los datos
      */
     @Override
     public <T extends IDataRow> String getSelectCmd(String sessionId, Class<T> type, String order, String filter) {
@@ -840,8 +849,11 @@ public abstract class AbstractDataService implements IDataService {
         if (!dbInfo.getPersistUnit().equals(IDBManager.CATALOGO)
                 && dbFilter != null) {
             filtro = dbFilter.getFilterExpr(type, "");
-            if (!"".equals(filter)) {
+            if (!"".equals(filter) && !filtro.isEmpty()) {
                 filtro += " and " + filter;
+            }
+            else{
+                filtro = filter;
             }
         } else {
             filtro = filter;
@@ -870,7 +882,9 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
         isChecked(ejb);
-        return dao.update(sessionId, ejb);
+        List<T> ejbs = new ArrayList<>();
+        ejbs.add(ejb);
+        return update(sessionId, ejbs);
     }
 
     /**
@@ -884,7 +898,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public IDataResult update(String sessionId, IDataObject ejbs) {
         isChecked(ejbs.getDataRows());
-        return dao.update(sessionId, ejbs);
+        return update(sessionId, ejbs.getDataRows());        
     }
 
     /**
@@ -899,7 +913,13 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
         isChecked(ejbs);
-        return dao.update(sessionId, ejbs);
+        IDataSet dataSet = new DataSet();
+        String setKey = "1";
+        if (ejbs.get(0) != null){
+            setKey = ejbs.get(0).getClass().getSimpleName().toLowerCase();
+        }
+        dataSet.add(setKey, (List<IDataRow>) ejbs);
+        return update(sessionId, dataSet);
     }
 
     /**

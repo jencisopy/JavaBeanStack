@@ -759,7 +759,11 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
         IDataSet dataSet = new DataSet();
-        dataSet.add("1", (List<IDataRow>) ejbs);
+        String setKey = "1";
+        if (ejbs.get(0) != null){
+            setKey = ejbs.get(0).getClass().getSimpleName().toLowerCase();
+        }
+        dataSet.add(setKey, (List<IDataRow>) ejbs);
         return update(sessionId, dataSet);
     }
 

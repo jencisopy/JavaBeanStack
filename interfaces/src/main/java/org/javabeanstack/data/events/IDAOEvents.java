@@ -37,9 +37,10 @@ public interface IDAOEvents extends Serializable {
      * @param <T>
      * @param sessionId identificador de la sesión del usuario
      * @param ejb objeto mapeado a un registro de una tabla.
+     * @throws java.lang.Exception
      *
      */
-    public <T extends IDataRow> void beforeSave(String sessionId, T ejb);
+    public <T extends IDataRow> void beforeSave(String sessionId, T ejb) throws Exception;
     
     /**
      * Se ejecuta despues del metodo que sincroniza un ejb con la base de datos.
@@ -47,7 +48,8 @@ public interface IDAOEvents extends Serializable {
      * @param <T>
      * @param sessionId identificador de la sesión del usuario
      * @param ejb objeto mapeado a un registro de una tabla.
+     * @throws java.lang.Exception
      *
      */
-    public  <T extends IDataRow> void afterSave(String sessionId, T ejb);
+    public  <T extends IDataRow> void afterSave(String sessionId, T ejb) throws Exception;
 }
