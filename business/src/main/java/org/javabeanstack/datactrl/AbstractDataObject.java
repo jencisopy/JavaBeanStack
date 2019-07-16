@@ -22,6 +22,7 @@
 package org.javabeanstack.datactrl;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -181,7 +182,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public Class<T> getType() {
-        return type;
+        if (type != null){
+            return type;
+        }
+        return (Class<T>) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
     /**
@@ -525,7 +530,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 && getDAO().getUserSession() != null) {
             IDBFilter dbFilter = getDAO().getUserSession().getDBFilter();
             if (dbFilter != null){
-                filtro = dbFilter.getFilterExpr(type, "");
+                filtro = dbFilter.getFilterExpr(getType(), "");
                 String separador = "";
                 if (!Strings.isNullorEmpty(filter) && !Strings.isNullorEmpty(filtro)){
                     separador = " and ";
@@ -670,8 +675,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                     allFilters = filterExtra;
                 }
             }
-            x = this.getDAO().getDataService().getDataRows(sessionId, type, order, allFilters, filterParams, firstRow, maxrows);
-            selectCmd = this.getDAO().getDataService().getSelectCmd(sessionId, type, order, filter);
+            x = this.getDAO().getDataService().getDataRows(sessionId, getType(), order, allFilters, filterParams, firstRow, maxrows);
+            selectCmd = this.getDAO().getDataService().getSelectCmd(sessionId, getType(), order, filter);
             lastQuery = selectCmd;
         } else {
             setSelectcmd();
@@ -1267,7 +1272,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean isFieldExist(String fieldname) {
-        return DataInfo.isFieldExist(this.type, fieldname);
+        return DataInfo.isFieldExist(this.getType(), fieldname);
     }
 
     /**
@@ -1278,7 +1283,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean isForeingKey(String fieldname) {
-        return DataInfo.isForeignKey(this.type, fieldname);
+        return DataInfo.isForeignKey(this.getType(), fieldname);
     }
 
     /**
@@ -1430,7 +1435,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         T newRow;
         try {
             errorApp = null;
-            newRow = this.type.newInstance();
+            newRow = this.getType().newInstance();
             if (isFieldExist("idempresa")) {
                 newRow.setValue("idempresa", getIdempresa());
             }
