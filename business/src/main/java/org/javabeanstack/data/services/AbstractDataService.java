@@ -23,6 +23,7 @@ package org.javabeanstack.data.services;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Query;
+import javax.validation.constraints.NotNull;
 import org.apache.log4j.Logger;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
@@ -634,6 +636,7 @@ public abstract class AbstractDataService implements IDataService {
             }
             // Ejecutar control de foreignkey
             // Chequeo del foreignkey solo si la operación es agregar o modificar
+            // Colocar valores por defectos en campos numericos y boolean
             if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 for (Field field : DataInfo.getDeclaredFields(row.getClass())) {
                     fieldName = field.getName();
@@ -642,6 +645,11 @@ public abstract class AbstractDataService implements IDataService {
                                 new ErrorReg("Dejo en blanco este dato o no existe el registro - " + fieldName,
                                         50013,
                                         fieldName));
+                    }
+                    NotNull notNull = field.getAnnotation(NotNull.class);
+                    //Colocar un valor por defecto si es nulo
+                    if (notNull != null && row.getValue(fieldName) == null) {
+                        setDefaults(row, fieldName);
                     }
                 }
             }
@@ -735,7 +743,7 @@ public abstract class AbstractDataService implements IDataService {
             List<IDataRow> rows = new ArrayList();
             rows.add(row);
             String setKey = "1";
-            if (row != null){
+            if (row != null) {
                 setKey = row.getClass().getSimpleName().toLowerCase();
             }
             dataSet.add(setKey, (List<IDataRow>) rows);
@@ -851,8 +859,7 @@ public abstract class AbstractDataService implements IDataService {
             filtro = dbFilter.getFilterExpr(type, "");
             if (!"".equals(filter) && !filtro.isEmpty()) {
                 filtro += " and " + filter;
-            }
-            else{
+            } else {
                 filtro = filter;
             }
         } else {
@@ -898,7 +905,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public IDataResult update(String sessionId, IDataObject ejbs) {
         isChecked(ejbs.getDataRows());
-        return update(sessionId, ejbs.getDataRows());        
+        return update(sessionId, ejbs.getDataRows());
     }
 
     /**
@@ -915,7 +922,7 @@ public abstract class AbstractDataService implements IDataService {
         isChecked(ejbs);
         IDataSet dataSet = new DataSet();
         String setKey = "1";
-        if (ejbs.get(0) != null){
+        if (ejbs.get(0) != null) {
             setKey = ejbs.get(0).getClass().getSimpleName().toLowerCase();
         }
         dataSet.add(setKey, (List<IDataRow>) ejbs);
@@ -1039,7 +1046,7 @@ public abstract class AbstractDataService implements IDataService {
      * @param <T>
      * @param <X>
      * @param sessionId identificador de la sesión
-     * @param source modelo origen 
+     * @param source modelo origen
      * @param target modelo destino
      * @return modelo destino
      * @throws Exception
@@ -1068,18 +1075,18 @@ public abstract class AbstractDataService implements IDataService {
                 } //Si la función de conversión comienza con "fn_" 
                 else if (Strings.left(fn, 3).equals("fn_")) {
                     Object id = source.getValue(fieldName);
-                    if (id == null){
-                        id = getValueFromFn(sessionId, source, fieldName, fn);                        
+                    if (id == null) {
+                        id = getValueFromFn(sessionId, source, fieldName, fn);
                     }
-                    if (id != null){
+                    if (id != null) {
                         Class clazz = Class.forName(annotation.classMapped());
                         fieldValue = dao.findById(clazz, sessionId, id);
-                        if (Strings.left(fieldName, 2).equals("id")){
+                        if (Strings.left(fieldName, 2).equals("id")) {
                             fieldName = fieldName.substring(2);
                         }
                     }
-                } 
-                if (fieldValue == null){
+                }
+                if (fieldValue == null) {
                     target.setValue(fieldName, null);
                     continue;
                 }
@@ -1095,7 +1102,21 @@ public abstract class AbstractDataService implements IDataService {
         }
         return target;
     }
-    
+
+    protected <T extends IDataRow> void setDefaults(T row, String fieldName) throws Exception {
+        if (row.getFieldType(fieldName) == BigDecimal.class) {
+            row.setValue(fieldName, BigDecimal.ZERO);
+        } else if (row.getFieldType(fieldName) == Boolean.class) {
+            row.setValue(fieldName, false);
+        } else if (row.getFieldType(fieldName) == Long.class) {
+            row.setValue(fieldName, 0L);
+        } else if (row.getFieldType(fieldName) == Integer.class) {
+            row.setValue(fieldName, 0);
+        } else if (row.getFieldType(fieldName) == Short.class) {
+            row.setValue(fieldName, Short.valueOf("0"));
+        }
+    }
+
     protected <T extends IDataRow> Object getValueFromFn(String sessionId, T source, String fieldId, String fn) throws Exception {
         Map<String, Object> params;
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
@@ -1111,25 +1132,22 @@ public abstract class AbstractDataService implements IDataService {
         } else if ("DB2".equals(dbEngine)) {
             queryString = "select {schema}." + fn + " FROM SYSIBM.SYSDUMMY1";
         }
-        
+
         params = ParamsUtil.DataRowToMap(source);
-        
+
         List<Object> result = findByNativeQuery(sessionId, queryString, params);
-        if (result == null || result.isEmpty()){
+        if (result == null || result.isEmpty()) {
             return null;
         }
         Class fieldType = source.getFieldType(fieldId);
         Object id;
-        if (fieldType.isAssignableFrom(Long.class)){
+        if (fieldType.isAssignableFrom(Long.class)) {
             id = Long.parseLong(result.get(0).toString());
-        }
-        else if (fieldType.isAssignableFrom(Integer.class)){
-            id = Integer.parseInt(result.get(0).toString());            
-        }
-        else if (fieldType.isAssignableFrom(Short.class)){
+        } else if (fieldType.isAssignableFrom(Integer.class)) {
+            id = Integer.parseInt(result.get(0).toString());
+        } else if (fieldType.isAssignableFrom(Short.class)) {
             id = Short.parseShort(result.get(0).toString());
-        }
-        else{
+        } else {
             id = result.get(0).toString();
         }
         return id;

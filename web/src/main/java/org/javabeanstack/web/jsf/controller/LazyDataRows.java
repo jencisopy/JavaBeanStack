@@ -114,6 +114,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     
     @Override
     public Object getRowKey(T row) {
+        if (row == null){
+            return "";
+        }
         return row.getRowkey();
     }
 

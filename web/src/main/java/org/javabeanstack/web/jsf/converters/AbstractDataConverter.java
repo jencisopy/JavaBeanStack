@@ -19,10 +19,10 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-
 package org.javabeanstack.web.jsf.converters;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -38,20 +38,28 @@ import org.javabeanstack.error.ErrorManager;
  * @author Jorge Enciso
  * @param <T>
  */
-public abstract class AbstractDataConverter<T extends IDataRow> implements Converter, Serializable   {
+public abstract class AbstractDataConverter<T extends IDataRow> implements Converter, Serializable {
+
     private static final Logger LOGGER = Logger.getLogger(AbstractDataConverter.class);
     Class<T> clase;
 
-    public AbstractDataConverter(){
+    public AbstractDataConverter() {
     }
-    
-    public AbstractDataConverter(Class<T> clase){
+
+    public AbstractDataConverter(Class<T> clase) {
         this.clase = clase;
     }
-    
+
     public abstract IDataLink getDAO();
-    
-    
+
+    public Class<T> getClase() {
+        if (clase != null) {
+            return clase;
+        }
+        return (Class<T>) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0];
+    }
+
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         LOGGER.debug(value);
@@ -62,7 +70,7 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
 
         try {
             getDAO().setUserSession(getUserSession());
-            T row = getDAO().findById(clase,Long.parseLong(value));
+            T row = getDAO().findById(getClase(), Long.parseLong(value));
             return row;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -70,7 +78,6 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
         return null;
     }
 
-    
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object object) {
         LOGGER.debug(object);
@@ -88,7 +95,11 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
     }
 
     public IUserSession getUserSession() {
-        IUserSession userSession = (IUserSession)FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userSession");
+        IUserSession userSession = (IUserSession) FacesContext
+                .getCurrentInstance()
+                .getExternalContext()
+                .getSessionMap()
+                .get("userSession");
         return userSession;
-    }    
+    }
 }
