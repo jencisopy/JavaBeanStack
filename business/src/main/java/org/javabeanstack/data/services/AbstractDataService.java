@@ -649,7 +649,7 @@ public abstract class AbstractDataService implements IDataService {
                     NotNull notNull = field.getAnnotation(NotNull.class);
                     //Colocar un valor por defecto si es nulo
                     if (notNull != null && row.getValue(fieldName) == null) {
-                        setDefaults(row, fieldName);
+                        setDefault(row, fieldName);
                     }
                 }
             }
@@ -1103,7 +1103,7 @@ public abstract class AbstractDataService implements IDataService {
         return target;
     }
 
-    protected <T extends IDataRow> void setDefaults(T row, String fieldName) throws Exception {
+    protected <T extends IDataRow> void setDefault(T row, String fieldName) throws Exception {
         if (row.getFieldType(fieldName) == BigDecimal.class) {
             row.setValue(fieldName, BigDecimal.ZERO);
         } else if (row.getFieldType(fieldName) == Boolean.class) {

@@ -21,9 +21,12 @@
  */
 package org.javabeanstack.data;
 
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 import org.apache.log4j.Logger;
 
@@ -44,7 +47,7 @@ public class DataRow implements IDataRow, Cloneable {
 
     @XmlTransient
     private int action = 0;
-    @XmlTransient    
+    @XmlTransient
     protected String queryUK = "";
     @XmlTransient
     private String idFunctionFind = "";
@@ -52,9 +55,9 @@ public class DataRow implements IDataRow, Cloneable {
     private boolean rowChecked = false;
     @XmlTransient
     private Map<String, Boolean> fieldsChecked = null;
-    @XmlTransient    
+    @XmlTransient
     private Map<String, IErrorReg> errors = new HashMap();
-    protected IDataRow fieldsOldValues;    
+    protected IDataRow fieldsOldValues;
 
     public DataRow() {
         this.action = 0;
@@ -73,29 +76,31 @@ public class DataRow implements IDataRow, Cloneable {
 
     /**
      * Devuelve un atributo con los valores originales antes de ser modificado.
+     *
      * @return un atributo con los valores originales antes de ser modificado.
      */
-    protected IDataRow getFieldsOldValues(){
+    protected IDataRow getFieldsOldValues() {
         return fieldsOldValues;
     }
-    
+
     /**
      * Se guarda en un atributo los valores originales del objeto
      */
     @Override
-    public void setOldValues(){
+    public void setOldValues() {
         fieldsOldValues = null;
-        fieldsOldValues = (IDataRow)this.clone();
+        fieldsOldValues = (IDataRow) this.clone();
     }
-    
+
     /**
      * Devuelve el valor original de un campo antes de ser modificado.
+     *
      * @param fieldName nombre del atributo o campo.
      * @return el valor original antes de ser modificado de un campo.
      */
     @Override
-    public Object getOldValue(String fieldName){
-        if (fieldsOldValues == null){
+    public Object getOldValue(String fieldName) {
+        if (fieldsOldValues == null) {
             return this.getValue(fieldName);
         }
         return fieldsOldValues.getValue(fieldName);
@@ -219,7 +224,7 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public Map<String, IErrorReg> getErrors() {
-        if (this.errors == null){
+        if (this.errors == null) {
             this.errors = new HashMap();
         }
         return this.errors;
@@ -291,7 +296,7 @@ public class DataRow implements IDataRow, Cloneable {
      *
      * @return identificador del componente.
      */
-    @XmlTransient    
+    @XmlTransient
     @Override
     public Object getId() {
         return DataInfo.getIdvalue(this);
@@ -310,12 +315,12 @@ public class DataRow implements IDataRow, Cloneable {
             return "";
         }
         String fieldType;
-        if (obj instanceof DataRow){
+        if (obj instanceof DataRow) {
             fieldType = obj.getClass().getName();
-            return "{"+fieldType+"}"+((DataRow)obj).getId();
+            return "{" + fieldType + "}" + ((DataRow) obj).getId();
         }
         fieldType = obj.getClass().getSimpleName();
-        return "{"+fieldType+"}"+obj;
+        return "{" + fieldType + "}" + obj;
     }
 
     /**
@@ -327,7 +332,7 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     @Override
     public Object getValue(String fieldname) {
-        if (fieldsOldValues == null){
+        if (fieldsOldValues == null) {
             this.setOldValues();
         }
         return DataInfo.getFieldValue(this, fieldname);
@@ -357,16 +362,16 @@ public class DataRow implements IDataRow, Cloneable {
      * @throws org.javabeanstack.exceptions.FieldException
      */
     @Override
-    public void setValue(String fieldname, Object value) throws FieldException{
-        if (fieldsOldValues == null){
+    public void setValue(String fieldname, Object value) throws FieldException {
+        if (fieldsOldValues == null) {
             this.setOldValues();
         }
         Boolean exito = DataInfo.setFieldValue(this, fieldname, value);
-        if (!exito){
-            LOGGER.error("fieldname: "+fieldname);
-            throw new FieldException("Error en "+fieldname+", no existe el campo o el tipo es incorrecto");
+        if (!exito) {
+            LOGGER.error("fieldname: " + fieldname);
+            throw new FieldException("Error en " + fieldname + ", no existe el campo o el tipo es incorrecto");
         }
-        if (this.action == 0){
+        if (this.action == 0) {
             this.action = IDataRow.UPDATE;
         }
     }
@@ -384,6 +389,7 @@ public class DataRow implements IDataRow, Cloneable {
 
     /**
      * Identificador del objeto
+     *
      * @return identificador del objeto
      */
     @Override
@@ -396,6 +402,7 @@ public class DataRow implements IDataRow, Cloneable {
 
     /**
      * Determina si este objeto es igual a uno que se recibe como parámetro
+     *
      * @param obj objeto a comparar.
      * @return verdadero si es igual y falso si no
      */
@@ -413,9 +420,10 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     /**
-     * Determina si este objeto es equivalente (ciertos atributos son iguales) a 
+     * Determina si este objeto es equivalente (ciertos atributos son iguales) a
      * el objeto que se pasa como parámetro.
-     * @param o  objeto a comparar.
+     *
+     * @param o objeto a comparar.
      * @return verdadero si es equivalente y falso si no
      */
     @Override
@@ -424,10 +432,10 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     /**
-     * Si se aplica o no el filtro por defecto en la selección de datos.
-     * Este metodo se modifica en las clases derivadas si se debe cambiar el 
+     * Si se aplica o no el filtro por defecto en la selección de datos. Este
+     * metodo se modifica en las clases derivadas si se debe cambiar el
      * comportamiento.
-     * 
+     *
      * @return verdadero si y falso no
      */
     @XmlTransient
@@ -437,39 +445,70 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     /**
-     * Verifica que el valor de idcompany sea válido 
-     * (En caso que corresponda, hay componentes que no se deben realizar esta validación) 
-     * @param idcompany  
+     * Verifica que el valor de idcompany sea válido (En caso que corresponda,
+     * hay componentes que no se deben realizar esta validación)
+     *
+     * @param idcompany
      * @return verdadero si pasa la validación y falso si no.
      */
     @Override
     public boolean checkFieldIdcompany(Long idcompany) {
-        if (!DataInfo.isFieldExist(this.getClass(), "idcompany") && 
-               !DataInfo.isFieldExist(this.getClass(), "idempresa")){
+        if (!DataInfo.isFieldExist(this.getClass(), "idcompany")
+                && !DataInfo.isFieldExist(this.getClass(), "idempresa")) {
             return true;
         }
-        Long idempresaThis = Fn.nvl((Long)this.getValue("idempresa"),0L);
-        Long idcompanyThis = Fn.nvl((Long)this.getValue("idcompany"),0L);
+        Long idempresaThis = Fn.nvl((Long) this.getValue("idempresa"), 0L);
+        Long idcompanyThis = Fn.nvl((Long) this.getValue("idcompany"), 0L);
         return idcompanyThis.equals(idcompany) || idempresaThis.equals(idcompany);
     }
-    
+
     /**
      * Para ejecutarse al llamar a un getter
+     *
      * @param fieldName nombre del atributo
      */
     @Override
-    public void onGetter(String fieldName){
+    public void onGetter(String fieldName) {
         //Implementar en clases derivadas
     }
-    
+
     /**
-     * Se ejecuta en el setter despues de la asignación 
+     * Se ejecuta en el setter despues de la asignación
+     *
      * @param fieldName nombre del atributo
      * @param fieldValueNew valor nuevo
-     * @param fieldValueOld valor anterior 
+     * @param fieldValueOld valor anterior
      */
     @Override
-    public void onSetter(String fieldName, Object fieldValueNew, Object fieldValueOld){
+    public void onSetter(String fieldName, Object fieldValueNew, Object fieldValueOld) {
         //Implementar en clases derivadas
+    }
+
+    /**
+     * Setea valores por defectos en los campos en caso se tener valor nulo y no
+     * se permita valores nulos
+     * 
+     * @throws Exception 
+     */
+    @Override
+    public void setDefaults() throws Exception{
+        Class classType = this.getClass();
+        Field[] fields = classType.getDeclaredFields();
+        for (Field field : fields) {
+            NotNull annotation = field.getAnnotation(NotNull.class);
+            if (annotation != null && this.getValue(field.getName()) == null) {
+                if (getFieldType(field.getName()) == BigDecimal.class) {
+                    setValue(field.getName(), BigDecimal.ZERO);
+                } else if (getFieldType(field.getName()) == Boolean.class) {
+                    setValue(field.getName(), false);
+                } else if (getFieldType(field.getName()) == Long.class) {
+                    setValue(field.getName(), 0L);
+                } else if (getFieldType(field.getName()) == Integer.class) {
+                    setValue(field.getName(), 0);
+                } else if (getFieldType(field.getName()) == Short.class) {
+                    setValue(field.getName(), Short.valueOf("0"));
+                }
+            }
+        }
     }
 }

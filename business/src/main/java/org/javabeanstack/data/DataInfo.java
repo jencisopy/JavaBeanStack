@@ -130,6 +130,26 @@ public class DataInfo {
     }
 
     /**
+     * Determina si un campo existe en la clase.
+     *
+     * @param <T>
+     * @param classType clase DataRow dado
+     * @param methodName nombre del metodo
+     * @return Verdadero si existe.
+     */
+    public static <T extends IDataRow> boolean isMethodExist(Class<T> classType, String methodName) {
+        try {
+            Method method = DataInfo.getMethod(classType, methodName);
+            if (method != null) {
+                return true;
+            }
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return false;
+    }
+    
+    /**
      * Determina si un campo o miembro es una clave foranea cuyo fetch = Lazy
      *
      * @param <T>

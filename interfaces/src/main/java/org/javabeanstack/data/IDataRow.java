@@ -69,4 +69,5 @@ public interface IDataRow extends Serializable{
     public boolean   checkFieldIdcompany(Long idcompany);
     public void onGetter(String fieldName);
     public void onSetter(String fieldName, Object fieldValueNew, Object fieldValueOld);
+    public void setDefaults() throws Exception;
 }

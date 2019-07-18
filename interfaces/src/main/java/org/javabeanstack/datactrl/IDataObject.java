@@ -94,6 +94,7 @@ public interface IDataObject <T extends IDataRow>{
     public void         setFilterExtra(String filterExtra);     
     public void         setFilterParams(Map<String, Object> filterParams); 
     public boolean      isFieldExist(String fieldname);
+    public boolean      isMethodExist(String methodName);
     public boolean      isForeingKey(String fieldname);
     public boolean      isOpen();
     public boolean      allowOperation(int operation);

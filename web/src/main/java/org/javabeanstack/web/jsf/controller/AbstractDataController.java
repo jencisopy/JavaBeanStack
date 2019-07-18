@@ -348,6 +348,22 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.tableDetailShow = tableDetailShow;
     }
 
+
+    public void openOrRequery(String filter){
+        openOrRequery("",filter, true, -1);
+    }
+    
+    public void openOrRequery(String order, String filter, boolean readwrite, int maxrows){
+        if (!this.isOpen()){
+            this.open(order, filter, true, 0);
+            if (maxrows == 0){
+                return;
+            }
+        }
+        this.setMaxRows(0);
+        this.requery();
+    }
+    
     /**
      * Se ejecuta al seleccionar un registro en la grilla
      *

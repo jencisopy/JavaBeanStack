@@ -153,6 +153,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                     order = order.substring(0, order.length() - 1);
                 }
             }
+            else{
+                order = context.getOrder();
+            }
             return load(first, pageSize, order, filters);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -167,6 +170,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             if (sortField != null) {
                 order = sortField;
                 order += (sortOrder == SortOrder.ASCENDING) ? " asc" : " desc";
+            }
+            else{
+                order = context.getOrder();
             }
             return load(first, pageSize, order, filters);
         } catch (Exception ex) {

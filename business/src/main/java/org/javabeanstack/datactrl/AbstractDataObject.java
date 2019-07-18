@@ -1276,6 +1276,18 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
+     * Devuelve verdadero o falso si es que existe un metodo en el
+     * modelo de dato.
+     *
+     * @param methodName nombre del metodo
+     * @return verdadero si existe el metodo en el modelo o falso si no.
+     */
+    @Override
+    public boolean isMethodExist(String methodName) {
+        return DataInfo.isMethodExist(this.getType(), methodName);
+    }
+    
+    /**
      * Determina si un campo o miembro es una clave foranea.
      *
      * @param fieldname nombre del campo
@@ -1436,16 +1448,18 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         try {
             errorApp = null;
             newRow = this.getType().newInstance();
-            if (isFieldExist("idempresa")) {
+            if (isFieldExist("idempresa") || isMethodExist("setIdempresa")) {
                 newRow.setValue("idempresa", getIdempresa());
             }
-            else if(isFieldExist("idcompany")) {
+            else if(isFieldExist("idcompany") || isMethodExist("setIdcompany")) {
                 newRow.setValue("idcompany", getIdcompany());
             }
             newRow.setAction(IDataRow.INSERT);
             if (!this.beforeInsertRow(newRow)) {
                 return false;
             }
+            //
+            newRow.setDefaults();
             //
             dataRows.add(newRow);
             this.moveLast();
@@ -1997,7 +2011,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             return;
         }
         // Eliminar de la lista local el registro actual si esta marcado para ser borrado
-        if (row.getAction() == IDataRow.DELETE && dataRows.size() > recno) {
+        if (row != null && row.getAction() == IDataRow.DELETE && dataRows.size() > recno) {
             dataRows.remove(recno);
             movePrevious();
         }
