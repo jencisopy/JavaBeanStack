@@ -152,4 +152,8 @@ public abstract class AbstractUserEnvironment extends AbstractController {
         avatarAsString = Base64.getEncoder().encodeToString(avatar);
         return avatarAsString;
     }
+    
+    public String getProjectContextName(){
+      return  getFacesCtx().getRequestContextPath();
+    }
 }
