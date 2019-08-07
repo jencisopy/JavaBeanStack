@@ -92,6 +92,9 @@ public class LocalDates {
      * @return un dato fecha resultante de los parámetros introducidos.
      */
     public static LocalDateTime toDateTime(String dateString) {
+        if (dateString.length() <= 10){
+            dateString += " 00:00:00";
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         return toDateTime(dateString, formatter);
     }
