@@ -273,4 +273,12 @@ public class UserSession implements IUserSession{
     public void setDBFilter(IDBFilter dbFilter) {
         this.dbFilter = dbFilter;
     }
+    
+    @Override
+    public final boolean isAdministrator(){
+        if (user == null){
+            return false;
+        }
+        return user.getRol().contains("20") || user.getRol().contains("00");
+    }
 }

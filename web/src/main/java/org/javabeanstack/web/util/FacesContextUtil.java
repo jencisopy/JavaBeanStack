@@ -31,6 +31,7 @@ import javax.faces.component.UIViewRoot;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 
@@ -182,6 +183,12 @@ public class FacesContextUtil {
 
     public String logout() {
         getSessionMap().put("userSession", null);
-        return "login.xhtml?faces-redirect=true";
+        return "/login.xhtml?faces-redirect=true";
+    }
+    
+    public void goHome() throws Exception{
+        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        HttpServletResponse res = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+        res.sendRedirect(req.getContextPath() + "/home.xhtml"); 
     }
 }
