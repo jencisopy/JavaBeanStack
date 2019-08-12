@@ -1,24 +1,30 @@
 /*
-* Copyright (c) 2015-2018 OyM System Group S.A.
-* Capitan Cristaldo 464, Asunción, Paraguay
-* All rights reserved. 
+* JavaBeanStack FrameWork
 *
-* NOTICE:  All information contained herein is, and remains
-* the property of OyM System Group S.A. and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to OyM System Group S.A.
-* and its suppliers and protected by trade secret or copyright law.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from OyM System Group S.A.
+* Copyright (C) 2018 Jorge Enciso
+* Email: jorge.enciso.r@gmail.com
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 3 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+* MA 02110-1301  USA
  */
 package org.javabeanstack.web.jsf.converters;
 
 /**
- *
+ * Convertidor de fecha local a string y vice versa
  * @author mtrinidad
  */
-
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -75,7 +81,6 @@ public class LocalDateTimeConverter implements Converter
             Calendar calendarComponent = (Calendar) component;
             return calendarComponent.getPattern();
         }
-
         return null;
     }
 }

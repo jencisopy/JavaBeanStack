@@ -177,6 +177,9 @@ public class FacesContextUtil {
 
     public Long getUserId() {
         IUserSession userSession = (IUserSession) getSessionMap().get("userSession");
+        if (userSession == null || userSession.getUser() == null){
+            return null;
+        }
         return userSession.getUser().getIduser();
     }
 

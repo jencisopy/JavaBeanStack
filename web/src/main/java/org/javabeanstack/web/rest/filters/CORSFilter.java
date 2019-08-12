@@ -29,6 +29,10 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import org.apache.log4j.Logger;
 
+/**
+ * Filtro CORS, intercepta las peticiones y agrega datos relevantes al response
+ * @author Jorge Enciso
+ */
 public class CORSFilter implements ContainerResponseFilter {
 
     private static final Logger LOGGER = Logger.getLogger(CORSFilter.class);

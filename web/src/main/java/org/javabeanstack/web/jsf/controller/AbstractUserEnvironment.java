@@ -61,6 +61,10 @@ public abstract class AbstractUserEnvironment extends AbstractController {
                 "SYSTEM", "/Configuration/SystemSetting/ClassInfo");
     }
 
+    /**
+     * Devuelve el avatar del usuario logueado en formato byte
+     * @return avatar del usuario logueado en formato byte
+     */
     public byte[] getUserAvatar() {
         IUserSession userSession = getUserSession();
         // Si no esta logueado
@@ -110,6 +114,10 @@ public abstract class AbstractUserEnvironment extends AbstractController {
         return null;
     }
 
+    /**
+     * Devuelve la imagen de un avatar por defecto en formato byte
+     * @return un avatar por defecto en formato byte
+     */
     public byte[] getDefaultUserAvatar() {
         // Reading a Image file from file system            
         try (InputStream imageData = IOUtil.getResourceAsStream(getClass(), "/images/userlogo.png")) {
@@ -122,6 +130,10 @@ public abstract class AbstractUserEnvironment extends AbstractController {
         return null;
     }
 
+    /**
+     * Devuelve un logo de empresa por defecto en formato byte
+     * @return logo de empresa por defecto en formato byte
+     */
     public byte[] getDefaultCompanyLogo() {
         // Reading a Image file from file system
         try (InputStream imageData = IOUtil.getResourceAsStream(getClass(), "/images/companylogo.png")) {
@@ -134,16 +146,30 @@ public abstract class AbstractUserEnvironment extends AbstractController {
         return null;
     }
 
+    /**
+     * Devuelve el avatar del usuario logueado en formato string base64
+     * @return el avatar del usuario logueado en formato string base64
+     */
     public String getUserAvatarAsString() {
         byte[] avatar = getUserAvatar();
         return getByteAsString(avatar);
     }
+
+    /**
+     * Devuelve el logo de la empresa seleccionada en formato string base64
+     * @return logo de la empresa seleccionada en formato string base64
+     */
 
     public String getCompanyLogoAsString() {
         byte[] logo = getCompanyLogo();
         return getByteAsString(logo);
     }
 
+    /**
+     * Convierte una byte a string base64
+     * @param avatar 
+     * @return 
+     */
     protected String getByteAsString(byte[] avatar) {
         if (avatar == null) {
             return null;
@@ -153,6 +179,10 @@ public abstract class AbstractUserEnvironment extends AbstractController {
         return avatarAsString;
     }
     
+    /**
+     * Devuelve el contexto del proyecto ej. localhost/Maker-web
+     * @return el contexto del proyecto ej. localhost/Maker-web
+     */
     public String getProjectContextName(){
       return  getFacesCtx().getRequestContextPath();
     }

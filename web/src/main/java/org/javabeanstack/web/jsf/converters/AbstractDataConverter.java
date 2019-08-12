@@ -60,6 +60,13 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
                 .getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
+    /**
+     * Convierte de un valor string a objeto
+     * @param context facecontext
+     * @param component 
+     * @param value valor a convertir
+     * @return string a objeto
+     */
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         LOGGER.debug(value);
@@ -78,6 +85,13 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
         return null;
     }
 
+    /**
+     * Convierte de un objeto a una variable string
+     * @param context facecontext
+     * @param component
+     * @param object instancia del objeto
+     * @return un objeto a una variable string
+     */
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object object) {
         LOGGER.debug(object);
@@ -94,6 +108,10 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
         }
     }
 
+    /**
+     * Devuelve la variable de sesión del usuario logueado
+     * @return variable de sesión del usuario logueado
+     */
     public IUserSession getUserSession() {
         IUserSession userSession = (IUserSession) FacesContext
                 .getCurrentInstance()
