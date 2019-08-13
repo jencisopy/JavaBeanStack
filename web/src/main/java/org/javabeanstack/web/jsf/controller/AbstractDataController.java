@@ -22,6 +22,7 @@
 package org.javabeanstack.web.jsf.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -107,6 +108,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     private String formViewSelected = "VIEW";
     private Boolean tableDetailShow = false;
     private IDataCtrlEvents dataCtrlEvents = new DataCtrlEventLocal();
+    private Object idParent;
 
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
@@ -132,7 +134,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.dataCtrlEvents = dataCtrlEvents;
     }
 
-    
     /**
      * Acción a realizar o en ejecución, (agregar, modificar, borrar, consultar
      * etc)
@@ -233,6 +234,23 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
+     * Asigna en forma manual el atributo rowSelected de otro controller relacionado
+     * @param bean controller relacionado
+     */
+    public void setBeanRowSelected(AbstractDataController bean) {
+        if (bean == null){
+            return;
+        }
+        if (bean.getRow() != null) {
+            bean.setRowSelected(bean.getRow());
+        }
+        else{
+            bean.setRowSelected(null);            
+        }
+    }
+
+    
+    /**
      * Devuelve los registros seleccionados en la grilla
      *
      * @return registros seleccionados en la grilla.
@@ -331,7 +349,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return completeTextSearchFields;
     }
 
-    
     public String getTableTextFooter() {
         return tableTextFooter;
     }
@@ -348,22 +365,41 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.tableDetailShow = tableDetailShow;
     }
 
-
-    public void openOrRequery(String filter){
-        openOrRequery("",filter, true, -1);
+    public void openOrRequery(String filter) {
+        openOrRequery("", filter, true, -1);
     }
-    
-    public void openOrRequery(String order, String filter, boolean readwrite, int maxrows){
-        if (!this.isOpen()){
+
+    public void openOrRequery(String order, String filter, boolean readwrite, int maxrows) {
+        if (!this.isOpen()) {
             this.open(order, filter, true, 0);
-            if (maxrows == 0){
+            if (maxrows == 0) {
                 return;
             }
         }
         this.setMaxRows(0);
         this.requery();
     }
-    
+
+    public boolean openOrRequeryIf(String fieldName, Object fieldValue, String order, int maxrows) {
+        boolean result = false;
+        if (!this.isOpen() || fieldValue == null) {
+            this.open("", "", true, 0);
+        }
+        if (fieldValue != null && !fieldValue.equals(idParent)) {
+            Map<String, Object> param = new HashMap();
+            param.put("id", fieldValue);
+            String filter = fieldName + " = :id";
+            setFilter(filter);
+            setOrder(order);
+            setMaxRows(maxrows);
+            setFilterParams(param);
+            this.requery();
+            result = true;
+        }
+        idParent = fieldValue;
+        return result;
+    }
+
     /**
      * Se ejecuta al seleccionar un registro en la grilla
      *
@@ -543,7 +579,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * datos.
      */
     public boolean allowEditField(String fieldName) {
-        if (getRow() == null){
+        if (getRow() == null) {
             return false;
         }
         return !(getRow().getAction() != IDataRow.AGREGAR
@@ -706,7 +742,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         public Map<String, List<IColumnModel>> getFormViewsColumns() {
             return null;
         }
-        
+
         @Override
         public void onRowSelect(IDataObject context, Object event) {
             int recno = getDataRows()
