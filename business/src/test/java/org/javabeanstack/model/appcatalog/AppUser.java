@@ -432,4 +432,9 @@ public class AppUser extends DataRow implements IAppUser {
     public boolean isApplyDBFilter() {
         return false;
     }
+    
+    @Override
+    public final boolean isAdministrator(){
+        return getRol().contains("20") || getRol().contains("00");
+    }
 }

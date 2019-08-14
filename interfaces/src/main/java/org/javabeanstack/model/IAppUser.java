@@ -56,4 +56,5 @@ public interface IAppUser extends IDataRow, Serializable {
     void setAppRol(String appRol);    
     void setType(Short tipo);
     void setAvatar(byte[] avatar);
+    boolean isAdministrator();
 }

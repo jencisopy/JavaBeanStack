@@ -85,5 +85,4 @@ public interface IUserSession extends Serializable {
     void setUser(IAppUser user);
     void setIdleSessionExpireInMinutes(Integer minutes);
     <T extends IDBFilter> void setDBFilter(T dbFilter);    
-    boolean isAdministrator();    
 }
