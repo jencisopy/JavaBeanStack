@@ -99,16 +99,13 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Operación a ejecutar, (agregar, modificar, borrar, consultar etc)
      */
     private String action = "";
-    /**
-     * Si se activa este atributo, se anula el proceso de recuperar registros
-     * (LazyDataRows.load)
-     */
+
+    private Object idParent;
     private Boolean noLazyRowsLoad = false;
     private String refreshUIComponent;
     private String formViewSelected = "VIEW";
     private Boolean tableDetailShow = false;
     private IDataCtrlEvents dataCtrlEvents = new DataCtrlEventLocal();
-    private Object idParent;
 
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
@@ -828,6 +825,20 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
         @Override
         public void setXmlResource(IDataObject context) {
+        }
+    }
+    
+    protected void refreshBean(AbstractDataController bean, String fieldName, Object fieldValue, String order, int maxrows){
+        if (this.getRow() == null) {
+            bean.open("", "", true, 0);
+            return;
+        }
+        try {
+            if (bean.openOrRequeryIf(fieldName, fieldValue, order, maxrows)){
+                setBeanRowSelected(bean);                
+            }
+        } catch (Exception ex) {
+            getFacesCtx().showError(ex.getMessage());
         }
     }
 }
