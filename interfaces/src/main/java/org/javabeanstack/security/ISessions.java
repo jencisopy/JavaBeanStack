@@ -2,6 +2,7 @@ package org.javabeanstack.security;
 
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.data.IDBLinkInfo;
+import org.javabeanstack.security.model.IClientAuthRequestInfo;
 
 
 
@@ -19,4 +20,6 @@ public interface ISessions {
     boolean isUserValid(Long iduser) throws Exception;
     boolean checkAuthConsumerData(IOAuthConsumerData data);        
     void logout(String sessionId);
+    IClientAuthRequestInfo getClientAuthCache(String authHeader);
+    void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo);
 }

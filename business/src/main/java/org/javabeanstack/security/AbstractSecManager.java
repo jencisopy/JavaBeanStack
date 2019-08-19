@@ -35,6 +35,7 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.security.model.IClientAuthRequestInfo;
 
 /**
  * Es un wraper de la clase Sessions. Se encarga de logeo de los usuario, 
@@ -191,4 +192,16 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
             getSessions().logout(userSession.getSessionId());            
         }
     }
+
+    @Override
+    public IClientAuthRequestInfo getClientAuthCache(String authHeader) {
+        return getSessions().getClientAuthCache(authHeader);
+    }
+
+    @Override
+    public void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo) {
+        getSessions().addClientAuthCache(authHeader, authRequestInfo);
+    }
+    
+    
 }

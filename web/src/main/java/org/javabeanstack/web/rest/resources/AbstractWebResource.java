@@ -25,10 +25,13 @@ import com.google.common.base.Strings;
 import javax.ejb.EJB;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import org.apache.log4j.Logger;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.security.IOAuthConsumer;
+import org.javabeanstack.security.model.ClientAuthRequestInfo;
+import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.ws.resources.IWebResource;
 
 /**
@@ -36,14 +39,10 @@ import org.javabeanstack.ws.resources.IWebResource;
  * @author Jorge Enciso
  */
 public abstract class AbstractWebResource implements IWebResource {
+    private static final Logger LOGGER = Logger.getLogger(AbstractWebResource.class);    
 
     @EJB
-    private IOAuthConsumer oAuthConsumer;
-
-    private Long idcompany;
-    private Long idPerson;
-    private String personRol;
-    private String token;
+    private IOAuthConsumer oAuthConsumer;  
 
     @Context
     HttpServletRequest requestContext;
@@ -53,10 +52,14 @@ public abstract class AbstractWebResource implements IWebResource {
 
     @Override
     public abstract ISecManager getSecManager();
-
+    
     @Override
-    public Long getIdCompany() {
-        return idcompany;
+    public Long getIdCompany(String authHeader) {
+        IClientAuthRequestInfo info = getSecManager().getClientAuthCache(authHeader);
+        if (info != null){
+            return info.getIdcompany();
+        }
+        return null;
     }
 
     @Override
@@ -69,18 +72,12 @@ public abstract class AbstractWebResource implements IWebResource {
         return requestContext.getRemoteHost();
     }
 
-    @Override
-    public Long getIdPerson() {
-        return idPerson;
-    }
-
-    @Override
-    public String getPersonRol() {
-        return personRol;
-    }
-
-    public String getToken() {
-        return token;
+    public String getToken(String authHeader) {
+        IClientAuthRequestInfo info = getSecManager().getClientAuthCache(authHeader);
+        if (info != null){
+            return info.getToken();
+        }
+        return null;
     }
     
     protected IOAuthConsumer getOAuthConsumer(){
@@ -93,45 +90,48 @@ public abstract class AbstractWebResource implements IWebResource {
 
     protected void setToken(String tokenHeader){
         String[] tokens = tokenHeader.split("\\ ");
-        this.token = tokens[1];
-        this.idPerson = 0L;
-        this.idcompany = 0L;
+        String token = tokens[1];
+        Long idcompany = 0L;
         //Si el token es null
         if (Strings.isNullOrEmpty(token)) {
             throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
         }
+        //Si ya se utilizo este token recientemente
+        if (getSecManager().getClientAuthCache(tokenHeader) != null){
+            return;
+        }
         //Verificar válidez del token
-        if (!verifyToken(this.token)){
+        if (!verifyToken(token)){
             // Verificar y traer credenciales del servidor y grabar en el local
-            if (!verifyTokenInMainServer(this.token)){
+            if (!verifyTokenInMainServer(token)){
+                LOGGER.error("Este token ya expiró o es incorrecto Server: "+token);
                 throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");                
             }
             //Reverificar en el local
-            if (!verifyToken(this.token)){
+            if (!verifyToken(token)){
+                LOGGER.error("Este token ya expiró o es incorrecto: local "+token);
                 throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");                
             }
         }
-        IAppCompany appCompanyToken = getOAuthConsumer().getCompanyMapped(this.token);
+        //Asignar idcompany
+        IAppCompany appCompanyToken = getOAuthConsumer().getCompanyMapped(token);
         if (appCompanyToken != null) {
             if (appCompanyToken.getIdcompanymask() != null) {
-                this.idcompany = appCompanyToken.getIdcompanymask();
+                idcompany = appCompanyToken.getIdcompanymask();
             }
             else{
-                this.idcompany = appCompanyToken.getIdcompany();
+                idcompany = appCompanyToken.getIdcompany();
             }
         }
+        // Guardar los datos de autenticación en el cache.
+        IClientAuthRequestInfo requestInfo = new ClientAuthRequestInfo();
+        requestInfo.setIdcompany(idcompany);
+        requestInfo.setAppAuthToken(getOAuthConsumer().findAuthToken(token));
+        getSecManager().addClientAuthCache(tokenHeader, requestInfo);
     }
 
     protected boolean verifyTokenInMainServer(String token){
         //Implementar en clases hijas
         return false;
-    }
-    
-    protected void setIdPerson(Long idPerson) {
-        this.idPerson = idPerson;
-    }
-
-    protected void setPersonRol(String personRol) {
-        this.personRol = personRol;
     }
 }

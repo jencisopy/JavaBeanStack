@@ -56,6 +56,7 @@ import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.util.LocalDates;
 
 /**
@@ -76,6 +77,7 @@ public class Sessions implements ISessions{
     protected final Map<String, Object> sessionVar = new HashMap<>();
     protected boolean oneSessionPerUser = false;
     private SecretKey secretKey;
+    private final Map<String, IClientAuthRequestInfo> tokenCache = new HashMap();
 
     @EJB
     protected IGenericDAO dao;
@@ -561,5 +563,25 @@ public class Sessions implements ISessions{
             ErrorManager.showError(ex, LOGGER);
         }
         return null;
+    }
+
+    @Override
+    public IClientAuthRequestInfo getClientAuthCache(String authHeader) {
+        IClientAuthRequestInfo info = tokenCache.get(authHeader);
+        //Si no existe
+        if (info == null){
+            return null;
+        }
+        //Si se registro en el cache hace más de un día eliminar del cache
+        if (LocalDates.daysInterval(info.getLogDate(), LocalDates.now()) > 1){
+            tokenCache.remove(authHeader);
+            return null;
+        }
+        return info;
+    }
+
+    @Override
+    public void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo) {
+        tokenCache.put(authHeader, authRequestInfo);
     }
 }

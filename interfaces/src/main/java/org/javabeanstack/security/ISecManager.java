@@ -1,5 +1,6 @@
 package org.javabeanstack.security;
 
+import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.security.model.IUserSession;
 
 
@@ -18,4 +19,6 @@ public interface ISecManager {
     IUserSession login2(String userLogin, String password) throws Exception;
     void logout(IUserSession userSession);
     void logout(String sessionId);
+    IClientAuthRequestInfo getClientAuthCache(String authHeader);
+    void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo);
 }
