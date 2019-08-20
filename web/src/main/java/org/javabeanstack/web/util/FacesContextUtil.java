@@ -120,7 +120,7 @@ public class FacesContextUtil {
     public void showError(String title, String message) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, message));
     }
-
+    
     public void showInfo(String message) {
         showInfo("Información", message);
     }
@@ -193,5 +193,11 @@ public class FacesContextUtil {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         HttpServletResponse res = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
         res.sendRedirect(req.getContextPath() + "/home.xhtml"); 
+    }
+    
+    public void goPage(String url) throws Exception{
+        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        HttpServletResponse res = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+        res.sendRedirect(req.getContextPath() + "/"+url); 
     }
 }
