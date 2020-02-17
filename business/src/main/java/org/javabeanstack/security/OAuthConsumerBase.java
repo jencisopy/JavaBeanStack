@@ -5,7 +5,7 @@
 * Email: jorge.enciso.r@gmail.com
 *        jenciso@javabeanstack.org
 *
-* This library is free software; you can redistribute it and/or
+    * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
 * License as published by the Free Software Foundation; either
 * version 3 of the License, or (at your option) any later version.
@@ -53,6 +53,7 @@ import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Fn.nvl;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.util.LocalDates;
 
 /**
  *
@@ -122,6 +123,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         parameters.put("token", token);
         try {
             IAppAuthConsumerToken auth = dao.findByQuery(null, queryString, parameters);
+            if (auth != null){
+                auth.setLastUsed(LocalDates.now());
+                dao.merge(null, auth);
+            }
             return auth;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -150,6 +155,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 //Busca por uuidDevice
                 queryString = "select o from AppAuthConsumerToken o where appAuthConsumer.consumerKey = :consumerKey and uuidDevice = :uuidOrTokenSecret";
                 auth = dao.findByQuery(null, queryString, parameters);
+                if (auth != null){
+                    auth.setLastUsed(LocalDates.now());
+                    dao.merge(null, auth);
+                }
             }
             return auth;
         } catch (Exception ex) {
@@ -387,7 +396,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @param uuidDevice identificador unico del dispositivo.
      * @param userName
      * @param userEmail
-     * @return valor del token.
+     * @return valor del token. 
      */
     @Override
     public String createToken(String consumerKey, IOAuthConsumerData data, 
