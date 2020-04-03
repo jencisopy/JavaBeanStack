@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.javabeanstack.util.Strings;
@@ -207,5 +208,22 @@ public class IOUtil {
      */
     public static String getFileExtension(String file){
         return FilenameUtils.getExtension(file);
+    }
+
+    /**
+     * Graba una variable tipo bytes a un archivo en el filesystem.
+     * @param byteArray  variable a grabar
+     * @param filePath  nombre del archivo con el path incluido donde se guardara los datos.
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    public static boolean writeBytesToFile(byte[] byteArray, String filePath){
+        boolean result = true;
+        try {
+            FileUtils.writeByteArrayToFile(new File(filePath), byteArray);
+        } catch (IOException ex) {
+            Logger.getLogger(IOUtil.class).error(ex.getMessage());
+            result = false;
+        }
+        return result;
     }
 }
