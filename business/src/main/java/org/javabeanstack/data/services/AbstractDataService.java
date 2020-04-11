@@ -61,6 +61,7 @@ import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.ParamsUtil;
 import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
+import org.javabeanstack.annotation.CheckForeignkey;
 
 /**
  * Esta clase deriva de AbstractDAO, a travéz de ella se recupera, válida y se
@@ -578,7 +579,7 @@ public abstract class AbstractDataService implements IDataService {
             else if (!DataInfo.isForeignKey(row.getClass(), fieldName)) {
                 result = true;
             } else {
-                Boolean nullable = field.getAnnotation(JoinColumn.class).nullable();
+                Boolean nullable = field.getAnnotation(JoinColumn.class).nullable();     
                 // Si el valor es nulo y no se permite nulo
                 if (row.getValue(fieldName) == null && !nullable) {
                     result = false;
@@ -640,9 +641,18 @@ public abstract class AbstractDataService implements IDataService {
             if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 for (Field field : DataInfo.getDeclaredFields(row.getClass())) {
                     fieldName = field.getName();
+                    // Si tiene una marca para no validar el foreignkey
+                    CheckForeignkey annotation = field.getAnnotation(CheckForeignkey.class);
+                    if (annotation != null && !annotation.check()){
+                        continue;
+                    }
                     if (!checkForeignKey(sessionId, row, fieldName)) {
+                        String message = "Dejo en blanco este dato o no existe el registro - " + fieldName;
+                        if (annotation != null && !annotation.message().isEmpty()){
+                            message = annotation.message();
+                        }
                         errors.put(fieldName.toLowerCase(),
-                                new ErrorReg("Dejo en blanco este dato o no existe el registro - " + fieldName,
+                                new ErrorReg(message,
                                         50013,
                                         fieldName));
                     }
