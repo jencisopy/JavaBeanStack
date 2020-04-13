@@ -614,7 +614,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
         // Esto con el fin de que no se ejecute el metodo load del lazydatarows
         // en caso de que se actualize un dataTable
-        getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
+        getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);            
         if (success) {
             //Renderizar componentes
             refreshUIComponent();

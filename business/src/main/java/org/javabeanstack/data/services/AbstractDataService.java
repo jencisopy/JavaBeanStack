@@ -870,7 +870,7 @@ public abstract class AbstractDataService implements IDataService {
             if (!"".equals(filter) && !filtro.isEmpty()) {
                 filtro += " and " + filter;
             } else {
-                filtro = filter;
+                filtro += filter;
             }
         } else {
             filtro = filter;

@@ -822,6 +822,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         //Before move
         this.beforeRowMove(row);
+        if (getRowCount() == 0){
+            row = null;
+            return true;
+        }
         if (rownumber < 0) {
             return false;
         }

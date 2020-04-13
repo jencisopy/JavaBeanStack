@@ -195,7 +195,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         IDataResult dataResult = getDao().update(getSessionId(), ejb);
-        if (dataResult.isSuccessFul() && dataResult.isRemoveDeleted()){
+        if (dataResult.isSuccessFul() && (dataResult.isRemoveDeleted() || ejb.getAction() == IDataRow.DELETE)){
             dataResult.setRowsUpdated(ejb);
         }
         return dataResult;
