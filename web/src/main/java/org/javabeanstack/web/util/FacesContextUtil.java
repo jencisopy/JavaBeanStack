@@ -22,6 +22,7 @@
 
 package org.javabeanstack.web.util;
 
+import java.util.Iterator;
 import java.util.Map;
 import javax.faces.application.Application;
 import javax.faces.application.FacesMessage;
@@ -33,6 +34,7 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.javabeanstack.error.IErrorReg;
 
 
 import org.javabeanstack.security.model.IUserSession;
@@ -119,6 +121,21 @@ public class FacesContextUtil {
 
     public void showError(String title, String message) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, message));
+    }
+
+    public void showError(String title, String message, String clientId) {
+        getFacesContext().addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, message));
+    }
+
+    public void showError(String title, Map<String, IErrorReg> errors) {
+        if (errors != null && errors.size() > 0) {
+            Iterator iterator = errors.keySet().iterator();
+            String key;
+            while (iterator.hasNext()) {
+                key = (String) iterator.next();
+                getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, errors.get(key).getMessage()));                
+            }
+        }
     }
     
     public void showInfo(String message) {
