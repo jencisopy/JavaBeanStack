@@ -97,7 +97,7 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
         LOGGER.debug(object);
 
         if (object != null) {
-            if (!(object instanceof String)) {
+            if (!(object instanceof String) && ((IDataRow)object).getId() != null) {
                 String result = ((IDataRow) object).getId().toString();
                 return result;
             } else {
