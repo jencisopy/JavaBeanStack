@@ -866,9 +866,9 @@ public abstract class AbstractDataService implements IDataService {
         IDBFilter dbFilter = dbInfo.getDBFilter();
         if (!dbInfo.getPersistUnit().equals(IDBManager.CATALOGO)
                 && dbFilter != null) {
-            filtro = dbFilter.getFilterExpr(type, "");
+            filtro = Fn.nvl(dbFilter.getFilterExpr(type, ""),"");
             if (!"".equals(filter) && !filtro.isEmpty()) {
-                filtro += " and " + filter;
+                filtro += " and (" + filter+")";
             } else {
                 filtro += filter;
             }
