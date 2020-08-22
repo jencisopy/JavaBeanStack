@@ -149,7 +149,7 @@ public class DataInfoTest {
     @Test
     public void test07GetTableName() {
         System.out.println("7-DataInfo - getTableName");
-        String expResult = "usuario";
+        String expResult = "appuser";
         String result = DataInfo.getTableName(AppUser.class);
         assertEquals(expResult, result);
     }
