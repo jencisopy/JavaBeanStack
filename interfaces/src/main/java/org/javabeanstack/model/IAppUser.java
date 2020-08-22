@@ -31,6 +31,8 @@ public interface IAppUser extends IDataRow, Serializable {
     List<IAppUserMember> getUserMemberList();
     
     String getRol();
+    String getHighRol();
+    String getAllRoles();    
     String getAppRol();    
     Short getType();
     byte[] getAvatar();

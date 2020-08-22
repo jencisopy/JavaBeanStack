@@ -239,6 +239,11 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Override
     public String getRol() {
+        return Fn.nvl(rol,"30").trim().toUpperCase();
+    }
+
+    @Override
+    public String getHighRol() {
         // Este es el valor del usuario normal
         String result="30";    
         try{
@@ -254,11 +259,37 @@ public class AppUser extends DataRow implements IAppUser {
         }
         catch (Exception exp)    {
             ErrorManager.showError(exp, LOGGER);
-            result = Fn.nvl(rol,"30").trim();            
+            result = Fn.nvl(rol,"30").trim();
         }
         return result.toUpperCase();
     }
-
+    
+    @Override
+    public String getAllRoles() {
+        // Este es el valor del usuario normal
+        String result = "30";
+        try {
+            // Si es grupo
+            if (this.getType() == 2) {
+                result = Fn.nvl(rol, "30").trim();
+            } else {
+                // Si es usuario
+                if (this.getUserMemberList() == null || this.getUserMemberList().isEmpty()) {
+                    return Fn.nvl(rol, "30").trim();
+                }
+                String roles = "";
+                for (IAppUserMember userMember : this.getUserMemberList()) {
+                    roles += Fn.nvl(userMember.getUserGroup().getRol(), "30").trim()+",";                                    
+                }
+                result = roles;                
+            }
+        } catch (Exception exp) {
+            ErrorManager.showError(exp, LOGGER);
+            result = Fn.nvl(rol, "30").trim();
+        }
+        return result.toUpperCase();
+    }
+    
     @Override
     public void setRol(String rol) {
         this.rol = rol;
@@ -435,6 +466,6 @@ public class AppUser extends DataRow implements IAppUser {
     
     @Override
     public final boolean isAdministrator(){
-        return getRol().contains("20") || getRol().contains("00");
+        return getAllRoles().contains("20") || getRol().contains("00");
     }
 }
