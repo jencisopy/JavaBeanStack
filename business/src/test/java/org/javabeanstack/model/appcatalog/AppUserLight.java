@@ -25,7 +25,7 @@ import org.javabeanstack.model.IAppUserMember;
 import org.javabeanstack.util.Fn;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "appuser")
 public class AppUserLight extends DataRow implements IAppUser {
     private static final Logger LOGGER = Logger.getLogger(AppUserLight.class);
     private static final long serialVersionUID = 1L;
@@ -33,22 +33,22 @@ public class AppUserLight extends DataRow implements IAppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @Column(name = "idusuario")
+    @Column(name = "iduser")
     private Long iduser;
 
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 30)
-    @Column(name = "codigo")
+    @Column(name = "code")
     private String code;
 
     @Basic(optional = false)
     @NotNull(message = "Debe ingresar el nombre de usuario")
     @Size(min = 1, max = 50)
-    @Column(name = "nombre")
+    @Column(name = "fullName")
     private String fullName;
 
-    @Column(name = "clave")
+    @Column(name = "pass")
     private String pass;
 
     @Transient
@@ -58,7 +58,7 @@ public class AppUserLight extends DataRow implements IAppUser {
     private String passConfirm2;
     
     @Size(max = 50)
-    @Column(name = "descripcion")
+    @Column(name = "description")
     private String description;
 
     @Size(max = 100)
@@ -81,26 +81,26 @@ public class AppUserLight extends DataRow implements IAppUser {
     @Column(name = "celular2")
     private String celular2;
     
-    @Column(name = "disable")
-    private Boolean disable = false;
+    @Column(name = "disabled")
+    private Boolean disabled = false;
 
-    @Column(name = "expira")
+    @Column(name = "expiredDate")
     private LocalDateTime expiredDate;
 
     @Size(max = 2)
     @Column(name = "rol")
     private String rol;
 
-    @Column(name = "tipo")
+    @Column(name = "type")
     private Short type;
 
     @Column(name = "fechamodificacion")
     private LocalDateTime fechamodificacion;
 
     @OneToMany(mappedBy = "usermember")
-    private List<AppUserMember> usuarioMiembroList = new ArrayList<>();
+    private List<AppUserMember> userMemberList = new ArrayList<>();
 
-    @Column(name = "idempresa")
+    @Column(name = "idcompany")
     private Long idcompany;
 
     public AppUserLight() {
@@ -112,8 +112,8 @@ public class AppUserLight extends DataRow implements IAppUser {
     }
 
     @Override
-    public void setIduser(Long idusuario) {
-        this.iduser = idusuario;
+    public void setIduser(Long iduser) {
+        this.iduser = iduser;
     }
 
     @Override
@@ -209,12 +209,12 @@ public class AppUserLight extends DataRow implements IAppUser {
 
     @Override
     public Boolean getDisabled() {
-        return disable;
+        return disabled;
     }
 
     @Override
     public void setDisabled(Boolean disable) {
-        this.disable = disable;
+        this.disabled = disable;
     }
 
     @Override
@@ -227,13 +227,11 @@ public class AppUserLight extends DataRow implements IAppUser {
         this.expiredDate = expira;
     }
 
-    
     @Override
     public String getRol() {
         return Fn.nvl(rol,"30").trim().toUpperCase();
     }
 
-    
     @Override
     public String getHighRol() {
         // Este es el valor del usuario normal
@@ -256,7 +254,6 @@ public class AppUserLight extends DataRow implements IAppUser {
         return result.toUpperCase();
     }
     
-    @Override
     public String getAllRoles() {
         // Este es el valor del usuario normal
         String result = "30";
@@ -317,12 +314,12 @@ public class AppUserLight extends DataRow implements IAppUser {
 
     @Override
     public List<IAppUserMember> getUserMemberList() {
-        return (List<IAppUserMember>) (List<?>) usuarioMiembroList;
+        return (List<IAppUserMember>) (List<?>) userMemberList;
     }
 
     @Override
-    public void setUserMemberList(List<IAppUserMember> listaUsuarioMiembro) {
-        this.usuarioMiembroList = (List<AppUserMember>) (List<?>) listaUsuarioMiembro;
+    public void setUserMemberList(List<IAppUserMember> userMemberList) {
+        this.userMemberList = (List<AppUserMember>) (List<?>) userMemberList;
     }
 
     @Override
@@ -430,7 +427,7 @@ public class AppUserLight extends DataRow implements IAppUser {
 
     @Override
     public String toString() {
-        return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName + ", clave=" + pass + ", clave2=" + passConfirm + ", descripcion=" + description + ", disable=" + disable + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
+        return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName + ", descripcion=" + description + ", disable=" + disabled + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
     }
     
     /**

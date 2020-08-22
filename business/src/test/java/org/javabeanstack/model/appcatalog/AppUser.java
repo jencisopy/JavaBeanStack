@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
@@ -29,42 +30,42 @@ import org.javabeanstack.util.Strings;
 import org.apache.log4j.Logger;
 
 @Entity
-@Table(name = "usuario", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"codigo"})})
+@Table(name = "appuser", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"code"})})
+@SequenceGenerator(name = "APPUSER_SEQ", allocationSize = 1, sequenceName = "APPUSER_SEQ")
 public class AppUser extends DataRow implements IAppUser {
     private static final Logger LOGGER = Logger.getLogger(AppUser.class);
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "APPUSER_SEQ")
     @Basic(optional = false)
-    @Column(name = "idusuario")
+    @Column(name = "iduser")
     private Long iduser;
 
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 30)
-    @Column(name = "codigo")
+    @Column(name = "code")
     private String code;
 
     @Basic(optional = false)
     @NotNull(message = "Debe ingresar el nombre de usuario")
     @Size(min = 1, max = 50)
-    @Column(name = "nombre")
+    @Column(name = "fullname")
     private String fullName;
 
-    @Column(name = "clave")
+    @Column(name = "pass")
     private String pass;
 
     @Transient
-    private String passConfirm=Strings.replicate("*", 20);
-    
+    private String passConfirm = Strings.replicate("*", 20);
+
     @Transient
-    private String passConfirm2=Strings.replicate("*", 20);
-    
+    private String passConfirm2 = Strings.replicate("*", 20);
 
     @Size(max = 50)
-    @Column(name = "descripcion")
+    @Column(name = "description")
     private String description;
 
     @Size(max = 100)
@@ -74,7 +75,7 @@ public class AppUser extends DataRow implements IAppUser {
     @Size(max = 100)
     @Column(name = "email2")
     private String email2;
-    
+
     @Size(max = 50)
     @Column(name = "telefono1")
     private String telefono1;
@@ -86,18 +87,18 @@ public class AppUser extends DataRow implements IAppUser {
     @Size(max = 50)
     @Column(name = "celular2")
     private String celular2;
-    
-    @Column(name = "disable")
+
+    @Column(name = "disabled")
     private Boolean disabled = false;
 
-    @Column(name = "expira")
+    @Column(name = "expiredDate")
     private LocalDateTime expiredDate;
 
     @Size(max = 2)
     @Column(name = "rol")
     private String rol;
 
-    @Column(name = "tipo")
+    @Column(name = "type")
     private Short type;
 
     @Column(name = "avatar")
@@ -107,9 +108,9 @@ public class AppUser extends DataRow implements IAppUser {
     private LocalDateTime fechamodificacion;
 
     @OneToMany(mappedBy = "usermember")
-    private List<AppUserMember> usuarioMiembroList = new ArrayList<>();
+    private List<AppUserMember> userMemberList = new ArrayList<>();
 
-    @Column(name = "idempresa")
+    @Column(name = "idcompany")
     private Long idcompany;
 
     public AppUser() {
@@ -122,8 +123,8 @@ public class AppUser extends DataRow implements IAppUser {
     }
 
     @Override
-    public void setIduser(Long idusuario) {
-        this.iduser = idusuario;
+    public void setIduser(Long iduser) {
+        this.iduser = iduser;
     }
 
     @Override
@@ -203,7 +204,7 @@ public class AppUser extends DataRow implements IAppUser {
     public void setPassConfirm2(String passConfirm2) {
         this.passConfirm2 = passConfirm2;
     }
-    
+
     @Override
     public String getDescription() {
         if (description != null) {
@@ -242,6 +243,7 @@ public class AppUser extends DataRow implements IAppUser {
         return Fn.nvl(rol,"30").trim().toUpperCase();
     }
 
+
     @Override
     public String getHighRol() {
         // Este es el valor del usuario normal
@@ -262,7 +264,7 @@ public class AppUser extends DataRow implements IAppUser {
             result = Fn.nvl(rol,"30").trim();
         }
         return result.toUpperCase();
-    }
+    }    
     
     @Override
     public String getAllRoles() {
@@ -289,6 +291,7 @@ public class AppUser extends DataRow implements IAppUser {
         }
         return result.toUpperCase();
     }
+
     
     @Override
     public void setRol(String rol) {
@@ -311,8 +314,8 @@ public class AppUser extends DataRow implements IAppUser {
     }
 
     @Override
-    public void setType(Short tipo) {
-        this.type = tipo;
+    public void setType(Short type) {
+        this.type = type;
     }
 
     public LocalDateTime getFechamodificacion() {
@@ -325,12 +328,12 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Override
     public List<IAppUserMember> getUserMemberList() {
-        return (List<IAppUserMember>) (List<?>) usuarioMiembroList;
+        return (List<IAppUserMember>) (List<?>) userMemberList;
     }
 
     @Override
-    public void setUserMemberList(List<IAppUserMember> listaUsuarioMiembro) {
-        this.usuarioMiembroList = (List<AppUserMember>) (List<?>) listaUsuarioMiembro;
+    public void setUserMemberList(List<IAppUserMember> userMemberList) {
+        this.userMemberList = (List<AppUserMember>) (List<?>) userMemberList;
     }
 
     @Override
@@ -339,8 +342,8 @@ public class AppUser extends DataRow implements IAppUser {
     }
 
     @Override
-    public void setIdcompany(Long idempresa) {
-        this.idcompany = idempresa;
+    public void setIdcompany(Long idcompany) {
+        this.idcompany = idcompany;
     }
 
     @Override
@@ -362,7 +365,6 @@ public class AppUser extends DataRow implements IAppUser {
     public void setAvatar(byte[] avatar) {
         this.avatar = avatar;
     }
-
 
     public String getEmail1() {
         return email1;
@@ -403,7 +405,6 @@ public class AppUser extends DataRow implements IAppUser {
     public void setCelular2(String celular2) {
         this.celular2 = celular2;
     }
-    
 
     @Override
     public int hashCode() {
@@ -440,23 +441,23 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Override
     public String toString() {
-        return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName +  ", descripcion=" + description + ", disable=" + disabled + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
+        return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName + ", descripcion=" + description + ", disable=" + disabled + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
     }
-    
+
     @PreUpdate
     @PrePersist
     public void preUpdate() {
         fechamodificacion = LocalDateTime.now();
-        if (expiredDate == null){
+        if (expiredDate == null) {
             expiredDate = LocalDates.toDateTime("31/12/9999 00:00:00");
         }
-    }    
-    
+    }
+
     /**
-     * Si se aplica o no el filtro por defecto en la selección de datos.
-     * Este metodo se modifica en las clases derivadas si se debe cambiar el 
+     * Si se aplica o no el filtro por defecto en la selección de datos. Este
+     * metodo se modifica en las clases derivadas si se debe cambiar el
      * comportamiento.
-     * 
+     *
      * @return verdadero si y falso no
      */
     @Override

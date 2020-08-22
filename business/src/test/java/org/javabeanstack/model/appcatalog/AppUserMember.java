@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.javabeanstack.data.DataRow;
@@ -16,21 +17,23 @@ import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.model.IAppUserMember;
 
 @Entity
-@Table(name = "usuariomiembro")
+@Table(name = "appusermember")
+@SequenceGenerator(name = "APPUSERMEMBER_SEQ", allocationSize = 1, sequenceName = "APPUSERMEMBER_SEQ")
 public class AppUserMember extends DataRow implements IAppUserMember {
-    private static final long serialVersionUID = 0L;
-     
+    
+    private static final long serialVersionUID = 1L;
+    
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "APPUSERMEMBER_SEQ")
     @Basic(optional = false)
-    @Column(name = "idusuariomiembro") 
+    @Column(name = "idusermember")
     private Long idusermember;
     
-    @JoinColumn(name = "idmiembro", referencedColumnName = "idusuario", nullable = false)
+    @JoinColumn(name = "idmember", referencedColumnName = "iduser", nullable = false)
     @ManyToOne(optional = false)
     private AppUser usermember;
 
-    @JoinColumn(name = "idusuario", referencedColumnName = "idusuario", nullable = false)
+    @JoinColumn(name = "idusergroup", referencedColumnName = "iduser", nullable = false)
     @ManyToOne(optional = false)
     private AppUser usergroup;
     
@@ -92,6 +95,12 @@ public class AppUserMember extends DataRow implements IAppUserMember {
         return "UsuarioMiembro{" + "idusuariomiembro=" + idusermember + "}";
     }
 
+    @Override
+    public boolean isRowChecked() {
+        return true;
+    }
+
+    
     @Override
     public boolean equivalent(Object o) {
         if (!(o instanceof AppUserMember)) {
