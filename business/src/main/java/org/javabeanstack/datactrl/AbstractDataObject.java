@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,6 +58,7 @@ import org.javabeanstack.util.Strings;
  */
 public abstract class AbstractDataObject<T extends IDataRow> implements IDataObject, Serializable {
     private static final Logger LOGGER = Logger.getLogger(AbstractDataObject.class);
+    
     /**
      * Puntero del nro de registro o fila
      */
@@ -128,6 +130,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     private IDataEvents dataEvents;
     
     private boolean showDeletedRow = false;
+    
+    private Object idParent;    
+    
 
     /**
      * @return Devuelve true si los datos son de solo lectura
@@ -771,6 +776,60 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return true;
     }
 
+    public void openOrRequery(String filter) {
+        openOrRequery("", filter, true, -1);
+    }
+
+    public void openOrRequery(String order, String filter, boolean readwrite, int maxrows) {
+        if (!this.isOpen()) {
+            this.open(order, filter, true, 0);
+            if (maxrows == 0) {
+                return;
+            }
+        }
+        this.setMaxRows(0);
+        this.requery();
+    }
+
+    public boolean openOrRequery(String fieldName, Object fieldValue, String order, int maxrows) {
+        boolean result = false;
+        if (!this.isOpen() || fieldValue == null) {
+            this.open("", "", true, 0);
+        }
+        if (fieldValue != null) {
+            Map<String, Object> param = new HashMap();
+            param.put("id", fieldValue);
+            String filter = fieldName + " = :id";
+            setFilter(filter);
+            setOrder(order);
+            setMaxRows(maxrows);
+            setFilterParams(param);
+            this.requery();
+            result = true;
+        }
+        return result;
+    }
+    
+    public boolean openOrRequeryIf(String fieldName, Object fieldValue, String order, int maxrows) {
+        boolean result = false;
+        if (!this.isOpen() || fieldValue == null) {
+            this.open("", "", true, 0);
+        }
+        if (fieldValue != null && !fieldValue.equals(idParent)) {
+            Map<String, Object> param = new HashMap();
+            param.put("id", fieldValue);
+            String filter = fieldName + " = :id";
+            setFilter(filter);
+            setOrder(order);
+            setMaxRows(maxrows);
+            setFilterParams(param);
+            this.requery();
+            result = true;
+        }
+        idParent = fieldValue;
+        return result;
+    }
+    
     /**
      * Se ejecuta posterior al metodo requery().
      */

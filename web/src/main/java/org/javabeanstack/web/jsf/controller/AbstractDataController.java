@@ -22,7 +22,6 @@
 package org.javabeanstack.web.jsf.controller;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -48,12 +47,12 @@ import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.events.IDataCtrlEvents;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.web.model.IColumnModel;
 import org.javabeanstack.xml.IXmlDom;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.javabeanstack.events.ICtrlEvents;
 
 /**
  * Controller para los ABMs de las tablas, hereda funcionalidades de
@@ -100,12 +99,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     private String action = "";
 
-    private Object idParent;
     private Boolean noLazyRowsLoad = false;
     private String refreshUIComponent;
     private String formViewSelected = "VIEW";
     private Boolean tableDetailShow = false;
-    private IDataCtrlEvents dataCtrlEvents = new DataCtrlEventLocal();
+    private ICtrlEvents ctrlEvents = new CtrlEventLocal();
 
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
@@ -123,12 +121,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.setType(type);
     }
 
-    public IDataCtrlEvents getDataCtrlEvents() {
-        return dataCtrlEvents;
+    public ICtrlEvents getCtrlEvents() {
+        return ctrlEvents;
     }
 
-    public void setDataCtrlEvents(IDataCtrlEvents dataCtrlEvents) {
-        this.dataCtrlEvents = dataCtrlEvents;
+    public void setCtrlEvents(ICtrlEvents ctrlEvents) {
+        this.ctrlEvents = ctrlEvents;
     }
 
     /**
@@ -141,6 +139,15 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return action;
     }
 
+    
+    public int getRowAction() {
+        if (getRow() == null){
+            return 0;
+        }
+        return getRow().getAction();
+    }
+
+    
     /**
      * Devuelve el identificador del registro de la tabla normalmente se pasa
      * desde otro proceso para realizar una operación sobre el mismo
@@ -362,49 +369,14 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.tableDetailShow = tableDetailShow;
     }
 
-    public void openOrRequery(String filter) {
-        openOrRequery("", filter, true, -1);
-    }
-
-    public void openOrRequery(String order, String filter, boolean readwrite, int maxrows) {
-        if (!this.isOpen()) {
-            this.open(order, filter, true, 0);
-            if (maxrows == 0) {
-                return;
-            }
-        }
-        this.setMaxRows(0);
-        this.requery();
-    }
-
-    public boolean openOrRequeryIf(String fieldName, Object fieldValue, String order, int maxrows) {
-        boolean result = false;
-        if (!this.isOpen() || fieldValue == null) {
-            this.open("", "", true, 0);
-        }
-        if (fieldValue != null && !fieldValue.equals(idParent)) {
-            Map<String, Object> param = new HashMap();
-            param.put("id", fieldValue);
-            String filter = fieldName + " = :id";
-            setFilter(filter);
-            setOrder(order);
-            setMaxRows(maxrows);
-            setFilterParams(param);
-            this.requery();
-            result = true;
-        }
-        idParent = fieldValue;
-        return result;
-    }
-
     /**
      * Se ejecuta al seleccionar un registro en la grilla
      *
      * @param event
      */
     public void onRowSelect(SelectEvent event) {
-        if (dataCtrlEvents != null) {
-            dataCtrlEvents.onRowSelect(this, event);
+        if (ctrlEvents != null) {
+            ctrlEvents.onRowSelect(this, event);
         }
     }
 
@@ -412,8 +384,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Se ejecuta posterior a la ejecución del filtrado de la grilla
      */
     public void onRowFilter() {
-        if (dataCtrlEvents != null) {
-            dataCtrlEvents.onRowFilter(this);
+        if (ctrlEvents != null) {
+            ctrlEvents.onRowFilter(this);
         }
     }
 
@@ -423,8 +395,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @param event
      */
     public void onColumnReorder(javax.faces.event.AjaxBehaviorEvent event) {
-        if (dataCtrlEvents != null) {
-            dataCtrlEvents.onColumnReorder(this, event);
+        if (ctrlEvents != null) {
+            ctrlEvents.onColumnReorder(this, event);
         }
     }
 
@@ -434,8 +406,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @param pToggleEvent
      */
     public void onColumnToggle(ToggleEvent pToggleEvent) {
-        if (dataCtrlEvents != null) {
-            dataCtrlEvents.onColumnToggle(this, pToggleEvent);
+        if (ctrlEvents != null) {
+            ctrlEvents.onColumnToggle(this, pToggleEvent);
         }
     }
 
@@ -446,8 +418,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @return lista de registros que cumplen la condición del filtro.
      */
     public List<T> onCompleteText(String text) {
-        if (dataCtrlEvents != null) {
-            return dataCtrlEvents.onCompleteText(this, text);
+        if (ctrlEvents != null) {
+            return ctrlEvents.onCompleteText(this, text);
         }
         return null;
     }
@@ -733,7 +705,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.recnoIndex = recnoIndex;
     }
 
-    class DataCtrlEventLocal implements IDataCtrlEvents<IDataObject> {
+    class CtrlEventLocal implements ICtrlEvents<IDataObject> {
 
         @Override
         public Map<String, List<IColumnModel>> getFormViewsColumns() {

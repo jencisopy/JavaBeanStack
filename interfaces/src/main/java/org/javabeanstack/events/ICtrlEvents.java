@@ -37,7 +37,7 @@ import org.w3c.dom.Element;
  * @author Jorge Enciso
  * @param <T>
  */
-public interface IDataCtrlEvents<T extends IDataObject> extends Serializable{
+public interface ICtrlEvents<T extends IDataObject> extends Serializable{
     Map<String, List<IColumnModel>> getFormViewsColumns();    
     IXmlDom<Document, Element> getXmlResource();
     void setXmlResource(T context);    

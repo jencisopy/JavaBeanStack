@@ -1091,7 +1091,10 @@ public abstract class AbstractDataService implements IDataService {
                     if (id != null) {
                         Class clazz = Class.forName(annotation.classMapped());
                         fieldValue = dao.findById(clazz, sessionId, id);
-                        if (Strings.left(fieldName, 2).equals("id")) {
+                        if (!annotation.fieldMapped().isEmpty()){
+                            fieldName = annotation.fieldMapped();
+                        }
+                        else if (Strings.left(fieldName, 2).equals("id")) {
                             fieldName = fieldName.substring(2);
                         }
                     }
