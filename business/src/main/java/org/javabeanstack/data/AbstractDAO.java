@@ -1146,12 +1146,18 @@ public abstract class AbstractDAO implements IGenericDAO {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private void populateQueryParameters(Query query, Map<String, Object> parameters, String queryString) {
         parameters.entrySet().forEach(entry -> {
-            if (queryString != null) {
-                if (Strings.findString(":" + entry.getKey(), queryString) >= 0) {
-                    query.setParameter(entry.getKey(), entry.getValue());                        
+            try{
+                if (queryString != null) {
+                    int pos = Strings.findString(":" + entry.getKey(), queryString);
+                    if (pos >= 0) {
+                        query.setParameter(entry.getKey(), entry.getValue());                        
+                    }
+                } else {
+                    query.setParameter(entry.getKey(), entry.getValue());
                 }
-            } else {
-                query.setParameter(entry.getKey(), entry.getValue());
+            }
+            catch(Exception ex){
+                // nada
             }
         });
     }

@@ -269,6 +269,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
+        if (id == null){
+            return null;
+        }
         return getDao().findById(entityClass, getSessionId(), id);
     }
     
@@ -286,6 +289,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T findById(Class<T> entityClass, Object id) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
+        if (id == null){
+            return null;
+        }
         return getDao().findById(entityClass, getSessionId(), id);
     }
 
@@ -303,6 +309,9 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T findByUk(T ejb) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
+        if (ejb == null){
+            return null;
+        }
         return getDao().findByUk(getSessionId(), ejb);
     }
 

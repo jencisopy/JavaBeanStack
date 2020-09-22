@@ -579,7 +579,7 @@ public abstract class AbstractDataService implements IDataService {
             else if (!DataInfo.isForeignKey(row.getClass(), fieldName)) {
                 result = true;
             } else {
-                Boolean nullable = field.getAnnotation(JoinColumn.class).nullable();     
+                Boolean nullable = field.getAnnotation(JoinColumn.class).nullable();
                 // Si el valor es nulo y no se permite nulo
                 if (row.getValue(fieldName) == null && !nullable) {
                     result = false;
@@ -643,12 +643,12 @@ public abstract class AbstractDataService implements IDataService {
                     fieldName = field.getName();
                     // Si tiene una marca para no validar el foreignkey
                     CheckForeignkey annotation = field.getAnnotation(CheckForeignkey.class);
-                    if (annotation != null && !annotation.check()){
+                    if (annotation != null && !annotation.check()) {
                         continue;
                     }
                     if (!checkForeignKey(sessionId, row, fieldName)) {
                         String message = "Dejo en blanco este dato o no existe el registro - " + fieldName;
-                        if (annotation != null && !annotation.message().isEmpty()){
+                        if (annotation != null && !annotation.message().isEmpty()) {
                             message = annotation.message();
                         }
                         errors.put(fieldName.toLowerCase(),
@@ -866,9 +866,9 @@ public abstract class AbstractDataService implements IDataService {
         IDBFilter dbFilter = dbInfo.getDBFilter();
         if (!dbInfo.getPersistUnit().equals(IDBManager.CATALOGO)
                 && dbFilter != null) {
-            filtro = Fn.nvl(dbFilter.getFilterExpr(type, ""),"");
+            filtro = Fn.nvl(dbFilter.getFilterExpr(type, ""), "");
             if (!"".equals(filter) && !filtro.isEmpty()) {
-                filtro += " and (" + filter+")";
+                filtro += " and (" + filter + ")";
             } else {
                 filtro += filter;
             }
@@ -1091,12 +1091,12 @@ public abstract class AbstractDataService implements IDataService {
                     if (id != null) {
                         Class clazz = Class.forName(annotation.classMapped());
                         fieldValue = dao.findById(clazz, sessionId, id);
-                        if (!annotation.fieldMapped().isEmpty()){
-                            fieldName = annotation.fieldMapped();
-                        }
-                        else if (Strings.left(fieldName, 2).equals("id")) {
-                            fieldName = fieldName.substring(2);
-                        }
+                    }
+                    //Determinar el nombre del campo en el target
+                    if (!annotation.fieldMapped().isEmpty()) {
+                        fieldName = annotation.fieldMapped();
+                    } else if (Strings.left(fieldName, 2).equals("id")) {
+                        fieldName = fieldName.substring(2);
                     }
                 }
                 if (fieldValue == null) {
@@ -1149,7 +1149,7 @@ public abstract class AbstractDataService implements IDataService {
         params = ParamsUtil.DataRowToMap(source);
 
         List<Object> result = findByNativeQuery(sessionId, queryString, params);
-        if (result == null || result.isEmpty()) {
+        if (result == null || result.isEmpty() || result.get(0) == null) {
             return null;
         }
         Class fieldType = source.getFieldType(fieldId);
