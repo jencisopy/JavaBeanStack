@@ -109,7 +109,7 @@ public class Dates {
      * Convierte una fecha a variable de cadena, según formato deseado.
      *
      * @param date
-     * @param format ejemplo dd/mm/yyyy
+     * @param format ejemplo dd/MM/yyyy
      * @return string con el formato deseado.
      */
     public static String toString(Date date, String format) {

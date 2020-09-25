@@ -354,6 +354,13 @@ public class DataRow implements IDataRow, Cloneable {
         return result;
     }
 
+    
+    @XmlTransient
+    @Override
+    public void setId(Object id) {
+        DataInfo.setIdvalue(this, id);
+    }
+    
     /**
      * Asigna un valor a un atributo
      *

@@ -274,6 +274,11 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
      */
     private String getFilterString(Map<String, Object> filters) {
         String queryWhere = "";
+        // Si en el controller se define los filtros
+        queryWhere = context.onGetFilterString(filters);
+        if (!queryWhere.isEmpty()){
+            return queryWhere;
+        }
         String filter;
         String separador = ""; 
         for (Map.Entry e : filters.entrySet()) {

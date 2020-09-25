@@ -57,6 +57,7 @@ public interface IDataRow extends Serializable{
     public Object    getValue(String fieldname);
     public Object    getOldValue(String fieldname);
     public Class     getFieldType(String fieldname);
+    public void      setId(Object id);
     public void      setValue(String fieldname, Object value) throws Exception;
     public void      setOldValues();    
     public void      setAction(int action);    

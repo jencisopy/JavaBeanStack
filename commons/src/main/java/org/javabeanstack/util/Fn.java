@@ -21,6 +21,7 @@
 */
 package org.javabeanstack.util;
 
+import java.text.DecimalFormat;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -229,6 +230,28 @@ public class Fn {
             else if (key != null && !key.toString().isEmpty()){
                 result.put(key.toString(), param);                
             }
+        }
+        return result;
+    }
+    
+    /**
+     * Convierte de numero a string utilizando una mascara para el efecto
+     * @param value valor numerico
+     * @param mask mascara (ver en la documentación de DecimalFormat)
+     * @return valor convertido a string.
+     */
+    public static String numberToString(Object value, String mask){
+        if (value == null){
+            return "";
+        }
+        String result;
+        if (!Fn.nvl(mask, "").isEmpty()){
+            DecimalFormat df = new DecimalFormat(mask);
+            result = df.format(value);
+        }
+        else{
+            DecimalFormat df = new DecimalFormat("###");
+            result = df.format(value);
         }
         return result;
     }

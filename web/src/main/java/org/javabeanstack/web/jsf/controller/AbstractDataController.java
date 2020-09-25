@@ -21,8 +21,13 @@
  */
 package org.javabeanstack.web.jsf.controller;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -53,6 +58,8 @@ import org.javabeanstack.xml.IXmlDom;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.javabeanstack.events.ICtrlEvents;
+import org.javabeanstack.util.Dates;
+import org.javabeanstack.util.LocalDates;
 
 /**
  * Controller para los ABMs de las tablas, hereda funcionalidades de
@@ -139,15 +146,13 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return action;
     }
 
-    
     public int getRowAction() {
-        if (getRow() == null){
+        if (getRow() == null) {
             return 0;
         }
         return getRow().getAction();
     }
 
-    
     /**
      * Devuelve el identificador del registro de la tabla normalmente se pasa
      * desde otro proceso para realizar una operación sobre el mismo
@@ -238,22 +243,22 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Asigna en forma manual el atributo rowSelected de otro controller relacionado
+     * Asigna en forma manual el atributo rowSelected de otro controller
+     * relacionado
+     *
      * @param bean controller relacionado
      */
     public void setBeanRowSelected(AbstractDataController bean) {
-        if (bean == null){
+        if (bean == null) {
             return;
         }
         if (bean.getRow() != null) {
             bean.setRowSelected(bean.getRow());
-        }
-        else{
-            bean.setRowSelected(null);            
+        } else {
+            bean.setRowSelected(null);
         }
     }
 
-    
     /**
      * Devuelve los registros seleccionados en la grilla
      *
@@ -586,7 +591,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
         // Esto con el fin de que no se ejecute el metodo load del lazydatarows
         // en caso de que se actualize un dataTable
-        getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);            
+        getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
         if (success) {
             //Renderizar componentes
             refreshUIComponent();
@@ -705,6 +710,106 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.recnoIndex = recnoIndex;
     }
 
+    protected void refreshBean(AbstractDataController bean, String fieldName, Object fieldValue, String order, int maxrows) {
+        if (this.getRow() == null) {
+            bean.open("", "", true, 0);
+            return;
+        }
+        try {
+            if (bean.openOrRequeryIf(fieldName, fieldValue, order, maxrows)) {
+                setBeanRowSelected(bean);
+            }
+        } catch (Exception ex) {
+            getFacesCtx().showError(ex.getMessage());
+        }
+    }
+
+    /**
+     * Para filtros en las grillas, usado solo cuando el set de datos no es
+     * modalidad Lazy.
+     *
+     * @param value
+     * @param filter
+     * @param locale
+     * @return
+     */
+    public boolean filterBy(Object value, Object filter, Locale locale) {
+        if (value instanceof Timestamp) {
+            Date colDate = (Date) value;
+            //TODO analizar este codigo
+            String strDate = Dates.toString(colDate, "dd/MM/yyyy");
+            return strDate.contains(filter.toString());
+        }
+        if (value instanceof LocalDateTime) {
+            LocalDateTime colDate = (LocalDateTime) value;
+            //TODO analizar este codigo
+            String strDate = LocalDates.toString(colDate, "dd/MM/yyyy");
+            return strDate.contains(filter.toString());
+        }
+        if (value instanceof BigDecimal) {
+            return value.toString().toLowerCase().startsWith(filter.toString().toLowerCase());
+        }
+        if (!filter.toString().isEmpty()) {
+            if (value == null) {
+                return false;
+            }
+            return value.toString().toLowerCase().contains(filter.toString().toLowerCase());
+        }
+        return true;
+    }
+
+    /**
+     * Se utiliza en el LazyDataRows, en este metodo se implementa en forma 
+     * personalizada el filtro a utilizar posteriormente en la selección de 
+     * datos.
+     * @param filters nombre de campos y valores.
+     * @return filtro personalizado.
+     */
+    public String onGetFilterString(Map<String, Object> filters) {
+        return "";
+    }
+
+    /**
+     * Utilizado principalemente en el datatable para mostrar los valores 
+     * con las mascaras formateadas.
+     * @param columName  nombre del campo
+     * @param value valor
+     * @param mask mascara 
+     * @return valor con la mascara tipo string.
+     */
+    public String getColumnValueWithMask(String columName, Object value, String mask) {
+        if (value == null) {
+            return "";
+        }
+        String result = "";
+        if (value instanceof Number) {
+            result = Fn.numberToString(value, mask);
+        } else if (value instanceof Timestamp) {
+            if (Fn.nvl(mask, "").isEmpty()) {
+                mask = "dd/MM/yyyy";
+            }
+            result = Dates.toString((Timestamp) value, mask);
+        } else if (value instanceof LocalDateTime) {
+            if (Fn.nvl(mask, "").isEmpty()) {
+                mask = "dd/MM/yyyy";
+            }
+            result = LocalDates.toString((LocalDateTime) value, mask);
+        } else {
+            result = value.toString();
+        }
+        return result;
+    }
+
+    /**
+     * Utilizado en el datatable para mostrar el valor de la columna con un 
+     * estilo especifico.
+     * @param columnName nombre de la columna
+     * @return estilo css
+     */
+    public String getColumnStyle(String columnName){
+        return "";
+    }
+    
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
 
         @Override
@@ -797,20 +902,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
         @Override
         public void setXmlResource(IDataObject context) {
-        }
-    }
-    
-    protected void refreshBean(AbstractDataController bean, String fieldName, Object fieldValue, String order, int maxrows){
-        if (this.getRow() == null) {
-            bean.open("", "", true, 0);
-            return;
-        }
-        try {
-            if (bean.openOrRequeryIf(fieldName, fieldValue, order, maxrows)){
-                setBeanRowSelected(bean);                
-            }
-        } catch (Exception ex) {
-            getFacesCtx().showError(ex.getMessage());
         }
     }
 }
