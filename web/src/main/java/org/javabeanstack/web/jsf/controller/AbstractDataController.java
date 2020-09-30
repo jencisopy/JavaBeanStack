@@ -62,7 +62,7 @@ import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.LocalDates;
 
 /**
- * Controller para los ABMs de las tablas, hereda funcionalidades de
+ * Controller para los ABMs de las tablas o vistas, hereda funcionalidades de
  * AbstractDataObject
  *
  * @author Jorge Enciso
@@ -146,6 +146,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return action;
     }
 
+    /**
+     * Devuelve la acción a realizar en el registro actual.
+     * @return  acción a realizar en el registro actual.
+     */
     public int getRowAction() {
         if (getRow() == null) {
             return 0;
@@ -808,6 +812,26 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public String getColumnStyle(String columnName){
         return "";
+    }
+    
+    /**
+     * Copia los datos del registro actual de la vista al objeto tabla
+     * @param <T>   
+     * @param <K>
+     * @param target    controller destino donde almacena el objeto mapeado a la
+     * tabla
+     * @throws Exception 
+     */
+    protected <T extends IDataRow, K extends AbstractDataController> void copyTo(K target) throws Exception {
+        target.insertRow();
+        T row = (T) target.getRow();
+        row.setAction(getRow().getAction());
+        row = this.getDAO().getDataService().copyTo(getUserSession().getSessionId(), getRow(), row);
+        List<T> dataRows = new ArrayList();
+        dataRows.add(row);
+        target.setDataRows(dataRows);
+        target.moveFirst();
+        return;
     }
     
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
