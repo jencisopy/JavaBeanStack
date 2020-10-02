@@ -38,7 +38,9 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Dates;
+import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.LocalDates;
+import org.javabeanstack.web.model.IColumnModel;
 
 /**
  *
@@ -243,8 +245,10 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             Class clase;
             String key = e.getKey().toString().replace(".", "");
             clase = DataInfo.getFieldType(getEntityClass(), (String) e.getKey());
-            if (String.class.isAssignableFrom(clase)) {
+            if (String.class.isAssignableFrom(clase) && !getFilterMode(e.getKey().toString()).equalsIgnoreCase("exact")) {
                 params.put(key, "%"+ ((String) e.getValue()).trim() + "%");
+            } else if (String.class.isAssignableFrom(clase)) {
+                params.put(key, ((String) e.getValue()).trim());
             } else if (Long.class.isAssignableFrom(clase)) {
                 params.put(key, Long.valueOf((String) e.getValue()));
             } else if (Integer.class.isAssignableFrom(clase)) {
@@ -284,9 +288,16 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         for (Map.Entry e : filters.entrySet()) {
             Class clase = DataInfo.getFieldType(getEntityClass(), (String) e.getKey());
             String key = e.getKey().toString().replace(".", "");
-            // Si el campo es string buscar un valor contenido en el campo                
             if (clase != null && String.class.isAssignableFrom(clase)) {
-                filter = separador + " upper(o." + e.getKey() + ") like upper(:" + key + ")";
+                String filterMode = getFilterMode(e.getKey().toString());
+                if (Fn.nvl(filterMode,"").equals("exact")){
+                    // Si el tipo de busqueda es exacta
+                    filter = separador + " ltrim(o." + e.getKey() + ") = :" + key;
+                }
+                else {
+                    // Si el campo es string buscar un valor contenido en el campo                
+                    filter = separador + " upper(o." + e.getKey() + ") like upper(:" + key + ")";
+                }
             } else {
                 filter = separador + " o." + e.getKey() + " = :" + key;
             }
@@ -294,5 +305,22 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             separador = " and ";
         }
         return queryWhere;
+    }
+    
+    private String getFilterMode(String columnName){
+        List<IColumnModel> columns = context.getColumns();
+        // Buscar por el campo filter
+        for (IColumnModel column:columns){
+            if (column.getFilter().equalsIgnoreCase(columnName)){
+                return column.getFilterMode();
+            }
+        }
+        // Buscar por el nombre de la columna
+        for (IColumnModel column:columns){
+            if (column.getName().equalsIgnoreCase(columnName)){
+                return column.getFilterMode();
+            }
+        }
+        return null;
     }
 }

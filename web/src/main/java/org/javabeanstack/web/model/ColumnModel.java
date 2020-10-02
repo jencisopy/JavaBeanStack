@@ -45,6 +45,7 @@ public class ColumnModel implements IColumnModel {
     private String filterFunction;
     private int width;
     private String mask;
+    private String filterMode;
 
     public ColumnModel() {
     }
@@ -274,8 +275,17 @@ public class ColumnModel implements IColumnModel {
     public void setToggleable(Boolean toggleable) {
         this.toggleable = toggleable;
     }
-    
 
+    @Override
+    public String getFilterMode() {
+        return filterMode;
+    }
+
+    @Override
+    public void setFilterMode(String filterMode) {
+        this.filterMode = filterMode;
+    }
+    
     @Override
     public String toString() {
         return this.getHeader();
