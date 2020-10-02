@@ -682,7 +682,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             x = this.getDAO().getDataService().getDataRows(sessionId, getType(), order, allFilters, filterParams, firstRow, maxrows);
             selectCmd = this.getDAO().getDataService().getSelectCmd(sessionId, getType(), order, filter);
-            lastQuery = selectCmd;
+            lastQuery = this.getDAO().getDataService().getSelectCmd(sessionId, getType(), order, allFilters);
         } else {
             setSelectcmd();
             String query = selectCmd;
