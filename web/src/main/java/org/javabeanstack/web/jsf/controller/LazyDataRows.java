@@ -19,7 +19,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-
 package org.javabeanstack.web.jsf.controller;
 
 import java.math.BigDecimal;
@@ -48,8 +47,9 @@ import org.javabeanstack.web.model.IColumnModel;
  * @param <T>
  */
 public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
+
     private static final Logger LOGGER = Logger.getLogger(LazyDataRows.class);
-    public AbstractDataController context; 
+    public AbstractDataController context;
 
     public LazyDataRows(AbstractDataController context) {
         this.context = context;
@@ -65,17 +65,17 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     @Override
     public T getRowData(String rowKey) {
         //Si no hay rowKey
-        if (rowKey == null || rowKey.isEmpty()){
+        if (rowKey == null || rowKey.isEmpty()) {
             return null;
         }
         Object id;
-        String rowKeyValue = rowKey.substring(rowKey.indexOf("}")+1);
-        String rowKeyType = rowKey.substring(1,rowKey.indexOf("}"));
-        if (context.getRow() != null){
+        String rowKeyValue = rowKey.substring(rowKey.indexOf("}") + 1);
+        String rowKeyType = rowKey.substring(1, rowKey.indexOf("}"));
+        if (context.getRow() != null) {
             //Verificar si el registro actual posicionado es igual al rowKeyValue
             id = context.getRow().getId();
-            if (rowKeyValue.equals(id.toString())){
-                return (T)context.getRow();
+            if (rowKeyValue.equals(id.toString())) {
+                return (T) context.getRow();
             }
         }
         id = getIdValue(rowKeyType, rowKeyValue);
@@ -87,18 +87,18 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         }
         return null;
     }
-    
-    protected Object getIdValue(String type, String value){
-        if (type.equals("Long")){
+
+    protected Object getIdValue(String type, String value) {
+        if (type.equals("Long")) {
             return Long.parseLong(value);
         }
-        if (type.equals("Integer")){
+        if (type.equals("Integer")) {
             return Integer.parseInt(value);
         }
-        if (type.equals("Short")){
+        if (type.equals("Short")) {
             return Short.parseShort(value);
         }
-        if (type.equals("String")){
+        if (type.equals("String")) {
             return value;
         }
         try {
@@ -112,11 +112,10 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         }
         return null;
     }
-    
-    
+
     @Override
     public Object getRowKey(T row) {
-        if (row == null){
+        if (row == null) {
             return "";
         }
         return row.getRowkey();
@@ -154,8 +153,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 if (!Strings.isNullorEmpty(order)) {
                     order = order.substring(0, order.length() - 1);
                 }
-            }
-            else{
+            } else {
                 order = context.getOrder();
             }
             return load(first, pageSize, order, filters);
@@ -172,8 +170,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             if (sortField != null) {
                 order = sortField;
                 order += (sortOrder == SortOrder.ASCENDING) ? " asc" : " desc";
-            }
-            else{
+            } else {
                 order = context.getOrder();
             }
             return load(first, pageSize, order, filters);
@@ -185,15 +182,15 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
 
     private List<T> load(int first, int pageSize, String order, Map<String, Object> filters) {
         try {
-            if (context.getNoLazyRowsLoad()){
+            if (context.getNoLazyRowsLoad()) {
                 return context.getDataRows();
             }
-            if (context.getFacesCtx().getFacesContext().getAttributes().get("nolazyload") != null){
-                Boolean noLazyLoad = (Boolean)context.getFacesCtx().getFacesContext().getAttributes().get("nolazyload");
-                if (noLazyLoad){
+            if (context.getFacesCtx().getFacesContext().getAttributes().get("nolazyload") != null) {
+                Boolean noLazyLoad = (Boolean) context.getFacesCtx().getFacesContext().getAttributes().get("nolazyload");
+                if (noLazyLoad) {
                     return context.getDataRows();
                 }
-                context.getFacesCtx().getFacesContext().getAttributes().put("nolazyload", false);                
+                context.getFacesCtx().getFacesContext().getAttributes().put("nolazyload", false);
             }
             String extraFilter = "";
             Map<String, Object> params = getParams(filters);
@@ -203,18 +200,16 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             context.setFirstRow(first);
             context.setMaxRows(pageSize);
             context.setFilterExtra(extraFilter);
-            if (params != null && !params.isEmpty()){
-                context.setFilterParams(params);                
-            }
-            else{
+            if (params != null && !params.isEmpty()) {
+                context.setFilterParams(params);
+            } else {
                 params = context.getFilterParams();
             }
-                
-            if (Strings.isNullorEmpty(order) &&
-                    !Strings.isNullorEmpty(context.getOrder())){
+
+            if (Strings.isNullorEmpty(order)
+                    && !Strings.isNullorEmpty(context.getOrder())) {
                 context.setOrder(context.getOrder());
-            }
-            else{
+            } else {
                 context.setOrder(order);
             }
             context.requery();
@@ -242,29 +237,47 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     private Map<String, Object> getParams(Map<String, Object> filters) {
         Map<String, Object> params = new HashMap<>();
         for (Map.Entry e : filters.entrySet()) {
-            Class clase;
+            Class clase; 
             String key = e.getKey().toString().replace(".", "");
             clase = DataInfo.getFieldType(getEntityClass(), (String) e.getKey());
-            if (String.class.isAssignableFrom(clase) && !getFilterMode(e.getKey().toString()).equalsIgnoreCase("exact")) {
-                params.put(key, "%"+ ((String) e.getValue()).trim() + "%");
+            Object value = e.getValue();
+            //Si es alfanumerico, ver si tiene mascara de busqueda
+            if (String.class.isAssignableFrom(clase)) {
+                value = getValueWithFilterMask((String) value, (String) e.getKey());
+            }
+            //Si el tipo de busqueda es contenida en la porción izquierda
+            if (String.class.isAssignableFrom(clase)
+                    && (getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_ltrim"))){
+                params.put(key, ((String) value) + "%");
+            }
+            //Si el tipo de busqueda es contenida en la porción derecha
+            else if (String.class.isAssignableFrom(clase)
+                    && (getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_rtrim"))){
+                params.put(key, "%"+((String) value));
+            }
+            //Si el tipo de busqueda es contenida dentro del campo
+            else if (String.class.isAssignableFrom(clase)
+                    && (Fn.nvl(getFilterMode(e.getKey().toString()),"").isEmpty()
+                        || getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain"))
+                        || getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_trim")){
+                params.put(key, "%" + ((String) value) + "%");
             } else if (String.class.isAssignableFrom(clase)) {
-                params.put(key, ((String) e.getValue()).trim());
+                params.put(key, ((String) value));
             } else if (Long.class.isAssignableFrom(clase)) {
                 params.put(key, Long.valueOf((String) e.getValue()));
             } else if (Integer.class.isAssignableFrom(clase)) {
                 params.put(key, Integer.valueOf((String) e.getValue()));
             } else if (Short.class.isAssignableFrom(clase)) {
                 params.put(key, Short.valueOf((String) e.getValue()));
-            } else if (BigDecimal.class.isAssignableFrom(clase)){
-                params.put(key, new BigDecimal((String)e.getValue()));
-            } else if (LocalDateTime.class.isAssignableFrom(clase)){
-                params.put(key, LocalDates.toDateTime((String)e.getValue()));
-            } else if (Date.class.isAssignableFrom(clase)){
-                params.put(key, Dates.toDate((String)e.getValue()));
-            }else  {
+            } else if (BigDecimal.class.isAssignableFrom(clase)) {
+                params.put(key, new BigDecimal((String) e.getValue()));
+            } else if (LocalDateTime.class.isAssignableFrom(clase)) {
+                params.put(key, LocalDates.toDateTime((String) e.getValue()));
+            } else if (Date.class.isAssignableFrom(clase)) {
+                params.put(key, Dates.toDate((String) e.getValue()));
+            } else {
                 params.put(key, e.getValue());
             }
-            
         }
         return params;
     }
@@ -280,21 +293,32 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         String queryWhere = "";
         // Si en el controller se define los filtros
         queryWhere = context.onGetFilterString(filters);
-        if (!queryWhere.isEmpty()){
+        if (!queryWhere.isEmpty()) {
             return queryWhere;
         }
         String filter;
-        String separador = ""; 
+        String separador = "";
         for (Map.Entry e : filters.entrySet()) {
             Class clase = DataInfo.getFieldType(getEntityClass(), (String) e.getKey());
             String key = e.getKey().toString().replace(".", "");
             if (clase != null && String.class.isAssignableFrom(clase)) {
                 String filterMode = getFilterMode(e.getKey().toString());
-                if (Fn.nvl(filterMode,"").equals("exact")){
+                if (Fn.nvl(filterMode, "").equals("exact")) {
+                    // Si el tipo de busqueda es exacta
+                    filter = separador + " o." + e.getKey() + " = :" + key;
+                } else if (Fn.nvl(filterMode, "").equals("exact_trim")) {
+                    // Si el tipo de busqueda exacta 
+                    filter = separador + " trim(o." + e.getKey() + ") = :" + key;
+                } else if (Fn.nvl(filterMode, "").equals("exact_ltrim")) {
                     // Si el tipo de busqueda es exacta
                     filter = separador + " ltrim(o." + e.getKey() + ") = :" + key;
-                }
-                else {
+                } else if (Fn.nvl(filterMode, "").equals("contain_ltrim")) {
+                    // Si el tipo de busqueda contenida 
+                    filter = separador + " ltrim(upper(o." + e.getKey() + ")) like upper(:" + key + ")";
+                } else if (Fn.nvl(filterMode, "").equals("contain_rtrim")) {
+                    // Si el tipo de busqueda contenida 
+                    filter = separador + " rtrim(upper(o." + e.getKey() + ")) like upper(:" + key + ")";
+                } else {
                     // Si el campo es string buscar un valor contenido en el campo                
                     filter = separador + " upper(o." + e.getKey() + ") like upper(:" + key + ")";
                 }
@@ -306,21 +330,64 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         }
         return queryWhere;
     }
-    
-    private String getFilterMode(String columnName){
+
+    private String getFilterMode(String columnName) {
         List<IColumnModel> columns = context.getColumns();
         // Buscar por el campo filter
-        for (IColumnModel column:columns){
-            if (column.getFilter().equalsIgnoreCase(columnName)){
+        for (IColumnModel column : columns) {
+            if (column.getFilter().equalsIgnoreCase(columnName)) {
                 return column.getFilterMode();
             }
         }
         // Buscar por el nombre de la columna
-        for (IColumnModel column:columns){
-            if (column.getName().equalsIgnoreCase(columnName)){
+        for (IColumnModel column : columns) {
+            if (column.getName().equalsIgnoreCase(columnName)) {
                 return column.getFilterMode();
             }
         }
-        return null;
+        return "";
+    }
+
+    private String getFilterMask(String columnName) {
+        List<IColumnModel> columns = context.getColumns();
+        // Buscar por el campo filter
+        for (IColumnModel column : columns) {
+            if (column.getFilter().equalsIgnoreCase(columnName)) {
+                return column.getFilterMask();
+            }
+        }
+        // Buscar por el nombre de la columna
+        for (IColumnModel column : columns) {
+            if (column.getName().equalsIgnoreCase(columnName)) {
+                return column.getFilterMask();
+            }
+        }
+        return "";
+    }
+
+    private String getValueWithFilterMask(String value, String columnName) {
+        if (Fn.nvl(value, "").isEmpty()) {
+            return value;
+        }
+        String filterMask = getFilterMask(columnName);
+        if (Fn.nvl(filterMask, "").isEmpty()) {
+            return value.trim();
+        }
+        try {
+            if (filterMask.toLowerCase().contains("_blank_")){
+                String[] parts = filterMask.split("_");
+                Integer size = Integer.valueOf(parts[2]);
+                if (parts[0].equalsIgnoreCase("right")){
+                    value = Strings.rightPad(value.trim(), size, " ");
+                }
+                else if (parts[0].equalsIgnoreCase("left")){
+                    value = Strings.leftPad(value.trim(), size, " ");
+                }
+            }
+            return value;
+        } catch (Exception exp) {
+            //nada
+        }
+        return value.trim();
     }
 }

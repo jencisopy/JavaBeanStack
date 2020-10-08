@@ -69,6 +69,8 @@ public interface IColumnModel extends Serializable {
     public void setExportable(Boolean exportable);
     public Boolean getToggleable();
     public void setToggleable(Boolean toggleable);
-    public String getFilterMode(); //Valores posibles (contain, exact)
+    public String getFilterMode(); //Valores posibles (contain, contain_ltrim, exact, exact_trim, exact_ltrim)
     public void setFilterMode(String filterMode);
+    public String getFilterMask(); //Valores posibles (left_blank_10, right_blank_8)
+    public void setFilterMask(String filterMask);
 }

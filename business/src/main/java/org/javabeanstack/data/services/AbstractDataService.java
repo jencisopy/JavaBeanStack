@@ -1073,20 +1073,21 @@ public abstract class AbstractDataService implements IDataService {
             //Si tiene una anotación @ColumnFunction            
             ColumnFunction annotation = field.getAnnotation(ColumnFunction.class);
             if (annotation != null) {
-                String fieldName = field.getName();
-                Object fieldValue = source.getValue(fieldName);
+                String fieldSourceName = field.getName();
+                String fieldTargetName = field.getName();
+                Object fieldValue = source.getValue(fieldSourceName);
                 String fn = annotation.formula();
                 //Si la función de conversión esta vacio devolver el valor del campo del modelo origen
                 if (fn.isEmpty()) {
-                    fieldValue = source.getValue(fieldName);
+                    fieldValue = source.getValue(fieldSourceName);
                 } //Si la función de conversión es igual al nombre del campo devolver el valor del campo del modelo origen
-                else if (fn.equals(":" + fieldName)) {
-                    fieldValue = source.getValue(fieldName);
+                else if (fn.equals(":" + fieldSourceName)) {
+                    fieldValue = source.getValue(fieldSourceName);
                 } //Si la función de conversión comienza con "fn_" 
                 else if (Strings.left(fn, 3).equals("fn_")) {
-                    Object id = source.getValue(fieldName);
+                    Object id = source.getValue(fieldSourceName);
                     if (id == null) {
-                        id = getValueFromFn(sessionId, source, fieldName, fn);
+                        id = getValueFromFn(sessionId, source, fieldSourceName, fn);
                     }
                     if (id != null) {
                         Class clazz = Class.forName(annotation.classMapped());
@@ -1094,21 +1095,21 @@ public abstract class AbstractDataService implements IDataService {
                     }
                     //Determinar el nombre del campo en el target
                     if (!annotation.fieldMapped().isEmpty()) {
-                        fieldName = annotation.fieldMapped();
-                    } else if (Strings.left(fieldName, 2).equals("id")) {
-                        fieldName = fieldName.substring(2);
+                        fieldTargetName = annotation.fieldMapped();
+                    } else if (Strings.left(fieldSourceName, 2).equals("id")) {
+                        fieldTargetName = fieldSourceName.substring(2);
                     }
                 }
                 if (fieldValue == null) {
-                    target.setValue(fieldName, null);
+                    target.setValue(fieldTargetName, null);
                     continue;
                 }
-                Class fieldClass = target.getFieldType(fieldName);
+                Class fieldClass = target.getFieldType(fieldTargetName);
                 //Si existe el campo en el destino                
                 if (fieldClass != null) {
                     //Verificar que sea del mismo tipo                    
                     if (fieldClass.isAssignableFrom(fieldValue.getClass())) {
-                        target.setValue(fieldName, fieldValue);
+                        target.setValue(fieldTargetName, fieldValue);
                     }
                 }
             }
