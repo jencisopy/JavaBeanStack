@@ -634,7 +634,6 @@ public class Strings {
         return result;
     }
     
-    
     public static String leftPad(String str, int size, String padStr){
         return StringUtils.leftPad(str, size, padStr);
     }

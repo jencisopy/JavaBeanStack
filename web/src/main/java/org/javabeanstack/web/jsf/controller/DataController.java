@@ -37,7 +37,6 @@ import org.javabeanstack.security.model.IUserSession;
  * @param <T>
  */
 public abstract class DataController<T extends IDataRow> extends AbstractDataController<T> {
-
     @Inject
     private DataLink dao;
 

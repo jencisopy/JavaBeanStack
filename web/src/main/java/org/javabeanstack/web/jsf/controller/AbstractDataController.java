@@ -148,7 +148,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     /**
      * Devuelve la acción a realizar en el registro actual.
-     * @return  acción a realizar en el registro actual.
+     *
+     * @return acción a realizar en el registro actual.
      */
     public int getRowAction() {
         if (getRow() == null) {
@@ -763,9 +764,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Se utiliza en el LazyDataRows, en este metodo se implementa en forma 
-     * personalizada el filtro a utilizar posteriormente en la selección de 
+     * Se utiliza en el LazyDataRows, en este metodo se implementa en forma
+     * personalizada el filtro a utilizar posteriormente en la selección de
      * datos.
+     *
      * @param filters nombre de campos y valores.
      * @return filtro personalizado.
      */
@@ -774,53 +776,128 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Utilizado principalemente en el datatable para mostrar los valores 
-     * con las mascaras formateadas.
-     * @param columName  nombre del campo
-     * @param value valor
-     * @param mask mascara 
+     * Utilizado principalmente en el datatable para mostrar los valores con
+     * las mascaras formateadas.
+     *
+     * @param <X>
+     * @param columnName nombre del campo
+     * @param row valores de las columnas
+     * @param mask mascara
      * @return valor con la mascara tipo string.
      */
-    public String getColumnValueWithMask(String columName, Object value, String mask) {
-        if (value == null) {
-            return "";
+    public <X extends IDataRow> String getColumnValueWithMask(String columnName, X row, String mask) {
+        if (columnName.contains("{")) { 
+            return getExpresionWithMask(columnName, row, mask);
+        }
+        Object value = row.getValue(columnName);
+        return getMask(value, mask);
+    }
+
+    /**
+     * Devuelve un valor resultante de una expresión dada ejemplo
+     * {cuota}/{totalcuota}
+     *
+     * @param <X>
+     * @param expresion expresión dada.
+     * @param row registro donde se encuentra los valores a reemplazar
+     * @return Devuelve un valor resultante de una expresión dada
+     */
+    protected <X extends IDataRow> String getExpresionWithMask(String expresion, X row, String mask) {
+        String[] expresionPartes = expresion.split("\\{|\\}");
+        String[] maskPartes = {};
+        if (!Fn.nvl(mask, "").isEmpty()) {
+            maskPartes = mask.split("\\{|\\}");
         }
         String result = "";
-        if (value instanceof Number) {
-            result = Fn.numberToString(value, mask);
-        } else if (value instanceof Timestamp) {
-            if (Fn.nvl(mask, "").isEmpty()) {
-                mask = "dd/MM/yyyy";
+        for (int i = 0; i < expresionPartes.length; i++) {
+            if (expresionPartes[i].isEmpty()) {
+                continue;
             }
-            result = Dates.toString((Timestamp) value, mask);
-        } else if (value instanceof LocalDateTime) {
-            if (Fn.nvl(mask, "").isEmpty()) {
-                mask = "dd/MM/yyyy";
+            Object value;
+            if (expresionPartes[i].trim().length() > 1) {
+                value = row.getValue(expresionPartes[i].trim());
+                if (maskPartes != null && maskPartes.length > i) {
+                    result += getMask(value, maskPartes[i]);
+                } else {
+                    result += value;
+                }
+            } else {
+                value = expresionPartes[i].trim();
+                result += value;
             }
-            result = LocalDates.toString((LocalDateTime) value, mask);
-        } else {
-            result = value.toString();
         }
         return result;
     }
 
     /**
-     * Utilizado en el datatable para mostrar el valor de la columna con un 
-     * estilo especifico.
-     * @param columnName nombre de la columna
-     * @return estilo css
+     * Devuelve el valor con la mascara correspondiente.
+     * @param value valor
+     * @param mask mascara
+     * @return valor con la mascara tipo string.
      */
-    public String getColumnStyle(String columnName){
-        return "";
+    public String getMask(Object value, String mask) {
+        if (value == null) {
+            return "";
+        }
+        String result = "";
+        try {
+            if (value instanceof Number) {
+                result = Fn.numberToString(value, mask);
+            } else if (value instanceof Timestamp) {
+                if (Fn.nvl(mask, "").isEmpty()) {
+                    mask = "dd/MM/yyyy";
+                }
+                result = Dates.toString((Timestamp) value, mask);
+            } else if (value instanceof LocalDateTime) {
+                if (Fn.nvl(mask, "").isEmpty()) {
+                    mask = "dd/MM/yyyy";
+                }
+                result = LocalDates.toString((LocalDateTime) value, mask);
+            } else if (value instanceof String 
+                    && !Strings.isNullorEmpty(mask) 
+                    && !Strings.isNullorEmpty((String)value)) {
+                //Formatear valor alfanumerico según mascara
+                int c = 0;
+                for (int i=0;i < mask.length();i++){
+                    if (c >= ((String)value).length()){
+                        break;
+                    }
+                    if ("-,. (){}:".contains(Strings.substr(mask,i,1))){
+                        result += Strings.substr(mask, i, 1);
+                    }
+                    else{
+                        result += Strings.substr((String)value, c, 1);
+                        c++;
+                    }
+                }
+            } else {
+                result = value.toString();
+            }
+        } catch (Exception exp) {
+            return "";
+        }
+        return result;
     }
     
     /**
+     * Utilizado en el datatable para mostrar el valor de la columna con un
+     * estilo especifico.
+     *
+     * @param columnName nombre de la columna
+     * @return estilo css
+     */
+    public String getColumnStyle(String columnName) {
+        return "";
+    }
+
+    /**
      * Copia los datos del registro actual de la vista al objeto tabla
-     * @param <T>   
+     *
+     * @param <T>
      * @param <K>
-     * @param target    controller destino donde almacena el objeto mapeado a la
+     * @param target controller destino donde almacena el objeto mapeado a la
      * tabla
-     * @throws Exception 
+     * @throws Exception
      */
     protected <T extends IDataRow, K extends AbstractDataController> void copyTo(K target) throws Exception {
         target.insertRow();
@@ -833,7 +910,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         target.moveFirst();
         return;
     }
-    
+
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
 
         @Override
