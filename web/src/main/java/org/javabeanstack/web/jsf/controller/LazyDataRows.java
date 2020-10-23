@@ -50,9 +50,18 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
 
     private static final Logger LOGGER = Logger.getLogger(LazyDataRows.class);
     public AbstractDataController context;
+    private boolean noCount = false;
 
     public LazyDataRows(AbstractDataController context) {
         this.context = context;
+    }
+
+    public boolean isNoCount() {
+        return noCount;
+    }
+
+    public void setNoCount(boolean noCount) {
+        this.noCount = noCount;
     }
 
     public List<T> getRows() {
@@ -214,10 +223,18 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             }
             context.requery();
             List<T> rows = context.getDataRows();
-            if (rows != null) {
+            setRowCount(pageSize);            
+            if (!noCount) {
                 setRowCount(context.getDAO().getCount(context.getLastQuery(), params).intValue());
             } else {
-                setRowCount(0);
+                if (rows != null && noCount) {
+                    if (rows.size() < pageSize){
+                        setRowCount(first + rows.size());                        
+                    }
+                    else {
+                        setRowCount(first + pageSize + 1);
+                    }
+                }
             }
             context.setRowSelected(null);
             return rows;
@@ -237,7 +254,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     private Map<String, Object> getParams(Map<String, Object> filters) {
         Map<String, Object> params = new HashMap<>();
         for (Map.Entry e : filters.entrySet()) {
-            Class clase; 
+            Class clase;
             String key = e.getKey().toString().replace(".", "");
             clase = DataInfo.getFieldType(getEntityClass(), (String) e.getKey());
             Object value = e.getValue();
@@ -247,19 +264,17 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             }
             //Si el tipo de busqueda es contenida en la porción izquierda
             if (String.class.isAssignableFrom(clase)
-                    && (getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_ltrim"))){
+                    && (getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_ltrim"))) {
                 params.put(key, ((String) value) + "%");
-            }
-            //Si el tipo de busqueda es contenida en la porción derecha
+            } //Si el tipo de busqueda es contenida en la porción derecha
             else if (String.class.isAssignableFrom(clase)
-                    && (getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_rtrim"))){
-                params.put(key, "%"+((String) value));
-            }
-            //Si el tipo de busqueda es contenida dentro del campo
+                    && (getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_rtrim"))) {
+                params.put(key, "%" + ((String) value));
+            } //Si el tipo de busqueda es contenida dentro del campo
             else if (String.class.isAssignableFrom(clase)
-                    && (Fn.nvl(getFilterMode(e.getKey().toString()),"").isEmpty()
-                        || getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain"))
-                        || getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_trim")){
+                    && (Fn.nvl(getFilterMode(e.getKey().toString()), "").isEmpty()
+                    || getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain"))
+                    || getFilterMode(e.getKey().toString()).equalsIgnoreCase("contain_trim")) {
                 params.put(key, "%" + ((String) value) + "%");
             } else if (String.class.isAssignableFrom(clase)) {
                 params.put(key, ((String) value));
@@ -374,13 +389,12 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             return value.trim();
         }
         try {
-            if (filterMask.toLowerCase().contains("_blank_")){
+            if (filterMask.toLowerCase().contains("_blank_")) {
                 String[] parts = filterMask.split("_");
                 Integer size = Integer.valueOf(parts[2]);
-                if (parts[0].equalsIgnoreCase("right")){
+                if (parts[0].equalsIgnoreCase("right")) {
                     value = Strings.rightPad(value.trim(), size, " ");
-                }
-                else if (parts[0].equalsIgnoreCase("left")){
+                } else if (parts[0].equalsIgnoreCase("left")) {
                     value = Strings.leftPad(value.trim(), size, " ");
                 }
             }
