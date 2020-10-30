@@ -44,6 +44,7 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.FieldException;
 import org.javabeanstack.security.model.IUserSession;
+import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 
 /**
@@ -86,7 +87,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     /**
      * Filtro extra, se utiliza para seleccionar los datos de la base
      */
-    private String filterExtra;
+    private Map<String, String> filters = new HashMap();
+    
     /**
      * Parametros filtros
      */
@@ -276,15 +278,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return order;
     }
 
-    /**
-     * Devuelve la expresión del filtro extra asignado
-     *
-     * @return filtro extra utilizado para recuperar los datos.
-     */
-    @Override
-    public String getFilterExtra() {
-        return filterExtra;
-    }
 
     /**
      * Devuelve los parametros de la condición del filtro.
@@ -490,16 +483,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Asigna el filtro extra para la selección de datos.
-     *
-     * @param filterExtra
-     */
-    @Override
-    public void setFilterExtra(String filterExtra) {
-        this.filterExtra = filterExtra;
-    }
-
-    /**
      * Asigna un map con los valores de los parámetros del filtro
      *
      * @param filterParams
@@ -587,7 +570,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public boolean open() {
         order = "";
         filter = "";
-        filterExtra = "";
+        filters = new HashMap();
         firstRow = 0;
         maxrows = -1;
         return this.open("", "", true, -1);
@@ -671,21 +654,16 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (userSession != null) {
                 sessionId = userSession.getSessionId();
             }
-            //Se agrega el filtro extra (usa lazydatarows)
-            String allFilters = filter;
-            if (!Strings.isNullorEmpty(filterExtra)) {
-                if (!Strings.isNullorEmpty(filter)) {
-                    allFilters += " and " + filterExtra;
-                } else {
-                    allFilters = filterExtra;
-                }
-            }
+            //Del filtro principal + los agregados.
+            String allFilters = getFilterSentence(false);
+            //
             x = this.getDAO().getDataService().getDataRows(sessionId, getType(), order, allFilters, filterParams, firstRow, maxrows);
             selectCmd = this.getDAO().getDataService().getSelectCmd(sessionId, getType(), order, filter);
             lastQuery = this.getDAO().getDataService().getSelectCmd(sessionId, getType(), order, allFilters);
         } else {
             setSelectcmd();
             String query = selectCmd;
+            String filterExtra = getFilterSentence(true);
             // Se agrega el filtro extra 
             if (!Strings.isNullorEmpty(filterExtra)) {
                 if (!query.contains("where ")) {
@@ -740,7 +718,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean requery(String filterExtra, Map filterParams) {
-        this.filterExtra = filterExtra;
+        this.addFilter(filterExtra);
         this.filterParams = filterParams;
         return requery();
     }
@@ -2078,5 +2056,53 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             dataRows.remove(recno);
             movePrevious();
         }
+    }
+    
+    @Override
+    public Map<String, String> getFilters(){
+        return filters;
+    }
+    
+    @Override
+    public void addFilter(String filter){
+        String key = String.valueOf(filters.size());
+        addFilter(key, filter);            
+    }
+    
+    @Override
+    public void addFilter(String key, String filter){
+        if (filters == null){
+            filters = new HashMap();
+        }
+        filters.put(key, filter);
+    }
+
+    @Override
+    public void removeFilter(){
+        filters.remove(filters.size()-1);
+    }
+
+    @Override
+    public void removeFilter(String key){
+        filters.remove(key);
+    }
+
+    @Override
+    public String getFilterSentence(boolean noMain){
+        String allFilters = "";
+        if (!noMain){
+            allFilters = Fn.nvl(filter, "");
+        }
+        String operador = "";
+        for (Map.Entry<String, String> entry : filters.entrySet()){
+            if (Strings.isNullorEmpty(entry.getValue())){
+                continue;
+            }
+            if (!allFilters.isEmpty()){
+                operador = " and ";
+            }
+            allFilters += operador + entry.getValue();
+        }
+        return allFilters;
     }
 }

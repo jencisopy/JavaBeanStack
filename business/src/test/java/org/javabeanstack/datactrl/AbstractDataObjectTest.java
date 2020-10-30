@@ -332,24 +332,6 @@ public class AbstractDataObjectTest extends TestClass{
         assertEquals(expResult, region.getOrder());
     }
 
-    /**
-     * Test of getFilterExtra method, of class AbstractDataObject.
-     */
-    @Test
-    public void test14GetFilterExtra() {
-        System.out.println("14-DataObject - getFilterExtra");
-        //No hubo conexión con el servidor de aplicaciones
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-        IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
-        String expResult = "codigo = 'xx'";
-        region.setFilterExtra("codigo = 'xx'");
-        assertEquals(expResult, region.getFilterExtra());
-        region.open();
-        assertEquals("", region.getFilterExtra());
-    }
 
     /**
      * Test of getFilterParams method, of class AbstractDataObject.
@@ -412,7 +394,7 @@ public class AbstractDataObjectTest extends TestClass{
         System.out.println(region.getSelectCmd());
         System.out.println(region.getLastQuery());
         assertEquals(expResult, region.getSelectCmd().substring(0, 22));
-        region.setFilterExtra("nombre like '%MER%'");
+        region.addFilter("nombre like '%MER%'");
         region.requery();
         System.out.println(region.getSelectCmd());
         System.out.println(region.getLastQuery());

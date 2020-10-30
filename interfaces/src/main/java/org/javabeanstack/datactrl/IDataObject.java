@@ -41,7 +41,8 @@ public interface IDataObject <T extends IDataRow>{
    
     public Class<T>     getType();
     public String       getFilter();
-    public String       getFilterExtra();     
+    public Map<String, String> getFilters();
+    public String       getFilterSentence(boolean noMain);    
     public String       getOrder();
     public Exception    getErrorApp();
     public String       getErrorMsg(boolean all);
@@ -67,6 +68,11 @@ public interface IDataObject <T extends IDataRow>{
     public void         setOrder(String order);
     public void         setFirstRow(int first);
     public void         setMaxRows(int maxrow);    
+    public void         addFilter(String filter);
+    public void         addFilter(String key, String filter);
+    public void         removeFilter();
+    public void         removeFilter(String key);
+    
     public boolean      open();
     public boolean      open(String order, String filter,boolean readwrite, int maxrows);
     public boolean      requery();
@@ -91,7 +97,6 @@ public interface IDataObject <T extends IDataRow>{
     public boolean      setField(String fieldname, Object value);
     public boolean      setField(String fieldname, Map<String, Object> param);    
     public boolean      setField(String fieldname, Object value, boolean noAfterSetField);
-    public void         setFilterExtra(String filterExtra);     
     public void         setFilterParams(Map<String, Object> filterParams); 
     public boolean      isFieldExist(String fieldname);
     public boolean      isMethodExist(String methodName);

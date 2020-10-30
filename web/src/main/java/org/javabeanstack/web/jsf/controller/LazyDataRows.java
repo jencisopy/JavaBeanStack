@@ -208,7 +208,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             }
             context.setFirstRow(first);
             context.setMaxRows(pageSize);
-            context.setFilterExtra(extraFilter);
+
+            context.removeFilter("borrar");
+            context.addFilter("borrar",extraFilter);
             if (params != null && !params.isEmpty()) {
                 context.setFilterParams(params);
             } else {
