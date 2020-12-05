@@ -782,7 +782,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             setOrder(order);
             setMaxRows(maxrows);
             setFilterParams(param);
-            this.requery();
+            if (maxrows != 0){
+                this.requery();                
+            }
             result = true;
         }
         return result;

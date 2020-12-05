@@ -38,9 +38,11 @@ import org.w3c.dom.Element;
  * @param <T>
  */
 public interface ICtrlEvents<T extends IDataObject> extends Serializable{
-    Map<String, List<IColumnModel>> getFormViewsColumns();    
+    Map<String, List<IColumnModel>> getFormViewsColumns();
     IXmlDom<Document, Element> getXmlResource();
-    void setXmlResource(T context);    
+    String getXmlResourcePath();
+    void setXmlResourcePath(String xmlResourcePath);
+    void setXmlResource(T context);
     void onRowSelect(T context, Object event);
     void onRowFilter(T context);
     void onColumnSetView(T context, String form, String viewName);

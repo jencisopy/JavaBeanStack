@@ -190,11 +190,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return facesCtx;
     }
 
-    protected Boolean getNoLazyRowsLoad() {
+    public Boolean getNoLazyRowsLoad() {
         return noLazyRowsLoad;
     }
 
-    protected void setNoLazyRowsLoad(Boolean noLazyRowsLoad) {
+    public void setNoLazyRowsLoad(Boolean noLazyRowsLoad) {
         this.noLazyRowsLoad = noLazyRowsLoad;
     }
 
@@ -912,7 +912,15 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
+        @Override    
+        public String getXmlResourcePath() {
+            return "";
+        }
 
+        @Override    
+        public void setXmlResourcePath(String xmlResourcePath) {
+        }
+        
         @Override
         public Map<String, List<IColumnModel>> getFormViewsColumns() {
             return null;
