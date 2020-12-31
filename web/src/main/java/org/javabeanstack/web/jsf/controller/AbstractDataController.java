@@ -786,6 +786,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @return valor con la mascara tipo string.
      */
     public <X extends IDataRow> String getColumnValueWithMask(String columnName, X row, String mask) {
+        if (columnName == null || row == null){
+            return "";
+        }
         if (columnName.contains("{")) { 
             return getExpresionWithMask(columnName, row, mask);
         }
