@@ -33,7 +33,7 @@ import org.javabeanstack.data.IGenericDAO;
 public class SecManager extends AbstractSecManager implements ISecManager, ISecManagerRemote{
     @EJB private IGenericDAO dao;
     @EJB private ISessions sesiones;
-
+    
     @Override
     protected IGenericDAO getDAO() {
         return dao;

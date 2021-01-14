@@ -77,12 +77,12 @@ public abstract class AbstractDataService implements IDataService {
     protected List<Method> methodList = this.getListCheckMethods();
     @EJB
     protected IGenericDAO dao;
-
+    
     @Override
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         return dao.getDBLinkInfo(sessionId);
     }
-
+    
     /**
      * Devuelve la unidad de persistencia asociado a la empresa en la cual
      * inicio sesión el usuario.
@@ -599,6 +599,42 @@ public abstract class AbstractDataService implements IDataService {
         return result;
     }
 
+    @Override
+    public <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName){
+        int[] operacion;
+        IErrorReg result = new ErrorReg(); 
+        CheckMethod anotation;
+        // Ejecutar metodos de chequeo de datos
+        for (Method method : this.methodList) {
+            anotation = method.getAnnotation(CheckMethod.class);
+            operacion = anotation.action();
+            // Si existe un error previo sobre este campo continuar con las otras validaciones
+            if (!anotation.fieldName().toLowerCase().equals(fieldName.toLowerCase())) {
+                continue;
+            }
+            try {
+                method.setAccessible(true);
+                // La validación se ejecuta dependiendo de la operación (agregar, modificar, borrar)
+                if (Fn.inList(row.getAction(), operacion)) {
+                    result = (IErrorReg) method.invoke(this, sessionId, row);
+                    //Si el resultado es un error guardar información en el objeto errors
+                    if (result != null && !"".equals(result.getMessage())) {
+                        row.setFieldChecked(fieldName, false);
+                    } else {
+                        // Paso la verificación del atributo
+                        row.setFieldChecked(fieldName, true);
+                    }
+                }
+            } catch (Exception ex) {
+                row.setFieldChecked(fieldName, false);
+                result = new ErrorReg(ErrorManager.getStackCause(ex), 0, fieldName);
+                ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
+            }
+        }
+        result.setFieldName(fieldName);
+        return result;
+    }
+    
     /**
      * Chequea la validez de los datos del registro, ejecutando todos los
      * metodos marcados como validadores (CheckMethod).
@@ -1165,5 +1201,23 @@ public abstract class AbstractDataService implements IDataService {
             id = result.get(0).toString();
         }
         return id;
+    }
+
+    @Override
+    public Object getSessionInfo(String sessionId, String key) {
+        return null;
+    }
+
+    @Override
+    public void addSessionInfo(String sessionId, String key, Object info) {
+    }
+
+    @Override
+    public void removeSessionInfo(String sessionId, String key) {
+    }
+
+    @Override
+    public IErrorReg getErrorMessage(int messageNumber, String alternativeMsg, String fieldName) {
+        return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName);
     }
 }

@@ -37,6 +37,7 @@ public interface IDataService extends IGenericDAO{
     <T extends IDataRow> boolean checkUniqueKey(String sessionId, T row) throws Exception;        
     <T extends IDataRow> boolean checkForeignKey(String sessionId, T row, String fieldName) throws Exception;            
     <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row);    
+    <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName);
     <T extends IDataRow> IDataResult save(String sessionId, T row) throws Exception;
     <T extends IDataRow> List<T> getDataRows(String sessionId, Class<T> type, String order, String filter, Map<String, Object> params, int firstRow, int maxRows) throws Exception;
     <T extends IDataRow> String getSelectCmd(String sessionId, Class<T> type, String order, String filter);

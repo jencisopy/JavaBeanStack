@@ -28,7 +28,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.PostConstruct;
 import javax.crypto.BadPaddingException;
 import javax.crypto.SecretKey;
@@ -78,6 +80,7 @@ public class Sessions implements ISessions{
     protected boolean oneSessionPerUser = false;
     private SecretKey secretKey;
     private final Map<String, IClientAuthRequestInfo> tokenCache = new HashMap();
+    private final Map<SessionInfo, Object> sessionsInfo = new HashMap();
 
     @EJB
     protected IGenericDAO dao;
@@ -98,6 +101,36 @@ public class Sessions implements ISessions{
             ErrorManager.showError(ex, LOGGER);
         }
     }
+    
+    @Override    
+    public Object getSessionInfo(String sessionId, String key) {
+        return sessionsInfo.get(new SessionInfo(sessionId, key));
+    }
+
+    @Override
+    public void addSessionInfo(String sessionId, String key, Object info) {
+        IUserSession userSession = getUserSession(sessionId);
+        if (userSession == null || userSession.getUser() == null){
+            removeAllSessionInfo(sessionId);
+            return;
+        }
+        sessionsInfo.put(new SessionInfo(sessionId, key), info);        
+    }
+
+    @Override
+    public void removeSessionInfo(String sessionId, String key) {
+        this.sessionsInfo.remove(new SessionInfo(sessionId, key));
+    }
+    
+    private void removeAllSessionInfo(String sessionId){
+        for(Iterator<Map.Entry<SessionInfo, Object>> it = sessionsInfo.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<SessionInfo, Object> entry = it.next();
+            if(entry.getKey().sessionId.equals(sessionId)) {
+                it.remove();
+            }        
+        }
+    }
+    
 
     /**
      * Crea una sesión de usuario para acceso a la app
@@ -583,5 +616,46 @@ public class Sessions implements ISessions{
     @Override
     public void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo) {
         tokenCache.put(authHeader, authRequestInfo);
+    }
+    
+    public class SessionInfo{
+        String sessionId;
+        String key;
+        
+        
+        public SessionInfo(){
+        }
+        
+        public SessionInfo(String sessionId, String key){
+            this.sessionId = sessionId;
+            this.key = key;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SessionInfo other = (SessionInfo) obj;
+            if (!Objects.equals(this.sessionId, other.sessionId)) {
+                return false;
+            }
+            if (!Objects.equals(this.key, other.key)) {
+                return false;
+            }
+            return true;
+        }
     }
 }

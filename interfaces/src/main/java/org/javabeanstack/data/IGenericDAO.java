@@ -505,4 +505,10 @@ public interface IGenericDAO extends Serializable {
      * @return verdadero si cumple y falso si no
      */
     public boolean isCredentialValid(Long iduser, Long idcompany);
+    
+    public Object getSessionInfo(String sessionId, String key);
+    public void addSessionInfo(String sessionId, String key, Object info);
+    public void removeSessionInfo(String sessionId, String key);  
+    public IErrorReg getErrorMessage(int messageNumber,String alternativeMsg, String fieldName);
+    
 }

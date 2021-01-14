@@ -52,7 +52,7 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
 
     protected abstract IGenericDAO getDAO();
     protected abstract ISessions getSessions();
-    /**
+        /**
      *  Crea una sesión de usuario para acceso a la app
      * 
      * @param userLogin     usuario
@@ -202,6 +202,4 @@ public abstract class AbstractSecManager  implements ISecManager, Serializable{
     public void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo) {
         getSessions().addClientAuthCache(authHeader, authRequestInfo);
     }
-    
-    
 }

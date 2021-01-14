@@ -19,7 +19,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-
 package org.javabeanstack.web.util;
 
 import java.util.Iterator;
@@ -35,7 +34,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.javabeanstack.error.IErrorReg;
-
 
 import org.javabeanstack.security.model.IUserSession;
 import org.primefaces.PrimeFaces;
@@ -53,17 +51,17 @@ public class FacesContextUtil {
     public PrimeFaces getRequestContext() {
         return PrimeFaces.current();
     }
-  
-    public ExternalContext getExternalContext(){
+
+    public ExternalContext getExternalContext() {
         return getFacesContext().getExternalContext();
     }
 
-    public String getRequestContextPath(){
+    public String getRequestContextPath() {
         return getExternalContext().getRequestContextPath();
     }
 
-    public String getRealPath(String path){
-        return getExternalContext().getRealPath(path);        
+    public String getRealPath(String path) {
+        return getExternalContext().getRealPath(path);
     }
 
     public UIViewRoot getUIViewRoot() {
@@ -71,33 +69,33 @@ public class FacesContextUtil {
         return viewHandler.createView(getFacesContext(), getFacesContext().getViewRoot().getViewId());
     }
 
-    public HttpSession getSession(){
+    public HttpSession getSession() {
         FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest req = (HttpServletRequest)context.getExternalContext().getRequest();  
+        HttpServletRequest req = (HttpServletRequest) context.getExternalContext().getRequest();
         HttpSession session = req.getSession();
         return session;
     }
 
-    public Map<String, Object> getSessionMap(){
-        return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();        
+    public Map<String, Object> getSessionMap() {
+        return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
     }
 
-    public Map<String, Object> getRequestMap(){
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();        
+    public Map<String, Object> getRequestMap() {
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
     }
-    
-    public Map<String, String> getRequestParameterMap(){
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();        
+
+    public Map<String, String> getRequestParameterMap() {
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
     }
-    
-    public Map<Object, Object> getAttributes(String key){
+
+    public Map<Object, Object> getAttributes(String key) {
         return FacesContext.getCurrentInstance().getAttributes();
     }
 
-    public void setAttribute(Object key, Object value){
-        FacesContext.getCurrentInstance().getAttributes().put(key,value);
+    public void setAttribute(Object key, Object value) {
+        FacesContext.getCurrentInstance().getAttributes().put(key, value);
     }
-    
+
     public void refreshView() {
         FacesContext context = getFacesContext();
         Application application = getApplication();
@@ -111,7 +109,7 @@ public class FacesContextUtil {
         UIComponent component = this.findComponent(idcomponent);
         if (component != null){
             idcomponent = component.getClientId();
-            context.getPartialViewContext().getRenderIds().add(idcomponent);            
+            context.getPartialViewContext().getRenderIds().add(idcomponent);
         }
     }
 
@@ -133,11 +131,11 @@ public class FacesContextUtil {
             String key;
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
-                getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, errors.get(key).getMessage()));                
+                getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, errors.get(key).getMessage()));
             }
         }
     }
-    
+
     public void showInfo(String message) {
         showInfo("Información", message);
     }
@@ -169,20 +167,19 @@ public class FacesContextUtil {
         return host;
     }
 
-    public UIComponent findComponent(String name){
-        UIComponent componente = FacesContext.getCurrentInstance().getViewRoot().findComponent(name);    
+    public UIComponent findComponent(String name) {
+        UIComponent componente = FacesContext.getCurrentInstance().getViewRoot().findComponent(name);
         return componente;
     }
-    
-    public void addCallbackParam(String param, Object value){
+
+    public void addCallbackParam(String param, Object value) {
         getRequestContext().ajax().addCallbackParam(param, value);
     }
-        
-    public void addMessage(String clientId, FacesMessage message){
-        FacesContext.getCurrentInstance().addMessage(clientId, message);        
+
+    public void addMessage(String clientId, FacesMessage message) {
+        FacesContext.getCurrentInstance().addMessage(clientId, message);
     }
-    
-    
+
     public Long getIdEmpresa() {
         return this.getUserSession().getIdEmpresa();
     }
@@ -194,27 +191,26 @@ public class FacesContextUtil {
 
     public Long getUserId() {
         IUserSession userSession = (IUserSession) getSessionMap().get("userSession");
-        if (userSession == null || userSession.getUser() == null){
+        if (userSession == null || userSession.getUser() == null) {
             return null;
         }
         return userSession.getUser().getIduser();
     }
 
-
     public String logout() {
         getSessionMap().put("userSession", null);
         return "/login.xhtml?faces-redirect=true";
     }
-    
-    public void goHome() throws Exception{
+
+    public void goHome() throws Exception {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         HttpServletResponse res = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
-        res.sendRedirect(req.getContextPath() + "/home.xhtml"); 
+        res.sendRedirect(req.getContextPath() + "/home.xhtml");
     }
-    
-    public void goPage(String url) throws Exception{
+
+    public void goPage(String url) throws Exception {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         HttpServletResponse res = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
-        res.sendRedirect(req.getContextPath() + "/"+url); 
+        res.sendRedirect(req.getContextPath() + "/" + url);
     }
 }

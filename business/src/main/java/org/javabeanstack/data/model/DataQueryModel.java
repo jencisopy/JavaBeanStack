@@ -22,6 +22,7 @@
 
 package org.javabeanstack.data.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +37,7 @@ import org.javabeanstack.util.Strings;
  * 
  * @author Jorge Enciso 
  */
-public class DataQueryModel implements IDataQueryModel{
+public class DataQueryModel implements IDataQueryModel, Serializable{
     private Object   columnId;
     private String[] columnList;
     private Object   row;

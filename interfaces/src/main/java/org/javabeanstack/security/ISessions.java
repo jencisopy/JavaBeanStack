@@ -22,4 +22,7 @@ public interface ISessions {
     void logout(String sessionId);
     IClientAuthRequestInfo getClientAuthCache(String authHeader);
     void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo);
+    Object getSessionInfo(String sessionId, String key);
+    void addSessionInfo(String sessionId, String key, Object info);
+    void removeSessionInfo(String sessionId, String key);
 }

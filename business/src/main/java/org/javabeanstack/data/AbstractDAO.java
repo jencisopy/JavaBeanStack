@@ -49,7 +49,9 @@ import org.javabeanstack.data.events.IDAOEvents;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.exceptions.CompanyError;
 import org.javabeanstack.exceptions.SessionError;
+import org.javabeanstack.log.ILogManager;
 import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.model.IUserSession;
@@ -86,6 +88,11 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @EJB
     private ISessions sessions;
+    
+    @EJB
+    private ILogManager logManager;
+
+    
 
     public AbstractDAO() {
     }
@@ -1353,5 +1360,30 @@ public abstract class AbstractDAO implements IGenericDAO {
             ErrorManager.showError(exp, LOGGER);
         }
         return false;
+    }
+
+    @Override
+    public Object getSessionInfo(String sessionId, String key) {
+        return sessions.getSessionInfo(sessionId, key);
+    }
+
+    @Override
+    public void addSessionInfo(String sessionId, String key, Object info) {
+        sessions.addSessionInfo(sessionId, key, info);
+    }
+
+    @Override
+    public void removeSessionInfo(String sessionId, String key) {
+        sessions.removeSessionInfo(sessionId, key);
+    }
+
+    @Override
+    public IErrorReg getErrorMessage(int messageNumber,String alternativeMsg, String fieldName){
+        IAppMessage appMessage = logManager.getAppMessage(messageNumber);
+        ErrorReg errorReturn = new ErrorReg(alternativeMsg, messageNumber, fieldName);
+        if (appMessage != null){
+            errorReturn.setMessage(appMessage.getText());
+        }
+        return errorReturn;
     }
 }
