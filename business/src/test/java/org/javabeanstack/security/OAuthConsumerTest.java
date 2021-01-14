@@ -204,6 +204,11 @@ public class OAuthConsumerTest extends TestClass {
     @Test
     public void test07GetTokenSecret() throws Exception {
         System.out.println("7-oAuthConsumer getTokenSecret");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
         assertTrue(tokenSecret != null && !tokenSecret.isEmpty());
     }
 
