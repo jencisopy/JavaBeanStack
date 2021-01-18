@@ -288,6 +288,12 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void setAction(int action) {
+        if (action > 1){
+            this.setOldValues();
+        }
+        else{
+            this.fieldsOldValues = null;
+        }
         this.action = action;
     }
 
@@ -332,9 +338,6 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     @Override
     public Object getValue(String fieldname) {
-        if (fieldsOldValues == null) {
-            this.setOldValues();
-        }
         return DataInfo.getFieldValue(this, fieldname);
     }
 
@@ -370,9 +373,6 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void setValue(String fieldname, Object value) throws FieldException {
-        if (fieldsOldValues == null) {
-            this.setOldValues();
-        }
         Boolean exito = DataInfo.setFieldValue(this, fieldname, value);
         if (!exito) {
             LOGGER.error("fieldname: " + fieldname);
