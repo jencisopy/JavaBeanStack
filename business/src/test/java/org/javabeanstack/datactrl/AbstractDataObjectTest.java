@@ -1144,6 +1144,7 @@ public class AbstractDataObjectTest extends TestClass{
         }
         IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
         region.open();
+        region.getRow().setAction(IDataRow.MODIFICAR);
         String expResult = (String)region.getField("nombre");
         region.setField("nombre", "MODIFICADO");
         assertEquals(expResult, region.getFieldOld("nombre"));
