@@ -1158,7 +1158,6 @@ public class AbstractDataObjectTest extends TestClass{
         if (!result) {
             System.out.println(region.getErrorMsg(true));
         }
-        region.getRow().setAction(IDataRow.MODIFICAR);
         System.out.println(region.getFieldOld("fechareplicacion"));
         System.out.println(region.getField("fechareplicacion"));
         //Despues de la grabación al no haber modificaciones los valores deben ser iguales
