@@ -100,6 +100,9 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public Object getOldValue(String fieldName) {
+        if (action == IDataRow.INSERT){
+            return null;
+        }
         if (fieldsOldValues == null) {
             return this.getValue(fieldName);
         }

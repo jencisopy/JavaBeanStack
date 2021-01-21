@@ -627,7 +627,7 @@ public abstract class AbstractDataService implements IDataService {
                 }
             } catch (Exception ex) {
                 row.setFieldChecked(fieldName, false);
-                result = new ErrorReg(ErrorManager.getStackCause(ex), 0, fieldName);
+                result = new ErrorReg(ErrorManager.getStackCause(ex), 50000, fieldName);
                 ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
             }
         }
@@ -727,7 +727,7 @@ public abstract class AbstractDataService implements IDataService {
                 }
             } catch (Exception ex) {
                 row.setFieldChecked(fieldName, false);
-                result = new ErrorReg(ErrorManager.getStackCause(ex), 0, fieldName);
+                result = new ErrorReg(ErrorManager.getStackCause(ex), 50000, fieldName);
                 errors.put(fieldName.toLowerCase(), result);
                 ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
             }
