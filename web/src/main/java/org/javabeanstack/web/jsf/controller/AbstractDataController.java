@@ -507,6 +507,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public boolean doAction(String operation) {
         boolean result = true;
+        action = operation;
         // Si no es agregar nuevo registro refrescar el registro actual
         if (!Fn.inList(operation.toLowerCase(), "insert", "agregar", "1")) {
             refreshRow();
@@ -522,6 +523,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 }
                 break;
             case "2":
+            case "confirm":
             case "update":
             case "modificar":
                 result = this.allowOperation(IDataRow.MODIFICAR);
@@ -541,8 +543,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         if (getErrorApp() != null) {
             facesCtx.showError("Error", getErrorApp().getMessage());
             result = false;
+            action = "";
         } else if (!result) {
             // TODO mostrar mensaje            
+            action = "";
         }
         initAction(operation, result);
         facesCtx.addCallbackParam("result", result);
@@ -563,6 +567,19 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
         return !(getRow().getAction() != IDataRow.AGREGAR
                 && getRow().getAction() != IDataRow.MODIFICAR);
+    }
+
+    public String getActionLabel() {
+        if (getAction().equals("confirm")) {
+            return "Confirmar";
+        }
+        if (getAction().equals("delete")) {
+            return "Eliminar";
+        }
+        if (getAction().equals("anular")) {
+            return "Anular";
+        }
+        return "Aceptar";
     }
 
     /**
@@ -776,8 +793,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Utilizado principalmente en el datatable para mostrar los valores con
-     * las mascaras formateadas.
+     * Utilizado principalmente en el datatable para mostrar los valores con las
+     * mascaras formateadas.
      *
      * @param <X>
      * @param columnName nombre del campo
@@ -786,10 +803,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @return valor con la mascara tipo string.
      */
     public <X extends IDataRow> String getColumnValueWithMask(String columnName, X row, String mask) {
-        if (columnName == null || row == null){
+        if (columnName == null || row == null) {
             return "";
         }
-        if (columnName.contains("{")) { 
+        if (columnName.contains("{")) {
             return getExpresionWithMask(columnName, row, mask);
         }
         Object value = row.getValue(columnName);
@@ -834,6 +851,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     /**
      * Devuelve el valor con la mascara correspondiente.
+     *
      * @param value valor
      * @param mask mascara
      * @return valor con la mascara tipo string.
@@ -856,20 +874,19 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                     mask = "dd/MM/yyyy";
                 }
                 result = LocalDates.toString((LocalDateTime) value, mask);
-            } else if (value instanceof String 
-                    && !Strings.isNullorEmpty(mask) 
-                    && !Strings.isNullorEmpty((String)value)) {
+            } else if (value instanceof String
+                    && !Strings.isNullorEmpty(mask)
+                    && !Strings.isNullorEmpty((String) value)) {
                 //Formatear valor alfanumerico según mascara
                 int c = 0;
-                for (int i=0;i < mask.length();i++){
-                    if (c >= ((String)value).length()){
+                for (int i = 0; i < mask.length(); i++) {
+                    if (c >= ((String) value).length()) {
                         break;
                     }
-                    if ("-,. (){}:".contains(Strings.substr(mask,i,1))){
+                    if ("-,. (){}:".contains(Strings.substr(mask, i, 1))) {
                         result += Strings.substr(mask, i, 1);
-                    }
-                    else{
-                        result += Strings.substr((String)value, c, 1);
+                    } else {
+                        result += Strings.substr((String) value, c, 1);
                         c++;
                     }
                 }
@@ -881,7 +898,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
         return result;
     }
-    
+
     /**
      * Utilizado en el datatable para mostrar el valor de la columna con un
      * estilo especifico.
@@ -915,15 +932,16 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
-        @Override    
+
+        @Override
         public String getXmlResourcePath() {
             return "";
         }
 
-        @Override    
+        @Override
         public void setXmlResourcePath(String xmlResourcePath) {
         }
-        
+
         @Override
         public Map<String, List<IColumnModel>> getFormViewsColumns() {
             return null;

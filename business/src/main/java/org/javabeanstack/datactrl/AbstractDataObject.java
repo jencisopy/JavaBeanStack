@@ -1359,7 +1359,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * 1 Agregar <br>
      * 2 Modificar<br>
      * 3 Borrar<br>
-     * 4 Consultar<br>
+     * -1 Consultar<br>
      * @return verdadero o falso si es que la operación (agregar,
      * modificar,borrar) es permitida o no.
      */
