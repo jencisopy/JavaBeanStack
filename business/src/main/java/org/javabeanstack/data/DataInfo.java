@@ -575,6 +575,9 @@ public class DataInfo {
     public static Object getFieldValue(Object ejb, String fieldname) {
         Object value = null;
         try {
+            if (ejb == null){
+                return null;
+            }
             // Si contiene un punto significa que el campo esta en uno de sus miembros
             if (fieldname.contains(".")) {
                 String memberName = fieldname.substring(0, Strings.findString(".", fieldname));

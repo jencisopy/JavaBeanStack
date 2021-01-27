@@ -605,19 +605,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public boolean update() {
         boolean success = super.update(false);
-        facesCtx.addCallbackParam("result", success);
-        if (getErrorApp() != null) {
-            facesCtx.showError("Error", getErrorApp().getMessage());
-        } else if (!success) {
-            facesCtx.showError("Error", this.getRow().getErrors());
-        }
-        // Esto con el fin de que no se ejecute el metodo load del lazydatarows
-        // en caso de que se actualize un dataTable
-        getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
-        if (success) {
-            //Renderizar componentes
-            refreshUIComponent();
-        }
+        afterUpdate(success);
         afterAction(success);
         // Devolver resultado de la grabación        
         return success;
@@ -632,19 +620,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     @Override
     public boolean update(IDataSet dataSet) {
         boolean success = super.update(dataSet);
-        facesCtx.addCallbackParam("result", success);
-        if (getErrorApp() != null) {
-            facesCtx.showError("Error", getErrorApp().getMessage());
-        } else if (!success) {
-            facesCtx.showError("Error", this.getErrorMsg(true));
-        }
-        // Esto con el fin de que no se ejecute el metodo load del lazydatarows
-        // en caso de que se actualize un dataTable
-        getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
-        if (success) {
-            //Renderizar componentes
-            refreshUIComponent();
-        }
+        afterUpdate(success);
         afterAction(success);
         // Devolver resultado de la grabación                
         return success;
@@ -659,22 +635,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     @Override
     public boolean revert() {
         boolean success = super.revert();
-        facesCtx.addCallbackParam("result", true);
-        if (getErrorApp() != null) {
-            facesCtx.showError("Error", getErrorApp().getMessage());
-        } else if (!success) {
-            facesCtx.showError("Error", this.getErrorMsg(true));
-        }
-        // Esto con el fin de que no se ejecute el metodo load del lazydatarows
-        // en caso de que se actualize un dataTable
-        getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
-        //Renderizar componentes
-        refreshUIComponent();
+        afterUpdate(success);
         afterAction(success);
         // Devolver resultado de la reversión
         return success;
     }
-
+    
     /**
      * Refresca el valor de un control de datos.
      */
@@ -693,6 +659,22 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         getFacesCtx().refreshView(refresh);
     }
 
+    protected void afterUpdate(boolean success){
+        facesCtx.addCallbackParam("result", success);
+        if (getErrorApp() != null) {
+            facesCtx.showError("Error", getErrorApp().getMessage());
+        } else if (!success) {
+            facesCtx.showError("Error", this.getErrorMsg(true));
+        }
+        // Esto con el fin de que no se ejecute el metodo load del lazydatarows
+        // en caso de que se actualize un dataTable
+        getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
+        if (success) {
+            //Renderizar componentes
+            refreshUIComponent();
+        }
+    }
+    
     /**
      * Se ejecuta al finalizar toda operación, normalmente al final de Update()
      * o Revert()
