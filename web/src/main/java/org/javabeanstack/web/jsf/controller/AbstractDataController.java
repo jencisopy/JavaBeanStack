@@ -565,6 +565,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         if (getRow() == null) {
             return false;
         }
+        if (Fn.nvl(fieldName,"").isEmpty()){
+            return false;
+        }
         return !(getRow().getAction() != IDataRow.AGREGAR
                 && getRow().getAction() != IDataRow.MODIFICAR);
     }
@@ -589,7 +592,20 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public void onChange(String fieldname) {
     }
+    
+    /**
+     * Se deberia ejecutar al cambiar un valor en un control de datos
+     *
+     * @param fieldname nombre del campo asociado al control.
+     */
+    public void onBlur(String fieldname) {
+    }
+    
 
+    public boolean checkFieldValue(String fieldname){
+        return true;
+    }
+    
     /**
      * Refresca el valor de un control asociado a un campo.
      *
