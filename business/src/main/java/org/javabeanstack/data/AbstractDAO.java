@@ -946,6 +946,9 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> T refreshRow(String sessionId, T row) throws Exception {
         Object id = row.getId();
+        if (id == null){
+            return row;
+        }
         if (id instanceof DataRow){
             id = ((DataRow)id).getId();
         }

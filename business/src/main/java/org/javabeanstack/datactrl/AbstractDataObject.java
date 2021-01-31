@@ -58,8 +58,9 @@ import org.javabeanstack.util.Strings;
  * @param <T> tipo ejb
  */
 public abstract class AbstractDataObject<T extends IDataRow> implements IDataObject, Serializable {
+
     private static final Logger LOGGER = Logger.getLogger(AbstractDataObject.class);
-    
+
     /**
      * Puntero del nro de registro o fila
      */
@@ -88,7 +89,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Filtro extra, se utiliza para seleccionar los datos de la base
      */
     private Map<String, String> filters = new HashMap();
-    
+
     /**
      * Parametros filtros
      */
@@ -130,11 +131,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Es el objeto responsable de los eventos
      */
     private IDataEvents dataEvents;
-    
+
     private boolean showDeletedRow = false;
-    
-    private Object idParent;    
-    
+
+    private Object idParent;
 
     /**
      * @return Devuelve true si los datos son de solo lectura
@@ -177,8 +177,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     protected void setDataEvents(IDataEvents dtEvents) {
         dataEvents = dtEvents;
-        if (dataEvents != null){
-            dataEvents.setContext(this);            
+        if (dataEvents != null) {
+            dataEvents.setContext(this);
         }
     }
 
@@ -189,7 +189,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public Class<T> getType() {
-        if (type != null){
+        if (type != null) {
             return type;
         }
         return (Class<T>) ((ParameterizedType) getClass()
@@ -241,6 +241,26 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return msgErrores;
     }
 
+    @Override
+    public String getErrorMsg(IDataRow ejb) {
+        String msgErrores = "";
+        if (ejb == null) {
+            return "";
+        }
+        if (ejb.getErrors() != null && ejb.getErrors().size() > 0) {
+            Iterator iterator = ejb.getErrors().keySet().iterator();
+            IErrorReg error;
+            String key;
+            while (iterator.hasNext()) {
+                key = (String) iterator.next();
+                error = ejb.getErrors().get(key);
+                msgErrores += error.getMessage() + "-" + key +"\n";
+            }
+            return msgErrores;
+        }
+        return msgErrores;
+    }
+    
     /**
      * Devuelve el mensaje de error asociado a un campo si lo hubiese
      *
@@ -278,7 +298,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return order;
     }
 
-
     /**
      * Devuelve los parametros de la condición del filtro.
      *
@@ -306,7 +325,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public Map<Integer, T> getDataRowsChanged() {
-        if (dataRows == null){
+        if (dataRows == null) {
             LOGGER.error("El dataobject no esta abierto");
             return null;
         }
@@ -390,7 +409,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public int getRowCount() {
-        if (dataRows == null){
+        if (dataRows == null) {
             LOGGER.error("El dataobject no esta abierto");
             return 0;
         }
@@ -423,7 +442,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public int getMaxRows() {
         return maxrows;
     }
-
 
     @Override
     public Long getIdcompany() {
@@ -517,12 +535,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (!getDAO().getPersistUnit().equals(IDBManager.CATALOGO)
                 && getDAO().getUserSession() != null) {
             IDBFilter dbFilter = getDAO().getUserSession().getDBFilter();
-            if (dbFilter != null){
+            if (dbFilter != null) {
                 filtro = dbFilter.getFilterExpr(getType(), "");
                 String separador = "";
-                if (!Strings.isNullorEmpty(filter) && !Strings.isNullorEmpty(filtro)){
+                if (!Strings.isNullorEmpty(filter) && !Strings.isNullorEmpty(filtro)) {
                     separador = " and ";
-                } 
+                }
                 filtro += separador + filter;
             }
         } else {
@@ -732,7 +750,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public boolean requery() {
         //Primero el open
-        if (!isOpen()){
+        if (!isOpen()) {
             return false;
         }
         try {
@@ -782,14 +800,14 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             setOrder(order);
             setMaxRows(maxrows);
             setFilterParams(param);
-            if (maxrows != 0){
-                this.requery();                
+            if (maxrows != 0) {
+                this.requery();
             }
             result = true;
         }
         return result;
     }
-    
+
     public boolean openOrRequeryIf(String fieldName, Object fieldValue, String order, int maxrows) {
         boolean result = false;
         if (!this.isOpen() || fieldValue == null) {
@@ -809,7 +827,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         idParent = fieldValue;
         return result;
     }
-    
+
     /**
      * Se ejecuta posterior al metodo requery().
      */
@@ -855,20 +873,20 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean goTo(int rownumber, int offset) {
-        if (dataRows == null){
+        if (dataRows == null) {
             LOGGER.error("El dataobject no esta abierto");
             return false;
         }
         //Before move
         this.beforeRowMove(row);
-        if (getRowCount() == 0){
+        if (getRowCount() == 0) {
             row = null;
             return true;
         }
         if (rownumber < 0) {
             return false;
         }
-        if (dataRows.isEmpty()){    
+        if (dataRows.isEmpty()) {
             return false;
         }
 
@@ -892,7 +910,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             recno = rownumber;
             row = dataRows.get(recno);
             // Si no esta en proceso de modificación o borrado
-            if (row.getAction() == 0){
+            if (row.getAction() == 0) {
                 refreshRow();
             }
             //After move
@@ -955,8 +973,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean moveLast() {
-        if (dataRows == null){
-            LOGGER.error("El dataobject no esta abierto");            
+        if (dataRows == null) {
+            LOGGER.error("El dataobject no esta abierto");
             return false;
         }
         return this.goTo(dataRows.size() - 1, -1);
@@ -978,7 +996,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (rowList == null) {
             return -1;
         }
-        if (end >= rowList.size()){
+        if (end >= rowList.size()) {
             end = rowList.size() - 1;
         }
         //Determinar que el rango de busqueda sea valido
@@ -1045,7 +1063,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean find(String field, Object value) {
-        if (dataRows == null){
+        if (dataRows == null) {
             LOGGER.error("El dataobject no esta abierto");
             return false;
         }
@@ -1060,7 +1078,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean findNext() {
-        if (dataRows == null){
+        if (dataRows == null) {
             LOGGER.error("El dataobject no esta abierto");
             return false;
         }
@@ -1188,7 +1206,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return Verdadero si tuvo exito o falso si no
      */
     @Override
-    public boolean setField(String fieldname, Object value){
+    public boolean setField(String fieldname, Object value) {
         return this.setField(fieldname, value, false);
     }
 
@@ -1200,10 +1218,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return Verdadero si tuvo exito o falso si no
      */
     @Override
-    public boolean setField(String fieldname, Map param){
+    public boolean setField(String fieldname, Map param) {
         try {
-            if (param == null){
-                setField(fieldname,(Object)param);
+            if (param == null) {
+                setField(fieldname, (Object) param);
                 return true;
             }
             if (!(row.getValue(fieldname) instanceof IDataRow)) {
@@ -1236,7 +1254,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return Verdadero si tuvo exito o falso si no
      */
     @Override
-    public boolean setField(String fieldname, Object newValue, boolean noAfterSetField){
+    public boolean setField(String fieldname, Object newValue, boolean noAfterSetField) {
         /* No se puede modificar si es de solo lectura */
         if (!this.readWrite) {
             errorApp = new FieldException("El objeto esta abierto para solo lectura");
@@ -1253,10 +1271,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 return false;
             }
             Class<?> classMember = row.getFieldType(fieldname);
-            if (newValue == null){
+            if (newValue == null) {
                 row.setValue(fieldname, null);
-            } else if  (classMember.getName().equals(newValue.getClass().getName())){
-                  row.setValue(fieldname, newValue);
+            } else if (classMember.getName().equals(newValue.getClass().getName())) {
+                row.setValue(fieldname, newValue);
             } else if (classMember.getSimpleName().equals("Short") && !(newValue instanceof Short)) {
                 Short newValueAux = Short.valueOf(newValue.toString());
                 row.setValue(fieldname, newValueAux);
@@ -1319,8 +1337,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
-     * Devuelve verdadero o falso si es que existe un metodo en el
-     * modelo de dato.
+     * Devuelve verdadero o falso si es que existe un metodo en el modelo de
+     * dato.
      *
      * @param methodName nombre del metodo
      * @return verdadero si existe el metodo en el modelo o falso si no.
@@ -1329,7 +1347,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public boolean isMethodExist(String methodName) {
         return DataInfo.isMethodExist(this.getType(), methodName);
     }
-    
+
     /**
      * Determina si un campo o miembro es una clave foranea.
      *
@@ -1374,17 +1392,17 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
         }
         if (dataEvents == null) {
-            if (operation != IDataRow.INSERT) {            
+            if (operation != IDataRow.INSERT) {
                 row.setAction(operation);
             }
             return true;
         }
-        if (!dataEvents.onAllowOperation()){
+        if (!dataEvents.onAllowOperation()) {
             return false;
         }
         if (operation != IDataRow.INSERT) {
             row.setAction(operation);
-        }        
+        }
         return true;
     }
 
@@ -1491,13 +1509,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         try {
             errorApp = null;
             newRow = this.getType().newInstance();
+            newRow.setAction(IDataRow.INSERT);
             if (isFieldExist("idempresa") || isMethodExist("setIdempresa")) {
                 newRow.setValue("idempresa", getIdempresa());
-            }
-            else if(isFieldExist("idcompany") || isMethodExist("setIdcompany")) {
+            } else if (isFieldExist("idcompany") || isMethodExist("setIdcompany")) {
                 newRow.setValue("idcompany", getIdcompany());
             }
-            newRow.setAction(IDataRow.INSERT);
             if (!this.beforeInsertRow(newRow)) {
                 return false;
             }
@@ -1616,7 +1633,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         /* No se puede modificar si es de solo lectura */
     }
 
-
     /**
      * Valida los valores ingresados en el registro.
      *
@@ -1650,6 +1666,33 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return errorMap;
     }
 
+    @Override
+    public Map<String, IErrorReg> checkDataRow(IDataRow row) throws Exception {
+        if (row == null) {
+            return null;
+        }
+        if (row.getAction() == 0) {
+            return null;
+        }
+        if (this.getDAO().getDataService() == null) {
+            row.setErrors((Map<String, IErrorReg>) null);
+            row.setRowChecked(true);
+            return null;
+        }
+        // Validar los datos utilizando checkDataRow del DataService del objeto
+        String sessionId = null;
+        if (getDAO().getUserSession() != null) {
+            sessionId = getDAO().getUserSession().getSessionId();
+        }
+        Map<String, IErrorReg> errorMap = this.getDAO().getDataService().checkDataRow(sessionId, row);
+        if (errorMap == null || errorMap.isEmpty()) {
+            row.setErrors((Map<String, IErrorReg>) null);
+            row.setRowChecked(true);
+            return null;
+        }
+        return errorMap;
+    }
+
     /**
      * Se ejecuta antes del metodo update
      *
@@ -1673,15 +1716,15 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     protected boolean beforeUpdate(IDataSet dataSet) {
         boolean result = true;
         Map<String, IDataObject> map = dataSet.getMapDataObject();
-        if (map.isEmpty()){
-            if (this.getDataEvents() != null){
+        if (map.isEmpty()) {
+            if (this.getDataEvents() != null) {
                 result = this.getDataEvents().beforeUpdate(true);
             }
         }
         for (Map.Entry<String, IDataObject> entry : map.entrySet()) {
             if (entry.getValue().getDataEvents() != null) {
                 result = entry.getValue().getDataEvents().beforeUpdate(true);
-                if (!result){
+                if (!result) {
                     break;
                 }
             }
@@ -1764,13 +1807,36 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     protected boolean checkData(IDataSet dataSet) {
         boolean result = true;
         Map<String, IDataObject> map = dataSet.getMapDataObject();
-        if (map.isEmpty()){
-            if (!this.checkData(true)){
-                result = false;
+        if (map.isEmpty()) {
+            try {
+                dataSet = dataSet.getChanged();
+                for (Map.Entry<String, List<? extends IDataRow>> entry : dataSet.getMapListSet().entrySet()) {
+                    List<? extends IDataRow> ejbs = entry.getValue();
+                    for (IDataRow ejb : ejbs) {
+                        if (getType() != ejb.getClass()) {
+                            continue;
+                        }
+                        if (ejb.getAction() > 0) {
+                            // Verificar si el registro fue chequeado
+                            if (!ejb.isRowChecked()) {
+                                ejb.setErrors(this.checkDataRow(ejb));
+                            }
+                            if (ejb.getErrors() != null && ejb.getErrors().size() > 0) {
+                                errorApp = new Exception(getErrorMsg(ejb));                                                
+                                //Ejecutar afterCheckData
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return true;
+            } catch (Exception ex) {
+                ErrorManager.showError(ex, LOGGER);
+                errorApp = ex;
             }
         }
         for (Map.Entry<String, IDataObject> entry : map.entrySet()) {
-            if (!entry.getValue().checkData(true)){
+            if (!entry.getValue().checkData(true)) {
                 result = false;
             }
         }
@@ -1809,6 +1875,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             //Chequear las filas en busca de errores
             if (!this.checkData(allRows)) {
+                errorApp = new Exception(getErrorMsg(true));                
                 return false;
             }
             //
@@ -1910,8 +1977,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     protected void afterUpdate(IDataSet dataSet) {
         Map<String, IDataObject> map = dataSet.getMapDataObject();
-        if (map.isEmpty()){
-            if (this.getDataEvents() != null){
+        if (map.isEmpty()) {
+            if (this.getDataEvents() != null) {
                 this.getDataEvents().afterUpdate(true);
             }
         }
@@ -1968,11 +2035,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     @Override
     public boolean revert(Boolean allRows) {
-        if (dataRows == null){
-            LOGGER.error("El dataobject no esta abierto");            
+        if (dataRows == null) {
+            LOGGER.error("El dataobject no esta abierto");
             return false;
         }
-        boolean showDeleted = showDeletedRow;        
+        boolean showDeleted = showDeletedRow;
         setShowDeletedRow(true);
         if (allRows) {
             // Recorrer la lista y eliminar los insertados y el resto volver 
@@ -1997,7 +2064,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             setShowDeletedRow(showDeleted);
             return revert();
         }
-        setShowDeletedRow(showDeleted);        
+        setShowDeletedRow(showDeleted);
         return true;
     }
 
@@ -2049,8 +2116,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * Remueve los elementos marcados para ser borrado de la lista de registros.
      */
     private void removeRow() {
-        if (dataRows == null){
-            LOGGER.error("El dataobject no esta abierto");            
+        if (dataRows == null) {
+            LOGGER.error("El dataobject no esta abierto");
             return;
         }
         // Eliminar de la lista local el registro actual si esta marcado para ser borrado
@@ -2059,48 +2126,48 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             movePrevious();
         }
     }
-    
+
     @Override
-    public Map<String, String> getFilters(){
+    public Map<String, String> getFilters() {
         return filters;
     }
-    
+
     @Override
-    public void addFilter(String filter){
+    public void addFilter(String filter) {
         String key = String.valueOf(filters.size());
-        addFilter(key, filter);            
+        addFilter(key, filter);
     }
-    
+
     @Override
-    public void addFilter(String key, String filter){
-        if (filters == null){
+    public void addFilter(String key, String filter) {
+        if (filters == null) {
             filters = new HashMap();
         }
         filters.put(key, filter);
     }
 
     @Override
-    public void removeFilter(){
-        filters.remove(filters.size()-1);
+    public void removeFilter() {
+        filters.remove(filters.size() - 1);
     }
 
     @Override
-    public void removeFilter(String key){
+    public void removeFilter(String key) {
         filters.remove(key);
     }
 
     @Override
-    public String getFilterSentence(boolean noMain){
+    public String getFilterSentence(boolean noMain) {
         String allFilters = "";
-        if (!noMain){
+        if (!noMain) {
             allFilters = Fn.nvl(filter, "");
         }
         String operador = "";
-        for (Map.Entry<String, String> entry : filters.entrySet()){
-            if (Strings.isNullorEmpty(entry.getValue())){
+        for (Map.Entry<String, String> entry : filters.entrySet()) {
+            if (Strings.isNullorEmpty(entry.getValue())) {
                 continue;
             }
-            if (!allFilters.isEmpty()){
+            if (!allFilters.isEmpty()) {
                 operador = " and ";
             }
             allFilters += operador + entry.getValue();

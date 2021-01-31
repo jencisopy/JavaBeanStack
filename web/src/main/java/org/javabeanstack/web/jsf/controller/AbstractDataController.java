@@ -675,6 +675,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         getFacesCtx().refreshView(refresh);
     }
 
+    @Override
     protected void afterUpdate(boolean success){
         facesCtx.addCallbackParam("result", success);
         if (getErrorApp() != null) {

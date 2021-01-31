@@ -46,6 +46,7 @@ public interface IDataObject <T extends IDataRow>{
     public String       getOrder();
     public Exception    getErrorApp();
     public String       getErrorMsg(boolean all);
+    public String       getErrorMsg(IDataRow row);    
     public String       getErrorMsg(String fieldName);
     public List<T>      getDataRows();
     public Map<Integer, T> getDataRowsChanged();    
@@ -111,6 +112,7 @@ public interface IDataObject <T extends IDataRow>{
     public boolean      deleteRow();
     public void         copyFrom(String idcompany, String companyName, String xmlTag, String tableCopy);
     public Map<String, IErrorReg> checkDataRow() throws Exception;
+    public Map<String, IErrorReg> checkDataRow(T row) throws Exception;    
     public boolean      checkData(boolean allRows);   
     public boolean      update(boolean allRows);
     public boolean      revert(Boolean allRows);
