@@ -107,13 +107,13 @@ public class DataSet implements IDataSet {
      */
     @Override
     public IDAOEvents getEvent(String key) {
-        return mapSetEvents.get(key);
+        return mapSetEvents.get(key.toLowerCase());
     }
     
     
     @Override
     public void addEvents(String key, IDAOEvents events){
-        mapSetEvents.put(key, events);
+        mapSetEvents.put(key.toLowerCase(), events);
     }
     
     /**

@@ -98,6 +98,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
         return dbLinkInfo;
@@ -252,6 +253,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @throws Exception
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId) throws Exception {
         return find(entityClass, sessionId, null, null, null, 0, 0);
     }
@@ -270,6 +272,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @throws Exception
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId,
             String order, String filter, Map<String, Object> params) throws Exception {
         return find(entityClass, sessionId, order, filter, params, 0, 0);
@@ -291,6 +294,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @throws Exception
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params, int first, int max) throws Exception {
         String query = "select o from " + entityClass.getSimpleName() + " o ";
         if (filter == null) {
@@ -720,6 +724,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         } catch (Exception exp) {
             error = new ErrorReg();
             error.setMessage(exp.getLocalizedMessage());
+            error.setErrorNumber(1);
         }
         return error;
     }
@@ -1366,21 +1371,25 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     public Object getSessionInfo(String sessionId, String key) {
         return sessions.getSessionInfo(sessionId, key);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     public void addSessionInfo(String sessionId, String key, Object info) {
         sessions.addSessionInfo(sessionId, key, info);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     public void removeSessionInfo(String sessionId, String key) {
         sessions.removeSessionInfo(sessionId, key);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
     public IErrorReg getErrorMessage(int messageNumber,String alternativeMsg, String fieldName){
         IAppMessage appMessage = logManager.getAppMessage(messageNumber);
         ErrorReg errorReturn = new ErrorReg(alternativeMsg, messageNumber, fieldName);

@@ -2161,6 +2161,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         String allFilters = "";
         if (!noMain) {
             allFilters = Fn.nvl(filter, "");
+            if (!allFilters.isEmpty()){
+                allFilters = "("+allFilters+")";
+            }
         }
         String operador = "";
         for (Map.Entry<String, String> entry : filters.entrySet()) {
@@ -2170,7 +2173,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (!allFilters.isEmpty()) {
                 operador = " and ";
             }
-            allFilters += operador + entry.getValue();
+            allFilters += operador + "("+entry.getValue()+")";
         }
         return allFilters;
     }

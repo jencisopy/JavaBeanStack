@@ -292,7 +292,9 @@ public class DataRow implements IDataRow, Cloneable {
     @Override
     public void setAction(int action) {
         if (action > 1){
-            this.setOldValues();
+            if (this.action != action){
+                this.setOldValues();                
+            }
         }
         else{
             this.fieldsOldValues = null;
