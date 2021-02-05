@@ -224,20 +224,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (this.row == null) {
             return "";
         }
-        if (this.row.getErrors() != null && this.row.getErrors().size() > 0) {
-            Iterator iterator = this.row.getErrors().keySet().iterator();
-            IErrorReg error;
-            String key;
-            while (iterator.hasNext()) {
-                key = (String) iterator.next();
-                error = this.row.getErrors().get(key);
-                if (!all) {
-                    return error.getMessage();
-                }
-                msgErrores += error.getMessage() + "\n";
-            }
-            return msgErrores;
-        }
+        msgErrores += getErrorMsg(this.row);
         return msgErrores;
     }
 
@@ -254,7 +241,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
                 error = ejb.getErrors().get(key);
-                msgErrores += error.getMessage() + "-" + key +"\n";
+                msgErrores += error.getMessage() + "-" + key + "\n";
             }
             return msgErrores;
         }
@@ -1822,7 +1809,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                                 ejb.setErrors(this.checkDataRow(ejb));
                             }
                             if (ejb.getErrors() != null && ejb.getErrors().size() > 0) {
-                                errorApp = new Exception(getErrorMsg(ejb));                                                
                                 //Ejecutar afterCheckData
                                 return false;
                             }

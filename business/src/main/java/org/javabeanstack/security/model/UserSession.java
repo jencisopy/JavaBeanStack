@@ -25,6 +25,8 @@ package org.javabeanstack.security.model;
 
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Fn;
@@ -50,6 +52,7 @@ public class UserSession implements IUserSession{
     private IErrorReg error;
     private Integer idleSessionExpireInMinutes;
     private IDBFilter dbFilter;
+    private Map<String, Object> info = new HashMap();
 
     /**
      * Devuelve el objeto usuario
@@ -272,5 +275,20 @@ public class UserSession implements IUserSession{
     @Override
     public void setDBFilter(IDBFilter dbFilter) {
         this.dbFilter = dbFilter;
+    }
+
+    @Override
+    public Map<String, Object> getInfo() {
+        return info;
+    }
+
+    @Override
+    public  Object getInfo(String key) {
+        return info.get(key);
+    }
+    
+    @Override
+    public void addInfo(String key, Object info) {
+        this.info.put(key, info);
     }
 }

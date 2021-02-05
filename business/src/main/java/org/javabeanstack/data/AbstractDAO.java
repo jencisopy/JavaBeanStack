@@ -166,7 +166,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("find");
         LOGGER.debug(entityClass.toString());
-
+        if (id == null){
+            return null;
+        }
         IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         T row = em.find(entityClass, id);

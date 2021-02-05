@@ -2,6 +2,7 @@ package org.javabeanstack.security.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IAppCompany;
@@ -85,4 +86,7 @@ public interface IUserSession extends Serializable {
     void setUser(IAppUser user);
     void setIdleSessionExpireInMinutes(Integer minutes);
     <T extends IDBFilter> void setDBFilter(T dbFilter);    
+    Map<String,Object> getInfo();
+    Object getInfo(String key);    
+    void addInfo(String key, Object info);
 }

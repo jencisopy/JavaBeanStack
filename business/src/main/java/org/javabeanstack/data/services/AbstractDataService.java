@@ -1205,15 +1205,17 @@ public abstract class AbstractDataService implements IDataService {
 
     @Override
     public Object getSessionInfo(String sessionId, String key) {
-        return null;
+        return dao.getSessionInfo(sessionId, key);
     }
 
     @Override
     public void addSessionInfo(String sessionId, String key, Object info) {
+        dao.addSessionInfo(sessionId, key, info);
     }
 
     @Override
     public void removeSessionInfo(String sessionId, String key) {
+        dao.removeSessionInfo(sessionId, key);
     }
 
     @Override

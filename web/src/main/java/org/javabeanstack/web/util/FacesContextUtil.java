@@ -36,6 +36,7 @@ import javax.servlet.http.HttpSession;
 import org.javabeanstack.error.IErrorReg;
 
 import org.javabeanstack.security.model.IUserSession;
+import org.javabeanstack.util.Fn;
 import org.primefaces.PrimeFaces;
 
 public class FacesContextUtil {
@@ -131,7 +132,8 @@ public class FacesContextUtil {
             String key;
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
-                getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, errors.get(key).getMessage()));
+                String titleShow = Fn.nvl(title,"Error ")+" en "+key;
+                getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, titleShow, errors.get(key).getMessage()));
             }
         }
     }
