@@ -545,7 +545,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             result = false;
             action = "";
         } else if (!result) {
-            // TODO mostrar mensaje            
+            facesCtx.showWarn("No es posible realizar esta operación");            
             action = "";
         }
         initAction(operation, result);
@@ -687,6 +687,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         // en caso de que se actualize un dataTable
         getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
         if (success) {
+            if (Fn.inList(action, "3", "delete", "borrar")){
+                facesCtx.showWarn("Borrado realizado con exito");
+            }
+            else{
+                facesCtx.showInfo("Operación realizada con exito");                
+            }
             //Renderizar componentes
             refreshUIComponent();
         }
