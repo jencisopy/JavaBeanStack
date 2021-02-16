@@ -24,7 +24,11 @@ package org.javabeanstack.datactrl;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -44,7 +48,9 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.FieldException;
 import org.javabeanstack.security.model.IUserSession;
+import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.LocalDates;
 import org.javabeanstack.util.Strings;
 
 /**
@@ -1280,6 +1286,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             } else if (classMember.getSimpleName().equals("Boolean") && !(newValue instanceof Boolean)) {
                 Boolean newValueAux = (newValue.toString().equals("1"));
                 row.setValue(fieldname, newValueAux);
+            } else if (classMember.getSimpleName().equals("LocalDateTime") && (newValue instanceof Date)) {
+                row.setValue(fieldname, LocalDates.toDateTime((Date)newValue));
+            } else if (classMember.getSimpleName().equals("LocalDateTime") && (newValue instanceof Timestamp)) {
+                row.setValue(fieldname, ((Timestamp)newValue).toLocalDateTime());
             } else {
                 row.setValue(fieldname, newValue);
             }

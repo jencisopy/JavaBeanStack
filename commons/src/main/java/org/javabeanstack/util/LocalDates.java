@@ -24,8 +24,10 @@ package org.javabeanstack.util;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 
 /**
@@ -122,6 +124,10 @@ public class LocalDates {
         return LocalDateTime.parse(dateString, formatter);
     }
 
+    public static LocalDateTime toDateTime(Date date) {
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+    
     
     /**
      * Convierte una fecha a variable de cadena, según formato deseado.
