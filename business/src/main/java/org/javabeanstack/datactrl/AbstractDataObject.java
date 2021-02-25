@@ -25,8 +25,6 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,7 +46,6 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.FieldException;
 import org.javabeanstack.security.model.IUserSession;
-import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.LocalDates;
 import org.javabeanstack.util.Strings;
@@ -1885,13 +1882,13 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 row.setOldValues();
             } else {
                 dataResult = getDAO().update(row);
-                // Asignar el registro resultante de la actualización
-                row = (T) dataResult.getRowUpdated();
-                dataRows.set(recno, row);
                 if (!dataResult.isSuccessFul()) {
                     errorApp = new Exception(dataResult.getErrorMsg());
                     return false;
                 }
+                // Asignar el registro resultante de la actualización
+                row = (T) dataResult.getRowUpdated();
+                dataRows.set(recno, row);
                 row.setOldValues();
                 // Eliminar de la lista local el registro actual si esta marcado para ser borrado
                 if (!dataResult.isRemoveDeleted()

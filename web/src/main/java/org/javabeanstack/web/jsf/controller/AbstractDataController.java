@@ -677,7 +677,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     @Override
     protected void afterUpdate(boolean success){
-        facesCtx.addCallbackParam("result", success);
+        facesCtx.addCallbackParam("result", success);            
         if (getErrorApp() != null) {
             facesCtx.showError("Error", getErrorApp().getMessage());
         } else if (!success) {

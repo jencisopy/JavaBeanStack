@@ -533,6 +533,9 @@ public class DataNativeQuery implements IDataNativeQuery {
      * etc, :idempresa)
      */
     protected void setDefaultParams() {
+        if (queryParams == null){
+            queryParams = new HashMap();
+        }
         if (Strings.findString(":true", querySentence.toLowerCase()) >= 0) {
             queryParams.put("true", true);
         }
