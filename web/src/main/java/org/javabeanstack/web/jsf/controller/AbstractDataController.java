@@ -545,11 +545,14 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             result = false;
             action = "";
         } else if (!result) {
-            facesCtx.showWarn("No es posible realizar esta operación");            
+            facesCtx.showWarn("No es posible realizar esta operación");
             action = "";
         }
         initAction(operation, result);
         facesCtx.addCallbackParam("result", result);
+        if (result) {
+            refreshUIComponent();
+        }
         return result;
     }
 
@@ -565,7 +568,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         if (getRow() == null) {
             return false;
         }
-        if (Fn.nvl(fieldName,"").isEmpty()){
+        if (Fn.nvl(fieldName, "").isEmpty()) {
             return false;
         }
         return !(getRow().getAction() != IDataRow.AGREGAR
@@ -592,7 +595,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public void onChange(String fieldname) {
     }
-    
+
     /**
      * Se deberia ejecutar al cambiar un valor en un control de datos
      *
@@ -600,12 +603,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public void onBlur(String fieldname) {
     }
-    
 
-    public boolean checkFieldValue(String fieldname){
+    public boolean checkFieldValue(String fieldname) {
         return true;
     }
-    
+
     /**
      * Refresca el valor de un control asociado a un campo.
      *
@@ -656,7 +658,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         // Devolver resultado de la reversión
         return success;
     }
-    
+
     /**
      * Refresca el valor de un control de datos.
      */
@@ -676,8 +678,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     @Override
-    protected void afterUpdate(boolean success){
-        facesCtx.addCallbackParam("result", success);            
+    protected void afterUpdate(boolean success) {
+        facesCtx.addCallbackParam("result", success);
         if (getErrorApp() != null) {
             facesCtx.showError("Error", getErrorApp().getMessage());
         } else if (!success) {
@@ -687,17 +689,16 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         // en caso de que se actualize un dataTable
         getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
         if (success) {
-            if (Fn.inList(action, "3", "delete", "borrar")){
+            if (Fn.inList(action, "3", "delete", "borrar")) {
                 facesCtx.showWarn("Borrado realizado con exito");
-            }
-            else{
-                facesCtx.showInfo("Operación realizada con exito");                
+            } else {
+                facesCtx.showInfo("Operación realizada con exito");
             }
             //Renderizar componentes
             refreshUIComponent();
         }
     }
-    
+
     /**
      * Se ejecuta al finalizar toda operación, normalmente al final de Update()
      * o Revert()
@@ -707,8 +708,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     protected void afterAction(boolean success) {
         if (success) {
             action = "";
-            noLazyRowsLoad = false;
         }
+        noLazyRowsLoad = false;
     }
 
     public List<IColumnModel> getColumns() {
