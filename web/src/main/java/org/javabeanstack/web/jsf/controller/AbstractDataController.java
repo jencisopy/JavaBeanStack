@@ -37,7 +37,6 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 
-import org.primefaces.PrimeFaces;
 import org.primefaces.component.datatable.DataTable;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.ToggleEvent;
@@ -79,6 +78,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * datos por bloque (pagina a pagina)
      */
     private LazyDataRows<T> lazyDataRows;
+    
+    private Boolean noLazyRowsLoad = false;    
     /**
      * Guarda los registros seleccionados en el UIDataTable o grilla de datos
      */
@@ -87,6 +88,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Se asigna cuando se selecciona un registro en la grilla de datos
      */
     private T rowSelected;
+    //TODO eliminar
     private Integer recnoIndex;
     /**
      * Registros resultante de la aplicación de un proceso de filtrado
@@ -106,9 +108,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     private String action = "";
 
-    private Boolean noLazyRowsLoad = false;
     private String refreshUIComponent;
     private String formViewSelected = "VIEW";
+    //TODO eliminar
     private Boolean tableDetailShow = false;
     private ICtrlEvents ctrlEvents = new CtrlEventLocal();
 
@@ -253,6 +255,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      *
      * @param bean controller relacionado
      */
+    //TODO eliminar
     public void setBeanRowSelected(AbstractDataController bean) {
         if (bean == null) {
             return;
@@ -315,14 +318,34 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return rowsFiltered.size();
     }
 
+    //TODO ver para eliminar
     public List<UIColumn> getTableUIColumns() {
         return tableUIColumns;
     }
 
+    //TODO ver para eliminar
     public void setTableUIColumns(List<UIColumn> tableUIColumns) {
         this.tableUIColumns = tableUIColumns;
     }
 
+    public String getTableTextFooter() {
+        return tableTextFooter;
+    }
+
+    public void setTableTextFooter(String tableTextFooter) {
+        this.tableTextFooter = tableTextFooter;
+    }
+
+    //TODO ver para eliminar
+    public Boolean getTableDetailShow() {
+        return tableDetailShow;
+    }
+
+    //TODO ver para eliminar
+    public void setTableDetailShow(Boolean tableDetailShow) {
+        this.tableDetailShow = tableDetailShow;
+    }
+    
     public String getRefreshUIComponent() {
         return refreshUIComponent;
     }
@@ -361,22 +384,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     public Map<String, String> getCompleteTextSearchFields() {
         return completeTextSearchFields;
-    }
-
-    public String getTableTextFooter() {
-        return tableTextFooter;
-    }
-
-    public void setTableTextFooter(String tableTextFooter) {
-        this.tableTextFooter = tableTextFooter;
-    }
-
-    public Boolean getTableDetailShow() {
-        return tableDetailShow;
-    }
-
-    public void setTableDetailShow(Boolean tableDetailShow) {
-        this.tableDetailShow = tableDetailShow;
     }
 
     /**
@@ -575,6 +582,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 && getRow().getAction() != IDataRow.MODIFICAR);
     }
 
+    /**
+     * Retorna un label según la acción a realizar
+     * @return una etiqueta o label según la acción a realizar.
+     */
     public String getActionLabel() {
         if (getAction().equals("confirm")) {
             return "Confirmar";
@@ -720,24 +731,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return facesCtx.logout();
     }
 
-    public void setRowForDetail(T rowForDetail) {
-        setRowSelected(rowForDetail);
-        int recno = this.getDataRows().indexOf((T) rowForDetail);
-        this.recnoIndex = recno;
-        this.goTo(recno);
-        PrimeFaces instance = PrimeFaces.current();
-        String command = "selectRow(" + recno + ")";
-        instance.executeScript(command);
-    }
-
-    public Integer getRecnoIndex() {
-        return recnoIndex;
-    }
-
-    public void setRecnoIndex(Integer recnoIndex) {
-        this.recnoIndex = recnoIndex;
-    }
-
+    //TODO ver para eliminar
     protected void refreshBean(AbstractDataController bean, String fieldName, Object fieldValue, String order, int maxrows) {
         if (this.getRow() == null) {
             bean.open("", "", true, 0);
@@ -826,6 +820,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @param <X>
      * @param expresion expresión dada.
      * @param row registro donde se encuentra los valores a reemplazar
+     * @param mask
      * @return Devuelve un valor resultante de una expresión dada
      */
     protected <X extends IDataRow> String getExpresionWithMask(String expresion, X row, String mask) {
