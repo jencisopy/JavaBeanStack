@@ -70,10 +70,6 @@ import org.javabeanstack.util.LocalDates;
 public abstract class AbstractDataController<T extends IDataRow> extends AbstractDataObject<T> {
 
     /**
-     * Lista de columnas de la grilla con los datos
-     */
-    private List<UIColumn> tableUIColumns;
-    /**
      * Lista de registros de la selección de datos en un proceso que trae los
      * datos por bloque (pagina a pagina)
      */
@@ -88,8 +84,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Se asigna cuando se selecciona un registro en la grilla de datos
      */
     private T rowSelected;
-    //TODO eliminar
-    private Integer recnoIndex;
     /**
      * Registros resultante de la aplicación de un proceso de filtrado
      */
@@ -110,8 +104,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     private String refreshUIComponent;
     private String formViewSelected = "VIEW";
-    //TODO eliminar
-    private Boolean tableDetailShow = false;
     private ICtrlEvents ctrlEvents = new CtrlEventLocal();
 
     /**
@@ -120,8 +112,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     private final Map<String, String> completeTextSearchFields = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
-    // TODO Redefinir en las clases hijas
-    private String tableTextFooter = ":f_list:dt_list:outputTextFooter";
+    private String tableTextFooter = "";
 
     public AbstractDataController() {
     }
@@ -318,16 +309,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return rowsFiltered.size();
     }
 
-    //TODO ver para eliminar
-    public List<UIColumn> getTableUIColumns() {
-        return tableUIColumns;
-    }
-
-    //TODO ver para eliminar
-    public void setTableUIColumns(List<UIColumn> tableUIColumns) {
-        this.tableUIColumns = tableUIColumns;
-    }
-
     public String getTableTextFooter() {
         return tableTextFooter;
     }
@@ -336,16 +317,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.tableTextFooter = tableTextFooter;
     }
 
-    //TODO ver para eliminar
-    public Boolean getTableDetailShow() {
-        return tableDetailShow;
-    }
-
-    //TODO ver para eliminar
-    public void setTableDetailShow(Boolean tableDetailShow) {
-        this.tableDetailShow = tableDetailShow;
-    }
-    
     public String getRefreshUIComponent() {
         return refreshUIComponent;
     }
@@ -608,7 +579,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Se deberia ejecutar al cambiar un valor en un control de datos
+     * Se deberia ejecutar al cambiar el foco de un control en el formulario
      *
      * @param fieldname nombre del campo asociado al control.
      */
@@ -929,10 +900,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         dataRows.add(row);
         target.setDataRows(dataRows);
         target.moveFirst();
-        return;
     }
 
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
+        private List<UIColumn> tableUIColumns;
 
         @Override
         public String getXmlResourcePath() {
@@ -1008,7 +979,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 }
             }
         }
-
+        
         @Override
         public void onChange(IDataObject context, String fieldname) {
         }
