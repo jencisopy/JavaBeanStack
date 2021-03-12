@@ -1186,7 +1186,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return Map con los valores de las constantes.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    private Map<String, String> getQueryConstants(String persistUnit) {
+    public Map<String, String> getQueryConstants(String persistUnit) {
         LOGGER.debug("getQueryConstansts()");
         Map<String, String> queryConstants = new HashMap<>();
         String schema = (String) this.getPersistUnitProp(persistUnit).get(DEFAULT_SCHEMA_PROPERTY);
