@@ -359,6 +359,17 @@ public interface IGenericDAO extends Serializable {
      * @throws java.lang.Exception
      */
     public IErrorReg sqlExec(String sessionId, String sqlCommand, Map<String, Object> parameters) throws Exception;
+    /**
+     * Ejecuta una sentencia (select, insert, update, remove) sobre la base de
+     * datos
+     *
+     * @param sessionId identificador de la sesión del usuario 
+     * @param jpaCommand sentencia jpa
+     * @param parameters parámetros de la sentencia.
+     * @return un objeto error si no se ejecuto la sentencia con exito
+     * @throws java.lang.Exception
+     */
+    public IErrorReg jpaExec(String sessionId, String jpaCommand, Map<String, Object> parameters) throws Exception;
 
     /**
      * Selecciona datos de la base de datos y los convierte en una lista de

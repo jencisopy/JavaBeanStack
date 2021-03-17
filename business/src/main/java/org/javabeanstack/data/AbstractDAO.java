@@ -716,7 +716,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(sqlString);
 
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
-        ErrorReg error = null;
+        ErrorReg error = new ErrorReg();        
         try {
             Query sql = em.createNativeQuery(sqlString);
             if (parameters != null && !parameters.isEmpty()) {
@@ -724,13 +724,51 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
             sql.executeUpdate();
         } catch (Exception exp) {
-            error = new ErrorReg();
             error.setMessage(exp.getLocalizedMessage());
             error.setErrorNumber(1);
         }
         return error;
     }
 
+    /**
+     *
+     * @param sessionId identificador de la sesión que permite realizar las
+     * operaciones
+     * @param sqlString sentencia jpa (update, delete)
+     * @param parameters parámetros de la sentencia.
+     * @return un objeto error si no se ejecuto la sentencia con exito
+     */
+    @Override
+    public IErrorReg jpaExec(String sessionId, String sqlString,
+            Map<String, Object> parameters) throws Exception {
+        LOGGER.debug(Strings.replicate("-", 50));
+        LOGGER.debug("jpaExec");
+
+        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        String persistUnit;
+        if (dbLinkInfo == null) {
+            persistUnit = IDBManager.CATALOGO;
+        } else {
+            persistUnit = dbLinkInfo.getPersistUnit();
+        }
+        sqlString = Strings.textMerge(sqlString, getQueryConstants(persistUnit));
+        LOGGER.debug(sqlString);
+
+        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        ErrorReg error = new ErrorReg();        
+        try {
+            Query sql = em.createQuery(sqlString);
+            if (parameters != null && !parameters.isEmpty()) {
+                populateQueryParameters(sql, parameters, sqlString);
+            }
+            sql.executeUpdate();
+        } catch (Exception exp) {
+            error.setMessage(exp.getLocalizedMessage());
+            error.setErrorNumber(1);
+        }
+        return error;
+    }
+    
     /**
      * Sincroniza un ejb con la base de datos.
      *

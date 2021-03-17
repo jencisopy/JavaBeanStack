@@ -1043,6 +1043,11 @@ public abstract class AbstractDataService implements IDataService {
         throw new UnsupportedOperationException("Not supported");
     }
 
+    @Override
+    public IErrorReg jpaExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+        throw new UnsupportedOperationException("Not supported");
+    }
+    
     @Deprecated
     @Override
     public <T extends IDataRow> List<T> getData(String sessionId, String queryString, int maxRows, boolean noCache) throws Exception {
