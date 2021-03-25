@@ -74,8 +74,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * datos por bloque (pagina a pagina)
      */
     private LazyDataRows<T> lazyDataRows;
-    
-    private Boolean noLazyRowsLoad = false;    
+
+    private Boolean noLazyRowsLoad = false;
     /**
      * Guarda los registros seleccionados en el UIDataTable o grilla de datos
      */
@@ -555,6 +555,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     /**
      * Retorna un label según la acción a realizar
+     *
      * @return una etiqueta o label según la acción a realizar.
      */
     public String getActionLabel() {
@@ -635,6 +636,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     @Override
     public boolean revert() {
         boolean success = super.revert();
+        action = "revert";
         afterUpdate(success);
         afterAction(success);
         // Devolver resultado de la reversión
@@ -673,6 +675,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         if (success) {
             if (Fn.inList(action, "3", "delete", "borrar")) {
                 facesCtx.showWarn("Borrado realizado con exito");
+            } else if (action.equals("revert")) {
+                facesCtx.showInfo("Operación cancelada");
             } else {
                 facesCtx.showInfo("Operación realizada con exito");
             }
@@ -688,6 +692,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * @param success verdadero o falso en las operaciones update o revert.
      */
     protected void afterAction(boolean success) {
+        //Para inserción multiples
+        if (success && Fn.inList(action, "1", "insert", "agregar")) {
+            doAction("insert");
+            return;
+        }
         if (success) {
             action = "";
         }
@@ -903,6 +912,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
+
         private List<UIColumn> tableUIColumns;
 
         @Override
@@ -979,7 +989,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 }
             }
         }
-        
+
         @Override
         public void onChange(IDataObject context, String fieldname) {
         }
