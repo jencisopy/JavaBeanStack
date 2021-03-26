@@ -606,7 +606,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public boolean update() {
         boolean success = super.update(false);
-        afterUpdate(success);
         afterAction(success);
         // Devolver resultado de la grabación        
         return success;
@@ -621,7 +620,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     @Override
     public boolean update(IDataSet dataSet) {
         boolean success = super.update(dataSet);
-        afterUpdate(success);
         afterAction(success);
         // Devolver resultado de la grabación                
         return success;
@@ -637,7 +635,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     public boolean revert() {
         boolean success = super.revert();
         action = "revert";
-        afterUpdate(success);
         afterAction(success);
         // Devolver resultado de la reversión
         return success;
@@ -661,8 +658,13 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         getFacesCtx().refreshView(refresh);
     }
 
-    @Override
-    protected void afterUpdate(boolean success) {
+    /**
+     * Se ejecuta al finalizar toda operación, normalmente al final de Update()
+     * o Revert()
+     *
+     * @param success verdadero o falso en las operaciones update o revert.
+     */
+    protected void afterAction(boolean success) {
         facesCtx.addCallbackParam("result", success);
         if (getErrorApp() != null) {
             facesCtx.showError("Error", getErrorApp().getMessage());
@@ -683,15 +685,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             //Renderizar componentes
             refreshUIComponent();
         }
-    }
-
-    /**
-     * Se ejecuta al finalizar toda operación, normalmente al final de Update()
-     * o Revert()
-     *
-     * @param success verdadero o falso en las operaciones update o revert.
-     */
-    protected void afterAction(boolean success) {
+        
         //Para inserción multiples
         if (success && Fn.inList(action, "1", "insert", "agregar")) {
             doAction("insert");

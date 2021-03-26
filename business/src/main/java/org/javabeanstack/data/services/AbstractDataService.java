@@ -1044,7 +1044,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     @Override
-    public IErrorReg jpaExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+    public IErrorReg jpqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
     
@@ -1229,5 +1229,10 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public IErrorReg getErrorMessage(int messageNumber, String alternativeMsg, String fieldName) {
         return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName);
+    }
+
+    @Override
+    public Map<String, String> getQueryConstants(String persistUnit){
+        return dao.getQueryConstants(persistUnit);
     }
 }

@@ -369,7 +369,7 @@ public interface IGenericDAO extends Serializable {
      * @return un objeto error si no se ejecuto la sentencia con exito
      * @throws java.lang.Exception
      */
-    public IErrorReg jpaExec(String sessionId, String jpaCommand, Map<String, Object> parameters) throws Exception;
+    public IErrorReg jpqlExec(String sessionId, String jpaCommand, Map<String, Object> parameters) throws Exception;
 
     /**
      * Selecciona datos de la base de datos y los convierte en una lista de
@@ -521,5 +521,5 @@ public interface IGenericDAO extends Serializable {
     public void addSessionInfo(String sessionId, String key, Object info);
     public void removeSessionInfo(String sessionId, String key);  
     public IErrorReg getErrorMessage(int messageNumber,String alternativeMsg, String fieldName);
-    
+    public Map<String, String> getQueryConstants(String persistUnit);     
 }

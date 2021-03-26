@@ -250,7 +250,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         return msgErrores;
     }
-    
+
     /**
      * Devuelve el mensaje de error asociado a un campo si lo hubiese
      *
@@ -1284,9 +1284,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 Boolean newValueAux = (newValue.toString().equals("1"));
                 row.setValue(fieldname, newValueAux);
             } else if (classMember.getSimpleName().equals("LocalDateTime") && (newValue instanceof Date)) {
-                row.setValue(fieldname, LocalDates.toDateTime((Date)newValue));
+                row.setValue(fieldname, LocalDates.toDateTime((Date) newValue));
             } else if (classMember.getSimpleName().equals("LocalDateTime") && (newValue instanceof Timestamp)) {
-                row.setValue(fieldname, ((Timestamp)newValue).toLocalDateTime());
+                row.setValue(fieldname, ((Timestamp) newValue).toLocalDateTime());
             } else {
                 row.setValue(fieldname, newValue);
             }
@@ -1868,7 +1868,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             //Chequear las filas en busca de errores
             if (!this.checkData(allRows)) {
-                errorApp = new Exception(getErrorMsg(true));                
+                errorApp = new Exception(getErrorMsg(true));
                 return false;
             }
             //
@@ -1888,12 +1888,14 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 }
                 // Asignar el registro resultante de la actualización
                 row = (T) dataResult.getRowUpdated();
-                dataRows.set(recno, row);
-                row.setOldValues();
-                // Eliminar de la lista local el registro actual si esta marcado para ser borrado
-                if (!dataResult.isRemoveDeleted()
-                        && row.getAction() == IDataRow.DELETE) {
-                    removeRow();
+                if (row != null) {
+                    dataRows.set(recno, row);
+                    row.setOldValues();
+                    // Eliminar de la lista local el registro actual si esta marcado para ser borrado
+                    if (!dataResult.isRemoveDeleted()
+                            && row.getAction() == IDataRow.DELETE) {
+                        removeRow();
+                    }
                 }
             }
             this.afterUpdate(allRows);
@@ -2116,7 +2118,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         // Eliminar de la lista local el registro actual si esta marcado para ser borrado
         if (row != null && row.getAction() == IDataRow.DELETE && dataRows.size() > recno) {
             dataRows.remove(recno);
-            movePrevious();
+            if (recno > 0){
+                movePrevious();                            
+            }
+            else {
+                moveFirst();
+            }
         }
     }
 
@@ -2154,8 +2161,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         String allFilters = "";
         if (!noMain) {
             allFilters = Fn.nvl(filter, "");
-            if (!allFilters.isEmpty()){
-                allFilters = "("+allFilters+")";
+            if (!allFilters.isEmpty()) {
+                allFilters = "(" + allFilters + ")";
             }
         }
         String operador = "";
@@ -2166,7 +2173,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (!allFilters.isEmpty()) {
                 operador = " and ";
             }
-            allFilters += operador + "("+entry.getValue()+")";
+            allFilters += operador + "(" + entry.getValue() + ")";
         }
         return allFilters;
     }

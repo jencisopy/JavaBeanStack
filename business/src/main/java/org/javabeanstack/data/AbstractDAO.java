@@ -734,15 +734,15 @@ public abstract class AbstractDAO implements IGenericDAO {
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
-     * @param sqlString sentencia jpa (update, delete)
+     * @param sqlString sentencia jpql (update, delete)
      * @param parameters parámetros de la sentencia.
      * @return un objeto error si no se ejecuto la sentencia con exito
      */
     @Override
-    public IErrorReg jpaExec(String sessionId, String sqlString,
+    public IErrorReg jpqlExec(String sessionId, String sqlString,
             Map<String, Object> parameters) throws Exception {
         LOGGER.debug(Strings.replicate("-", 50));
-        LOGGER.debug("jpaExec");
+        LOGGER.debug("jpqlExec");
 
         IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
         String persistUnit;
@@ -757,11 +757,11 @@ public abstract class AbstractDAO implements IGenericDAO {
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         ErrorReg error = new ErrorReg();        
         try {
-            Query sql = em.createQuery(sqlString);
+            Query jpql = em.createQuery(sqlString);
             if (parameters != null && !parameters.isEmpty()) {
-                populateQueryParameters(sql, parameters, sqlString);
+                populateQueryParameters(jpql, parameters, sqlString);
             }
-            sql.executeUpdate();
+            jpql.executeUpdate();
         } catch (Exception exp) {
             error.setMessage(exp.getLocalizedMessage());
             error.setErrorNumber(1);
@@ -1224,6 +1224,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return Map con los valores de las constantes.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Map<String, String> getQueryConstants(String persistUnit) {
         LOGGER.debug("getQueryConstansts()");
         Map<String, String> queryConstants = new HashMap<>();
