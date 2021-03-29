@@ -102,17 +102,15 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     private String action = "";
 
-    private String refreshUIComponent;
-    private String formViewSelected = "VIEW";
     private ICtrlEvents ctrlEvents = new CtrlEventLocal();
+
+    private final Map<String, Object> properties = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
      * metodo onCompleteText
      */
     private final Map<String, String> completeTextSearchFields = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-
-    private String tableTextFooter = "";
 
     public AbstractDataController() {
     }
@@ -127,6 +125,18 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     public void setCtrlEvents(ICtrlEvents ctrlEvents) {
         this.ctrlEvents = ctrlEvents;
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public Object getProperty(String key) {
+        return properties.get(key);
+    }
+
+    public void setProperty(String key, Object value) {
+        properties.put(key, value);
     }
 
     /**
@@ -307,30 +317,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             return getDataRows().size();
         }
         return rowsFiltered.size();
-    }
-
-    public String getTableTextFooter() {
-        return tableTextFooter;
-    }
-
-    public void setTableTextFooter(String tableTextFooter) {
-        this.tableTextFooter = tableTextFooter;
-    }
-
-    public String getRefreshUIComponent() {
-        return refreshUIComponent;
-    }
-
-    public void setRefreshUIComponent(String refreshUIComponent) {
-        this.refreshUIComponent = refreshUIComponent;
-    }
-
-    public String getFormViewSelected() {
-        return formViewSelected;
-    }
-
-    public void setFormViewSelected(String formViewSelected) {
-        this.formViewSelected = formViewSelected;
     }
 
     public IUserSession getUserSession() {
@@ -644,6 +630,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Refresca el valor de un control de datos.
      */
     protected void refreshUIComponent() {
+        String refreshUIComponent = (String) getProperty("refreshUIComponent");
         if (!Strings.isNullorEmpty(refreshUIComponent)) {
             getFacesCtx().refreshView(refreshUIComponent);
         }
@@ -685,11 +672,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             //Renderizar componentes
             refreshUIComponent();
         }
-        
-        //Para inserción multiples
-        if (success && Fn.inList(action, "1", "insert", "agregar")) {
-            doAction("insert");
-            return;
+        if (Fn.toLogical(getProperty("AFTERINSERT_INSERT_AGAIN"))) {
+            //Para inserción multiples
+            if (success && Fn.inList(action, "1", "insert", "agregar")) {
+                doAction("insert");
+                return;
+            }
         }
         if (success) {
             action = "";
@@ -934,6 +922,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
         @Override
         public void onRowFilter(IDataObject context) {
+            String tableTextFooter = (String) getProperty("tableTextFooter");
             if (Strings.isNullorEmpty(tableTextFooter)) {
                 return;
             }
