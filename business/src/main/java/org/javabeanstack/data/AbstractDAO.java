@@ -856,7 +856,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
                             checkFieldIdcompany(dbLinkInfo, ejb);
-                            em.persist(ejb);
+                            em.merge(ejb);
                             em.flush();
                             dataResult.setRowUpdated(ejb);
                             break;
