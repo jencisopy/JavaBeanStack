@@ -31,6 +31,9 @@ import java.util.Map;
  * @author Jorge Enciso
  */
 public interface IDataRow extends Serializable{
+    public static final int PERSIST   = 1;
+    public static final int MERGE     = 2;
+    
     public static final int AGREGAR   = 1;
     public static final int MODIFICAR = 2;
     public static final int BORRAR    = 3;
@@ -73,4 +76,6 @@ public interface IDataRow extends Serializable{
     public void onGetter(String fieldName);
     public void onSetter(String fieldName, Object fieldValueNew, Object fieldValueOld);
     public void setDefaults() throws Exception;
+    public int getPersistMode();
+    public void setPersistMode(int persistMode);
 }

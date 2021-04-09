@@ -42,8 +42,9 @@ import org.javabeanstack.util.Fn;
  * @author Jorge Enciso
  */
 public class DataRow implements IDataRow, Cloneable {
-
     private static final Logger LOGGER = Logger.getLogger(DataRow.class);
+    
+    private int persistMode = IDataRow.PERSIST;
 
     @XmlTransient
     private int action = 0;
@@ -74,6 +75,17 @@ public class DataRow implements IDataRow, Cloneable {
         return obj;
     }
 
+    @Override
+    public final int getPersistMode() {
+        return persistMode;
+    }
+
+    @Override
+    public final void setPersistMode(int persistMode) {
+        this.persistMode = persistMode;
+    }
+
+    
     /**
      * Devuelve un atributo con los valores originales antes de ser modificado.
      *
