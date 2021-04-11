@@ -999,4 +999,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         public void setXmlResource(IDataObject context) {
         }
     }
+    
+    protected boolean beforeLazyRowsLoad(){
+        return true;
+    }
 }

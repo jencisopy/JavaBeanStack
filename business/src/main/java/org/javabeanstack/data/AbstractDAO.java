@@ -860,7 +860,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                                 em.persist(ejb);
                             }
                             else {
-                                em.merge(ejb);
+                                ejb = em.merge(ejb);
                             }
                             em.flush();
                             dataResult.setRowUpdated(ejb);
@@ -869,7 +869,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                             setAppUser(ejb, appUser);
                             ejbsRes.add(ejb);
                             checkFieldIdcompany(dbLinkInfo, ejb);
-                            em.merge(ejb);
+                            ejb = em.merge(ejb);
                             em.flush();
                             dataResult.setRowUpdated(ejb);
                             break;

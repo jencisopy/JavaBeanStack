@@ -23,6 +23,7 @@ package org.javabeanstack.web.jsf.controller;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -191,6 +192,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
 
     private List<T> load(int first, int pageSize, String order, Map<String, Object> filters) {
         try {
+            if (!context.beforeLazyRowsLoad() || !context.isOpen()){
+                return new ArrayList();
+            }
             if (context.getNoLazyRowsLoad()) {
                 return context.getDataRows();
             }
