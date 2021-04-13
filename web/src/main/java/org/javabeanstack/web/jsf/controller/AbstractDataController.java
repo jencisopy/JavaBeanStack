@@ -679,6 +679,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 return;
             }
         }
+        if (success && Fn.toLogical(getProperty("AFTERACTION_REFRESH_ROW"))) {
+            //Refrescar el registro despues de la grabación
+            if (success && Fn.inList(action, "2", "update", "modificar")) {
+                refreshRow();
+            }
+        }
         if (success) {
             action = "";
         }
