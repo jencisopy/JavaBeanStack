@@ -59,6 +59,7 @@ import org.w3c.dom.Element;
 import org.javabeanstack.events.ICtrlEvents;
 import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.LocalDates;
+import org.javabeanstack.web.util.AppResourceSearcher;
 
 /**
  * Controller para los ABMs de las tablas o vistas, hereda funcionalidades de
@@ -105,6 +106,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     private ICtrlEvents ctrlEvents = new CtrlEventLocal();
 
     private final Map<String, Object> properties = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+    
+    private String xmlResourcePath = "";
+
+    private IXmlDom<Document, Element> xmlResource;
+
 
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
@@ -119,6 +125,28 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         this.setType(type);
     }
 
+    protected abstract AppResourceSearcher getAppResource();
+    
+    public String getXmlResourcePath() {
+        return xmlResourcePath;
+    }
+
+    public void setXmlResourcePath(String xmlResourcePath) {
+        this.xmlResourcePath = xmlResourcePath;
+    }
+    
+    public IXmlDom<Document, Element> getXmlResource() {
+        if (xmlResource == null) {
+            xmlResource = getAppResource().getXmlDom(xmlResourcePath, "XML", null);            
+        }
+        return xmlResource;
+    }
+
+    public void setXmlResource(T context) {
+        //Leer de la tabla AppResourceSearcher o de un xml
+        xmlResource = getAppResource().getXmlDom(xmlResourcePath, "XML", null);
+    }
+    
     public ICtrlEvents getCtrlEvents() {
         return ctrlEvents;
     }
@@ -900,17 +928,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
-
         private List<UIColumn> tableUIColumns;
-
-        @Override
-        public String getXmlResourcePath() {
-            return "";
-        }
-
-        @Override
-        public void setXmlResourcePath(String xmlResourcePath) {
-        }
 
         @Override
         public Map<String, List<IColumnModel>> getFormViewsColumns() {
@@ -994,15 +1012,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             requery();
             List<T> rows = getDataRows();
             return rows;
-        }
-
-        @Override
-        public IXmlDom<Document, Element> getXmlResource() {
-            return null;
-        }
-
-        @Override
-        public void setXmlResource(IDataObject context) {
         }
     }
     

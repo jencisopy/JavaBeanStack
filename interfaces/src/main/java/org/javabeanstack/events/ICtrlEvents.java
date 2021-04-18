@@ -28,9 +28,6 @@ import java.util.Map;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.web.model.IColumnModel;
-import org.javabeanstack.xml.IXmlDom;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -39,10 +36,6 @@ import org.w3c.dom.Element;
  */
 public interface ICtrlEvents<T extends IDataObject> extends Serializable{
     Map<String, List<IColumnModel>> getFormViewsColumns();
-    IXmlDom<Document, Element> getXmlResource();
-    String getXmlResourcePath();
-    void setXmlResourcePath(String xmlResourcePath);
-    void setXmlResource(T context);
     void onRowSelect(T context, Object event);
     void onRowFilter(T context);
     void onColumnSetView(T context, String form, String viewName);

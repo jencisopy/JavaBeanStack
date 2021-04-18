@@ -177,7 +177,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public String createAuthConsumer(String consumerName, LocalDateTime expiredDate) {
         try {
-            IAppAuthConsumer authConsumer = getAuthConsumerClass().newInstance();
+            IAppAuthConsumer authConsumer = getAuthConsumerClass().getConstructor().newInstance();
             authConsumer.setConsumerName(consumerName);
             authConsumer.setExpiredDate(expiredDate);
             authConsumer.setBlocked(false);
@@ -202,7 +202,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppAuthConsumer createAuthConsumer(IAppAuthConsumer authConsumer) {
         try {
-            IAppAuthConsumer authConsumerNew = getAuthConsumerClass().newInstance();
+            IAppAuthConsumer authConsumerNew = getAuthConsumerClass().getConstructor().newInstance();
             authConsumerNew.setConsumerName(authConsumer.getConsumerName());
             authConsumerNew.setExpiredDate(authConsumer.getExpiredDate());
             authConsumerNew.setConsumerKey(authConsumer.getConsumerKey());
@@ -343,7 +343,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public boolean requestToken(String consumerKey, String uuidDevice, String userName, String userEmail) {
         try {
-            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().getConstructor().newInstance();
             authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(true);
             String token = getRandomToken();
@@ -434,7 +434,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                     data.setAdministrator(true);
                 }
             }
-            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().newInstance();
+            IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().getConstructor().newInstance();
             authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
             authConsumerToken.setData(data.toString());
@@ -496,7 +496,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             if (appConsumer == null) {
                 appConsumer = createAuthConsumer(authConsumerToken.getAppAuthConsumerKey());
             }
-            IAppAuthConsumerToken authConsumerTokenNew = getAuthConsumerTokenClass().newInstance();
+            IAppAuthConsumerToken authConsumerTokenNew = getAuthConsumerTokenClass().getConstructor().newInstance();
             authConsumerTokenNew.setBlocked(authConsumerToken.getBlocked());
             authConsumerTokenNew.setData(authConsumerToken.getData());
             authConsumerTokenNew.setToken(authConsumerToken.getToken());

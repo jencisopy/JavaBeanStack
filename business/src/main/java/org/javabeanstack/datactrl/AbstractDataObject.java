@@ -1502,7 +1502,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         T newRow;
         try {
             errorApp = null;
-            newRow = this.getType().newInstance();
+            newRow = this.getType().getConstructor().newInstance();
             newRow.setAction(IDataRow.INSERT);
             if (isFieldExist("idempresa") || isMethodExist("setIdempresa")) {
                 newRow.setValue("idempresa", getIdempresa());

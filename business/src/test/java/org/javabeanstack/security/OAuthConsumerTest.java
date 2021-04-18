@@ -75,9 +75,9 @@ public class OAuthConsumerTest extends TestClass {
     }    
 
     @Test
-    public void test00InstanceClass() throws InstantiationException, IllegalAccessException{
+    public void test00InstanceClass() throws Exception{
         OAuthConsumerBase instance = new OAuthConsumerImpl();
-        IAppAuthConsumer consumer = instance.getAuthConsumerClass().newInstance();
+        IAppAuthConsumer consumer = instance.getAuthConsumerClass().getConstructor().newInstance();
         assertNotNull(consumer);
     }
 

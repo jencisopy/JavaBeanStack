@@ -303,7 +303,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             filter = "";
         }
         IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
-        T entity = entityClass.newInstance();
+        T entity = entityClass.getConstructor().newInstance();
         // Si se va a aplicar el filtro por defecto 
         if (entity.isApplyDBFilter()) {
             String operator = (filter.isEmpty() ? "" : " and ");

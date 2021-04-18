@@ -101,7 +101,7 @@ public class LogManager implements ILogManager {
                                                         Integer messageNumber, String category, String level, String object,
                                                         String objectField, Integer lineNumber, Integer choose) {
         try {
-            T logRecord = logType.newInstance();            
+            T logRecord = logType.getConstructor().newInstance();            
             logRecord.setCategory(category);
             logRecord.setLevel(level);
             logRecord.setMessage(message);
@@ -131,7 +131,7 @@ public class LogManager implements ILogManager {
     @Override
     public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg errorReg) {
         try {
-            T logRecord = logType.newInstance();
+            T logRecord = logType.getConstructor().newInstance();
             String messageInfo = "";
             if (errorReg.getException() != null) {
                  messageInfo = ErrorManager.getStackCause(errorReg.getException());
@@ -170,7 +170,7 @@ public class LogManager implements ILogManager {
     @Override
     public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, Exception exp) {
         try {
-            T logRecord = logType.newInstance();
+            T logRecord = logType.getConstructor().newInstance();
             String messageInfo = ErrorManager.getStackCause(exp);            
             logRecord.setCategory(IAppLogRecord.CATEGORY_APP);
             logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
