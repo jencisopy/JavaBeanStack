@@ -21,6 +21,8 @@
 */
 package org.javabeanstack.data;
 
+import java.math.BigDecimal;
+
 
 
 /**
@@ -33,6 +35,7 @@ public interface IDataQueryModel {
     public Object getColumn(int index);
     public Object getColumn(String columnName);
     public String getColumnStr(String columnName);    
+    public BigDecimal getColumnNumber(String columnName);
     public String getColumnName(int index);
     public String[] getColumnList();
     public void setColumnId(int index);

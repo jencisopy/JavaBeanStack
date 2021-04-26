@@ -23,9 +23,11 @@
 package org.javabeanstack.data.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
@@ -111,6 +113,35 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
             return null;
         }
         return getColumn(index).toString();
+    }
+
+    /**
+     * 
+     * @param columnName nombre de la columna
+     * @return valor de la columna como bigdecimal
+     */
+    @Override
+    public BigDecimal getColumnNumber(String columnName) {
+        if (!isColumnMetaDataExist()){
+            return null;
+        }
+        // Buscar un nombre de columna en la matriz
+        int index = Fn.findInMatrix(columnList, columnName, false);
+        if (index < 0){
+            return null;
+        }
+        if (getColumn(index) instanceof BigDecimal){
+            return (BigDecimal)getColumn(index);
+        }
+        String argument;
+        if (getColumn(index) == null){
+            return BigDecimal.ZERO;
+        }
+        argument = getColumn(index).toString().trim();
+        if (!StringUtils.isNumeric(argument)) {
+            return BigDecimal.ZERO;
+        }
+        return new BigDecimal(argument);
     }
     
     /**
