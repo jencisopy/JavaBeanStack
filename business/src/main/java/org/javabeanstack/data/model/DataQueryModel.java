@@ -24,12 +24,15 @@ package org.javabeanstack.data.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.LocalDates;
 import org.javabeanstack.util.Strings;
 
 /**
@@ -142,6 +145,33 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
             return BigDecimal.ZERO;
         }
         return new BigDecimal(argument);
+    }
+
+    /**
+     * 
+     * @param columnName nombre de la columna
+     * @return valor de la columna como LocalDateTime
+     */
+    @Override
+    public LocalDateTime getColumnLocalDate(String columnName) {
+        if (!isColumnMetaDataExist()){
+            return null;
+        }
+        // Buscar un nombre de columna en la matriz
+        int index = Fn.findInMatrix(columnList, columnName, false);
+        if (index < 0){
+            return null;
+        }
+        if (getColumn(index) == null){
+            return null;
+        }
+        if (getColumn(index) instanceof LocalDateTime){
+            return (LocalDateTime)getColumn(index);
+        }
+        if (getColumn(index) instanceof Date){
+            return LocalDates.toDateTime((Date)getColumn(index));
+        }
+        return LocalDates.toDateTime(getColumn(index).toString().trim());
     }
     
     /**
