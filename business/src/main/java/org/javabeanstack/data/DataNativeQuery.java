@@ -283,7 +283,11 @@ public class DataNativeQuery implements IDataNativeQuery {
 
                 Class clazz = getClassModel(dbFilter.getModelPackagePath(), entity);
                 if (clazz != null){
-                    String filter = dbFilter.getFilterExpr(clazz, entityAlias.trim());
+                    String alias = entityAlias;
+                    if (isNullorEmpty(alias)){
+                        alias = entity;
+                    }
+                    String filter = dbFilter.getFilterExpr(clazz, alias.trim());
                     if (!isNullorEmpty(filter)){
                         result = operador + filter;
                     }
