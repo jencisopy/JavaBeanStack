@@ -679,10 +679,7 @@ public abstract class AbstractDataService implements IDataService {
                     fieldName = field.getName();
                     // Si tiene una marca para no validar el foreignkey
                     CheckForeignkey annotation = field.getAnnotation(CheckForeignkey.class);
-                    if (annotation == null){
-                        continue;
-                    }
-                    if (!annotation.check()) {
+                    if (annotation != null && !annotation.check()) {
                         continue;
                     }
                     if (!checkForeignKey(sessionId, row, fieldName)) {
