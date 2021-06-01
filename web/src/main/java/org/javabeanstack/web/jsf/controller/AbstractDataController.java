@@ -279,24 +279,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Asigna en forma manual el atributo rowSelected de otro controller
-     * relacionado
-     *
-     * @param bean controller relacionado
-     */
-    //TODO eliminar
-    public void setBeanRowSelected(AbstractDataController bean) {
-        if (bean == null) {
-            return;
-        }
-        if (bean.getRow() != null) {
-            bean.setRowSelected(bean.getRow());
-        } else {
-            bean.setRowSelected(null);
-        }
-    }
-
-    /**
      * Devuelve los registros seleccionados en la grilla
      *
      * @return registros seleccionados en la grilla.
@@ -725,21 +707,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     public String logout() {
         return facesCtx.logout();
-    }
-
-    //TODO ver para eliminar
-    protected void refreshBean(AbstractDataController bean, String fieldName, Object fieldValue, String order, int maxrows) {
-        if (this.getRow() == null) {
-            bean.open("", "", true, 0);
-            return;
-        }
-        try {
-            if (bean.openOrRequeryIf(fieldName, fieldValue, order, maxrows)) {
-                setBeanRowSelected(bean);
-            }
-        } catch (Exception ex) {
-            getFacesCtx().showError(ex.getMessage());
-        }
     }
 
     /**
