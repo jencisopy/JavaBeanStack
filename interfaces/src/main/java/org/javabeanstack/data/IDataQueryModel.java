@@ -37,6 +37,7 @@ public interface IDataQueryModel {
     public Object getColumn(String columnName);
     public String getColumnStr(String columnName);    
     public BigDecimal getColumnNumber(String columnName);
+    public Long getColumnLong(String columnName);
     public LocalDateTime getColumnLocalDate(String columnName);
     public String getColumnName(int index);
     public String[] getColumnList();

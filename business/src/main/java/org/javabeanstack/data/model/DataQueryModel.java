@@ -150,6 +150,35 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
     /**
      * 
      * @param columnName nombre de la columna
+     * @return valor de la columna como long
+     */
+    @Override
+    public Long getColumnLong(String columnName) {
+        if (!isColumnMetaDataExist()){
+            return null;
+        }
+        // Buscar un nombre de columna en la matriz
+        int index = Fn.findInMatrix(columnList, columnName, false);
+        if (index < 0){
+            return null;
+        }
+        if (getColumn(index) instanceof Long){
+            return (Long)getColumn(index);
+        }
+        String argument;
+        if (getColumn(index) == null){
+            return 0L;
+        }
+        argument = getColumn(index).toString().trim();
+        if (!StringUtils.isNumeric(argument)) {
+            return 0L;
+        }
+        return Long.parseLong(argument);
+    }
+    
+    /**
+     * 
+     * @param columnName nombre de la columna
      * @return valor de la columna como LocalDateTime
      */
     @Override
