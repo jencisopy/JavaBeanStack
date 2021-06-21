@@ -36,6 +36,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
+import org.javabeanstack.data.IDataNativeQuery;
+import org.javabeanstack.data.IDataQueryModel;
 
 import org.primefaces.component.datatable.DataTable;
 import org.primefaces.event.SelectEvent;
@@ -567,6 +569,33 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return "Aceptar";
     }
 
+    /**
+     * Busca el valor mas alto de un campo en una tabla dada.
+     *
+     * @param table nombre de la tabla en la base.
+     * @param fieldName nombre del campo.
+     * @param filter filtro de busqueda.
+     * @param parameters parametros a reemplazar en los filtros.
+     * @return el valor más alto del campo de la tabla solicitada.
+     */
+    public Object getNewValue(String table, String fieldName, String filter, Map<String, Object> parameters) {
+        IDataNativeQuery query = getDAO().newDataNativeQuery();
+        try {
+            List<IDataQueryModel> data
+                    = query.select("max(" + fieldName + ") as maximo")
+                            .from(table)
+                            .where(Fn.nvl(filter, ""), parameters)
+                            .execQuery();
+            if (!data.isEmpty() && data.get(0) != null) {
+                return data.get(0).getColumn("maximo");
+            }
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, Logger.getLogger(getClass()));
+        }
+        return null;
+    }
+
+    
     /**
      * Se deberia ejecutar al cambiar un valor en un control de datos
      *
