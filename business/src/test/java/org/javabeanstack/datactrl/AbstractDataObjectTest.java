@@ -1338,23 +1338,23 @@ public class AbstractDataObjectTest extends TestClass{
     }
 
     /**
-     * Test of allowOperation method, of class AbstractDataObject.
+     * Test of allowAction method, of class AbstractDataObject.
      */
     @Test
-    public void test59AllowOperation() {
-        System.out.println("58-DataObject - allowOperation");
+    public void test59AllowAction() {
+        System.out.println("58-DataObject - allowAction");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
             System.out.println(error);
             return;
         }
         IDataObject<Region> region = new DataObject(Region.class, null, dataLink, null);
-        assertFalse(region.allowOperation(IDataRow.INSERT)); // Debe abrir primero
+        assertFalse(region.allowAction(IDataRow.INSERT)); // Debe abrir primero
         region.open();
-        assertTrue(region.allowOperation(IDataRow.INSERT)); 
-        assertTrue(region.allowOperation(IDataRow.UPDATE)); 
-        assertTrue(region.allowOperation(IDataRow.READ)); 
-        assertTrue(region.allowOperation(IDataRow.DELETE)); 
+        assertTrue(region.allowAction(IDataRow.INSERT)); 
+        assertTrue(region.allowAction(IDataRow.UPDATE)); 
+        assertTrue(region.allowAction(IDataRow.READ)); 
+        assertTrue(region.allowAction(IDataRow.DELETE)); 
     }
 
     /**
@@ -1969,7 +1969,7 @@ class DataEventsTest extends DataEvents{
     int afterOpen = 0;
     int beforeRequery = 0;
     int afterRequery = 0;
-    int onAllowOperation = 0;
+    int onAllowAction = 0;
     int beforeRowMove = 0;
     int afterRowMove = 0;
     int beforeRefreshRow = 0;
@@ -1988,9 +1988,9 @@ class DataEventsTest extends DataEvents{
     int afterClose = 0;
     
     @Override
-    public boolean onAllowOperation() {
+    public boolean onAllowAction() {
         assertTrue(getContext().getRow() != null);
-        onAllowOperation++;
+        onAllowAction++;
         return true;
     }
 

@@ -1363,11 +1363,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return this.dataRows != null;
     }
 
+
     /**
      * Devuelve verdadero o falso si es que la operación solicitada (agregar,
      * modificar,borrar) es permitida o no.
      *
-     * @param operation operación solicitada.<br>
+     * @param action operación solicitada.<br>
      * 1 Agregar <br>
      * 2 Modificar<br>
      * 3 Borrar<br>
@@ -1376,30 +1377,30 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * modificar,borrar) es permitida o no.
      */
     @Override
-    public boolean allowOperation(int operation) {
+    public boolean allowAction(int action) {
         if (dataRows == null) {
             return false;
         }
-        if (operation != IDataRow.INSERT) {
+        if (action != IDataRow.INSERT) {
             if (row == null) {
                 return false;
             }
         }
         if (dataEvents == null) {
-            if (operation != IDataRow.INSERT) {
-                row.setAction(operation);
+            if (action != IDataRow.INSERT) {
+                row.setAction(action);
             }
             return true;
         }
-        if (!dataEvents.onAllowOperation()) {
+        if (!dataEvents.onAllowAction()) {
             return false;
         }
-        if (operation != IDataRow.INSERT) {
-            row.setAction(operation);
+        if (action != IDataRow.INSERT) {
+            row.setAction(action);
         }
         return true;
     }
-
+    
     /**
      * Busca y devuelve el valor de la clave primaria
      *

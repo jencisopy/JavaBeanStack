@@ -34,7 +34,7 @@ import org.javabeanstack.data.IDataRow;
 public interface IDataEvents<O extends IDataObject,T extends IDataRow> extends Serializable{
     public O getContext();
     public void setContext(O context);
-    public boolean onAllowOperation();
+    public boolean onAllowAction();
     public boolean beforeRowMove(T curRow);
     public void    afterRowMove(T newRow);
     public void    beforeOpen(String order, String filter,boolean readwrite, int maxrows);

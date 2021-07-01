@@ -50,12 +50,12 @@ public abstract class AbstractDataEvents<O extends IDataObject, T extends IDataR
     }
     
     /**
-     * Se ejecuta posterior a la ejecución del metodo allowOperation del DataObject.
+     * Se ejecuta posterior a la ejecución del metodo allowAction del DataObject.
      * @return verdadero si permite la operación o falso si no.
      */
     @Override
-    public boolean onAllowOperation() {
-        LOGGER.debug("onAllowOperation IN");
+    public boolean onAllowAction() {
+        LOGGER.debug("onAllowAction IN");
         return true;
     }
 

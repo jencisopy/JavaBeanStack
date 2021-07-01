@@ -492,7 +492,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             case "1":
             case "insert":
             case "agregar":
-                result = this.allowOperation(IDataRow.AGREGAR);
+                result = this.allowAction(IDataRow.AGREGAR);
                 if (result) {
                     rowsSelected = null;
                     result = insertRow();
@@ -502,18 +502,18 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             case "confirm":
             case "update":
             case "modificar":
-                result = this.allowOperation(IDataRow.MODIFICAR);
+                result = this.allowAction(IDataRow.MODIFICAR);
                 break;
             case "3":
             case "delete":
             case "borrar":
-                result = this.allowOperation(IDataRow.BORRAR);
+                result = this.allowAction(IDataRow.BORRAR);
                 break;
             case "consultar":
             case "consult":
             case "view":
             case "read":
-                result = this.allowOperation(IDataRow.CONSULTAR);
+                result = this.allowAction(IDataRow.CONSULTAR);
                 break;
         }
         if (getErrorApp() != null) {

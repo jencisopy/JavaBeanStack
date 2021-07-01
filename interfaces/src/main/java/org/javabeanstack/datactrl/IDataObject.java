@@ -103,7 +103,7 @@ public interface IDataObject <T extends IDataRow>{
     public boolean      isMethodExist(String methodName);
     public boolean      isForeingKey(String fieldname);
     public boolean      isOpen();
-    public boolean      allowOperation(int operation);
+    public boolean      allowAction(int action);
     public Object       getPrimaryKeyValue();
     public boolean      setPrimaryKeyValue(Object value);
     public boolean      refreshRow();
