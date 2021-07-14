@@ -499,9 +499,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 }
                 break;
             case "2":
-            case "confirm":
             case "update":
             case "modificar":
+            case "confirm":
+            case "anular":                
                 result = this.allowAction(IDataRow.MODIFICAR);
                 break;
             case "3":
