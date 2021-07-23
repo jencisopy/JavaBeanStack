@@ -633,6 +633,23 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Ejecuta la sentencia y devuelve un registro
+     *
+     * @return devuelve un registro
+     * @throws org.javabeanstack.exceptions.SessionError
+     */
+    @Override
+    public IDataQueryModel execQuerySingle() throws SessionError {
+        this.first = 0;
+        this.maxResult = 1;
+        List<IDataQueryModel> result = execQuery(this.dataLink);
+        if (result == null || result.isEmpty()){
+            return null;
+        }
+        return result.get(0);
+    }
+    
+    /**
      * Ejecuta la sentencia y devuelve una lista de registros
      *
      * @param dataLink objeto acceso a los datos.
