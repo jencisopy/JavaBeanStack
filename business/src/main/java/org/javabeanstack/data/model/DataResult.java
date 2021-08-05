@@ -18,8 +18,7 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.data.model;
 
 import java.util.ArrayList;
@@ -31,11 +30,13 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
 
 /**
  * A travéz de esta clase, se devuelve el resultado de la grabación de registros
- * en la base de datos. Normalmente este componente va de una capa (ejb) a otra (web).
- * 
+ * en la base de datos. Normalmente este componente va de una capa (ejb) a otra
+ * (web).
+ *
  * @author Jorge Enciso
  */
 public class DataResult implements IDataResult {
@@ -45,13 +46,14 @@ public class DataResult implements IDataResult {
     private String errorMsg = "";
     private IDataRow rowUpdated;
     private Exception exception;
-    private Boolean removeDeleted=false;
+    private Boolean removeDeleted = false;
     private Map<String, IErrorReg> errorsMap = new HashMap();
 
     /**
      * Asigna al conjunto una lista ejb que ha sido procesado.
-     * @param key       clave
-     * @param listEjb   lista ejb (DataRow)
+     *
+     * @param key clave
+     * @param listEjb lista ejb (DataRow)
      */
     @Override
     public void put(String key, List<IDataRow> listEjb) {
@@ -63,6 +65,7 @@ public class DataResult implements IDataResult {
 
     /**
      * Devuelve un map conteniendo todas las listas ejb que han sido procesados.
+     *
      * @return map con las listas ejb
      */
     @Override
@@ -73,18 +76,20 @@ public class DataResult implements IDataResult {
     /**
      * En caso de grabarse un solo registro devuelve el registro con los datos
      * del identificador generado en la base de datos.
+     *
      * @param <T>
      * @return registro grabado.
      */
     @Override
     public <T extends IDataRow> T getRowUpdated() {
-        return (T)rowUpdated;
+        return (T) rowUpdated;
     }
-    
+
     /**
      * Devuelve una lista ejb del conjunto que ha sido procesado.
-     * @param key   identificador de la lista
-     * @return  lista ejb con los datos que han sido grabados.
+     *
+     * @param key identificador de la lista
+     * @return lista ejb con los datos que han sido grabados.
      */
     @Override
     public List<IDataRow> getListEjb(String key) {
@@ -94,39 +99,40 @@ public class DataResult implements IDataResult {
         return mapResult.get(key);
     }
 
+    /**
+     * Devuelve una lista ejb del conjunto que ha sido procesado.
+     *
+     * @param <T>
+     * @return lista ejb con los datos que han sido grabados.
+     */
+    @Override
+    public <T extends IDataRow> List<T> getRowsUpdated() {
+        Map.Entry<String, List<IDataRow>> entry = mapResult.entrySet().iterator().next();
+        if (entry == null) {
+            return null;
+        }
+        return (List<T>) entry.getValue();
+    }
 
     /**
      * Devuelve una lista ejb del conjunto que ha sido procesado.
+     *
      * @param <T>
-     * @return  lista ejb con los datos que han sido grabados.
-     */
-    @Override
-    public  <T extends IDataRow> List<T> getRowsUpdated() {
-        Map.Entry<String, List<IDataRow>> entry = mapResult.entrySet().iterator().next();
-        if (entry == null){
-            return null;
-        }
-        return (List<T>)entry.getValue();        
-    }
-    
-    /**
-     * Devuelve una lista ejb del conjunto que ha sido procesado.
-     * @param <T>
-     * @param key   identificador de la lista
-     * @return  lista ejb con los datos que han sido grabados.
+     * @param key identificador de la lista
+     * @return lista ejb con los datos que han sido grabados.
      */
     @Override
     public <T extends IDataRow> List<T> getRowsUpdated(String key) {
-        if (Fn.nvl(key,"").isEmpty()) {
+        if (Fn.nvl(key, "").isEmpty()) {
             key = "1";
         }
-        return (List<T>)mapResult.get(key);
+        return (List<T>) mapResult.get(key);
     }
-    
-    
+
     /**
-     * Determina si se eliminarón de las listas de registros los elementos
-     * que han sido marcados para ser eliminados.
+     * Determina si se eliminarón de las listas de registros los elementos que
+     * han sido marcados para ser eliminados.
+     *
      * @return si fue o no eliminado los registros marcados para tal efecto.
      */
     @Override
@@ -139,9 +145,9 @@ public class DataResult implements IDataResult {
         this.removeDeleted = removeDeleted;
     }
 
-    
     /**
      * Devuelve verdadero si la operación fue un exito o falso si no lo fue.
+     *
      * @return verdadero o falso
      */
     @Override
@@ -155,17 +161,26 @@ public class DataResult implements IDataResult {
     }
 
     /**
-     * 
+     *
      * @return devuelve una cadena de errores si lo hubiese.
      */
     @Override
     public String getErrorMsg() {
+        if (Strings.isNullorEmpty(errorMsg)
+                && errorsMap != null && !errorsMap.isEmpty()) {
+            String retornar = "";
+            for (Map.Entry entry:errorsMap.entrySet()){
+                retornar += ((IErrorReg)entry.getValue()).getMessage()+"\n";
+            }
+            return retornar;
+        }
         return errorMsg;
     }
 
     /**
      * Asigna el mensaje de error en caso de haberse producido una excepción.
-     * @param error 
+     *
+     * @param error
      */
     @Override
     public void setErrorMsg(String error) {
@@ -174,6 +189,7 @@ public class DataResult implements IDataResult {
 
     /**
      * Devuelve un map con la lista de todos los errores.
+     *
      * @return map con los errores.
      */
     @Override
@@ -183,17 +199,19 @@ public class DataResult implements IDataResult {
 
     /**
      * Asigna el map con los errores
-     * @param error 
+     *
+     * @param error
      */
     @Override
     public void setErrorsMap(Map<String, IErrorReg> error) {
         errorsMap = error;
     }
-    
+
     /**
      * Agrega a una lista las filas procesadas.
+     *
      * @param <T>
-     * @param row 
+     * @param row
      */
     @Override
     public <T extends IDataRow> void setRowsUpdated(T row) {
@@ -205,6 +223,7 @@ public class DataResult implements IDataResult {
 
     /**
      * Agrega a una lista las filas procesadas.
+     *
      * @param <T>
      * @param rows
      */
@@ -216,18 +235,20 @@ public class DataResult implements IDataResult {
     }
 
     /**
-     * Asigna un dataSet conteniendo todas las lista de registros que fuerón procesados.
+     * Asigna un dataSet conteniendo todas las lista de registros que fuerón
+     * procesados.
+     *
      * @param <T>
      * @param dataSetLocal
      */
     @Override
     public <T extends IDataRow> void setRowsUpdated(IDataSet dataSetLocal) {
-        dataSetLocal.getMapListSet().entrySet().forEach( mapLocal -> {
-            List<T> rowsLocal  = (List<T>)mapLocal.getValue();
-            List<T> rowsRemote = (List<T>)mapResult.get(mapLocal.getKey());
+        dataSetLocal.getMapListSet().entrySet().forEach(mapLocal -> {
+            List<T> rowsLocal = (List<T>) mapLocal.getValue();
+            List<T> rowsRemote = (List<T>) mapResult.get(mapLocal.getKey());
             if (rowsRemote != null) {
                 //Recorrer objetos locales                
-                for (int i=0; i < rowsLocal.size();i++) {
+                for (int i = 0; i < rowsLocal.size(); i++) {
                     T rowLocal = rowsLocal.get(i);
                     // Buscar en los objetos remotos actualizados
                     for (T rowRemote : rowsRemote) {
@@ -241,9 +262,9 @@ public class DataResult implements IDataResult {
         });
     }
 
-
     /**
      * Asigna el ultimo registro grabado en la base
+     *
      * @param <T>
      * @param row
      */
@@ -251,22 +272,24 @@ public class DataResult implements IDataResult {
     public <T extends IDataRow> void setRowUpdated(T row) {
         rowUpdated = row;
     }
-    
+
     /**
      * Devuelve el error como Exception si lo hubiese
+     *
      * @return exception
      */
     @Override
-    public Exception getException(){
+    public Exception getException() {
         return exception;
     }
-    
+
     /**
      * Asigna la exception si lo hubiese
-     * @param ex 
+     *
+     * @param ex
      */
     @Override
-    public void setException(Exception ex){
+    public void setException(Exception ex) {
         exception = ex;
     }
 }

@@ -596,7 +596,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return null;
     }
 
-    
     /**
      * Se deberia ejecutar al cambiar un valor en un control de datos
      *
