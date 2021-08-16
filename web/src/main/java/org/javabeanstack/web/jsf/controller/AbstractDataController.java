@@ -896,10 +896,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Utilizado en el datatable para mostrar el valor de la columna con un
      * estilo especifico.
      *
+     * @param <X>
      * @param columnName nombre de la columna
+     * @param row
      * @return estilo css
      */
-    public String getColumnStyle(String columnName) {
+    public <X extends IDataRow> String getColumnStyle(String columnName, X row) {    
         return "";
     }
 
