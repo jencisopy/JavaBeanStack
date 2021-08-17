@@ -84,7 +84,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         if (context.getRow() != null) {
             //Verificar si el registro actual posicionado es igual al rowKeyValue
             id = context.getRow().getId();
-            if (rowKeyValue.equals(id.toString())) {
+            if (rowKeyValue != null && rowKeyValue.equals(id.toString())) {
                 return (T) context.getRow();
             }
         }
