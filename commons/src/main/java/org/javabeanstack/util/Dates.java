@@ -23,6 +23,8 @@ package org.javabeanstack.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import org.apache.log4j.Logger;
@@ -77,6 +79,13 @@ public class Dates {
         return calendar.getTime();
     }
 
+    public static Date toDateTime(LocalDateTime dateTime){
+        if (dateTime == null){
+            return null;
+        }
+        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());        
+    }
+    
     /**
      * Convierte una cadena a una fecha
      *
@@ -117,6 +126,14 @@ public class Dates {
         return formater.format(date);
     }
 
+    public static String toString(Object date, String format) {
+        if (date instanceof LocalDateTime){
+            return LocalDates.toString((LocalDateTime)date, format);
+        }
+        SimpleDateFormat formater = new SimpleDateFormat(format);
+        return formater.format(date);
+    }
+    
     /**
      * Devuelve una variable Date con la fecha y hora del momento
      *
