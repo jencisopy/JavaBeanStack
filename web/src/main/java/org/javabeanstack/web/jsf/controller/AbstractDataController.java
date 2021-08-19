@@ -788,20 +788,25 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Utilizado principalmente en el datatable para mostrar los valores con las
      * mascaras formateadas.
      *
-     * @param <X>
      * @param columnName nombre del campo
      * @param row valores de las columnas
      * @param mask mascara
      * @return valor con la mascara tipo string.
      */
-    public <X extends IDataRow> String getColumnValueWithMask(String columnName, X row, String mask) {
+    public String getColumnValueWithMask(String columnName, Object row, String mask) {
         if (columnName == null || row == null) {
             return "";
         }
         if (columnName.contains("{")) {
             return getExpresionWithMask(columnName, row, mask);
         }
-        Object value = row.getValue(columnName);
+        Object value;
+        if (row instanceof IDataRow){
+            value = ((IDataRow)row).getValue(columnName);            
+        }
+        else{
+            value = ((IDataQueryModel)row).getValue(columnName);            
+        }
         return getMask(value, mask);
     }
 
@@ -809,13 +814,15 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Devuelve un valor resultante de una expresión dada ejemplo
      * {cuota}/{totalcuota}
      *
-     * @param <X>
      * @param expresion expresión dada.
      * @param row registro donde se encuentra los valores a reemplazar
      * @param mask
      * @return Devuelve un valor resultante de una expresión dada
      */
-    protected <X extends IDataRow> String getExpresionWithMask(String expresion, X row, String mask) {
+    protected String getExpresionWithMask(String expresion, Object row, String mask) {
+        if (row == null) {
+            return null;
+        }
         String[] expresionPartes = expresion.split("\\{|\\}");
         String[] maskPartes = {};
         if (!Fn.nvl(mask, "").isEmpty()) {
@@ -828,7 +835,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             }
             Object value;
             if (expresionPartes[i].trim().length() > 1) {
-                value = row.getValue(expresionPartes[i].trim());
+                if (row instanceof IDataQueryModel){
+                    value = ((IDataQueryModel)row).getValue(expresionPartes[i].trim());                    
+                }
+                else {
+                    value = ((IDataRow)row).getValue(expresionPartes[i].trim());                    
+                }
                 if (maskPartes != null && maskPartes.length > i) {
                     result += getMask(value, maskPartes[i]);
                 } else {
@@ -896,12 +908,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Utilizado en el datatable para mostrar el valor de la columna con un
      * estilo especifico.
      *
-     * @param <X>
      * @param columnName nombre de la columna
      * @param row
      * @return estilo css
      */
-    public <X extends IDataRow> String getColumnStyle(String columnName, X row) {    
+    public String getColumnStyle(String columnName, Object row) {    
         return "";
     }
 

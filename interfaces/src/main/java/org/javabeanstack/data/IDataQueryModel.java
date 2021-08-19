@@ -32,6 +32,8 @@ import java.time.LocalDateTime;
  * @author Jorge Enciso
  */
 public interface IDataQueryModel {
+    public Object getValue(String columnName);    
+    public Object getValue(int index);        
     public Object getColumnId();
     public Object getColumn(int index);
     public Object getColumn(String columnName);
@@ -47,4 +49,6 @@ public interface IDataQueryModel {
     public void setRow(Object row);
     public void setColumn(int index, Object value);
     public void setColumn(String columnName, Object value);
+    public void setValue(int index, Object value);
+    public void setValue(String columnName, Object value);
 }

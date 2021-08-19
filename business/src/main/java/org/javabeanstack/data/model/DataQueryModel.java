@@ -62,6 +62,16 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         return columnId;
     }
 
+    @Override
+    public Object getValue(int index) {
+        return getColumn(index);
+    }
+
+    @Override
+    public Object getValue(String columnName) {
+        return getColumn(columnName);
+    }    
+    
     /**
      * 
      * @param index nro de columna
@@ -300,7 +310,26 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         }
         setColumn(index, value);        
     }
-    
+
+    /**
+     * Asigna un valor a una columna
+     * @param index indice de la columna.
+     * @param value valor
+     */
+    @Override
+    public void setValue(int index, Object value) {
+        setColumn(index, value);
+    }
+
+    /**
+     * Asigna un valor a una columna
+     * @param columnName nombre de la columna.
+     * @param value valor.
+     */
+    @Override
+    public void setValue(String columnName, Object value) {
+        setColumn(columnName, value);
+    }
     
     /**
      * Devuelve si existe metadatos
