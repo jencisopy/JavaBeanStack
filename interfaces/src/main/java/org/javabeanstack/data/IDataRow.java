@@ -58,11 +58,13 @@ public interface IDataRow extends Serializable{
     public void      setFieldChecked(String fieldName, boolean fieldChecked);    
     public Map<String, IErrorReg> getErrors();
     public Object    getId();    
+    public Object    getIdAlternative();    
     public Object    getRowkey();
     public Object    getValue(String fieldname);
     public Object    getOldValue(String fieldname);
     public Class     getFieldType(String fieldname);
     public void      setId(Object id);
+    public void      setIdAlternative(Object id);
     public void      setValue(String fieldname, Object value) throws Exception;
     public void      setOldValues();    
     public void      setAction(int action);    

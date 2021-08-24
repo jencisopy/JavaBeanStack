@@ -47,6 +47,9 @@ public class DataRow implements IDataRow, Cloneable {
     private int persistMode = IDataRow.PERSIST;
 
     @XmlTransient
+    private Object idAlternative;
+    
+    @XmlTransient
     private int action = 0;
     @XmlTransient
     protected String queryUK = "";
@@ -335,7 +338,10 @@ public class DataRow implements IDataRow, Cloneable {
     public Object getRowkey() {
         Object obj = getId();
         if (obj == null) {
-            return "";
+            obj = getIdAlternative();
+            if (obj == null){
+                return "";                
+            }
         }
         String fieldType;
         if (obj instanceof DataRow) {
@@ -400,6 +406,17 @@ public class DataRow implements IDataRow, Cloneable {
         }
     }
 
+    @Override
+    public Object getIdAlternative() {
+        return idAlternative;
+    }
+
+    @Override
+    public void setIdAlternative(Object idAlternative) {
+        this.idAlternative = idAlternative;
+    }
+
+    
     /**
      * Marca el objeto o registro como borrado
      *
