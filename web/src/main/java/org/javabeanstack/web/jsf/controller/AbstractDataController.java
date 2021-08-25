@@ -528,7 +528,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         initAction(operation, result);
         facesCtx.addCallbackParam("result", result);
         if (result) {
-            refreshUIComponent();
+            String refreshUI = Fn.nvl((String)getProperty("AFTERACTION_REFRESH_UICOMPONENT"),"");
+            refreshUIComponent(refreshUI);
         }
         return result;
     }
@@ -709,7 +710,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 facesCtx.showInfo("Operación realizada con exito");
             }
             //Renderizar componentes
-            refreshUIComponent();
+            refreshUIComponent((String)getProperty("AFTERACTION_REFRESH_UICOMPONENT"));
         }
         if (Fn.toLogical(getProperty("AFTERINSERT_INSERT_AGAIN"))) {
             //Para inserción multiples
