@@ -76,7 +76,7 @@ public interface IDataRow extends Serializable{
     public boolean   isApplyDBFilter();
     public boolean   checkFieldIdcompany(Long idcompany);
     public void onGetter(String fieldName);
-    public void onSetter(String fieldName, Object fieldValueNew, Object fieldValueOld);
+    public void onSetter(String fieldName, Object fieldValueOld, Object fieldValueNew);
     public void setDefaults() throws Exception;
     public int getPersistMode();
     public void setPersistMode(int persistMode);

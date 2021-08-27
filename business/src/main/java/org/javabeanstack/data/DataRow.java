@@ -521,7 +521,7 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldValueOld valor anterior
      */
     @Override
-    public void onSetter(String fieldName, Object fieldValueNew, Object fieldValueOld) {
+    public void onSetter(String fieldName, Object fieldValueOld, Object fieldValueNew) {
         //Implementar en clases derivadas
     }
 
