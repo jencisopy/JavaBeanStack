@@ -1516,6 +1516,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             //
             newRow.setDefaults();
             //
+            Long idAlternative = (long)Math.floor(Math.random()*(100000-1+1)+1);
+            newRow.setIdAlternative(idAlternative);
+            //
             dataRows.add(newRow);
             this.moveLast();
             //

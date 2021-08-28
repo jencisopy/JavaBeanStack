@@ -62,6 +62,7 @@ public interface IDataRow extends Serializable{
     public Object    getRowkey();
     public Object    getValue(String fieldname);
     public Object    getOldValue(String fieldname);
+    public Object    getBeforeValue(String fieldname);    
     public Class     getFieldType(String fieldname);
     public void      setId(Object id);
     public void      setIdAlternative(Object id);

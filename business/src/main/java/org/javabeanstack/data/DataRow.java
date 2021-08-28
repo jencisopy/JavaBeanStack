@@ -43,12 +43,10 @@ import org.javabeanstack.util.Fn;
  */
 public class DataRow implements IDataRow, Cloneable {
     private static final Logger LOGGER = Logger.getLogger(DataRow.class);
-    
+    @XmlTransient
     private int persistMode = IDataRow.PERSIST;
-
     @XmlTransient
     private Object idAlternative;
-    
     @XmlTransient
     private int action = 0;
     @XmlTransient
@@ -61,7 +59,10 @@ public class DataRow implements IDataRow, Cloneable {
     private Map<String, Boolean> fieldsChecked = null;
     @XmlTransient
     private Map<String, IErrorReg> errors = new HashMap();
+    @XmlTransient
     protected IDataRow fieldsOldValues;
+    @XmlTransient
+    protected IDataRow fieldsBeforeValues;    
 
     public DataRow() {
         this.action = 0;
@@ -105,8 +106,24 @@ public class DataRow implements IDataRow, Cloneable {
     public void setOldValues() {
         fieldsOldValues = null;
         fieldsOldValues = (IDataRow) this.clone();
+        fieldsBeforeValues = (IDataRow) this.clone();
     }
 
+    /**
+     * Se guarda en un atributo los valores originales del objeto
+     */
+    private void setBeforeValue(String fieldName, Object value) {
+        if (fieldsBeforeValues == null){
+            fieldsBeforeValues = (IDataRow) this.clone();
+        }
+        try{
+            fieldsBeforeValues.setValue(fieldName, value);            
+        }
+        catch (Exception exp){
+            //nada
+        }
+    }
+    
     /**
      * Devuelve el valor original de un campo antes de ser modificado.
      *
@@ -124,6 +141,20 @@ public class DataRow implements IDataRow, Cloneable {
         return fieldsOldValues.getValue(fieldName);
     }
 
+    /**
+     * Devuelve el valor original de un campo antes de ser modificado.
+     *
+     * @param fieldName nombre del atributo o campo.
+     * @return el valor original antes de ser modificado de un campo.
+     */
+    @Override
+    public Object getBeforeValue(String fieldName) {
+        if (fieldsBeforeValues == null) {
+            return this.getValue(fieldName);
+        }
+        return fieldsBeforeValues.getValue(fieldName);
+    }
+    
     /**
      * Devuelve el valor del atributo operacion que indica la operación
      * realizada sobre la fila o miembro dado<br>
@@ -308,11 +339,12 @@ public class DataRow implements IDataRow, Cloneable {
     public void setAction(int action) {
         if (action > 1){
             if (this.action != action){
-                this.setOldValues();                
+                this.setOldValues();   
             }
         }
         else{
             this.fieldsOldValues = null;
+            this.fieldsBeforeValues = null;
         }
         this.action = action;
     }
@@ -342,6 +374,7 @@ public class DataRow implements IDataRow, Cloneable {
             if (obj == null){
                 return "";                
             }
+            return obj;
         }
         String fieldType;
         if (obj instanceof DataRow) {
@@ -396,6 +429,11 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void setValue(String fieldname, Object value) throws FieldException {
+        if (fieldsBeforeValues != null){
+            //Guardar el valor anterior por si se necesita utilizar posteriormente
+            setBeforeValue(fieldname, value);
+        }
+        //Asignar el valor en el atributo
         Boolean exito = DataInfo.setFieldValue(this, fieldname, value);
         if (!exito) {
             LOGGER.error("fieldname: " + fieldname);
@@ -457,6 +495,9 @@ public class DataRow implements IDataRow, Cloneable {
             return false;
         }
         final IDataRow other = (IDataRow) obj;
+        if (this.getId() == null){
+            return Objects.equals(this.getIdAlternative(), other.getIdAlternative());
+        }
         return Objects.equals(this.getId(), other.getId());
     }
 
@@ -517,11 +558,11 @@ public class DataRow implements IDataRow, Cloneable {
      * Se ejecuta en el setter despues de la asignación
      *
      * @param fieldName nombre del atributo
-     * @param fieldValueNew valor nuevo
-     * @param fieldValueOld valor anterior
+     * @param newValue valor nuevo
+     * @param oldValue valor anterior
      */
     @Override
-    public void onSetter(String fieldName, Object fieldValueOld, Object fieldValueNew) {
+    public void onSetter(String fieldName, Object oldValue, Object newValue) {
         //Implementar en clases derivadas
     }
 
