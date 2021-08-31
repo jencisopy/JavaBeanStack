@@ -117,7 +117,7 @@ public class DataRow implements IDataRow, Cloneable {
             fieldsBeforeValues = (IDataRow) this.clone();
         }
         try{
-            fieldsBeforeValues.setValue(fieldName, value);            
+            fieldsBeforeValues.setValue(fieldName, value);                            
         }
         catch (Exception exp){
             //nada
@@ -564,6 +564,7 @@ public class DataRow implements IDataRow, Cloneable {
     @Override
     public void onSetter(String fieldName, Object oldValue, Object newValue) {
         //Implementar en clases derivadas
+        setBeforeValue(fieldName, oldValue);
     }
 
     /**
