@@ -495,7 +495,7 @@ public class DataRow implements IDataRow, Cloneable {
             return false;
         }
         final IDataRow other = (IDataRow) obj;
-        if (this.getId() == null){
+        if (this.getId() == null && this.getIdAlternative() != null){
             return Objects.equals(this.getIdAlternative(), other.getIdAlternative());
         }
         return Objects.equals(this.getId(), other.getId());
