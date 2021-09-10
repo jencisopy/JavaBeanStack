@@ -66,6 +66,22 @@ public class Fn {
         }
         return false;
     }
+
+    /**
+     * Verifica si un valor "obj" se encuentra en una lista de variables
+     * @param obj   valor buscado
+     * @param list  lista de valores.
+     * @return  verdadero si encuentra y falso si no.
+     */
+    public static boolean inList(Short obj, Short... list) {
+        for (Object e : list) {
+            if (obj.equals(e)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     
     public static <T> T iif(Boolean condition, T value1, T value2) {
         if (condition) {
