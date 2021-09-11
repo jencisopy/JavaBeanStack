@@ -107,8 +107,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     private ICtrlEvents ctrlEvents = new CtrlEventLocal();
 
-    private final Map<String, Object> properties = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-    
     private String xmlResourcePath = "";
 
     private IXmlDom<Document, Element> xmlResource;
@@ -155,18 +153,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     public void setCtrlEvents(ICtrlEvents ctrlEvents) {
         this.ctrlEvents = ctrlEvents;
-    }
-
-    public Map<String, Object> getProperties() {
-        return properties;
-    }
-
-    public Object getProperty(String key) {
-        return properties.get(key);
-    }
-
-    public void setProperty(String key, Object value) {
-        properties.put(key, value);
     }
 
     /**

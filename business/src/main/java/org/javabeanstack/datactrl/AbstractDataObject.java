@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDBFilter;
@@ -138,6 +139,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     private boolean showDeletedRow = false;
 
     private Object idParent;
+    
+    private final Map<String, Object> properties = new TreeMap(String.CASE_INSENSITIVE_ORDER);    
 
     /**
      * @return Devuelve true si los datos son de solo lectura
@@ -1401,6 +1404,18 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return true;
     }
     
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public Object getProperty(String key) {
+        return properties.get(key);
+    }
+
+    public void setProperty(String key, Object value) {
+        properties.put(key, value);
+    }
+    
     /**
      * Busca y devuelve el valor de la clave primaria
      *
@@ -1519,8 +1534,14 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             Long idAlternative = (long)Math.floor(Math.random()*(100000-1+1)+1);
             newRow.setIdAlternative(idAlternative);
             //
-            dataRows.add(newRow);
-            this.moveLast();
+            if (Fn.toLogical(getProperty("INSERT_FIRST"))){
+                dataRows.add(0, newRow);
+                this.moveFirst();
+            }
+            else{
+                dataRows.add(newRow);
+                this.moveLast();
+            }
             //
             this.afterInsertRow();
             return true;
