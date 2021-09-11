@@ -679,10 +679,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     /**
      * Refresca un control de datos en la vista.
      *
-     * @param refresh control de datos a refrescar.
+     * @param refreshUIComponent control de datos a refrescar.
      */
-    protected void refreshUIComponent(String refresh) {
-        getFacesCtx().refreshView(refresh);
+    protected void refreshUIComponent(String refreshUIComponent) {
+        if (!Strings.isNullorEmpty(refreshUIComponent)) {
+            getFacesCtx().refreshView(refreshUIComponent);
+        }
     }
 
     /**
