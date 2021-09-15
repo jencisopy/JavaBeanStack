@@ -697,6 +697,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             } else {
                 facesCtx.showInfo("Operación realizada con exito");
             }
+            if (getRow() != null){
+                setRowSelected(getRow());
+            }
             //Renderizar componentes
             refreshUIComponent((String)getProperty("AFTERACTION_REFRESH_UICOMPONENT"));
         }
