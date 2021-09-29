@@ -25,6 +25,7 @@ import java.text.DecimalFormat;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 
 /**
@@ -35,6 +36,21 @@ import java.util.Map;
 public class Fn {
     private Fn(){
     }
+
+    /**
+     * Verifica si un valor "obj" se encuentra en una lista de variables
+     * @param obj   valor buscado
+     * @param list  lista de valores.
+     * @return  verdadero si encuentra y falso si no.
+     */
+    public static boolean inList(Object obj, Object... list) {
+        for (Object e : list) {
+            if (Objects.equals(obj, e)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     /**
      * Verifica si un valor "obj" se encuentra en una lista de variables
@@ -44,45 +60,13 @@ public class Fn {
      */
     public static boolean inList(String obj, String... list) {
         for (Object e : list) {
-            if (obj.equals(e)) {
+            if (Objects.equals(obj, e)) {
                 return true;
             }
         }
         return false;
     }
 
-
-    /**
-     * Verifica si un valor "obj" se encuentra en una lista de variables
-     * @param obj   valor buscado
-     * @param list  lista de valores.
-     * @return  verdadero si encuentra y falso si no.
-     */
-    public static boolean inList(Integer obj, int... list) {
-        for (Object e : list) {
-            if (obj.equals(e)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Verifica si un valor "obj" se encuentra en una lista de variables
-     * @param obj   valor buscado
-     * @param list  lista de valores.
-     * @return  verdadero si encuentra y falso si no.
-     */
-    public static boolean inList(Short obj, Short... list) {
-        for (Object e : list) {
-            if (obj.equals(e)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    
     public static <T> T iif(Boolean condition, T value1, T value2) {
         if (condition) {
             return value1;
