@@ -20,5 +20,10 @@
             <artifactId>commons-io</artifactId>
             <version>2.7</version>
         </dependency>
+        <dependency>
+            <groupId>org.efaps</groupId>
+            <artifactId>number2words</artifactId>
+            <version>0.2</version>
+        </dependency>
     </dependencies>
 </project>

@@ -63,6 +63,8 @@ public class DataRow implements IDataRow, Cloneable {
     protected IDataRow fieldsOldValues;
     @XmlTransient
     protected IDataRow fieldsBeforeValues;    
+    @XmlTransient
+    protected boolean noSetBeforeValues = false;    
 
     public DataRow() {
         this.action = 0;
@@ -107,14 +109,19 @@ public class DataRow implements IDataRow, Cloneable {
         fieldsOldValues = null;
         fieldsOldValues = (IDataRow) this.clone();
         fieldsBeforeValues = (IDataRow) this.clone();
+        ((DataRow)fieldsBeforeValues).noSetBeforeValues = true;
     }
 
     /**
      * Se guarda en un atributo los valores originales del objeto
      */
     private void setBeforeValue(String fieldName, Object value) {
+        if (noSetBeforeValues){
+            return;
+        }
         if (fieldsBeforeValues == null){
             fieldsBeforeValues = (IDataRow) this.clone();
+            ((DataRow)fieldsBeforeValues).noSetBeforeValues = true;
         }
         try{
             fieldsBeforeValues.setValue(fieldName, value);                            
