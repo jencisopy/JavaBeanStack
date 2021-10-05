@@ -615,7 +615,7 @@ public abstract class AbstractDataService implements IDataService {
             try {
                 method.setAccessible(true);
                 // La validación se ejecuta dependiendo de la operación (agregar, modificar, borrar)
-                if (Fn.inList(row.getAction(), operacion)) {
+                if (Fn.inArrayInteger(row.getAction(), operacion)) {
                     result = (IErrorReg) method.invoke(this, sessionId, row);
                     //Si el resultado es un error guardar información en el objeto errors
                     if (result != null && !"".equals(result.getMessage())) {
@@ -714,7 +714,7 @@ public abstract class AbstractDataService implements IDataService {
             try {
                 method.setAccessible(true);
                 // La validación se ejecuta dependiendo de la operación (agregar, modificar, borrar)
-                if (Fn.inList(row.getAction(), operacion)) {
+                if (Fn.inArrayInteger(row.getAction(), operacion)) {
                     result = (IErrorReg) method.invoke(this, sessionId, row);
                     //Si el resultado es un error guardar información en el objeto errors
                     if (result != null && !"".equals(result.getMessage())) {

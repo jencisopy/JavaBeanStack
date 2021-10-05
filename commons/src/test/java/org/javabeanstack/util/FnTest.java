@@ -67,12 +67,12 @@ public class FnTest {
      * Test of inList method, of class Fn.
      */
     @Test
-    public void testInList_Integer_intArr() {
-        System.out.println("inList");
+    public void testInArrayInteger() {
+        System.out.println("inArrayInteger");
         Integer obj = 1;
         int[] list = {1,2,4,5,1};
         boolean expResult = true;
-        boolean result = Fn.inList(obj, list);
+        boolean result = Fn.inArrayInteger(obj, list);
         assertEquals(expResult, result);
     }
 
