@@ -31,23 +31,32 @@ import java.lang.annotation.Target;
  * @author Jorge Enciso
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
+@Target({ElementType.METHOD})
 public @interface FieldFilter {
     /**
-     * Nombre del campo de la tabla o expresion del filtro
+     * nombre del campo
      * @return
      */
-    String expression();
+    String field() default "";
+    /**
+     * Expresion del filtro
+     * @return
+     */
+    String expression() default "";
+    /**
+     * Parametro adicional en caso de ser string y el operador like
+     * @return
+     */
+    String mode() default ""; //Valores equal, contain, contain_trim, contain_ltrim, contain_rtrim
+    /**
+     * Expresión si el valor es nulo
+     * @return
+     */
+    String nullOrEmptyExpression() default "";
+    /**
+     * Orden de procesamiento
+     * @return
+     */
+    String order() default "";
     
-    /**
-     * Valores posibles (and,or,exists,in)
-     * @return
-     */
-    String operator() default "and"; //Valores posibles (and,or)
-
-    /**
-     * Valores posibles (equal, like, contain, contain_ltrim, exact, exact_trim, exact_ltrim)
-     * @return
-     */
-    String filterMode() default "equal"; 
 }
