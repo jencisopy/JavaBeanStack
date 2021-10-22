@@ -50,6 +50,7 @@ import org.javabeanstack.web.util.FacesContextUtil;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.datactrl.IDataObject;
+import org.javabeanstack.datactrl.uicomponents.IDatatable;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.ErrorManager;
@@ -110,8 +111,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     private String xmlResourcePath = "";
 
     private IXmlDom<Document, Element> xmlResource;
-
-
+    
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
      * metodo onCompleteText
@@ -126,6 +126,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     protected abstract AppResourceSearcher getAppResource();
+    public abstract IDatatable getDataTable();
+    public abstract void configDataTables();
     
     public String getXmlResourcePath() {
         return xmlResourcePath;
@@ -1018,5 +1020,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     
     protected boolean beforeLazyRowsLoad(){
         return true;
+    }
+    
+    public void doFilter(String table, String filterTag) {
+        //Implementar en clases derivadas.
     }
 }

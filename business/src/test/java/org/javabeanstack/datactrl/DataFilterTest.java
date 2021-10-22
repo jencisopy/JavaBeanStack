@@ -45,7 +45,7 @@ public class DataFilterTest extends TestClass{
     @Test
     public void test01Simple() throws NamingException, SessionError, Exception {
         System.out.println("1-DataFilter - test01Simple");
-        String result = "(fecha is null) and (nro = :nro) and (nroinicial between :nroInicial and :nroFinal)";
+        String result = "(fecha is null) and (nro = :nro) and (nro between :nroInicial and :nroFinal)";
         DataFilterExample1 dataFilter = new DataFilterExample1();
         dataFilter.setNro("10");
         dataFilter.setNroInicial(1);
@@ -57,7 +57,7 @@ public class DataFilterTest extends TestClass{
     @Test
     public void test02Herencia() throws NamingException, SessionError, Exception {
         System.out.println("2-DataFilter - test02Herencia");
-        String result = "(fecha is null) and (nro = :nro) and (nroinicial between :nroInicial and :nroFinal) and (comentario like :comentario)";
+        String result = "(fecha is null) and (nro = :nro) and (nro between :nroInicial and :nroFinal) and (comentario like :comentario)";
         DataFilterTestX2 dataFilter = new DataFilterTestX2();
         dataFilter.setNro("10");
         dataFilter.setNroInicial(1);

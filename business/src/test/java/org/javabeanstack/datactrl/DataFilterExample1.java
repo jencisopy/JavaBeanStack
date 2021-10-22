@@ -53,7 +53,7 @@ public class DataFilterExample1 extends DataFilter {
         this.fecha = fecha;
     }
 
-    @FieldFilter(expression = "nroinicial between :nroInicial and :nroFinal", order = "3")    
+    @FieldFilter(expression = "nro between :nroInicial and :nroFinal", order = "3")    
     public Integer getNroInicial() {
         return nroInicial;
     }
