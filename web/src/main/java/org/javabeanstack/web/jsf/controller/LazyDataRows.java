@@ -353,7 +353,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     }
 
     private String getFilterMode(String columnName) {
-        List<IColumnModel> columns = context.getColumns();
+        List<IColumnModel> columns = context.getDataTable().getColumns();
         // Buscar por el campo filter
         for (IColumnModel column : columns) {
             if (column.getFilter().equalsIgnoreCase(columnName)) {
@@ -370,7 +370,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     }
 
     private String getFilterMask(String columnName) {
-        List<IColumnModel> columns = context.getColumns();
+        List<IColumnModel> columns = context.getDataTable().getColumns();
         // Buscar por el campo filter
         for (IColumnModel column : columns) {
             if (column.getFilter().equalsIgnoreCase(columnName)) {
