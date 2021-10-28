@@ -49,6 +49,8 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     void refreshChild(String id);
     void refreshChildren();
     void refresh();
+    Object getProperty(String key);
+    void setProperty(String key, Object value);
 
     String getDataViewTitle();
     String getDataViewTitle(String view);
@@ -73,8 +75,10 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     String getColumnStyle(String columnName, Object row);
     String getColumnValueWithMask(String columnName, Object row, String mask);
     String getMask(Object value, String mask);
-    
+
+    void beforeRowSelect(SelectEvent event);
     void onRowSelect(SelectEvent event);
+    void afterRowSelect(SelectEvent event);
     void onColumnSetView(String formName, String viewName);    
     void onColumnReorder(Object event);
     void onColumnToggle(Object pToggleEvent);
