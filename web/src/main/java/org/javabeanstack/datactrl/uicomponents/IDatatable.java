@@ -91,6 +91,7 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     String getTablePaginatorTemplate();
     
     MenuModel getMenuFilterModel(String table);
+    void createMenuFilter(String table);
     
     boolean isAllowTableAction(String table, String action);
     boolean isAllowTableAction(String action);
