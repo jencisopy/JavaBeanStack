@@ -733,13 +733,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
-        private List<UIColumn> tableUIColumns;
-
-        @Override
-        public Map<String, List<IColumnModel>> getFormViewsColumns() {
-            return null;
-        }
-
         @Override
         public void onRowSelect(IDataObject context, Object event) {
             int recno = getDataRows()
@@ -764,42 +757,6 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 text.getAttributes().put("value", rowsFiltered.size());
             }
             FacesContext.getCurrentInstance().getPartialViewContext().getRenderIds().add(tableTextFooter);
-        }
-
-        @Override
-        public void onColumnSetView(IDataObject context, String form, String viewName) {
-        }
-
-        @Override
-        public void onColumnReorder(IDataObject context, Object event) {
-            tableUIColumns = new ArrayList<>();
-            DataTable table = (DataTable) ((javax.faces.event.AjaxBehaviorEvent) event).getSource();
-            tableUIColumns.clear();
-            for (org.primefaces.component.api.UIColumn column : table.getColumns()) {
-                UIComponent colComponent = (UIComponent) column;
-                tableUIColumns.add((UIColumn) colComponent);
-            }
-        }
-
-        @Override
-        public void onColumnToggle(IDataObject context, Object pToggleEvent) {
-            Map<String, String> params = facesCtx.getRequestParameterMap();
-
-            String nameComponent = params.get("nameComponent");
-
-            Boolean visible = ((ToggleEvent) pToggleEvent).getVisibility() == Visibility.VISIBLE;
-            Integer index = (Integer) ((ToggleEvent) pToggleEvent).getData();
-
-            UIComponent table = facesCtx.findComponent(nameComponent);
-            if (tableUIColumns == null) {
-                table.getChildren().get(index).getAttributes().put("exportable", visible);
-            } else {
-                String idcolumn;
-                idcolumn = tableUIColumns.get(index).getAttributes().get("id").toString();
-                if (idcolumn != null) {
-                    table.findComponent(idcolumn).getAttributes().put("exportable", visible);
-                }
-            }
         }
 
         @Override

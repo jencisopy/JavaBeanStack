@@ -24,10 +24,8 @@ package org.javabeanstack.events;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.datactrl.IDataObject;
-import org.javabeanstack.web.model.IColumnModel;
 
 /**
  *
@@ -35,12 +33,8 @@ import org.javabeanstack.web.model.IColumnModel;
  * @param <T>
  */
 public interface ICtrlEvents<T extends IDataObject> extends Serializable{
-    Map<String, List<IColumnModel>> getFormViewsColumns();
     void onRowSelect(T context, Object event);
     void onRowFilter(T context);
-    void onColumnSetView(T context, String form, String viewName);
-    void onColumnReorder(T context, Object event);
-    void onColumnToggle(T context, Object pToggleEvent);
     void onChange(T context, String fieldname);
     <X extends IDataRow> List<X> onCompleteText(T context, String text);    
 }
