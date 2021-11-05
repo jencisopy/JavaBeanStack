@@ -170,6 +170,9 @@ public class FacesContextUtil {
     }
 
     public UIComponent findComponent(String name) {
+        if (Fn.nvl(name,"").isEmpty()){
+            return null;
+        }
         UIComponent componente = FacesContext.getCurrentInstance().getViewRoot().findComponent(name);
         return componente;
     }

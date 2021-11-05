@@ -176,7 +176,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     @Override
     public List<T> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, Object> filters) {
         try {
-            String order = "";
+            String order;
             if (sortField != null) {
                 order = sortField;
                 order += (sortOrder == SortOrder.ASCENDING) ? " asc" : " desc";
@@ -311,7 +311,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
      * @return
      */
     private String getFilterString(Map<String, Object> filters) {
-        String queryWhere = "";
+        String queryWhere;
         // Si en el controller se define los filtros
         queryWhere = context.onGetFilterString(filters);
         if (!queryWhere.isEmpty()) {
@@ -403,6 +403,12 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 } else if (parts[0].equalsIgnoreCase("left")) {
                     value = Strings.leftPad(value.trim(), size, " ");
                 }
+            }
+            else if (filterMask.toLowerCase().contains("replace")){
+                String[] parts = filterMask.split(",");
+                parts[0] = Strings.substr(parts[0], 8).replace("'", "");
+                parts[1] = Strings.substr(parts[1],0,parts[1].trim().length()-1).replace("'", "");
+                value = value.replace(parts[0], parts[1]);
             }
             return value;
         } catch (Exception exp) {
