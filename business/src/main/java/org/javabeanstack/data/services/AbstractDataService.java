@@ -78,6 +78,8 @@ public abstract class AbstractDataService implements IDataService {
     @EJB
     protected IGenericDAO dao;
     
+    protected boolean inheritCheckMethod = false;
+    
     @Override
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         return dao.getDBLinkInfo(sessionId);
@@ -158,7 +160,14 @@ public abstract class AbstractDataService implements IDataService {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     protected final List<Method> getListCheckMethods() {
         List methods = new ArrayList();
-        for (Method method : this.getClass().getDeclaredMethods()) {
+        Method[] methodsFromClass;
+        if (!inheritCheckMethod){
+            methodsFromClass = this.getClass().getDeclaredMethods();
+        }
+        else {
+            methodsFromClass = this.getClass().getMethods();
+        }
+        for (Method method : methodsFromClass) {
             CheckMethod anotation = method.getAnnotation(CheckMethod.class);
             /* Ejecutar los metodos cuyo nombre inician con check */
             if (anotation != null) {
@@ -185,7 +194,7 @@ public abstract class AbstractDataService implements IDataService {
             String key;
             CheckMethod anotation;
             Map<String, Boolean> fieldsChecked = new HashMap<>();
-            for (Method method : this.getClass().getDeclaredMethods()) {
+            for (Method method : methodList) {
                 anotation = method.getAnnotation(CheckMethod.class);
                 if (anotation != null) {
                     fieldName = anotation.fieldName().toLowerCase();
