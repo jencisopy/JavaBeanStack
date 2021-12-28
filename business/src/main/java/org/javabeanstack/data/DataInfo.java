@@ -276,6 +276,10 @@ public class DataInfo {
      */
     public static <T extends IDataRow> String[] getUniqueFields(Class<T> classType) {
         try {
+            if (classType.getAnnotation(Table.class).uniqueConstraints() == null
+                    || classType.getAnnotation(Table.class).uniqueConstraints().length == 0) {
+                return null;
+            }           
             String[] uniqueConst = classType.getAnnotation(Table.class).uniqueConstraints()[0].columnNames();
             if (uniqueConst != null) {
                 return uniqueConst;
