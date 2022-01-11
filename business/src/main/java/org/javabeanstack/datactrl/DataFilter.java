@@ -107,6 +107,10 @@ public class DataFilter {
                     if (valor instanceof String) {
                         valorStr = (String) valor;
                     }
+                    //Alimentar valores de parametros
+                    String paramName = substr(method.getName(), 3);
+                    paramName = left(paramName, 1).toLowerCase() + substr(paramName, 1);
+                    params.put(paramName, valor);
                     //Si es nulo y no se tiene que incluir en el filtro
                     if ((valor == null || isNullorEmpty(valorStr))
                             && annotation.nullOrEmptyExpression().isEmpty()) {
@@ -132,9 +136,7 @@ public class DataFilter {
                             }
                         }
                     }
-                    String paramName = substr(method.getName(), 3);
-                    paramName = left(paramName, 1).toLowerCase() + substr(paramName, 1);
-                    params.put(paramName, valor);
+                    params.put(paramName, valor);                    
                     if (!annotation.expression().isEmpty()) {
                         fields.add(annotation);
                     }
