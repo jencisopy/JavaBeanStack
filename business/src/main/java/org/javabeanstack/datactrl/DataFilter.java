@@ -21,6 +21,7 @@
  */
 package org.javabeanstack.datactrl;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,18 +30,19 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.javabeanstack.annotation.FieldFilter;
+import static org.javabeanstack.data.DataInfo.getDeclaredField;
 import org.javabeanstack.error.ErrorManager;
 import static org.javabeanstack.util.Strings.*;
 
 /**
- * Este componente genera una expresión que se utiliza para la selección
- * de datos en los ABMs.
- * Los nombres de los metodos getters debe empezar por "get" y seguido por el 
- * nombre del atributo.
- * 
+ * Este componente genera una expresión que se utiliza para la selección de
+ * datos en los ABMs. Los nombres de los metodos getters debe empezar por "get"
+ * y seguido por el nombre del atributo.
+ *
  * @author Jorge Enciso
  */
 public class DataFilter {
+
     private String filterExpression;
     private Map<String, Object> parameters = new HashMap();
 
@@ -65,8 +67,25 @@ public class DataFilter {
         filterExpression = "";
     }
 
+    public Object getValue(String fieldname) {
+        Object value = null;
+        try {
+            // Buscar entre los atributos si coincide el nombre
+            Field field = getDeclaredField(this.getClass(), fieldname);
+            if (field != null) {
+                field.setAccessible(true);
+                value = field.get(this);
+            }
+            return value;
+        } catch (Exception exp) {
+            ErrorManager.showError(exp, Logger.getLogger(getClass()));
+        }
+        return null;
+    }
+
     /**
      * Selecciona datos en un controller.
+     *
      * @param <T>
      * @param context controller.
      */
@@ -87,9 +106,9 @@ public class DataFilter {
     }
 
     /**
-     * Genera la expresión del filtro a partir de los atributos y las anotaciones
-     * en los metodos correspondientes.
-     * 
+     * Genera la expresión del filtro a partir de los atributos y las
+     * anotaciones en los metodos correspondientes.
+     *
      * @return un objeto con la expresión del filtro y los parámetros que se van
      * a utilizar en dicho filtro.
      */
@@ -136,7 +155,7 @@ public class DataFilter {
                             }
                         }
                     }
-                    params.put(paramName, valor);                    
+                    params.put(paramName, valor);
                     if (!annotation.expression().isEmpty()) {
                         fields.add(annotation);
                     }
