@@ -59,4 +59,5 @@ public @interface FieldFilter {
      */
     String order() default "";
     
+    String falseExpression() default "";
 }

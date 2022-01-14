@@ -135,6 +135,12 @@ public class DataFilter {
                             && annotation.nullOrEmptyExpression().isEmpty()) {
                         continue;
                     }
+                    //Si es nulo y no se tiene que incluir en el filtro
+                    if (valor instanceof Boolean && !(Boolean)valor
+                            && annotation.falseExpression().isEmpty()) {
+                        continue;
+                    }
+                    
                     params2.put(annotation, valor);
                     //Si es nulo y se debe incluir en el filtro
                     if (valor == null || isNullorEmpty(valorStr)) {
