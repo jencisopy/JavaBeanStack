@@ -872,6 +872,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                             ejb = em.merge(ejb);
                             em.flush();
                             dataResult.setRowUpdated(ejb);
+                            ejb.setAction(IDataRow.UPDATE); //Pierde el action al hacer el merge
                             break;
                         case IDataRow.DELETE:
                             ejbsRes.add(ejb);
