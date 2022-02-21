@@ -65,6 +65,10 @@ public class DataRow implements IDataRow, Cloneable {
     protected IDataRow fieldsBeforeValues;    
     @XmlTransient
     protected boolean noSetBeforeValues = false;    
+    @XmlTransient
+    protected Boolean onSetterActivated = true;
+    @XmlTransient
+    protected Boolean onGetterActivated = true;
 
     public DataRow() {
         this.action = 0;
@@ -558,6 +562,9 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void onGetter(String fieldName) {
+        if (!onGetterActivated){
+            return;
+        }
         //Implementar en clases derivadas
     }
 
@@ -570,6 +577,9 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void onSetter(String fieldName, Object oldValue, Object newValue) {
+        if (!onSetterActivated){
+            return;
+        }
         //Implementar en clases derivadas
         setBeforeValue(fieldName, oldValue);
     }
@@ -600,5 +610,25 @@ public class DataRow implements IDataRow, Cloneable {
                 }
             }
         }
+    }
+
+    @Override
+    public Boolean getOnGetterActivated() {
+        return onGetterActivated;
+    }
+
+    @Override
+    public Boolean getOnSetterActivated() {
+        return onSetterActivated;        
+    }
+
+    @Override
+    public void setOnGetterActivated(boolean onGetter) {
+        this.onGetterActivated = onGetter;        
+    }
+
+    @Override
+    public void setOnSetterActivated(boolean onSetter) {
+        this.onSetterActivated = onSetter;        
     }
 }

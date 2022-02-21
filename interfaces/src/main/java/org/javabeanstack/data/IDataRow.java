@@ -81,4 +81,8 @@ public interface IDataRow extends Serializable{
     public void setDefaults() throws Exception;
     public int getPersistMode();
     public void setPersistMode(int persistMode);
+    public Boolean getOnGetterActivated();
+    public Boolean getOnSetterActivated();
+    public void setOnGetterActivated(boolean onGetter);
+    public void setOnSetterActivated(boolean onSetter);
 }
