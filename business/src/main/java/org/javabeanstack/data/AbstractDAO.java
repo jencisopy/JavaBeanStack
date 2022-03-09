@@ -914,6 +914,16 @@ public abstract class AbstractDAO implements IGenericDAO {
         return dataResult;
     }
 
+    @Override    
+    public void dbRollBack(){
+        try{
+            dbManager.rollBack();                    
+        }
+        catch (Exception exp){
+            LOGGER.debug("Rollback error");
+        }
+    }
+    
     /**
      * Agregar,un registro en la tabla
      *
@@ -927,7 +937,6 @@ public abstract class AbstractDAO implements IGenericDAO {
     public <T extends IDataRow> IDataResult persist(String sessionId, T ejb) {
         ejb.setAction(IDataRow.INSERT);
         return update(sessionId, ejb);
-
     }
 
     /**

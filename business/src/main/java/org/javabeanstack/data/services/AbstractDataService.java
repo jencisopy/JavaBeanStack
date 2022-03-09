@@ -1241,4 +1241,9 @@ public abstract class AbstractDataService implements IDataService {
     public Map<String, String> getQueryConstants(String persistUnit){
         return dao.getQueryConstants(persistUnit);
     }
+    
+    @Override
+    public void dbRollBack(){
+        dao.dbRollBack();
+    }
 }

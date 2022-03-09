@@ -154,7 +154,12 @@ public class DBManager implements IDBManager{
     @Override 
     @Lock(LockType.WRITE)    
     public void rollBack(){
-        context.setRollbackOnly();
+        try {
+            context.setRollbackOnly();            
+        }
+        catch (Exception exp){
+            //
+        }
     }
     
     class Data {

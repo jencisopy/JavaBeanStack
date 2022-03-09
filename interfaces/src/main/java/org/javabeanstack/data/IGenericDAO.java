@@ -85,6 +85,9 @@ public interface IGenericDAO extends Serializable {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     public IDataResult update(String sessionId, IDataSet dataSet);
+    
+    //
+    public void dbRollBack();    
 
     /**
      * Agrega un registro en la tabla
