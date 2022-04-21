@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.faces.component.UIColumn;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
@@ -34,10 +33,7 @@ import org.apache.log4j.Logger;
 import org.javabeanstack.data.IDataNativeQuery;
 import org.javabeanstack.data.IDataQueryModel;
 
-import org.primefaces.component.datatable.DataTable;
 import org.primefaces.event.SelectEvent;
-import org.primefaces.event.ToggleEvent;
-import org.primefaces.model.Visibility;
 
 import org.javabeanstack.datactrl.AbstractDataObject;
 import org.javabeanstack.web.util.FacesContextUtil;
@@ -50,7 +46,6 @@ import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
-import org.javabeanstack.web.model.IColumnModel;
 import org.javabeanstack.xml.IXmlDom;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

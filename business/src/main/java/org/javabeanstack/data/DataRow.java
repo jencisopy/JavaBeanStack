@@ -119,7 +119,7 @@ public class DataRow implements IDataRow, Cloneable {
     /**
      * Se guarda en un atributo los valores originales del objeto
      */
-    private void setBeforeValue(String fieldName, Object value) {
+    public final void setBeforeValue(String fieldName, Object value) {
         if (noSetBeforeValues){
             return;
         }
