@@ -62,9 +62,9 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     protected IDataRow fieldsOldValues;
     @XmlTransient
-    protected IDataRow fieldsBeforeValues;    
+    protected IDataRow fieldsBeforeValues;
     @XmlTransient
-    protected boolean noSetBeforeValues = false;    
+    protected boolean noSetBeforeValues = false;
     @XmlTransient
     protected Boolean onSetterActivated = true;
     @XmlTransient
@@ -95,7 +95,6 @@ public class DataRow implements IDataRow, Cloneable {
         this.persistMode = persistMode;
     }
 
-    
     /**
      * Devuelve un atributo con los valores originales antes de ser modificado.
      *
@@ -113,28 +112,30 @@ public class DataRow implements IDataRow, Cloneable {
         fieldsOldValues = null;
         fieldsOldValues = (IDataRow) this.clone();
         fieldsBeforeValues = (IDataRow) this.clone();
-        ((DataRow)fieldsBeforeValues).noSetBeforeValues = true;
+        ((DataRow) fieldsBeforeValues).noSetBeforeValues = true;
     }
 
     /**
      * Se guarda en un atributo los valores originales del objeto
+     *
+     * @param fieldName
+     * @param value
      */
     public final void setBeforeValue(String fieldName, Object value) {
-        if (noSetBeforeValues){
+        if (noSetBeforeValues) {
             return;
         }
-        if (fieldsBeforeValues == null){
+        if (fieldsBeforeValues == null) {
             fieldsBeforeValues = (IDataRow) this.clone();
-            ((DataRow)fieldsBeforeValues).noSetBeforeValues = true;
+            ((DataRow) fieldsBeforeValues).noSetBeforeValues = true;
         }
-        try{
-            fieldsBeforeValues.setValue(fieldName, value);                            
-        }
-        catch (Exception exp){
+        try {
+            fieldsBeforeValues.setValue(fieldName, value);
+        } catch (Exception exp) {
             //nada
         }
     }
-    
+
     /**
      * Devuelve el valor original de un campo antes de ser modificado.
      *
@@ -143,7 +144,7 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public Object getOldValue(String fieldName) {
-        if (action == IDataRow.INSERT){
+        if (action == IDataRow.INSERT) {
             return null;
         }
         if (fieldsOldValues == null) {
@@ -165,7 +166,7 @@ public class DataRow implements IDataRow, Cloneable {
         }
         return fieldsBeforeValues.getValue(fieldName);
     }
-    
+
     /**
      * Devuelve el valor del atributo operacion que indica la operación
      * realizada sobre la fila o miembro dado<br>
@@ -348,12 +349,11 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void setAction(int action) {
-        if (action > 1){
-            if (this.action != action){
-                this.setOldValues();   
+        if (action > 1) {
+            if (this.action != action) {
+                this.setOldValues();
             }
-        }
-        else{
+        } else {
             this.fieldsOldValues = null;
             this.fieldsBeforeValues = null;
         }
@@ -382,8 +382,8 @@ public class DataRow implements IDataRow, Cloneable {
         Object obj = getId();
         if (obj == null) {
             obj = getIdAlternative();
-            if (obj == null){
-                return "";                
+            if (obj == null) {
+                return "";
             }
             return obj;
         }
@@ -424,13 +424,12 @@ public class DataRow implements IDataRow, Cloneable {
         return result;
     }
 
-    
     @XmlTransient
     @Override
     public void setId(Object id) {
         DataInfo.setIdvalue(this, id);
     }
-    
+
     /**
      * Asigna un valor a un atributo
      *
@@ -440,7 +439,7 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void setValue(String fieldname, Object value) throws FieldException {
-        if (fieldsBeforeValues != null){
+        if (fieldsBeforeValues != null) {
             //Guardar el valor anterior por si se necesita utilizar posteriormente
             setBeforeValue(fieldname, value);
         }
@@ -465,7 +464,6 @@ public class DataRow implements IDataRow, Cloneable {
         this.idAlternative = idAlternative;
     }
 
-    
     /**
      * Marca el objeto o registro como borrado
      *
@@ -506,7 +504,7 @@ public class DataRow implements IDataRow, Cloneable {
             return false;
         }
         final IDataRow other = (IDataRow) obj;
-        if (this.getId() == null && this.getIdAlternative() != null){
+        if (this.getId() == null && this.getIdAlternative() != null) {
             return Objects.equals(this.getIdAlternative(), other.getIdAlternative());
         }
         return Objects.equals(this.getId(), other.getId());
@@ -562,7 +560,7 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void onGetter(String fieldName) {
-        if (!onGetterActivated){
+        if (!onGetterActivated) {
             return;
         }
         //Implementar en clases derivadas
@@ -577,7 +575,7 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @Override
     public void onSetter(String fieldName, Object oldValue, Object newValue) {
-        if (!onSetterActivated){
+        if (!onSetterActivated) {
             return;
         }
         //Implementar en clases derivadas
@@ -587,11 +585,11 @@ public class DataRow implements IDataRow, Cloneable {
     /**
      * Setea valores por defectos en los campos en caso se tener valor nulo y no
      * se permita valores nulos
-     * 
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     @Override
-    public void setDefaults() throws Exception{
+    public void setDefaults() throws Exception {
         Class classType = this.getClass();
         Field[] fields = classType.getDeclaredFields();
         for (Field field : fields) {
@@ -619,16 +617,16 @@ public class DataRow implements IDataRow, Cloneable {
 
     @Override
     public Boolean getOnSetterActivated() {
-        return onSetterActivated;        
+        return onSetterActivated;
     }
 
     @Override
     public void setOnGetterActivated(boolean onGetter) {
-        this.onGetterActivated = onGetter;        
+        this.onGetterActivated = onGetter;
     }
 
     @Override
     public void setOnSetterActivated(boolean onSetter) {
-        this.onSetterActivated = onSetter;        
+        this.onSetterActivated = onSetter;
     }
 }
