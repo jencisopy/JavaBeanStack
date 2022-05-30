@@ -2175,7 +2175,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     @Override
     public void removeFilter() {
-        filters.remove(filters.size() - 1);
+        if (filters.size() > 0){
+            String key = String.valueOf(filters.size());
+            filters.remove(key);            
+        }
     }
 
     @Override
