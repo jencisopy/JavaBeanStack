@@ -103,5 +103,6 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     void setTableVisible(String table, boolean visible);
     
     boolean doAction(String action);
+    boolean revert();
 }
 
