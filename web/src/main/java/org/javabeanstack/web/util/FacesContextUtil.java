@@ -37,9 +37,20 @@ import org.javabeanstack.error.IErrorReg;
 
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
 import org.primefaces.PrimeFaces;
 
 public class FacesContextUtil {
+
+    private String messageView;
+
+    public String getMessageView() {
+        return messageView;
+    }
+
+    public void setMessageView(String messageView) {
+        this.messageView = messageView;
+    }
 
     public FacesContext getFacesContext() {
         return FacesContext.getCurrentInstance();
@@ -108,7 +119,7 @@ public class FacesContextUtil {
     public void refreshView(String idcomponent) {
         FacesContext context = FacesContext.getCurrentInstance();
         UIComponent component = this.findComponent(idcomponent);
-        if (component != null){
+        if (component != null) {
             idcomponent = component.getClientId();
             context.getPartialViewContext().getRenderIds().add(idcomponent);
         }
@@ -120,10 +131,16 @@ public class FacesContextUtil {
 
     public void showError(String title, String message) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, message));
+        if (!Strings.isNullorEmpty(messageView)) {
+            refreshView(messageView);
+        }
     }
 
     public void showError(String title, String message, String clientId) {
         getFacesContext().addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_ERROR, title, message));
+        if (!Strings.isNullorEmpty(messageView)) {
+            refreshView(messageView);
+        }
     }
 
     public void showError(String title, Map<String, IErrorReg> errors) {
@@ -132,8 +149,11 @@ public class FacesContextUtil {
             String key;
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
-                String titleShow = Fn.nvl(title,"Error ")+" en "+key;
+                String titleShow = Fn.nvl(title, "Error ") + " en " + key;
                 getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, titleShow, errors.get(key).getMessage()));
+            }
+            if (!Strings.isNullorEmpty(messageView)) {
+                refreshView(messageView);
             }
         }
     }
@@ -144,6 +164,9 @@ public class FacesContextUtil {
 
     public void showInfo(String title, String message) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, title, message));
+        if (!Strings.isNullorEmpty(messageView)) {
+            refreshView(messageView);
+        }
     }
 
     public void showWarn(String message) {
@@ -152,6 +175,9 @@ public class FacesContextUtil {
 
     public void showWarn(String title, String message) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, title, message));
+        if (!Strings.isNullorEmpty(messageView)){
+            refreshView(messageView);
+        }
     }
 
     public String getIp() {
@@ -170,7 +196,7 @@ public class FacesContextUtil {
     }
 
     public UIComponent findComponent(String name) {
-        if (Fn.nvl(name,"").isEmpty()){
+        if (Fn.nvl(name, "").isEmpty()) {
             return null;
         }
         UIComponent componente = FacesContext.getCurrentInstance().getViewRoot().findComponent(name);

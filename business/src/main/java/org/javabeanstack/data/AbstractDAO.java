@@ -28,7 +28,6 @@ import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +57,6 @@ import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Fn.nvl;
-import org.javabeanstack.util.LocalDates;
 import org.javabeanstack.util.Strings;
 
 /**
@@ -908,7 +906,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 dataResult.put(entry.getKey(), ejbsRes);
                 dataResult.setSuccess(false);
                 dataResult.setErrorMsg(msgError);
-                dbManager.rollBack();
+                dbRollBack();
                 ErrorManager.showError(ex, LOGGER);
                 break;
             }

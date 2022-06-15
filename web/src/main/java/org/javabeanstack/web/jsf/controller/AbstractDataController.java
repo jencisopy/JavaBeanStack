@@ -60,7 +60,6 @@ import org.javabeanstack.web.util.AppResourceSearcher;
  * @param <T>
  */
 public abstract class AbstractDataController<T extends IDataRow> extends AbstractDataObject<T> {
-
     /**
      * Lista de registros de la selección de datos en un proceso que trae los
      * datos por bloque (pagina a pagina)
