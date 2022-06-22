@@ -21,9 +21,11 @@
  */
 package org.javabeanstack.util;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -207,6 +209,48 @@ public class LocalDates {
         return dateTime;
     }
 
+    public static LocalDateTime getFirstDayOfWeek(){
+        return today().with(DayOfWeek.MONDAY);
+    }
+    
+    public static LocalDateTime getFirstDayOfMonth(){
+        return YearMonth.now().atDay(1).atStartOfDay();
+    }
+
+    public static LocalDateTime getLastDayOfMonth(){
+        return YearMonth.now().atEndOfMonth().atStartOfDay();
+    }
+    
+    public static LocalDateTime getFirstDayOfMonth(LocalDateTime dateTime){
+        YearMonth yearMonth = YearMonth.of(dateTime.getYear(), dateTime.getMonth());
+        return yearMonth.atDay(1).atStartOfDay();
+    }
+
+    public static LocalDateTime getLastDayOfMonth(LocalDateTime dateTime){
+        YearMonth yearMonth = YearMonth.of(dateTime.getYear(), dateTime.getMonth());
+        return yearMonth.atEndOfMonth().atStartOfDay();
+    }
+
+    public static LocalDateTime getFirstDayOfYear(){
+        String fecha = "01/01/"+today().getYear();
+        return toDateTime(fecha);
+    }
+
+    public static LocalDateTime getLastDayOfYear(){
+        String fecha = "31/12/"+today().getYear();
+        return toDateTime(fecha);
+    }
+
+    public static LocalDateTime getFirstDayOfYear(LocalDateTime dateTime){
+        String fecha = "01/01/"+dateTime.getYear();
+        return toDateTime(fecha);
+    }
+
+    public static LocalDateTime getLastDayOfYear(LocalDateTime dateTime){
+        String fecha = "31/12/"+dateTime.getYear();
+        return toDateTime(fecha);
+    }
+    
     /**
      * Dias entre dos fechas
      * @param start fecha inicial

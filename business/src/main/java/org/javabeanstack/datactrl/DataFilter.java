@@ -23,6 +23,7 @@ package org.javabeanstack.datactrl;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import org.javabeanstack.annotation.FieldFilter;
 import static org.javabeanstack.data.DataInfo.getDeclaredField;
 import org.javabeanstack.error.ErrorManager;
 import static org.javabeanstack.util.Strings.*;
+import static org.javabeanstack.util.LocalDates.*;
 
 /**
  * Este componente genera una expresión que se utiliza para la selección de
@@ -46,6 +48,26 @@ public class DataFilter {
     private String filterExpression;
     private Map<String, Object> parameters = new HashMap();
 
+    public DataFilter(){
+        initParams();
+    }
+
+    private void initParams(){
+        LocalDateTime today = today();
+        LocalDateTime yesterday = today.minusDays(1L);
+        LocalDateTime tomorrow = today.plusDays(1L);
+        addParam("yesterday", yesterday);
+        addParam("today", today);
+        addParam("tomorrow", tomorrow);
+        addParam("firstDayWeek", getFirstDayOfWeek());
+        
+        addParam("firstDayMonth", getFirstDayOfMonth());
+        addParam("lastDayMonth", getLastTimeOfDay(getLastDayOfMonth()));
+        
+        addParam("firstDayYear", getFirstDayOfYear());
+        addParam("lastDayYear", getLastTimeOfDay(getLastDayOfYear()));
+    }
+    
     public String getFilterExpression() {
         return filterExpression;
     }
@@ -65,6 +87,7 @@ public class DataFilter {
     public void clear() {
         parameters.clear();
         filterExpression = "";
+        initParams();
     }
 
     public Object getValue(String fieldname) {
