@@ -854,7 +854,6 @@ public abstract class AbstractDAO implements IGenericDAO {
                     switch (ejb.getAction()) {
                         case IDataRow.INSERT:
                             setAppUser(ejb, appUser);
-                            ejbsRes.add(ejb);
                             checkFieldIdcompany(dbLinkInfo, ejb);
                             if (ejb.getPersistMode() == IDataRow.PERSIST){
                                 em.persist(ejb);
@@ -864,23 +863,24 @@ public abstract class AbstractDAO implements IGenericDAO {
                             }
                             em.flush();
                             dataResult.setRowUpdated(ejb);
+                            ejb.setAction(IDataRow.INSERT); //Pierde el action al hacer el merge
+                            ejbsRes.add(ejb);                            
                             break;
                         case IDataRow.UPDATE:
                             setAppUser(ejb, appUser);
-                            ejbsRes.add(ejb);
                             checkFieldIdcompany(dbLinkInfo, ejb);
                             ejb = em.merge(ejb);
                             em.flush();
                             dataResult.setRowUpdated(ejb);
                             ejb.setAction(IDataRow.UPDATE); //Pierde el action al hacer el merge
+                            ejbsRes.add(ejb);
                             break;
                         case IDataRow.DELETE:
-                            ejbsRes.add(ejb);
                             checkFieldIdcompany(dbLinkInfo, ejb);
                             em.remove(em.merge(ejb));
-                            ejbsRes.remove(ejb);
                             em.flush();
                             dataResult.setRowUpdated(ejb);
+                            ejbsRes.add(ejb);                            
                             break;
                         default:
                             break;
@@ -891,7 +891,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                         event.afterSave(sessionId, ejb);
                     }
                 }
-                for (IDataRow ejb : ejbs) {
+                for (IDataRow ejb : ejbsRes) {
                     if (ejb.getAction() != IDataRow.DELETE) {
                         ejb.setAction(0);
                     }
