@@ -139,8 +139,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     private boolean showDeletedRow = false;
 
     private Object idParent;
-    
-    private final Map<String, Object> properties = new TreeMap(String.CASE_INSENSITIVE_ORDER);    
+
+    private final Map<String, Object> properties = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
     /**
      * @return Devuelve true si los datos son de solo lectura
@@ -1366,7 +1366,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return this.dataRows != null;
     }
 
-
     /**
      * Devuelve verdadero o falso si es que la operación solicitada (agregar,
      * modificar,borrar) es permitida o no.
@@ -1403,7 +1402,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         return true;
     }
-    
+
     public Map<String, Object> getProperties() {
         return properties;
     }
@@ -1415,7 +1414,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public void setProperty(String key, Object value) {
         properties.put(key, value);
     }
-    
+
     /**
      * Busca y devuelve el valor de la clave primaria
      *
@@ -1531,14 +1530,13 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             //
             newRow.setDefaults();
             //
-            Long idAlternative = (long)Math.floor(Math.random()*(100000-1+1)+1);
+            Long idAlternative = (long) Math.floor(Math.random() * (100000 - 1 + 1) + 1);
             newRow.setIdAlternative(idAlternative);
             //
-            if (Fn.toLogical(getProperty("INSERT_FIRST"))){
+            if (Fn.toLogical(getProperty("INSERT_FIRST"))) {
                 dataRows.add(0, newRow);
                 this.moveFirst();
-            }
-            else{
+            } else {
                 dataRows.add(newRow);
                 this.moveLast();
             }
@@ -1667,7 +1665,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             return null;
         }
         if (this.getDAO().getDataService() == null) {
-            this.row.setErrors((Map<String, IErrorReg>) null);                    
+            this.row.setErrors((Map<String, IErrorReg>) null);
             this.row.setRowChecked(true);
             return null;
         }
@@ -1970,6 +1968,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 } else {
                     movePrevious();
                 }
+            } else {
+                if (dataResult.getMapResult().get(row.getClass().getSimpleName()) != null) {
+                    row = (T) dataResult.getMapResult().get(row.getClass().getSimpleName()).get(0);
+                }
             }
             this.afterUpdate(dataSet);
             return true;
@@ -2145,10 +2147,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         // Eliminar de la lista local el registro actual si esta marcado para ser borrado
         if (row != null && row.getAction() == IDataRow.DELETE && dataRows.size() > recno) {
             dataRows.remove(recno);
-            if (recno > 0){
-                movePrevious();                            
-            }
-            else {
+            if (recno > 0) {
+                movePrevious();
+            } else {
                 moveFirst();
             }
         }
@@ -2175,9 +2176,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     @Override
     public void removeFilter() {
-        if (filters.size() > 0){
+        if (filters.size() > 0) {
             String key = String.valueOf(filters.size() - 1);
-            filters.remove(key);            
+            filters.remove(key);
         }
     }
 
