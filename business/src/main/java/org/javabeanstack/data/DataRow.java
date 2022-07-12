@@ -69,6 +69,10 @@ public class DataRow implements IDataRow, Cloneable {
     protected Boolean onSetterActivated = true;
     @XmlTransient
     protected Boolean onGetterActivated = true;
+    
+    private boolean auditable = false;
+    private Class<? extends IDataRow> auditTable;
+    
 
     public DataRow() {
         this.action = 0;
@@ -128,6 +132,8 @@ public class DataRow implements IDataRow, Cloneable {
         if (fieldsBeforeValues == null) {
             fieldsBeforeValues = (IDataRow) this.clone();
             ((DataRow) fieldsBeforeValues).noSetBeforeValues = true;
+            fieldsBeforeValues.setOnSetterActivated(false);
+            fieldsBeforeValues.setOnGetterActivated(false);
         }
         try {
             fieldsBeforeValues.setValue(fieldName, value);
@@ -464,6 +470,26 @@ public class DataRow implements IDataRow, Cloneable {
         this.idAlternative = idAlternative;
     }
 
+    @Override
+    public final boolean isAuditable() { 
+        return auditable;
+    }
+
+    @Override
+    public final void setAuditable(boolean auditable) {
+        this.auditable = auditable;
+    }
+
+    @Override
+    public final Class<? extends IDataRow> getAuditClass() {
+        return auditTable;
+    }
+
+    @Override
+    public final void setAuditClass(Class<? extends IDataRow> auditTable) {
+        this.auditTable = auditTable;
+    }
+    
     /**
      * Marca el objeto o registro como borrado
      *
@@ -629,4 +655,25 @@ public class DataRow implements IDataRow, Cloneable {
     public void setOnSetterActivated(boolean onSetter) {
         this.onSetterActivated = onSetter;
     }
+    
+    @Override
+    public <X extends IDataRow> X copyTo(X target) throws Exception {
+        IDataRow source = this;
+        if (source == null || target == null) {
+            return target;
+        }
+        Field[] fields = target.getClass().getDeclaredFields();
+        //Recorrer atributos del destino para copiar desde el origen
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            Class fieldTargetClass = target.getFieldType(fieldName);
+            Class fieldSourceClass = source.getFieldType(fieldName);
+            //Si existe el campo en el origen
+            if (fieldSourceClass != null && fieldTargetClass.isAssignableFrom(fieldSourceClass)) {
+                target.setValue(fieldName, source.getValue(fieldName));
+            }
+        }
+        return target;
+    }
+    
 }

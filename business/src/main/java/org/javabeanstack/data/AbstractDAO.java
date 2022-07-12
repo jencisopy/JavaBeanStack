@@ -88,17 +88,15 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @EJB
     private ISessions sessions;
-    
+
     @EJB
     private ILogManager logManager;
-
-    
 
     public AbstractDAO() {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
         return dbLinkInfo;
@@ -166,7 +164,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("find");
         LOGGER.debug(entityClass.toString());
-        if (id == null){
+        if (id == null) {
             return null;
         }
         IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
@@ -255,7 +253,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @throws Exception
      */
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId) throws Exception {
         return find(entityClass, sessionId, null, null, null, 0, 0);
     }
@@ -274,7 +272,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @throws Exception
      */
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId,
             String order, String filter, Map<String, Object> params) throws Exception {
         return find(entityClass, sessionId, order, filter, params, 0, 0);
@@ -296,7 +294,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @throws Exception
      */
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T extends IDataRow> List<T> find(Class<T> entityClass, String sessionId, String order, String filter, Map<String, Object> params, int first, int max) throws Exception {
         String query = "select o from " + entityClass.getSimpleName() + " o ";
         if (filter == null) {
@@ -370,7 +368,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
         } catch (NoResultException exp) {
             result = null;
-        } catch (Exception exp){
+        } catch (Exception exp) {
             ErrorManager.showError(exp, LOGGER);
             throw exp;
         }
@@ -716,7 +714,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(sqlString);
 
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
-        ErrorReg error = new ErrorReg();        
+        ErrorReg error = new ErrorReg();
         try {
             Query sql = em.createNativeQuery(sqlString);
             if (parameters != null && !parameters.isEmpty()) {
@@ -755,7 +753,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(sqlString);
 
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
-        ErrorReg error = new ErrorReg();        
+        ErrorReg error = new ErrorReg();
         try {
             Query jpql = em.createQuery(sqlString);
             if (parameters != null && !parameters.isEmpty()) {
@@ -768,7 +766,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         return error;
     }
-    
+
     /**
      * Sincroniza un ejb con la base de datos.
      *
@@ -812,7 +810,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
         IDataSet dataSet = new DataSet();
         String setKey = "1";
-        if (ejbs.get(0) != null){
+        if (ejbs.get(0) != null) {
             setKey = ejbs.get(0).getClass().getSimpleName().toLowerCase();
         }
         dataSet.add(setKey, (List<IDataRow>) ejbs);
@@ -847,7 +845,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 IDAOEvents event = dataSet.getEvent(entry.getKey());
                 for (IDataRow ejb : ejbs) {
                     //Ejecutar evento pre grabación
-                    if (event != null){
+                    if (event != null) {
                         event.beforeSave(sessionId, ejb);
                     }
                     lastEjb = ejb;
@@ -855,16 +853,15 @@ public abstract class AbstractDAO implements IGenericDAO {
                         case IDataRow.INSERT:
                             setAppUser(ejb, appUser);
                             checkFieldIdcompany(dbLinkInfo, ejb);
-                            if (ejb.getPersistMode() == IDataRow.PERSIST){
+                            if (ejb.getPersistMode() == IDataRow.PERSIST) {
                                 em.persist(ejb);
-                            }
-                            else {
+                            } else {
                                 ejb = em.merge(ejb);
                             }
                             em.flush();
                             dataResult.setRowUpdated(ejb);
                             ejb.setAction(IDataRow.INSERT); //Pierde el action al hacer el merge
-                            ejbsRes.add(ejb);                            
+                            ejbsRes.add(ejb);
                             break;
                         case IDataRow.UPDATE:
                             setAppUser(ejb, appUser);
@@ -880,14 +877,15 @@ public abstract class AbstractDAO implements IGenericDAO {
                             em.remove(em.merge(ejb));
                             em.flush();
                             dataResult.setRowUpdated(ejb);
-                            ejbsRes.add(ejb);                            
+                            ejbsRes.add(ejb);
                             break;
                         default:
                             break;
                     }
+                    auditSave(em, sessionId, ejb);
                     ejb.setErrors((Map<String, IErrorReg>) null);
                     //Ejecutar evento post grabación
-                    if (event != null){
+                    if (event != null) {
                         event.afterSave(sessionId, ejb);
                     }
                 }
@@ -914,16 +912,43 @@ public abstract class AbstractDAO implements IGenericDAO {
         return dataResult;
     }
 
-    @Override    
-    public void dbRollBack(){
-        try{
-            dbManager.rollBack();                    
-        }
-        catch (Exception exp){
+    @Override
+    public void dbRollBack() {
+        try {
+            dbManager.rollBack();
+        } catch (Exception exp) {
             LOGGER.debug("Rollback error");
         }
     }
-    
+
+    private <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb) throws Exception{
+        if (!ejb.isAuditable() || ejb.getAuditClass() == null) {
+            return;
+        }
+        IDataRow auditEjb = (IDataRow)ejb.getAuditClass().getConstructor().newInstance();
+        String operacion;
+        switch (ejb.getAction()) {
+            case IDataRow.INSERT:
+                operacion = "I";
+                break;
+            case IDataRow.UPDATE:
+                operacion = "U";
+                break;
+            case IDataRow.DELETE:
+                operacion = "D";
+                break;
+            default:
+                operacion = "?";
+                break;
+        }
+        auditEjb.setValue("operacion", operacion);
+        auditEjb.setValue("maquina", sessions.getUserSession(sessionId).getIp());
+        auditEjb.setValue("sessionid", sessionId);
+        auditEjb = ejb.copyTo(auditEjb);        
+        em.persist(auditEjb);
+        LOGGER.info(auditEjb);
+    }
+
     /**
      * Agregar,un registro en la tabla
      *
@@ -1006,11 +1031,11 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> T refreshRow(String sessionId, T row) throws Exception {
         Object id = row.getId();
-        if (id == null){
+        if (id == null) {
             return row;
         }
-        if (id instanceof DataRow){
-            id = ((DataRow)id).getId();
+        if (id instanceof DataRow) {
+            id = ((DataRow) id).getId();
         }
         row = this.findById((Class<T>) row.getClass(), sessionId, id);
         if (row == null) {
@@ -1216,17 +1241,16 @@ public abstract class AbstractDAO implements IGenericDAO {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     private void populateQueryParameters(Query query, Map<String, Object> parameters, String queryString) {
         parameters.entrySet().forEach(entry -> {
-            try{
+            try {
                 if (queryString != null) {
                     int pos = Strings.findString(":" + entry.getKey(), queryString);
                     if (pos >= 0) {
-                        query.setParameter(entry.getKey(), entry.getValue());                        
+                        query.setParameter(entry.getKey(), entry.getValue());
                     }
                 } else {
                     query.setParameter(entry.getKey(), entry.getValue());
                 }
-            }
-            catch(Exception ex){
+            } catch (Exception ex) {
                 // nada
             }
         });
@@ -1427,29 +1451,29 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Object getSessionInfo(String sessionId, String key) {
         return sessions.getSessionInfo(sessionId, key);
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void addSessionInfo(String sessionId, String key, Object info) {
         sessions.addSessionInfo(sessionId, key, info);
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void removeSessionInfo(String sessionId, String key) {
         sessions.removeSessionInfo(sessionId, key);
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
-    public IErrorReg getErrorMessage(int messageNumber,String alternativeMsg, String fieldName){
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public IErrorReg getErrorMessage(int messageNumber, String alternativeMsg, String fieldName) {
         IAppMessage appMessage = logManager.getAppMessage(messageNumber);
         ErrorReg errorReturn = new ErrorReg(alternativeMsg, messageNumber, fieldName);
-        if (appMessage != null){
+        if (appMessage != null) {
             errorReturn.setMessage(appMessage.getText());
         }
         return errorReturn;

@@ -148,7 +148,7 @@ public class DataInfo {
         }
         return false;
     }
-    
+
     /**
      * Determina si un campo o miembro es una clave foranea cuyo fetch = Lazy
      *
@@ -279,7 +279,7 @@ public class DataInfo {
             if (classType.getAnnotation(Table.class).uniqueConstraints() == null
                     || classType.getAnnotation(Table.class).uniqueConstraints().length == 0) {
                 return null;
-            }           
+            }
             String[] uniqueConst = classType.getAnnotation(Table.class).uniqueConstraints()[0].columnNames();
             if (uniqueConst != null) {
                 return uniqueConst;
@@ -579,7 +579,7 @@ public class DataInfo {
     public static Object getFieldValue(Object ejb, String fieldname) {
         Object value = null;
         try {
-            if (ejb == null){
+            if (ejb == null) {
                 return null;
             }
             // Si contiene un punto significa que el campo esta en uno de sus miembros
@@ -621,9 +621,9 @@ public class DataInfo {
         }
         return value;
     }
-    
+
     /**
-     * Setea un valor a un miembro de un objeto 
+     * Setea un valor a un miembro de un objeto
      *
      * @param ejb objeto DataRow
      * @param fieldname nombre del campo
@@ -654,24 +654,24 @@ public class DataInfo {
                 }
             } else {
                 exito = false;
-                // Buscar entre los atributos si coincide el nombre
-                Field field = getDeclaredField(ejb.getClass(), fieldname);
-                if (field != null) {
-                    field.setAccessible(true);
-                    field.set(ejb,value);
+                // Si no hay atributos con el nombre solicitado buscar como metodo
+                Method method = getMethod(ejb.getClass(), "set" + Strings.capitalize(fieldname));
+                if (method != null) {
+                    method.setAccessible(true);
+                    method.invoke(ejb, value);
                     exito = true;
                 } else {
-                    // Si no hay atributos con el nombre solicitado buscar como metodo
-                    Method method = getMethod(ejb.getClass(), "set" + Strings.capitalize(fieldname));
-                    if (method != null) {
-                        method.setAccessible(true);
-                        method.invoke(ejb,value);
+                    // Buscar entre los atributos si coincide el nombre
+                    Field field = getDeclaredField(ejb.getClass(), fieldname);
+                    if (field != null) {
+                        field.setAccessible(true);
+                        field.set(ejb, value);
                         exito = true;
                     }
                 }
             }
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);            
+            ErrorManager.showError(ex, LOGGER);
             return false;
         }
         return exito;

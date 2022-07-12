@@ -50,6 +50,7 @@ public interface IDataRow extends Serializable{
     public int       getAction();
     public String    getQueryUK();
     public String    getIdFunctionFind();    
+    public boolean   isAuditable();     
     public boolean   isRowChecked();
     public void      setRowChecked(boolean rowchecked);    
     public boolean   isFieldChecked(String fieldName);
@@ -72,6 +73,10 @@ public interface IDataRow extends Serializable{
     public void      setErrors(Map<String, IErrorReg> errorReg);        
     public void      setErrors(IErrorReg errorReg, String fieldName);    
     public void      setErrors(String errorMsg, String fieldname, int errorNumber);
+    public void      setAuditable(boolean auditable);
+    public Class<? extends IDataRow> getAuditClass();    
+    public void setAuditClass(Class<? extends IDataRow> clazz);        
+    
     public boolean   delete();
     public boolean   equivalent(Object o);
     public boolean   isApplyDBFilter();
@@ -85,4 +90,5 @@ public interface IDataRow extends Serializable{
     public Boolean getOnSetterActivated();
     public void setOnGetterActivated(boolean onGetter);
     public void setOnSetterActivated(boolean onSetter);
+    public <X extends IDataRow> X copyTo(X target) throws Exception;
 }
