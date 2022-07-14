@@ -42,6 +42,7 @@ import org.javabeanstack.util.Fn;
  * @author Jorge Enciso
  */
 public class DataRow implements IDataRow, Cloneable {
+
     private static final Logger LOGGER = Logger.getLogger(DataRow.class);
     @XmlTransient
     private int persistMode = IDataRow.PERSIST;
@@ -69,10 +70,9 @@ public class DataRow implements IDataRow, Cloneable {
     protected Boolean onSetterActivated = true;
     @XmlTransient
     protected Boolean onGetterActivated = true;
-    
+
     private boolean auditable = false;
     private Class<? extends IDataRow> auditTable;
-    
 
     public DataRow() {
         this.action = 0;
@@ -471,12 +471,12 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     @Override
-    public final boolean isAuditable() { 
+    public boolean isAuditAble() {
         return auditable;
     }
 
     @Override
-    public final void setAuditable(boolean auditable) {
+    public final void setAuditAble(boolean auditable) {
         this.auditable = auditable;
     }
 
@@ -489,7 +489,7 @@ public class DataRow implements IDataRow, Cloneable {
     public final void setAuditClass(Class<? extends IDataRow> auditTable) {
         this.auditTable = auditTable;
     }
-    
+
     /**
      * Marca el objeto o registro como borrado
      *
@@ -655,7 +655,7 @@ public class DataRow implements IDataRow, Cloneable {
     public void setOnSetterActivated(boolean onSetter) {
         this.onSetterActivated = onSetter;
     }
-    
+
     @Override
     public <X extends IDataRow> X copyTo(X target) throws Exception {
         IDataRow source = this;
@@ -675,5 +675,5 @@ public class DataRow implements IDataRow, Cloneable {
         }
         return target;
     }
-    
+
 }

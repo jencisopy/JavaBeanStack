@@ -40,10 +40,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Parameter;
 import javax.persistence.Query;
+import javax.persistence.Table;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.transaction.Status;
 import javax.transaction.TransactionSynchronizationRegistry;
 import org.apache.log4j.Logger;
+import org.javabeanstack.annotation.AuditEntity;
 import org.javabeanstack.data.events.IDAOEvents;
 
 import org.javabeanstack.error.ErrorReg;
@@ -57,6 +59,7 @@ import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Fn.nvl;
+import org.javabeanstack.util.Parameters;
 import org.javabeanstack.util.Strings;
 
 /**
@@ -922,7 +925,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     private <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb) throws Exception{
-        if (!ejb.isAuditable() || ejb.getAuditClass() == null) {
+        if (!isAuditAble(ejb)) {
             return;
         }
         IDataRow auditEjb = (IDataRow)ejb.getAuditClass().getConstructor().newInstance();
@@ -949,6 +952,41 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.info(auditEjb);
     }
 
+    private <T extends IDataRow> boolean isAuditAble(T ejb) {
+        if (ejb == null || ejb.getAuditClass() == null){
+            return false;
+        }
+        if (ejb.isAuditAble()){
+            return true;
+        }
+        try {
+            String entidad1 = ejb.getClass().getSimpleName().toLowerCase();
+            AuditEntity auditAnnotation = ejb.getClass().getAnnotation(AuditEntity.class);
+            Table tableAnnotation = ejb.getClass().getAnnotation(Table.class);
+            String entidad2 = tableAnnotation.name().toLowerCase();
+            String entidad3 = "*";
+            if (auditAnnotation != null){
+                entidad3 = auditAnnotation.value();
+            }
+
+            Map<String, Object> params = new Parameters()
+                    .put("entity1", entidad1)
+                    .put("entity2", entidad2)
+                    .put("entity3", entidad3)
+                    .getParams();
+            List<IDataRow> result = findListByQuery(null, "select o from AppAudit o "
+                    + "where entity in (:entity1, :entity2, :entity3) "
+                    + "and audit = true", params);
+            
+            if (result != null && !result.isEmpty()) {
+                return true;
+            }
+        } catch (Exception e) {
+            ErrorManager.showError(e, Logger.getLogger(getClass()));
+        }
+        return false;
+    }
+    
     /**
      * Agregar,un registro en la tabla
      *
