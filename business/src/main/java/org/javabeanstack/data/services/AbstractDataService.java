@@ -1243,6 +1243,21 @@ public abstract class AbstractDataService implements IDataService {
     }
     
     @Override
+    public <T extends IDataRow> boolean isAuditAble(T ejb) {    
+        return dao.isAuditAble(ejb);
+    }
+
+    @Override
+    public <T extends IDataRow> boolean isAuditAble(String entityName) {    
+        return dao.isAuditAble(entityName);
+    }
+
+    @Override
+    public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz) {    
+        return dao.isAuditAble(clazz);
+    }
+    
+    @Override
     public void dbRollBack(){
         dao.dbRollBack();
     }

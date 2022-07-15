@@ -525,4 +525,8 @@ public interface IGenericDAO extends Serializable {
     public void removeSessionInfo(String sessionId, String key);  
     public IErrorReg getErrorMessage(int messageNumber,String alternativeMsg, String fieldName);
     public Map<String, String> getQueryConstants(String persistUnit);     
+    
+    public <T extends IDataRow> boolean isAuditAble(T ejb);
+    public <T extends IDataRow> boolean isAuditAble(String entityName);    
+    public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz);
 }

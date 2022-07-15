@@ -924,11 +924,11 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
     }
 
-    private <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb) throws Exception{
+    private <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb) throws Exception {
         if (!isAuditAble(ejb)) {
             return;
         }
-        IDataRow auditEjb = (IDataRow)ejb.getAuditClass().getConstructor().newInstance();
+        IDataRow auditEjb = (IDataRow) ejb.getAuditClass().getConstructor().newInstance();
         String operacion;
         switch (ejb.getAction()) {
             case IDataRow.INSERT:
@@ -947,16 +947,17 @@ public abstract class AbstractDAO implements IGenericDAO {
         auditEjb.setValue("operacion", operacion);
         auditEjb.setValue("maquina", sessions.getUserSession(sessionId).getIp());
         auditEjb.setValue("sessionid", sessionId);
-        auditEjb = ejb.copyTo(auditEjb);        
+        auditEjb = ejb.copyTo(auditEjb);
         em.persist(auditEjb);
         LOGGER.info(auditEjb);
     }
 
-    private <T extends IDataRow> boolean isAuditAble(T ejb) {
-        if (ejb == null || ejb.getAuditClass() == null){
+    @Override
+    public <T extends IDataRow> boolean isAuditAble(T ejb) {
+        if (ejb == null || ejb.getAuditClass() == null) {
             return false;
         }
-        if (ejb.isAuditAble()){
+        if (ejb.isAuditAble()) {
             return true;
         }
         try {
@@ -965,8 +966,8 @@ public abstract class AbstractDAO implements IGenericDAO {
             Table tableAnnotation = ejb.getClass().getAnnotation(Table.class);
             String entidad2 = tableAnnotation.name().toLowerCase();
             String entidad3 = "*";
-            if (auditAnnotation != null){
-                entidad3 = auditAnnotation.value();
+            if (auditAnnotation != null) {
+                entidad3 = auditAnnotation.name();
             }
 
             Map<String, Object> params = new Parameters()
@@ -977,7 +978,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             List<IDataRow> result = findListByQuery(null, "select o from AppAudit o "
                     + "where entity in (:entity1, :entity2, :entity3) "
                     + "and audit = true", params);
-            
+
             if (result != null && !result.isEmpty()) {
                 return true;
             }
@@ -986,7 +987,40 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         return false;
     }
-    
+
+    @Override
+    public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz) {
+        if (clazz == null) {
+            return false;
+        }
+        try {
+            IDataRow ejb = clazz.getDeclaredConstructor().newInstance();
+            return isAuditAble(ejb);
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER);
+        }
+        return false;
+    }
+
+    @Override
+    public <T extends IDataRow> boolean isAuditAble(String entityName) {
+        try {
+            Map<String, Object> params = new Parameters()
+                    .put("entity1", entityName)
+                    .getParams();
+            List<IDataRow> result = findListByQuery(null, "select o from AppAudit o "
+                    + "where entity = :entity1 "
+                    + "and audit = true", params);
+
+            if (result != null && !result.isEmpty()) {
+                return true;
+            }
+        } catch (Exception e) {
+            ErrorManager.showError(e, Logger.getLogger(getClass()));
+        }
+        return false;
+    }
+
     /**
      * Agregar,un registro en la tabla
      *
