@@ -945,7 +945,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 break;
         }
         auditEjb.setValue("operacion", operacion);
-        auditEjb.setValue("maquina", sessions.getUserSession(sessionId).getIp());
+        auditEjb.setValue("iprequest", sessions.getUserSession(sessionId).getIp());
         auditEjb.setValue("sessionid", sessionId);
         auditEjb = ejb.copyTo(auditEjb);
         em.persist(auditEjb);
@@ -961,8 +961,11 @@ public abstract class AbstractDAO implements IGenericDAO {
             return true;
         }
         try {
+            //Por nombre de la clase
             String entidad1 = ejb.getClass().getSimpleName().toLowerCase();
+            //Por el valor en la anotación AuditEntity en la clase
             AuditEntity auditAnnotation = ejb.getClass().getAnnotation(AuditEntity.class);
+            //Por el nombre de la anotación Table en la clase.
             Table tableAnnotation = ejb.getClass().getAnnotation(Table.class);
             String entidad2 = tableAnnotation.name().toLowerCase();
             String entidad3 = "*";
