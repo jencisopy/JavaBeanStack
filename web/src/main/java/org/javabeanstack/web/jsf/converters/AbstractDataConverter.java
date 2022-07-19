@@ -62,8 +62,9 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
 
     /**
      * Convierte de un valor string a objeto
+     *
      * @param context facecontext
-     * @param component 
+     * @param component
      * @param value valor a convertir
      * @return string a objeto
      */
@@ -87,6 +88,7 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
 
     /**
      * Convierte de un objeto a una variable string
+     *
      * @param context facecontext
      * @param component
      * @param object instancia del objeto
@@ -95,9 +97,10 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object object) {
         LOGGER.debug(object);
-
         if (object != null) {
-            if (!(object instanceof String) && ((IDataRow)object).getId() != null) {
+            if (object instanceof String) {
+                return (String) object;
+            } else if ((object instanceof IDataRow) && ((IDataRow) object).getId() != null) {
                 String result = ((IDataRow) object).getId().toString();
                 return result;
             } else {
@@ -110,6 +113,7 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
 
     /**
      * Devuelve la variable de sesión del usuario logueado
+     *
      * @return variable de sesión del usuario logueado
      */
     public IUserSession getUserSession() {
