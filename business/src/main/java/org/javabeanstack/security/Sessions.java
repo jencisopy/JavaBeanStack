@@ -73,7 +73,7 @@ import org.javabeanstack.util.LocalDates;
 //@Singleton
 @Startup
 @Lock(LockType.READ)
-public class Sessions implements ISessions{
+public class Sessions implements ISessions {
 
     private static final Logger LOGGER = Logger.getLogger(Sessions.class);
     protected final Map<String, Object> sessionVar = new HashMap<>();
@@ -84,10 +84,9 @@ public class Sessions implements ISessions{
 
     @EJB
     protected IGenericDAO dao;
-    
+
     @EJB
     private IOAuthConsumer oAuthConsumer;
-    
 
     /**
      * Se ejecuta al instanciarse esta clase.
@@ -96,13 +95,13 @@ public class Sessions implements ISessions{
     @PostConstruct
     private void init() {
         try {
-            secretKey = CipherUtil.getSecureRandomKey(CipherUtil.BLOWFISH,128);
+            secretKey = CipherUtil.getSecureRandomKey(CipherUtil.BLOWFISH, 128);
         } catch (NoSuchAlgorithmException ex) {
             ErrorManager.showError(ex, LOGGER);
         }
     }
-    
-    @Override    
+
+    @Override
     public Object getSessionInfo(String sessionId, String key) {
         return sessionsInfo.get(new SessionInfo(sessionId, key));
     }
@@ -110,27 +109,26 @@ public class Sessions implements ISessions{
     @Override
     public void addSessionInfo(String sessionId, String key, Object info) {
         IUserSession userSession = getUserSession(sessionId);
-        if (userSession == null || userSession.getUser() == null){
+        if (userSession == null || userSession.getUser() == null) {
             removeAllSessionInfo(sessionId);
             return;
         }
-        sessionsInfo.put(new SessionInfo(sessionId, key), info);        
+        sessionsInfo.put(new SessionInfo(sessionId, key), info);
     }
 
     @Override
     public void removeSessionInfo(String sessionId, String key) {
         this.sessionsInfo.remove(new SessionInfo(sessionId, key));
     }
-    
-    private void removeAllSessionInfo(String sessionId){
-        for(Iterator<Map.Entry<SessionInfo, Object>> it = sessionsInfo.entrySet().iterator(); it.hasNext(); ) {
+
+    private void removeAllSessionInfo(String sessionId) {
+        for (Iterator<Map.Entry<SessionInfo, Object>> it = sessionsInfo.entrySet().iterator(); it.hasNext();) {
             Map.Entry<SessionInfo, Object> entry = it.next();
-            if(entry.getKey().sessionId.equals(sessionId)) {
+            if (entry.getKey().sessionId.equals(sessionId)) {
                 it.remove();
-            }        
+            }
         }
     }
-    
 
     /**
      * Crea una sesión de usuario para acceso a la app
@@ -218,7 +216,7 @@ public class Sessions implements ISessions{
         afterCreateSession(session);
         // Agregar sesión al pool de sesiones
         sessionVar.put(sessionId, session);
-        LOGGER.debug("Sesión creada: "+sessionId);                
+        LOGGER.debug("Sesión creada: " + sessionId);
         return true;
     }
 
@@ -267,11 +265,11 @@ public class Sessions implements ISessions{
      * @throws java.lang.Exception
      */
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean isUserValid(Long iduser) throws Exception {
         return (checkUser(iduser) == null);
     }
-    
+
     /**
      * Verifica si el iduser proporcionado es válido
      *
@@ -284,7 +282,7 @@ public class Sessions implements ISessions{
         String mensaje;
         Map<String, Object> params = new HashMap<>();
         params.put("iduser", iduser);
-        if (Fn.nvl(iduser,0L) != 0L) {
+        if (Fn.nvl(iduser, 0L) != 0L) {
             // Verificar existencia del usuario
             IAppUser usuario = dao.findByQuery(null,
                     "select o from AppUserLight o where iduser = :iduser",
@@ -314,7 +312,7 @@ public class Sessions implements ISessions{
         LOGGER.debug(mensaje);
         return new ErrorReg(mensaje, 1, "");
     }
-    
+
     /**
      * Devuelve verdadero si sus credenciales para el logeo son válidas o falso
      * si no
@@ -425,12 +423,11 @@ public class Sessions implements ISessions{
             return null;
         }
         String sessionId;
-        try{
+        try {
             sessionId = decrypt(sessionIdEncrypted);
-            LOGGER.debug("SESSION ENCRYPTADA: "+sessionIdEncrypted);                
-            LOGGER.debug("SESSION : "+sessionId);                
-        }
-        catch (Exception exp){
+            LOGGER.debug("SESSION ENCRYPTADA: " + sessionIdEncrypted);
+            LOGGER.debug("SESSION : " + sessionId);
+        } catch (Exception exp) {
             return null;
         }
         UserSession sesion = (UserSession) sessionVar.get(sessionId);
@@ -463,6 +460,7 @@ public class Sessions implements ISessions{
     /**
      * Objeto con la información necesaria para acceder a la base de datos.
      * (persistunit, session del usuario)
+     *
      * @param sessionId identificador de la sesión o el token
      * @return DBLinkInfo
      */
@@ -470,20 +468,18 @@ public class Sessions implements ISessions{
     @Override
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         IDBLinkInfo dbLinkInfo = new DBLinkInfo();
-        if (!Strings.isNullorEmpty(sessionId)){
+        if (!Strings.isNullorEmpty(sessionId)) {
             IUserSession userSession = getUserSession(sessionId);
-            if (userSession != null){
+            if (userSession != null) {
                 dbLinkInfo.setUserSession(userSession);
-            }
-            else{
-                if (oAuthConsumer.isValidToken(sessionId)){
+            } else {
+                if (oAuthConsumer.isValidToken(sessionId)) {
                     IAppAuthConsumerToken token = oAuthConsumer.findAuthToken(sessionId);
-                    if (token != null){
-                        try{
+                    if (token != null) {
+                        try {
                             dbLinkInfo.setToken(token, oAuthConsumer, true);
-                        }
-                        catch (Exception exp){
-                            ErrorManager.showError(exp, LOGGER);                            
+                        } catch (Exception exp) {
+                            ErrorManager.showError(exp, LOGGER);
                         }
                     }
                 }
@@ -494,39 +490,38 @@ public class Sessions implements ISessions{
 
     /**
      * Verifica consistencia de el modelo AuthConsumerData
+     *
      * @param data modelo OAuthConsumerData
      * @return verdadero si es válido o falso si no
      */
-    @Override 
-    public boolean checkAuthConsumerData(IOAuthConsumerData data){    
-        if (data == null){
+    @Override
+    public boolean checkAuthConsumerData(IOAuthConsumerData data) {
+        if (data == null) {
             return false;
         }
-        try{
+        try {
             Long iduser = data.getIdAppUser();
             Long idcompany = data.getIdCompany();
             String userLogin = data.getUserLogin();
             String userPass = data.getUserPass();
-            if (!Fn.nvl(userLogin, "").isEmpty()){
+            if (!Fn.nvl(userLogin, "").isEmpty()) {
                 IUserSession session = login(userLogin, userPass);
-                if (session == null){
+                if (session == null) {
                     return false;
                 }
                 iduser = session.getUser().getIduser();
-            }
-            else{
-                if (checkUser(iduser) != null){
+            } else {
+                if (checkUser(iduser) != null) {
                     return false;
                 }
             }
             return checkCompanyAccess(iduser, idcompany);
-        }
-        catch (Exception exp){
+        } catch (Exception exp) {
             ErrorManager.showError(exp, LOGGER);
         }
         return false;
     }
-    
+
     /**
      * Devuelve un texto que identificará a la sesión de forma unica.
      *
@@ -602,11 +597,11 @@ public class Sessions implements ISessions{
     public IClientAuthRequestInfo getClientAuthCache(String authHeader) {
         IClientAuthRequestInfo info = tokenCache.get(authHeader);
         //Si no existe
-        if (info == null){
+        if (info == null) {
             return null;
         }
         //Si se registro en el cache hace más de un día eliminar del cache
-        if (LocalDates.daysInterval(info.getLogDate(), LocalDates.now()) > 1){
+        if (LocalDates.daysInterval(info.getLogDate(), LocalDates.now()) > 1) {
             tokenCache.remove(authHeader);
             return null;
         }
@@ -617,16 +612,16 @@ public class Sessions implements ISessions{
     public void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo) {
         tokenCache.put(authHeader, authRequestInfo);
     }
-    
-    public class SessionInfo{
+
+    public class SessionInfo {
+
         String sessionId;
         String key;
-        
-        
-        public SessionInfo(){
+
+        public SessionInfo() {
         }
-        
-        public SessionInfo(String sessionId, String key){
+
+        public SessionInfo(String sessionId, String key) {
             this.sessionId = sessionId;
             this.key = key;
         }

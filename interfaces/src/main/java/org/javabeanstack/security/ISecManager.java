@@ -14,7 +14,7 @@ public interface ISecManager {
     String getCompanyList();
     String getUserRol(String userLogin);
     Boolean isUserMemberOf(String user, String userGroup);    
-    Boolean isSesionIdValid(String sesionId);
+    Boolean isSessionIdValid(String sessionId);
     Boolean login(String userLogin, String password) throws Exception;
     IUserSession login2(String userLogin, String password) throws Exception;
     void logout(IUserSession userSession);

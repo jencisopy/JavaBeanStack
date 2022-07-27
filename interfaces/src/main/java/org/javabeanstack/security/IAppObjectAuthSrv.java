@@ -19,33 +19,19 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
 */
-
 package org.javabeanstack.security;
 
-import javax.ejb.EJB;
-import org.javabeanstack.data.IGenericDAO;
+import java.util.Map;
+import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.model.IAppObjectAuth;
 
 /**
  *
  * @author Jorge Enciso
- * 
  */
-public class SecManager extends AbstractSecManager implements ISecManager, ISecManagerRemote{
-    @EJB private IGenericDAO dao;
-    @EJB private ISessions sesiones;
-    
-    @Override
-    protected IGenericDAO getDAO() {
-        return dao;
-    }
-
-    @Override
-    protected ISessions getSessions() {
-        return sesiones;
-    }
-
-    @Override
-    protected IAppUserPwdLogSrv getAppUserPwdLogSrv() {
-        return null;
-    }
+public interface IAppObjectAuthSrv extends IDataService {
+    Integer checkAuth(String sessionId, Long idAppObject, Long iduser, String action, Map<String, String> checkResult);
+    boolean checkAuthField(Long idAppObject, Long iduser, String field, String action);
+    String getAuthXml(Long idAppObject, Long iduser);
+    IAppObjectAuth getAppObjectAuthList();
 }

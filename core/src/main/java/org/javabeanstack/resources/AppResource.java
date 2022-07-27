@@ -101,7 +101,7 @@ public class AppResource implements IAppResource {
     @Override
     public IXmlDom<Document, Element> getResourceAsXmlDom(String sessionId,
             String resourcePath, String elementPath, Map<String, String> params) {
-        if (!secManager.isSesionIdValid(sessionId)) {
+        if (!secManager.isSessionIdValid(sessionId)) {
             return null;
         }
         IXmlDom xmlDom = new XmlDomW3c();
@@ -124,7 +124,7 @@ public class AppResource implements IAppResource {
      * @return reporte Jasper
      */
     protected String getResourceAsJRXml(String sessionId, String resourcePath) {
-        if (!secManager.isSesionIdValid(sessionId)) {
+        if (!secManager.isSessionIdValid(sessionId)) {
             return null;
         }
         if (!xmlManager.getXmlSearcher().exist(resourcePath)) {

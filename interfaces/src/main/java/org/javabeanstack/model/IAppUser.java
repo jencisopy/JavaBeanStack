@@ -18,6 +18,7 @@ public interface IAppUser extends IDataRow, Serializable {
     String getDescription();
     
     String getPass();
+    String getPassBackup();
     
     String getPassConfirm();
     String getPassConfirm2();

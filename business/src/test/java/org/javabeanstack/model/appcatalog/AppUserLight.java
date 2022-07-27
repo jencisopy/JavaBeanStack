@@ -51,6 +51,9 @@ public class AppUserLight extends DataRow implements IAppUser {
     @Column(name = "pass")
     private String pass;
 
+    @Column(name = "pass", insertable = false, updatable = false)
+    private String passBackup;
+    
     @Transient
     private String passConfirm;
 
@@ -168,6 +171,14 @@ public class AppUserLight extends DataRow implements IAppUser {
         this.pass = clave;
     }
 
+    @Override
+    public String getPassBackup() {
+        if (passBackup != null) {
+            passBackup = passBackup.trim();
+        }
+        return passBackup;
+    }
+    
     @Override
     public String getPassConfirm() {
         if (passConfirm != null) {
