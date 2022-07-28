@@ -8,6 +8,9 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  */
 public interface IAppObjectAuth extends IDataRow{
+    public static int DENIED = 1;
+    public static int ALLOWED = 0;
+    
     Long getIdAppObjectAuth();        
     void setIdAppObjectAuth(Long IdAppObjectAuth);        
     
@@ -40,6 +43,9 @@ public interface IAppObjectAuth extends IDataRow{
     
     Integer getConfirm();        
     void setConfirm(Integer confirm);   
+    
+    Integer getCancel();        
+    void setCancel(Integer cancel);   
     
     Integer getAttach();        
     void setAttach(Integer attach);   

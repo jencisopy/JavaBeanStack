@@ -50,6 +50,7 @@ import org.javabeanstack.xml.IXmlDom;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.javabeanstack.events.ICtrlEvents;
+import org.javabeanstack.model.IAppObjectAuth;
 import org.javabeanstack.web.util.AppResourceSearcher;
 
 /**
@@ -123,6 +124,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     public void setXmlResourcePath(String xmlResourcePath) {
         this.xmlResourcePath = xmlResourcePath;
+    }
+    
+    public Integer checkAuthorization(String action){
+        return IAppObjectAuth.ALLOWED;
     }
     
     public IXmlDom<Document, Element> getXmlResource() {
@@ -437,7 +442,15 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public boolean doAction(String operation) {
         boolean result = true;
-        action = operation;
+        //Verificar permiso 
+        Integer authorization = checkAuthorization(operation);
+        if (authorization.equals(IAppObjectAuth.DENIED)){
+            facesCtx.showWarn("No esta autorizado para realizar esta operación");
+            action = "";
+            return false;
+        }
+        action = operation;        
+        
         // Si no es agregar nuevo registro refrescar el registro actual
         if (!Fn.inList(operation.toLowerCase(), "insert", "agregar", "1")) {
             refreshRow();
