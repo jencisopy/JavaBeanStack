@@ -478,6 +478,6 @@ public class AppUser extends DataRow implements IAppUser {
     
     @Override
     public final boolean isAdministrator(){
-        return getAllRoles().contains("20") || getRol().contains("00");
+        return getAllRoles().contains(IAppUser.ADMINISTRADOR) || getRol().contains(IAppUser.ANALISTA);
     }
 }

@@ -185,7 +185,8 @@ public class Sessions implements ISessions {
             }
         }
         // Verificar si tiene permiso para acceder a los datos de la empresa
-        if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
+        if (!session.getUser().getRol().contains(IAppUser.ANALISTA) 
+                && !checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
             session.setUser(null);
             String mensaje = "No tiene autorización para acceder a esta empresa";
             LOGGER.debug(mensaje);
