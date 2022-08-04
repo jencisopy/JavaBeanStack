@@ -31,8 +31,8 @@ import org.javabeanstack.model.IAppUser;
  * @author Jorge Enciso
  */
 public interface IAppObjectAuthSrv extends IDataService {
-    Integer checkAuthUserOnly(String sessionId, Long idAppObject, IAppUser user, String action, int authDenyDefault);    
-    Integer checkAuth(String sessionId, Long idAppObject, Long iduser, String action, Map<String, String> checkResult);
+    Integer checkAuthUserOnly(String sessionId, Long idAppObject, IAppUser user, String action, Integer authDenyDefault);    
+    Integer checkAuth(String sessionId, Long idAppObject, Long iduser, String action, Map<String, String> checkResult, Integer authDenyDefault);
     boolean checkAuthField(Long idAppObject, Long iduser, String field, String action);
     String getAuthXml(Long idAppObject, Long iduser);
     IAppObjectAuth getAppObjectAuthList();
