@@ -88,7 +88,10 @@ public class DomW3cParser {
      */
     public static Document loadXml(String xml)
             throws ParserConfigurationException, SAXException, IOException {
-
+        
+        if (Fn.nvl(xml,"").isEmpty()){
+            return null;
+        }
         DocumentBuilder builder = FACTORY.newDocumentBuilder();
         InputStream stream;
         String charSet = getXmlFileCharSet(xml);
