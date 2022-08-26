@@ -216,10 +216,8 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             context.removeFilter("borrar");
             context.addFilter("borrar",extraFilter);
             if (params != null && !params.isEmpty()) {
-                context.setFilterParams(params);
-            } else {
-                params = context.getFilterParams();
-            }
+                context.addFilterParams(params);
+            } 
 
             if (Strings.isNullorEmpty(order)
                     && !Strings.isNullorEmpty(context.getOrder())) {
@@ -231,7 +229,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             List<T> rows = context.getDataRows();
             setRowCount(pageSize);            
             if (!noCount) {
-                setRowCount(context.getDAO().getCount(context.getLastQuery(), params).intValue());
+                setRowCount(context.getDAO().getCount(context.getLastQuery(), context.getFilterParams()).intValue());
             } else {
                 if (rows != null && noCount) {
                     if (rows.size() < pageSize){

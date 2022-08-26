@@ -502,6 +502,19 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public void setFilterParams(Map filterParams) {
         this.filterParams = filterParams;
     }
+    
+    @Override
+    public void addFilterParams(Map filterParams) {
+        if (filterParams == null){
+            return;
+        }
+        if (this.filterParams == null || this.filterParams.isEmpty()){
+            this.filterParams = filterParams;
+            return;
+        }
+        this.filterParams.putAll(filterParams);
+    }
+    
 
     @Override
     public void setFirstRow(int first) {

@@ -113,9 +113,10 @@ public class DataFilter {
      * @param context controller.
      */
     public <T extends AbstractDataObject> void execute(T context) {
+        context.removeFilter("borrar");
         context.setFilter(filterExpression);
         context.setFilterParams(parameters);
-        context.requery();
+        //context.requery();
     }
 
     /**
