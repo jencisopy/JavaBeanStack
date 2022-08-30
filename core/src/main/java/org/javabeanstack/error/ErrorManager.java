@@ -104,6 +104,10 @@ public class ErrorManager {
      */
     public static void showError(Exception ex, Logger logger) {
         String msg = getStackCause(ex);
+        if (msg == null || msg.isEmpty() || msg.length() < 5){
+            logger.error(getStackTrace(ex));
+            return;
+        }
         logger.error(msg);
     }
 
