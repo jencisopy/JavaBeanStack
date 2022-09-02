@@ -25,6 +25,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -128,6 +129,32 @@ public class DataInfo {
         }
         return false;
     }
+    
+    /**
+     * Determina si un campo existe en la clase.
+     *
+     * @param <T>
+     * @param classType clase DataRow dado
+     * @param fieldname nombre del campo
+     * @return Verdadero si existe.
+     */
+    public static <T extends IDataRow> String getFieldDB(Class<T> classType, String fieldname) {
+        try {
+            Field field = DataInfo.getDeclaredField(classType, fieldname);
+            if (field == null) {
+                return "";
+            }
+            Column column = field.getAnnotation(Column.class);
+            if (column == null){
+                return "";
+            }
+            return column.name();
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return "";
+    }
+    
 
     /**
      * Determina si un campo existe en la clase.

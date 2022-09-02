@@ -34,7 +34,8 @@ public interface IAppObjectAuthSrv extends IDataService {
     Integer checkAuthUserOnly(String sessionId, Long idAppObject, IAppUser user, String action, Integer authDenyDefault);    
     Integer checkAuth(String sessionId, Long idAppObject, Long iduser, String action, Map<String, String> checkResult, Integer authDenyDefault);
     Integer checkAuth(String sessionId, Long idAppObject, IAppUser user, String action, Map<String, String> checkResult, Integer authDenyDefault);        
-    boolean checkAuthField(Long idAppObject, Long iduser, String field, String action);
+    Integer checkAuthField(String sessionId, Long idAppObject, Long iduser, String field, String action);
+    Integer checkAuthField(String sessionId, Long idAppObject, IAppUser user, String field, String action);    
     String getAuthXml(Long idAppObject, Long iduser);
     IAppObjectAuth getAppObjectAuthList();
 }
