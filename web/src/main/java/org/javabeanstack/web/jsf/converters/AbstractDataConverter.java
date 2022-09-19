@@ -26,6 +26,7 @@ import java.lang.reflect.ParameterizedType;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.data.IDataLink;
@@ -78,6 +79,9 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
 
         try {
             getDAO().setUserSession(getUserSession());
+            if (!StringUtils.isNumeric(value)){
+                return null;
+            }
             T row = getDAO().findById(getClase(), Long.parseLong(value));
             return row;
         } catch (Exception ex) {
