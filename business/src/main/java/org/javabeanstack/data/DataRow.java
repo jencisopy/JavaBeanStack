@@ -289,6 +289,7 @@ public class DataRow implements IDataRow, Cloneable {
      *
      * @return devuelve map con una lista de errores por campo si lo hubiese.
      */
+    @XmlTransient
     @Override
     public Map<String, IErrorReg> getErrors() {
         if (this.errors == null) {
@@ -408,7 +409,7 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldname
      * @return valor de un atributo o campo.
      */
-    @XmlTransient
+
     @Override
     public Object getValue(String fieldname) {
         return DataInfo.getFieldValue(this, fieldname);
@@ -420,7 +421,7 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldname nombre del campo
      * @return tipo de dato del campo solicitado.
      */
-    @XmlTransient
+
     @Override
     public Class getFieldType(String fieldname) {
         Class result = DataInfo.getFieldType(this.getClass(), fieldname);
@@ -430,7 +431,6 @@ public class DataRow implements IDataRow, Cloneable {
         return result;
     }
 
-    @XmlTransient
     @Override
     public void setId(Object id) {
         DataInfo.setIdvalue(this, id);
