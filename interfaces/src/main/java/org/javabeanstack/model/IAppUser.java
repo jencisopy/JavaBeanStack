@@ -12,6 +12,7 @@ import org.javabeanstack.data.IDataRow;
  */
 public interface IAppUser extends IDataRow, Serializable {
     public static final String ANALISTA = "00";
+    public static final String SUPERUSER = "01";
     public static final String ADMINISTRADOR = "20";
     public static final String USUARIO = "30";    
     
