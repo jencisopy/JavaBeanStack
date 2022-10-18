@@ -638,6 +638,7 @@ public abstract class AbstractDataService implements IDataService {
                 row.setFieldChecked(fieldName, false);
                 result = new ErrorReg(ErrorManager.getStackCause(ex), 50000, fieldName);
                 ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
+                break;
             }
         }
         result.setFieldName(fieldName);
