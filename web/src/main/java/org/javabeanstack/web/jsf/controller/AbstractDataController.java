@@ -483,6 +483,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             case "read":
                 result = this.allowAction(IDataRow.CONSULTAR);
                 break;
+            case "-5":                
+            case "imprimir":
+            case "print":
+                result = this.allowAction(IDataRow.IMPRIMIR);
+                break;
         }
         if (getErrorApp() != null) {
             facesCtx.showError("Error", getErrorApp().getMessage());
