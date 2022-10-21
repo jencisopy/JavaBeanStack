@@ -39,12 +39,14 @@ public interface IDataRow extends Serializable{
     public static final int BORRAR    = 3;
     public static final int CONSULTAR = -1;
     public static final int CONFIRMAR  = 5;        
+    public static final int IMPRIMIR = -5;        
 
     public static final int INSERT   = 1;
     public static final int UPDATE   = 2;
     public static final int DELETE   = 3;
     public static final int READ     = -1;
     public static final int CONFIRM  = 5;    
+    public static final int PRINT     = -5;    
     
     public Object    clone();
     public int       getAction();
