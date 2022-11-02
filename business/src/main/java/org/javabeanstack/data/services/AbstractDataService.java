@@ -629,6 +629,7 @@ public abstract class AbstractDataService implements IDataService {
                     //Si el resultado es un error guardar información en el objeto errors
                     if (result != null && !"".equals(result.getMessage())) {
                         row.setFieldChecked(fieldName, false);
+                        break;
                     } else {
                         // Paso la verificación del atributo
                         row.setFieldChecked(fieldName, true);
@@ -727,7 +728,9 @@ public abstract class AbstractDataService implements IDataService {
                 if (Fn.inArrayInteger(row.getAction(), operacion)) {
                     result = (IErrorReg) method.invoke(this, sessionId, row);
                     //Si el resultado es un error guardar información en el objeto errors
-                    if (result != null && !"".equals(result.getMessage())) {
+                    if (result != null 
+                            && !"".equals(result.getMessage()) 
+                            && !result.isWarning()) {
                         errors.put(fieldName.toLowerCase(), result);
                         row.setFieldChecked(fieldName, false);
                     } else {

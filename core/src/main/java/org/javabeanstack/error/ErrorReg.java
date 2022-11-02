@@ -36,6 +36,7 @@ public class ErrorReg implements IErrorReg{
     private String fieldName = "";
     private String[] fieldNames;    
     private Exception exception;
+    private boolean warning = false;
     
     public ErrorReg(){
     }
@@ -84,6 +85,11 @@ public class ErrorReg implements IErrorReg{
     }
 
     @Override
+    public boolean isWarning() {
+        return warning;
+    }
+
+    @Override
     public void setEntity(String entity) {
         this.entity = entity;
     }
@@ -112,6 +118,11 @@ public class ErrorReg implements IErrorReg{
     @Override    
     public void setException(Exception exception) {
         this.exception = exception;
+    }
+    
+    @Override
+    public void setWarning(boolean warning) {
+        this.warning = warning;
     }
 }
 
