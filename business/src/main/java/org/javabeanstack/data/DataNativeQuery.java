@@ -186,6 +186,29 @@ public class DataNativeQuery implements IDataNativeQuery {
     /**
      * Asigna la/s entidad/es que formarán parte del join
      *
+     * @param entity es la lista de entidad (tabla o vista)
+     * @param joinExpr la expresión del join.
+     * @return objeto dataNativeQuery con la asignación de las entidades
+     */
+    @Override
+    public IDataNativeQuery innerJoin(String entity, String joinExpr) {
+        return join(entity, joinExpr);
+    }
+
+    /**
+     * Asigna la/s entidad/es que formarán parte del join
+     *
+     * @param joinExpr la expresión del join.
+     * @return objeto dataNativeQuery con la asignación de las entidades
+     */
+    @Override
+    public IDataNativeQuery innerJoin(IDataNativeQuery subquery, String alias, String joinExpr) {
+        return join(subquery, alias, joinExpr);
+    }
+    
+    /**
+     * Asigna la/s entidad/es que formarán parte del join
+     *
      * @param entity entidad (tabla o vista)
      * @param joinExpr la expresión del join.
      * @return objeto dataNativeQuery con la asignación de las entidades
@@ -197,6 +220,19 @@ public class DataNativeQuery implements IDataNativeQuery {
         return this;
     }
 
+    /**
+     * Asigna la/s entidad/es que formarán parte del join
+     *
+     * @param joinExpr la expresión del join.
+     * @return objeto dataNativeQuery con la asignación de las entidades
+     */
+    @Override
+    public IDataNativeQuery leftJoin(IDataNativeQuery subquery, String alias, String joinExpr) {
+        joinParams.add(new JoinParam(subquery, alias, joinExpr, "LEFT OUTER JOIN"));
+        queryCreated = false;
+        return this;
+    }
+    
     /**
      * Asigna los filtros en la expresión where.
      *

@@ -87,7 +87,34 @@ public interface IDataNativeQuery {
      * @param joinExpr  expresión para unir las entidades.
      * @return objeto DataNativeQuery con los datos asignados
      */
+    public IDataNativeQuery innerJoin(String entity, String joinExpr);
+    
+    /**
+     * Provee a la clase información para agregar una instrucción join a la sentencia
+     * @param subquery 
+     * @param alias    alias del subquery
+     * @param joinExpr  expresión para unir las entidades.
+     * @return objeto DataNativeQuery con los datos asignados
+     */
+    public IDataNativeQuery innerJoin(IDataNativeQuery subquery, String alias, String joinExpr);
+    
+    /**
+     * Provee a la clase información para agregar una instrucción join a la sentencia
+     * @param entity    es la entidad (tabla o vista)
+     * @param joinExpr  expresión para unir las entidades.
+     * @return objeto DataNativeQuery con los datos asignados
+     */
     public IDataNativeQuery leftJoin(String entity, String joinExpr);
+
+    /**
+     * Provee a la clase información para agregar una instrucción join a la sentencia
+     * @param subquery 
+     * @param alias    alias del subquery
+     * @param joinExpr  expresión para unir las entidades.
+     * @return objeto DataNativeQuery con los datos asignados
+     */
+    public IDataNativeQuery leftJoin(IDataNativeQuery subquery, String alias, String joinExpr);
+    
     /**
      * Asigna a la sentencia los filtros en el where 
      * @param filterExpr  son los filtros 
