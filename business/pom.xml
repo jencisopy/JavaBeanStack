@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.javabeanstack</groupId>
         <artifactId>jbs-parent</artifactId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>1.4.0</version>
     </parent>
     <artifactId>jbs-business</artifactId>
     <packaging>jar</packaging>
