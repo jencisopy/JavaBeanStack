@@ -100,13 +100,13 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
 
     protected Object getIdValue(String type, String value) {
         if (type.equals("Long")) {
-            return Long.parseLong(value);
+            return Long.valueOf(value);
         }
         if (type.equals("Integer")) {
-            return Integer.parseInt(value);
+            return Integer.valueOf(value);
         }
         if (type.equals("Short")) {
-            return Short.parseShort(value);
+            return Short.valueOf(value);
         }
         if (type.equals("String")) {
             return value;
@@ -114,7 +114,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         try {
             //Tipo DataRow
             Class clazz = Class.forName(type);
-            Long id = Long.parseLong(value);
+            Long id = Long.valueOf(value);
             Object row = context.getDAO().findById(clazz, id);
             return row;
         } catch (Exception ex) {
