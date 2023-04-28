@@ -38,6 +38,9 @@ import org.primefaces.model.menu.MenuModel;
  * @param <T>
  */
 public interface IDatatable <O extends IDataObject,T extends IDataRow>{
+    Integer getRowsPerGrid();
+    void setRowsPerGrid(Integer rowsPerGrid);
+    
     String getId();
     void setId(String id);
     String getXmlSet();
