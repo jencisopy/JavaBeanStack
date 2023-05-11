@@ -34,8 +34,8 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
-
 
 /**
  * Es un wraper de la clase Sessions. Se encarga de logeo de los usuario,
@@ -48,10 +48,13 @@ import org.javabeanstack.security.model.IClientAuthRequestInfo;
  */
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public abstract class AbstractSecManager implements ISecManager, Serializable {
+
     private static final Logger LOGGER = Logger.getLogger(AbstractSecManager.class);
 
     protected abstract IGenericDAO getDAO();
+
     protected abstract ISessions getSessions();
+
     protected abstract IAppUserPwdLogSrv getAppUserPwdLogSrv();
 
     /**
@@ -181,15 +184,15 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
         return false;
     }
 
-    public boolean isExistUserPwdLog(String sessionId){
-        if (getAppUserPwdLogSrv() != null){
+    public boolean isExistUserPwdLog(String sessionId) {
+        if (getAppUserPwdLogSrv() != null) {
             return getAppUserPwdLogSrv().isExistUserPwdLog(sessionId);
         }
         return false;
     }
 
     public void insertUserPwdLog(String sessionId) {
-        if (getAppUserPwdLogSrv() != null){
+        if (getAppUserPwdLogSrv() != null) {
             getAppUserPwdLogSrv().insertUserPwdLog(sessionId);
         }
     }
@@ -225,5 +228,44 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
     @Override
     public void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo) {
         getSessions().addClientAuthCache(authHeader, authRequestInfo);
+    }
+
+    @Override
+    public IAppUser getAppUserFromPwd(String appUserPass) {
+        String sqlComando;
+        sqlComando = "select a "
+                + " from AppUser a"
+                + " where a.pass  like :appUserPass";
+
+        Map<String, Object> params = new HashMap();
+        params.put("appUserPass", appUserPass);
+        IDataRow appUser;
+        try {
+            appUser = getDAO().findByQuery("", sqlComando, params);
+            if (appUser != null) {
+                return (IAppUser) appUser;
+            }
+        } catch (Exception exp) {
+            ErrorManager.showError(exp, LOGGER);
+        }
+        //Sino encuentra en la tabla appuser, buscar en el historico de passwords.        
+        if (getAppUserPwdLogSrv() != null) {
+            Long iduser = getAppUserPwdLogSrv().getIdUserFromPwdLog(appUserPass);
+            if (iduser != null) {
+                sqlComando = "select a "
+                        + " from AppUser a"
+                        + " where a.iduser  = :iduser";
+                params.put("iduser", iduser);
+                try {
+                    appUser = getDAO().findByQuery("", sqlComando, params);
+                    if (appUser != null) {
+                        return (IAppUser) appUser;
+                    }
+                } catch (Exception exp) {
+                    ErrorManager.showError(exp, LOGGER);
+                }
+            }
+        }
+        return null;
     }
 }

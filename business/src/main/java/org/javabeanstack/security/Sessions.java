@@ -205,7 +205,7 @@ public class Sessions implements ISessions {
         String persistUnit = company.getPersistentUnit().trim();
         session.setPersistenceUnit(persistUnit); //Unidad de persistencia
         session.setCompany(company); // Empresa logueada
-        session.setIdCompany(Long.parseLong(idcompany.toString()));
+        session.setIdCompany(Long.valueOf(idcompany.toString()));
 
         // Id de sesión encriptada por seguridad.
         session.setSessionId(encrypt(sessionId));

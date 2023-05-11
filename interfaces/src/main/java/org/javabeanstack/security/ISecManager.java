@@ -1,5 +1,6 @@
 package org.javabeanstack.security;
 
+import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.security.model.IUserSession;
 
@@ -21,4 +22,5 @@ public interface ISecManager {
     void logout(String sessionId);
     IClientAuthRequestInfo getClientAuthCache(String authHeader);
     void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo);
+    IAppUser getAppUserFromPwd(String appUserPass);
 }

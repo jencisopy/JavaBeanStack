@@ -33,4 +33,5 @@ public interface IAppUserPwdLogSrv extends IDataService {
     boolean isExistUserPwdLog(IAppUser appUser);
     void insertUserPwdLog(String sessionId);
     void insertUserPwdLog(IAppUser appUser);
+    Long getIdUserFromPwdLog(String pwd);
 }
