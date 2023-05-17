@@ -50,7 +50,6 @@ public class DataObject <T extends IDataRow> extends AbstractDataObject{
         this.setType(type);
     }    
 
-        
     public DataObject(Class<T> type, IDataEvents dtEvents){
         this.setType(type);
         this.setDataEvents(dtEvents);
@@ -65,7 +64,6 @@ public class DataObject <T extends IDataRow> extends AbstractDataObject{
         if (daoCatalog != null){
             this.daoCatalog = daoCatalog;            
         }
-        
     }
     
     @Override

@@ -75,7 +75,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     @Override
     public T getRowData(String rowKey) {
         //Si no hay rowKey
-        if (rowKey == null || rowKey.isEmpty()) {
+        if (context == null || rowKey == null || rowKey.isEmpty()) {
             return null;
         }
         Object id;
@@ -151,6 +151,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
      */
     @Override
     public List<T> load(int first, int pageSize, final List<SortMeta> multiSortMeta, Map<String, Object> filters) {
+        if (context == null){
+            return null;
+        }
         try {
             String order = "";
             if (multiSortMeta != null) {
@@ -175,6 +178,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
 
     @Override
     public List<T> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, Object> filters) {
+        if (context == null){
+            return null;
+        }
         try {
             String order;
             if (sortField != null) {
@@ -191,6 +197,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     }
 
     private List<T> load(int first, int pageSize, String order, Map<String, Object> filters) {
+        if (context == null){
+            return null;
+        }
         try {
             if (!context.beforeLazyRowsLoad() || !context.isOpen()){
                 return new ArrayList();
@@ -309,6 +318,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
      * @return
      */
     private String getFilterString(Map<String, Object> filters) {
+        if (context == null){
+            return "";
+        }
         String queryWhere;
         // Si en el controller se define los filtros
         queryWhere = context.onGetFilterString(filters);
@@ -351,6 +363,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     }
 
     private String getFilterMode(String columnName) {
+        if (context == null){
+            return "";
+        }
         List<IColumnModel> columns = context.getDataTable().getColumns();
         // Buscar por el campo filter
         for (IColumnModel column : columns) {
@@ -368,6 +383,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     }
 
     private String getFilterMask(String columnName) {
+        if (context == null){
+            return "";
+        }
         List<IColumnModel> columns = context.getDataTable().getColumns();
         // Buscar por el campo filter
         for (IColumnModel column : columns) {
