@@ -51,11 +51,13 @@ import net.sf.jasperreports.export.SimpleHtmlExporterOutput;
 import net.sf.jasperreports.export.SimpleHtmlReportConfiguration;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
+import org.apache.log4j.Logger;
 
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.resources.IAppResource;
 import org.javabeanstack.security.model.IUserSession;
+import org.javabeanstack.util.Fn;
 
 
 /**
@@ -63,8 +65,12 @@ import org.javabeanstack.security.model.IUserSession;
  * @author Jorge Enciso
  */
 public class JasperReportUtil {
+    private static final Logger LOGGER = Logger.getLogger(JasperReportUtil.class);        
+    
     private IAppResource appResource;
     private IUserSession userSession;
+    private final String urlInDatabase = "file:///reports/";
+    private String fileSystemUrl = null;
     
     private final FacesContextUtil facesCtx = new FacesContextUtil();
     
@@ -80,7 +86,14 @@ public class JasperReportUtil {
         this.appResource = appResource;
     }
 
-    
+    public String getFileSystemUrl() {
+        return fileSystemUrl;
+    }
+
+    public void setFileSystemUrl(String fileSystemUrl) {
+        this.fileSystemUrl = fileSystemUrl;
+    }
+   
     public void showReport(InputStream report, Map<String, Object> parameters,
             List<IDataQueryModel> data) throws JRException, IOException, NamingException {
 
@@ -152,7 +165,7 @@ public class JasperReportUtil {
                 FacesContext.getCurrentInstance().responseComplete();
             }
             if ("pdf".equals(parameters.get("device"))) {
-                String target = "";
+                String target;
                 if (parameters.containsKey("target")) {
                     target = parameters.get("target").toString();
                 } else {
@@ -201,36 +214,43 @@ public class JasperReportUtil {
         return dataRows;
     }
 
-    public JasperReport getJasperReportFrom(String resourceURL, Class classRef) throws JRException {
-        JasperReport jasperReport; 
-        resourceURL = resourceURL.toLowerCase();
+    public JasperReport getJasperReportFrom(String reportNameJasper, Class classRef) throws JRException {
+        JasperReport jasperReport = null; 
+        reportNameJasper = reportNameJasper.toLowerCase();
+        if (reportNameJasper.endsWith(".jrxml")){
+            reportNameJasper = reportNameJasper.replaceAll(".jrxml", ".jasper");            
+        }
+        if (!reportNameJasper.endsWith(".jasper")){
+            reportNameJasper = reportNameJasper.trim() + ".jasper";
+        }
+        //Buscar en el file system
+        try {
+            String url = Fn.nvl(fileSystemUrl, "");                    
+            jasperReport = (JasperReport)JRLoader.loadObjectFromFile(url + reportNameJasper);            
+            return jasperReport;
+        } catch (Exception ex) {
+            //Nada
+        }
+        // Buscar el reporte en la base de datos        
         if (getAppResource() != null){
-            // Buscar el reporte con el nombre original en la base de datos
-            byte[] report = getAppResource().getResourceAsBytes(userSession, "file:///reports/"+resourceURL);        
-            if (report == null && (resourceURL.endsWith(".jasper"))){
-                // Si no encuentra buscar como .jrxml
-                String resourceURL2 = resourceURL;
-                resourceURL2 = resourceURL2.replaceAll(".jasper", ".jrxml");
-                report = getAppResource().getResourceAsBytes(userSession, "file:///reports/"+resourceURL2);
+            String reportNameJrxml = reportNameJasper.replaceAll(".jasper", ".jrxml");            
+            byte[] report;
+            if (reportNameJrxml.endsWith(".jrxml")){
+                // Buscar como  .jrxml en la base y en el directorio
+                report = getAppResource().getResourceAsBytes(userSession, urlInDatabase + reportNameJrxml);
                 if (report != null && report.length > 0){
                     //Compilar
                     jasperReport = JasperCompileManager.compileReport(new ByteArrayInputStream(report));
+                    LOGGER.info( urlInDatabase + reportNameJrxml);
                     return jasperReport;
                 }
             }
-            if (report != null  && report.length > 0){
-                InputStream result = new ByteArrayInputStream(report);
-                jasperReport = (JasperReport)JRLoader.loadObject(result);
-                return jasperReport;
-            }
         }
-        if (classRef != null){
+        //Buscar dentro del .war
+        if (jasperReport == null && classRef != null){
             // Buscar en la carpeta resource en el proyecto donde se encuentra classRef
-            jasperReport = (JasperReport)JRLoader.loadObject(IOUtil.getResourceAsStream(classRef, "/reports/" + resourceURL));            
-        }
-        else {
-            //Buscar en el file system
-            jasperReport = (JasperReport)JRLoader.loadObjectFromFile(resourceURL);
+            LOGGER.info( reportNameJasper);
+            jasperReport = (JasperReport)JRLoader.loadObject(IOUtil.getResourceAsStream(classRef, "/reports/" + reportNameJasper));            
         }
         return jasperReport;
     }
