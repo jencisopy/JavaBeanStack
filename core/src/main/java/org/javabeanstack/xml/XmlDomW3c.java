@@ -80,7 +80,7 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
     private boolean alreadyInCache = false;
 
     private String documentPath;
-
+    
     public XmlDomW3c() {
         //Constructor
     }

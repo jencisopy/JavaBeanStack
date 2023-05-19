@@ -37,6 +37,5 @@ public interface IXmlCacheKey {
     void setPathType(String pathType);
     void setLastReference(Date date);
     void addReferenceTime();
-    
 }
 
