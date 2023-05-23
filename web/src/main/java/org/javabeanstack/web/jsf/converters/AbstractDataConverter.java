@@ -82,7 +82,7 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
             if (!StringUtils.isNumeric(value)){
                 return null;
             }
-            T row = getDAO().findById(getClase(), Long.parseLong(value));
+            T row = getDAO().findById(getClase(), Long.valueOf(value));
             return row;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);

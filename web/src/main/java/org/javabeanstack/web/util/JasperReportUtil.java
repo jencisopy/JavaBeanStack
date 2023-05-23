@@ -63,7 +63,6 @@ import org.javabeanstack.util.Fn;
  * @author Jorge Enciso
  */
 public class JasperReportUtil {
-
     private static final Logger LOGGER = Logger.getLogger(JasperReportUtil.class);
 
     private IAppResource appResource;
@@ -213,6 +212,42 @@ public class JasperReportUtil {
         return dataRows;
     }
 
+    public String getFullPathReport(String reportNameJasper) {
+        reportNameJasper = reportNameJasper.toLowerCase();
+        if (reportNameJasper.endsWith(".jrxml")) {
+            reportNameJasper = reportNameJasper.replaceAll(".jrxml", ".jasper");
+        }
+        if (!reportNameJasper.endsWith(".jasper")) {
+            reportNameJasper = reportNameJasper.trim() + ".jasper";
+        }
+        //Buscar en el file system
+        String[] path = Fn.nvl(fileSystemPath, "").split(",");
+        for (String url : path) {
+            try {
+                url = IOUtil.addbs(url.trim()) + "reports/";
+                if (IOUtil.isFileExist(url + reportNameJasper)) {
+                    return url + reportNameJasper;
+                }
+            } catch (Exception ex) {
+                //Nada
+            }
+        }
+        // Buscar el reporte en la base de datos        
+        if (getAppResource() != null) {
+            String reportNameJrxml = reportNameJasper.replaceAll(".jasper", ".jrxml");
+            byte[] report;
+            if (reportNameJrxml.endsWith(".jrxml")) {
+                // Buscar como  .jrxml en la base y en el directorio
+                report = getAppResource().getResourceAsBytes(userSession, urlInDatabase + reportNameJrxml);
+                if (report != null && report.length > 0) {
+                    LOGGER.info(urlInDatabase + reportNameJrxml);
+                    return urlInDatabase + reportNameJrxml;
+                }
+            }
+        }
+        return IOUtil.getFileName(reportNameJasper);
+    }
+
     public JasperReport getJasperReportFrom(String reportNameJasper, Class classRef) throws JRException {
         JasperReport jasperReport = null;
         reportNameJasper = reportNameJasper.toLowerCase();
@@ -226,9 +261,11 @@ public class JasperReportUtil {
         String[] path = Fn.nvl(fileSystemPath, "").split(",");
         for (String url : path) {
             try {
-                url = IOUtil.addbs(url.trim())+"reports/";
-                jasperReport = (JasperReport) JRLoader.loadObjectFromFile(url + reportNameJasper);
-                return jasperReport;
+                url = IOUtil.addbs(url.trim()) + "reports/";
+                if (IOUtil.isFileExist(url + reportNameJasper)) {
+                    jasperReport = (JasperReport) JRLoader.loadObjectFromFile(url + reportNameJasper);
+                    return jasperReport;
+                }
             } catch (Exception ex) {
                 //Nada
             }
@@ -327,4 +364,4 @@ switch (docType) {
         default:
             break;
     }
-*/
+ */
