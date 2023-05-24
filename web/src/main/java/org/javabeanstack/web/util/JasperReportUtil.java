@@ -224,7 +224,8 @@ public class JasperReportUtil {
         String[] path = Fn.nvl(fileSystemPath, "").split(",");
         for (String url : path) {
             try {
-                url = IOUtil.addbs(url.trim()) + "reports/";
+                url = IOUtil.addbs(url.trim()) + "reports";
+                url = IOUtil.addbs(url);
                 if (IOUtil.isFileExist(url + reportNameJasper)) {
                     return url + reportNameJasper;
                 }
@@ -261,7 +262,8 @@ public class JasperReportUtil {
         String[] path = Fn.nvl(fileSystemPath, "").split(",");
         for (String url : path) {
             try {
-                url = IOUtil.addbs(url.trim()) + "reports/";
+                url = IOUtil.addbs(url.trim()) + "reports";
+                url = IOUtil.addbs(url);
                 if (IOUtil.isFileExist(url + reportNameJasper)) {
                     jasperReport = (JasperReport) JRLoader.loadObjectFromFile(url + reportNameJasper);
                     return jasperReport;

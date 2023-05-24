@@ -33,13 +33,14 @@ import org.javabeanstack.util.Strings;
 
 /**
  * Funciones que facilitan el manejo de archivos, inputStream entre otros.
- * 
+ *
  * @author Jorge Enciso
  */
 public class IOUtil {
-    private IOUtil(){
+
+    private IOUtil() {
     }
-    
+
     /**
      * Determina la existencia o no de un archivo
      *
@@ -77,25 +78,32 @@ public class IOUtil {
         if (pathFolder.endsWith("/") || pathFolder.endsWith("\\")) {
             return pathFolder;
         }
+        if (pathFolder.contains("/")) {
+            return pathFolder.trim() + "/";
+        } else if (pathFolder.contains("\\")) {
+            return pathFolder.trim() + "\\";
+        }
         return pathFolder.trim() + File.separator;
     }
 
     /**
      * Devuelve un archivo que se encuentra en la carpeta resource dentro del
-     * proyecto donde se encuentra "clazz" la clase proporcionada como parámetro.
+     * proyecto donde se encuentra "clazz" la clase proporcionada como
+     * parámetro.
      *
      * @param clazz clase para ubicar el proyecto en donde se buscara el archivo
      * solicitado.
      * @param filePath ubicación del archivo dentro de la carpeta resource
      * @return un archivo en formato inputStream.
      */
-    public static InputStream getResourceAsStream(Class clazz, String filePath){
+    public static InputStream getResourceAsStream(Class clazz, String filePath) {
         return clazz.getResourceAsStream(filePath);
     }
 
     /**
      * Devuelve un archivo properties como objeto.
-     * @param filePath  path del archivo.
+     *
+     * @param filePath path del archivo.
      * @return objeto properties.
      */
     public static Properties getPropertiesFrom(String filePath) {
@@ -115,7 +123,8 @@ public class IOUtil {
 
     /**
      * Devuelve un archivo properties como objeto.
-     * @param file  objeto file.
+     *
+     * @param file objeto file.
      * @return objeto properties.
      */
     public static Properties getPropertiesFrom(File file) {
@@ -124,7 +133,7 @@ public class IOUtil {
         if (file == null || !file.isFile() || !file.canRead()) {
             return null;
         }
-        try (InputStream input = new FileInputStream(file)){
+        try (InputStream input = new FileInputStream(file)) {
             properties.load(input);
             return properties;
         } catch (IOException ex) {
@@ -135,7 +144,8 @@ public class IOUtil {
 
     /**
      * Devuelve un archivo que se encuentra en la carpeta resource dentro del
-     * proyecto donde se encuentra "clazz" la clase proporcionada como parámetro.
+     * proyecto donde se encuentra "clazz" la clase proporcionada como
+     * parámetro.
      *
      * @param clazz clase para ubicar el proyecto en donde se buscara el archivo
      * solicitado.
@@ -144,7 +154,7 @@ public class IOUtil {
      */
     public static Properties getPropertiesFromResource(Class clazz, String filePath) {
         Properties properties = new Properties();
-        try (InputStream input = getResourceAsStream(clazz, filePath)){
+        try (InputStream input = getResourceAsStream(clazz, filePath)) {
             properties.load(input);
             return properties;
         } catch (Exception ex) {
@@ -152,71 +162,79 @@ public class IOUtil {
         }
         return null;
     }
-    
+
     /**
-     * Devuelve el path de un archivo ejemplo c:/carpeta1/subcarpeta1/archivo.txt
-     * retorna /carpeta1/subcarpeta1/
+     * Devuelve el path de un archivo ejemplo
+     * c:/carpeta1/subcarpeta1/archivo.txt retorna /carpeta1/subcarpeta1/
+     *
      * @param file nombre y path del archivo
      * @return el path del archivo
      */
-    public static String getPath(String file){
+    public static String getPath(String file) {
         return FilenameUtils.getPath(file);
     }
 
     /**
-     * Devuelve el path de un archivo ejemplo c:/carpeta1/subcarpeta1/archivo.txt
-     * retorna c:/carpeta1/subcarpeta1/
+     * Devuelve el path de un archivo ejemplo
+     * c:/carpeta1/subcarpeta1/archivo.txt retorna c:/carpeta1/subcarpeta1/
+     *
      * @param file nombre y path del archivo
      * @return el path del archivo
      */
-    public static String getFullPath(String file){
+    public static String getFullPath(String file) {
         return FilenameUtils.getFullPath(file);
     }
-    
+
     /**
-     * Devuelve el path de un archivo ejemplo c:/carpeta1/subcarpeta1/archivo.txt
-     * retorna /carpeta1/subcarpeta1
+     * Devuelve el path de un archivo ejemplo
+     * c:/carpeta1/subcarpeta1/archivo.txt retorna /carpeta1/subcarpeta1
+     *
      * @param file nombre y path del archivo
      * @return el path del archivo
      */
-    public static String getFullPathNoEndSeparator(String file){
+    public static String getFullPathNoEndSeparator(String file) {
         return FilenameUtils.getFullPathNoEndSeparator(file);
     }
-    
+
     /**
      * Devuelve el nombre del archivo sin la extensión
+     *
      * @param file nombre archivo
      * @return el nombre del archivo sin extensión
      */
-    public static String getFileBaseName(String file){
+    public static String getFileBaseName(String file) {
         return FilenameUtils.getBaseName(file);
     }
 
     /**
-     * Devuelve el nombre del archivo 
+     * Devuelve el nombre del archivo
+     *
      * @param file nombre archivo
      * @return el nombre del archivo sin path
      */
-    public static String getFileName(String file){
+    public static String getFileName(String file) {
         return FilenameUtils.getName(file);
     }
-    
+
     /**
      * Devuelve la extensión del archivo
+     *
      * @param file nombre archivo
      * @return extensión del archivo
      */
-    public static String getFileExtension(String file){
+    public static String getFileExtension(String file) {
         return FilenameUtils.getExtension(file);
     }
 
     /**
      * Graba una variable tipo bytes a un archivo en el filesystem.
-     * @param byteArray  variable a grabar
-     * @param filePath  nombre del archivo con el path incluido donde se guardara los datos.
+     *
+     * @param byteArray variable a grabar
+     * @param filePath nombre del archivo con el path incluido donde se guardara
+     * los datos.
      * @return verdadero si tuvo exito y falso si no.
      */
-    public static boolean writeBytesToFile(byte[] byteArray, String filePath){
+    public static boolean writeBytesToFile(byte[] byteArray, String filePath) {
         boolean result = true;
         try {
             FileUtils.writeByteArrayToFile(new File(filePath), byteArray);
