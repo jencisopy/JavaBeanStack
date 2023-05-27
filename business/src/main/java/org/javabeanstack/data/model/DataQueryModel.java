@@ -183,7 +183,36 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         if (!StringUtils.isNumeric(argument)) {
             return 0L;
         }
-        return Long.parseLong(argument);
+        return Long.valueOf(argument);
+    }
+    
+    /**
+     * 
+     * @param columnName nombre de la columna
+     * @return valor de la columna como integer
+     */
+    @Override
+    public Integer getColumnInt(String columnName) {
+        if (!isColumnMetaDataExist()){
+            return null;
+        }
+        // Buscar un nombre de columna en la matriz
+        int index = Fn.findInMatrix(columnList, columnName, false);
+        if (index < 0){
+            return null;
+        }
+        if (getColumn(index) instanceof Integer){
+            return (Integer)getColumn(index);
+        }
+        String argument;
+        if (getColumn(index) == null){
+            return 0;
+        }
+        argument = getColumn(index).toString().trim();
+        if (!StringUtils.isNumeric(argument)) {
+            return 0;
+        }
+        return Integer.valueOf(argument);
     }
     
     /**
