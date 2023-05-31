@@ -1853,7 +1853,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                             if (!ejb.isRowChecked()) {
                                 ejb.setErrors(this.checkDataRow(ejb));
                             }
-                            if (ejb.getErrors() != null && ejb.getErrors().size() > 0) {
+                            if (ejb.getErrors() != null && !ejb.getErrors().isEmpty()) {
                                 //Ejecutar afterCheckData
                                 return false;
                             }
