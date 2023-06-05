@@ -38,10 +38,15 @@ public interface IDataQueryModel {
     public Object getColumn(int index);
     public Object getColumn(String columnName);
     public String getColumnStr(String columnName);    
+    public String getColumnStr(int index);        
     public BigDecimal getColumnNumber(String columnName);
+    public BigDecimal getColumnNumber(int index);    
     public Long getColumnLong(String columnName);
+    public Long getColumnLong(int index);
     public Integer getColumnInt(String columnName);    
+    public Integer getColumnInt(int index);        
     public LocalDateTime getColumnLocalDate(String columnName);
+    public LocalDateTime getColumnLocalDate(int index);    
     public String getColumnName(int index);
     public String[] getColumnList();
     public void setColumnId(int index);

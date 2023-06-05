@@ -18,8 +18,7 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.data.model;
 
 import java.io.Serializable;
@@ -37,26 +36,27 @@ import org.javabeanstack.util.Strings;
 
 /**
  * Clase que ofrece funcionalidades para acceder de varias maneras al registro
- * de datos (row) resultante de un nativequery. Es utilizado principalmente en 
+ * de datos (row) resultante de un nativequery. Es utilizado principalmente en
  * la clase DataNativeQuery
- * 
- * @author Jorge Enciso 
+ *
+ * @author Jorge Enciso
  */
-public class DataQueryModel implements IDataQueryModel, Serializable{
-    private Object   columnId;
+public class DataQueryModel implements IDataQueryModel, Serializable {
+
+    private Object columnId;
     private String[] columnList;
-    private Object   row;
+    private Object row;
 
     /**
-     * 
+     *
      * @return id del registro
      */
     @Override
     public Object getColumnId() {
-        if (row == null){
+        if (row == null) {
             return null;
         }
-        if (columnId == null){
+        if (columnId == null) {
             return getColumn(0);
         }
         return columnId;
@@ -70,84 +70,100 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
     @Override
     public Object getValue(String columnName) {
         return getColumn(columnName);
-    }    
-    
+    }
+
     /**
-     * 
+     *
      * @param index nro de columna
      * @return valor de la columna
      */
     @Override
     public Object getColumn(int index) {
-        if (row == null){
+        if (row == null) {
             return null;
         }
-        if (row instanceof Object[]){
-            Object[] colList = (Object[])row;
-            if (colList.length <= index){
+        if (row instanceof Object[]) {
+            Object[] colList = (Object[]) row;
+            if (colList.length <= index) {
                 return null;
             }
             return colList[index];
-        }    
+        }
         return row;
     }
 
     /**
-     * 
+     *
      * @param columnName nombre de la columna
      * @return valor de la columna
      */
     @Override
     public Object getColumn(String columnName) {
-        if (!isColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()) {
             return null;
         }
         // Buscar un nombre de columna en la matriz
         int index = Fn.findInMatrix(columnList, columnName, false);
-        if (index < 0){
+        if (index < 0) {
             return null;
         }
         return getColumn(index);
     }
 
     /**
-     * 
+     *
      * @param columnName nombre de la columna
      * @return valor de la columna como caracter.
      */
     @Override
     public String getColumnStr(String columnName) {
-        if (!isColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()) {
             return null;
         }
         // Buscar un nombre de columna en la matriz
         int index = Fn.findInMatrix(columnList, columnName, false);
-        if (index < 0){
+        if (index < 0) {
+            return null;
+        }
+        if (getColumn(index) == null) {
             return null;
         }
         return getColumn(index).toString();
     }
 
     /**
-     * 
+     *
+     * @param index nro de columna
+     * @return valor de la columna como caracter.
+     */
+    @Override
+    public String getColumnStr(int index) {
+        if (getColumn(index) == null) {
+            return null;
+        }
+        return getColumn(index).toString();
+    }
+
+    /**
+     *
      * @param columnName nombre de la columna
      * @return valor de la columna como bigdecimal
      */
     @Override
     public BigDecimal getColumnNumber(String columnName) {
-        if (!isColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()) {
             return null;
         }
         // Buscar un nombre de columna en la matriz
         int index = Fn.findInMatrix(columnList, columnName, false);
-        if (index < 0){
+        if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof BigDecimal){
-            return (BigDecimal)getColumn(index);
+        if (getColumn(index) instanceof BigDecimal) {
+            return (BigDecimal) getColumn(index);
         }
         String argument;
-        if (getColumn(index) == null){
+        if (getColumn(index) == null) {
             return BigDecimal.ZERO;
         }
         argument = getColumn(index).toString().trim();
@@ -158,25 +174,52 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
     }
 
     /**
-     * 
+     *
+     * @param index nro de columna
+     * @return valor de la columna como bigdecimal
+     */
+    @Override
+    public BigDecimal getColumnNumber(int index) {
+        if (!isColumnMetaDataExist()) {
+            return null;
+        }
+        if (index < 0) {
+            return null;
+        }
+        if (getColumn(index) instanceof BigDecimal) {
+            return (BigDecimal) getColumn(index);
+        }
+        String argument;
+        if (getColumn(index) == null) {
+            return BigDecimal.ZERO;
+        }
+        argument = getColumn(index).toString().trim();
+        if (!StringUtils.isNumeric(argument)) {
+            return BigDecimal.ZERO;
+        }
+        return new BigDecimal(argument);
+    }
+
+    /**
+     *
      * @param columnName nombre de la columna
      * @return valor de la columna como long
      */
     @Override
     public Long getColumnLong(String columnName) {
-        if (!isColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()) {
             return null;
         }
         // Buscar un nombre de columna en la matriz
         int index = Fn.findInMatrix(columnList, columnName, false);
-        if (index < 0){
+        if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof Long){
-            return (Long)getColumn(index);
+        if (getColumn(index) instanceof Long) {
+            return (Long) getColumn(index);
         }
         String argument;
-        if (getColumn(index) == null){
+        if (getColumn(index) == null) {
             return 0L;
         }
         argument = getColumn(index).toString().trim();
@@ -185,27 +228,54 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         }
         return Long.valueOf(argument);
     }
-    
+
     /**
-     * 
+     *
+     * @param index nro de columna.
+     * @return valor de la columna como long
+     */
+    @Override
+    public Long getColumnLong(int index) {
+        if (!isColumnMetaDataExist()) {
+            return null;
+        }
+        if (index < 0) {
+            return null;
+        }
+        if (getColumn(index) instanceof Long) {
+            return (Long) getColumn(index);
+        }
+        String argument;
+        if (getColumn(index) == null) {
+            return 0L;
+        }
+        argument = getColumn(index).toString().trim();
+        if (!StringUtils.isNumeric(argument)) {
+            return 0L;
+        }
+        return Long.valueOf(argument);
+    }
+
+    /**
+     *
      * @param columnName nombre de la columna
      * @return valor de la columna como integer
      */
     @Override
     public Integer getColumnInt(String columnName) {
-        if (!isColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()) {
             return null;
         }
         // Buscar un nombre de columna en la matriz
         int index = Fn.findInMatrix(columnList, columnName, false);
-        if (index < 0){
+        if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof Integer){
-            return (Integer)getColumn(index);
+        if (getColumn(index) instanceof Integer) {
+            return (Integer) getColumn(index);
         }
         String argument;
-        if (getColumn(index) == null){
+        if (getColumn(index) == null) {
             return 0;
         }
         argument = getColumn(index).toString().trim();
@@ -214,45 +284,97 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         }
         return Integer.valueOf(argument);
     }
-    
+
     /**
-     * 
+     *
+     * @param index nro de columna
+     * @return valor de la columna como integer
+     */
+    @Override
+    public Integer getColumnInt(int index) {
+        if (!isColumnMetaDataExist()) {
+            return null;
+        }
+        if (index < 0) {
+            return null;
+        }
+        if (getColumn(index) instanceof Integer) {
+            return (Integer) getColumn(index);
+        }
+        String argument;
+        if (getColumn(index) == null) {
+            return 0;
+        }
+        argument = getColumn(index).toString().trim();
+        if (!StringUtils.isNumeric(argument)) {
+            return 0;
+        }
+        return Integer.valueOf(argument);
+    }
+
+    /**
+     *
      * @param columnName nombre de la columna
      * @return valor de la columna como LocalDateTime
      */
     @Override
     public LocalDateTime getColumnLocalDate(String columnName) {
-        if (!isColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()) {
             return null;
         }
         // Buscar un nombre de columna en la matriz
         int index = Fn.findInMatrix(columnList, columnName, false);
-        if (index < 0){
+        if (index < 0) {
             return null;
         }
-        if (getColumn(index) == null){
+        if (getColumn(index) == null) {
             return null;
         }
-        if (getColumn(index) instanceof LocalDateTime){
-            return (LocalDateTime)getColumn(index);
+        if (getColumn(index) instanceof LocalDateTime) {
+            return (LocalDateTime) getColumn(index);
         }
-        if (getColumn(index) instanceof Date){
-            return LocalDates.toDateTime((Date)getColumn(index));
+        if (getColumn(index) instanceof Date) {
+            return LocalDates.toDateTime((Date) getColumn(index));
         }
         return LocalDates.toDateTime(getColumn(index).toString().trim());
     }
-    
+
     /**
-     * 
-     * @param index  nro. de la columna
+     *
+     * @param index nro de columna
+     * @return valor de la columna como LocalDateTime
+     */
+    @Override
+    public LocalDateTime getColumnLocalDate(int index) {
+        if (!isColumnMetaDataExist()) {
+            return null;
+        }
+        if (index < 0) {
+            return null;
+        }
+        if (getColumn(index) == null) {
+            return null;
+        }
+        if (getColumn(index) instanceof LocalDateTime) {
+            return (LocalDateTime) getColumn(index);
+        }
+        if (getColumn(index) instanceof Date) {
+            return LocalDates.toDateTime((Date) getColumn(index));
+        }
+        return LocalDates.toDateTime(getColumn(index).toString().trim());
+    }
+
+    /**
+     *
+     * @param index nro. de la columna
      * @return el nombre de la columna
      */
     @Override
     public String getColumnName(int index) {
-        if (!isColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()) {
             return null;
         }
-        if (columnList.length <= index){
+        if (columnList.length <= index) {
             return null;
         }
         return columnList[index].trim();
@@ -260,6 +382,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
 
     /**
      * Devuelve la lista de columnas tipo String[]
+     *
      * @return lista de columnas.
      */
     @Override
@@ -267,28 +390,29 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         return columnList;
     }
 
-    
     /**
-     * Asigna la lista de columnas. Debe coincidir con el resultado del nativequery
+     * Asigna la lista de columnas. Debe coincidir con el resultado del
+     * nativequery
+     *
      * @param columnList lista de columnas
      */
     @Override
     public void setColumnList(String[] columnList) {
         this.columnList = columnList;
     }
-    
 
     /**
      * Asigna cual es la columna que identifica al registro.
-     * @param index 
+     *
+     * @param index
      */
     @Override
     public void setColumnId(int index) {
         columnId = getColumn(index);
     }
-    
+
     /**
-     * 
+     *
      * @return registro resultante del nativequery query
      */
     @Override
@@ -298,7 +422,8 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
 
     /**
      * Sobreescribe la fila actual.
-     * @param row 
+     *
+     * @param row
      */
     @Override
     public void setRow(Object row) {
@@ -307,14 +432,15 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
 
     /**
      * Asigna un valor a una columna
+     *
      * @param index indice de la columna.
      * @param value valor
      */
     @Override
     public void setColumn(int index, Object value) {
-        if (row instanceof Object[]){
-            Object[] colList = (Object[])row;
-            if (colList.length > index){
+        if (row instanceof Object[]) {
+            Object[] colList = (Object[]) row;
+            if (colList.length > index) {
                 colList[index] = value;
                 return;
             }
@@ -324,24 +450,26 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
 
     /**
      * Asigna un valor a una columna
+     *
      * @param columnName nombre de la columna.
      * @param value valor.
      */
     @Override
     public void setColumn(String columnName, Object value) {
-        if (!isColumnMetaDataExist()){
+        if (!isColumnMetaDataExist()) {
             return;
         }
         // Buscar un nombre de columna en la matriz
         int index = Fn.findInMatrix(columnList, columnName, false);
-        if (index < 0){
+        if (index < 0) {
             return;
         }
-        setColumn(index, value);        
+        setColumn(index, value);
     }
 
     /**
      * Asigna un valor a una columna
+     *
      * @param index indice de la columna.
      * @param value valor
      */
@@ -352,6 +480,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
 
     /**
      * Asigna un valor a una columna
+     *
      * @param columnName nombre de la columna.
      * @param value valor.
      */
@@ -359,13 +488,14 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
     public void setValue(String columnName, Object value) {
         setColumn(columnName, value);
     }
-    
+
     /**
      * Devuelve si existe metadatos
+     *
      * @return verdadero si existe metadatos o falso si no.
      */
-    protected Boolean isColumnMetaDataExist(){
-        if (columnList == null){
+    protected Boolean isColumnMetaDataExist() {
+        if (columnList == null) {
             return false;
         }
         return columnList.length != 0;
@@ -394,38 +524,39 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
     }
 
     /**
-     * Busca un registro o elemento en la lista 
-     * @param dataList  lista de registros.
-     * @param searchId  identificador del registro.
-     * @return nro. de elemento donde encuentra el registro (elemento = 0 es la primera fila)
+     * Busca un registro o elemento en la lista
+     *
+     * @param dataList lista de registros.
+     * @param searchId identificador del registro.
+     * @return nro. de elemento donde encuentra el registro (elemento = 0 es la
+     * primera fila)
      */
     public static int searchById(List<IDataQueryModel> dataList, Object searchId) {
         //Si esta vacio la lista
-        if (dataList.isEmpty()){
+        if (dataList.isEmpty()) {
             return -1;
         }
         //Los ids deben ser del mismo tipo
         boolean castToString = false;
-        if (searchId.getClass() != dataList.get(0).getColumnId().getClass()){
+        if (searchId.getClass() != dataList.get(0).getColumnId().getClass()) {
             castToString = true;
         }
         // Buscar
-        for (int i=0;i < dataList.size();i++){
+        for (int i = 0; i < dataList.size(); i++) {
             IDataQueryModel element = dataList.get(i);
-            if (castToString){
+            if (castToString) {
                 String expr1 = element.getColumnId().toString();
                 String expr2 = searchId.toString();
-                if (expr1.equals(expr2)){
+                if (expr1.equals(expr2)) {
                     return i;
                 }
-            }
-            else if (Objects.equals(element.getColumnId(), searchId)){
+            } else if (Objects.equals(element.getColumnId(), searchId)) {
                 return i;
             }
         }
         return -1;
     }
-    
+
     /**
      * Convierte una lista de objetos al tipo IDataQueryModel
      *
@@ -439,15 +570,16 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         }
         List<IDataQueryModel> target = new ArrayList<>(source.size());
         for (int i = 0; i < source.size(); i++) {
-            target.add(convertToDataQueryModel(source.get(i),columns));
+            target.add(convertToDataQueryModel(source.get(i), columns));
         }
         return target;
-    }    
-    
+    }
+
     /**
      * Convierte un array de objectos a formato DataQueryModel
-     * @param source  Array de objetos.
-     * @param columns  lista de columnas correspondientes al array de objetos.
+     *
+     * @param source Array de objetos.
+     * @param columns lista de columnas correspondientes al array de objetos.
      * @return objeto de tipo DataQueryModel
      */
     public static final IDataQueryModel convertToDataQueryModel(Object source, String columns) {
@@ -459,10 +591,11 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         row.setRow(source);
         row.setColumnList(columnsLabel);
         return row;
-    }    
-    
+    }
+
     /**
      * Crea los labels o nombres de columnas a partir de una lista de campos.
+     *
      * @param columns lista de columnas.
      * @return array con los nombres de columnas.
      */
@@ -490,7 +623,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
         }
         return matrix;
     }
-    
+
     /**
      * Convierte una expresión en una matriz
      *
@@ -504,5 +637,5 @@ public class DataQueryModel implements IDataQueryModel, Serializable{
             exprList[i] = exprList[i].trim();
         }
         return exprList;
-    }    
+    }
 }

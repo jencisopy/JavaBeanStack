@@ -791,7 +791,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppUser getUserMapped(String token) {
         try {
-            Long iduser = Long.parseLong(getDataKeyValue(token, "idappuser"));
+            Long iduser = Long.valueOf(getDataKeyValue(token, "idappuser"));
             IAppUser user = dao.findByQuery(null, "select o from AppUserLight o where iduser = " + iduser, null);
             return user;
         } catch (Exception exp) {
@@ -810,7 +810,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppUser getUserMapped(IAppAuthConsumerToken token) {
         try {
-            Long iduser = Long.parseLong(getDataKeyValue(token, "idappuser"));
+            Long iduser = Long.valueOf(getDataKeyValue(token, "idappuser"));
             IAppUser user = dao.findByQuery(null, "select o from AppUserLight o where iduser = " + iduser, null);
             return user;
         } catch (Exception exp) {
@@ -829,7 +829,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppCompany getCompanyMapped(IAppAuthConsumerToken token) {
         try {
-            Long idcompany = Long.parseLong(getDataKeyValue(token, "idcompany"));
+            Long idcompany = Long.valueOf(getDataKeyValue(token, "idcompany"));
             IAppCompany company = dao.findByQuery(null, "select o from AppCompanyLight o where idcompany = " + idcompany, null);
             return company;
         } catch (Exception exp) {
@@ -848,7 +848,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppCompany getCompanyMapped(String token) {
         try {
-            Long idcompany = Long.parseLong(getDataKeyValue(token, "idcompany"));
+            Long idcompany = Long.valueOf(getDataKeyValue(token, "idcompany"));
             IAppCompany company = dao.findByQuery(null, "select o from AppCompanyLight o where idcompany = " + idcompany, null);
             return company;
         } catch (Exception exp) {
