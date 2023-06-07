@@ -36,4 +36,5 @@ public interface IAppConfig {
     Document getConfigDOM(String groupKey);
     String getProperty(String property, String groupKey, String nodePath);
     boolean setProperty(String value, String property, String groupKey, String nodePath);
+    String getFileSystemPath(String sessionId);
 }

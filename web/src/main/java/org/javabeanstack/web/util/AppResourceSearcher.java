@@ -53,24 +53,32 @@ public class AppResourceSearcher implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (appConfig.getSystemParam("APPRESOURCEPATH") != null
-                && appConfig.getSystemParam("APPRESOURCEPATH").getValueChar() != null) {
-            fileSystemPath = appConfig.getSystemParam("APPRESOURCEPATH").getValueChar().trim();
-        }
-
+        fileSystemPath = appConfig.getFileSystemPath(this.getUserSession().getSessionId());
     }
 
+    public IAppResource getAppResource(){
+        return appResource;
+    }
+    
+    public String getFileSystemPath(){
+        return fileSystemPath;
+    }
+    
     public IXmlDom<Document, Element> getXmlDom(String resourcePath,
             String elementPath,
             Map<String, String> params) {
         IXmlDom<Document, Element> xmlResource = null;
-        if (fileSystemPath != null) {
+        if (!fileSystemPath.isEmpty()) {
             //Buscar en el file system
             String file;
             String[] path = fileSystemPath.split(",");
             for (String url : path) {
                 try {
-                    url = IOUtil.addbs(url.trim()) + "xmls/";
+                    if (url.trim().isEmpty()){
+                        continue;
+                    }
+                    url = IOUtil.addbs(url.trim()) + "xmls";
+                    url = IOUtil.addbs(url);
                     file = url + IOUtil.getFileName(resourcePath);
                     if (IOUtil.isFileExist(file)) {
                         xmlResource = new XmlDomW3c();
@@ -87,7 +95,6 @@ public class AppResourceSearcher implements Serializable {
                     //Nada
                 }
             }
-
         }
         //Buscar en la base de datos
         if (xmlResource == null || xmlResource.getDom() == null) {

@@ -18,7 +18,7 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
+ */
 package org.javabeanstack.config;
 
 import java.util.ArrayList;
@@ -32,46 +32,52 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.model.IAppSystemParam;
+import org.javabeanstack.security.model.IUserSession;
+import org.javabeanstack.util.Fn;
+import static org.javabeanstack.util.Strings.leftPad;
 import org.javabeanstack.xml.DomW3cParser;
 
 /**
  * Esta clase implementa funcionalidades que permite a la app leer y grabar
  * configuraciones que determinará el comportamiento del sistema.
- * 
+ *
  * Se implementan dos tipos de almacenes de datos de configuración
  *
  * El 1ro es un Map<Clave,Valor> el cual se guarda objetos DOM conteniendo
  * información en formato xml.
- * 
+ *
  * El 2do. es un objeto "AppSystemParam" mapeado a una tabla de la base de datos
  * conteniendo información de configuración del sistema.
- * 
- * 
+ *
+ *
  * @author Jorge Enciso
  */
 @Lock(LockType.READ)
 public class AppGenericConfig implements IAppConfig {
+
     protected static final Logger LOGGER = Logger.getLogger(AppGenericConfig.class);
 
     @EJB
     protected IGenericDAO dao;
 
-    /** 
-     * En este atributo se guardan objetos DOM que son accedidos por una 
-     * clave "groupkey". Estos objetos DOM contienen información sobre 
-     * parámetros del sistema, configuración de conexión a los datos, 
-     * parámetros de seguridad etc.
+    /**
+     * En este atributo se guardan objetos DOM que son accedidos por una clave
+     * "groupkey". Estos objetos DOM contienen información sobre parámetros del
+     * sistema, configuración de conexión a los datos, parámetros de seguridad
+     * etc.
      */
     protected final Map<String, Document> config = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-    
+
     /**
      * Lee el objeto DOM de configuración guardado bajo una clave "groupkey"
-     * @param groupKey  identificador del registro.
+     *
+     * @param groupKey identificador del registro.
      * @return objeto DOM.
      */
     @Override
-    public Document getConfigDOM(String groupKey){
+    public Document getConfigDOM(String groupKey) {
         groupKey = groupKey.toUpperCase();
         return config.get(groupKey);
     }
@@ -79,17 +85,17 @@ public class AppGenericConfig implements IAppConfig {
     /**
      * Lee el valor de una propiedad que se encuentra bajo una clave "groupkey"
      * y un path dentro del objeto DOM.
-     * 
-     * @param property  propiedad del objeto DOM xml
-     * @param groupKey  clave bajo la cual se encuentra el objeto DOM. 
-     * @param nodePath  path del elemento donde se encuentra el property.
+     *
+     * @param property propiedad del objeto DOM xml
+     * @param groupKey clave bajo la cual se encuentra el objeto DOM.
+     * @param nodePath path del elemento donde se encuentra el property.
      * @return valor de la propiedad solicitada.
      */
     @Override
     public String getProperty(String property, String groupKey, String nodePath) {
         groupKey = groupKey.toUpperCase();
-        Document dom = config.get(groupKey); 
-        if (dom == null) { 
+        Document dom = config.get(groupKey);
+        if (dom == null) {
             return null;
         }
         String propValue;
@@ -104,11 +110,13 @@ public class AppGenericConfig implements IAppConfig {
     /**
      * Asigna un valor a una propiedad del objeto DOM de configuración que se
      * encuentra bajo una clave "groupkey" y un path al nodo donde se encuentra
-     * la propiedad. 
-     * @param value     valor a asignar.
-     * @param property  nombre de la propiedad.
-     * @param groupKey  clave con la cual se identifica al DOM xml.
-     * @param nodePath  path dentro del objeto DOM donde se encuentra la propiedad.
+     * la propiedad.
+     *
+     * @param value valor a asignar.
+     * @param property nombre de la propiedad.
+     * @param groupKey clave con la cual se identifica al DOM xml.
+     * @param nodePath path dentro del objeto DOM donde se encuentra la
+     * propiedad.
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
@@ -130,9 +138,9 @@ public class AppGenericConfig implements IAppConfig {
 
     /**
      * Lee de una tabla "appSystemParam" un registro mediante un identificador
-     * 
-     * @param id  identificador del registro.
-     * @return el registro AppSystemParam solicitado 
+     *
+     * @param id identificador del registro.
+     * @return el registro AppSystemParam solicitado
      */
     @Override
     public IAppSystemParam getSystemParam(Long id) {
@@ -150,10 +158,10 @@ public class AppGenericConfig implements IAppConfig {
     }
 
     /**
-     * Lee de una tabla "appSystemParam" un registro utilizando el nombre
-     * de un parámetro como identificador solicitado.
-     * 
-     * @param param  nombre del parametro.
+     * Lee de una tabla "appSystemParam" un registro utilizando el nombre de un
+     * parámetro como identificador solicitado.
+     *
+     * @param param nombre del parametro.
      * @return registro AppSystemParam solicitado.
      */
     @Override
@@ -173,6 +181,7 @@ public class AppGenericConfig implements IAppConfig {
 
     /**
      * Devuelve una lista conteniendo los registros de "appSystemParam"
+     *
      * @return lista de registros "AppSystemParam"
      */
     @Override
@@ -185,5 +194,27 @@ public class AppGenericConfig implements IAppConfig {
             ErrorManager.showError(ex, LOGGER);
         }
         return new ArrayList();
+    }
+
+    @Override
+    public String getFileSystemPath(String sessionId) {
+        String path = "";
+        String separador = "";
+        if (!Fn.nvl(sessionId, "").isEmpty()) {
+            IUserSession userSession = dao.getUserSession(sessionId);
+            //Path resource por empresa
+            if (getSystemParam("APPCOMPANY_RESOURCE_PATH") != null
+                    && getSystemParam("APPCOMPANY_RESOURCE_PATH").getValueChar() != null) {
+                path = IOUtil.addbs(getSystemParam("APPCOMPANY_RESOURCE_PATH").getValueChar().trim())
+                        + leftPad(userSession.getCompany().getIdcompany().toString(), 2, "0");
+                separador = ",";
+            }
+        }
+        //Path resource sistema global
+        if (getSystemParam("APPRESOURCEPATH") != null
+                && getSystemParam("APPRESOURCEPATH").getValueChar() != null) {
+            path += separador + getSystemParam("APPRESOURCEPATH").getValueChar().trim();
+        }
+        return Fn.nvl(path, "");
     }
 }

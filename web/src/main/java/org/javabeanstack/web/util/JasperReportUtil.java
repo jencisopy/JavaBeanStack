@@ -63,6 +63,7 @@ import org.javabeanstack.util.Fn;
  * @author Jorge Enciso
  */
 public class JasperReportUtil {
+
     private static final Logger LOGGER = Logger.getLogger(JasperReportUtil.class);
 
     private IAppResource appResource;
@@ -224,6 +225,9 @@ public class JasperReportUtil {
         String[] path = Fn.nvl(fileSystemPath, "").split(",");
         for (String url : path) {
             try {
+                if (url.trim().isEmpty()) {
+                    continue;
+                }
                 url = IOUtil.addbs(url.trim()) + "reports";
                 url = IOUtil.addbs(url);
                 if (IOUtil.isFileExist(url + reportNameJasper)) {
@@ -262,6 +266,9 @@ public class JasperReportUtil {
         String[] path = Fn.nvl(fileSystemPath, "").split(",");
         for (String url : path) {
             try {
+                if (url.trim().isEmpty()) {
+                    continue;
+                }
                 url = IOUtil.addbs(url.trim()) + "reports";
                 url = IOUtil.addbs(url);
                 if (IOUtil.isFileExist(url + reportNameJasper)) {
