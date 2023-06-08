@@ -59,6 +59,7 @@ import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Fn.nvl;
+import static org.javabeanstack.util.Strings.left;
 import org.javabeanstack.util.Parameters;
 import org.javabeanstack.util.Strings;
 
@@ -170,7 +171,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (id == null) {
             return null;
         }
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         T row = em.find(entityClass, id);
         if (row == null) {
@@ -215,7 +216,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (ejb.getQueryUK() == null) {
             return null;
         }
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         // Buscar registro por la clave unica
         T row;
         Query q = getEntityManager(getEntityId(dbLinkInfo)).createQuery(ejb.getQueryUK());
@@ -303,7 +304,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (filter == null) {
             filter = "";
         }
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         T entity = entityClass.getConstructor().newInstance();
         // Si se va a aplicar el filtro por defecto 
         if (entity.isApplyDBFilter()) {
@@ -345,7 +346,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug("findByQuery");
         LOGGER.debug(queryString);
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createQuery(queryString);
@@ -422,7 +423,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug("findListByQuery");
         LOGGER.debug(queryString);
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createQuery(queryString);
@@ -471,7 +472,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     public <T extends IDataRow> T findByNamedQuery(String sessionId,
             String namedQuery,
             Map<String, Object> parameters) throws Exception {
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createNamedQuery(namedQuery);
@@ -559,7 +560,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             Map<String, Object> parameters,
             int first, int max) throws Exception {
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
 
         Query query = em.createNamedQuery(namedQuery);
@@ -589,7 +590,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("findByNativeQuery");
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         String persistUnit;
         if (dbLinkInfo != null) {
             persistUnit = dbLinkInfo.getPersistUnit();
@@ -627,7 +628,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("findByNativeQuery");
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         String persistUnit;
         if (dbLinkInfo != null) {
             persistUnit = dbLinkInfo.getPersistUnit();
@@ -670,7 +671,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("findByNativeQuery");
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         String persistUnit;
         if (dbLinkInfo != null) {
             persistUnit = dbLinkInfo.getPersistUnit();
@@ -706,7 +707,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("sqlExec");
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         String persistUnit;
         if (dbLinkInfo == null) {
             persistUnit = IDBManager.CATALOGO;
@@ -745,7 +746,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("jpqlExec");
 
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         String persistUnit;
         if (dbLinkInfo == null) {
             persistUnit = IDBManager.CATALOGO;
@@ -833,9 +834,15 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (dataSet == null || dataSet.size() == 0) {
             return null;
         }
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
-        String appUser = dbLinkInfo.getAppUserId();
-
+        String appUser = null;
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);        
+        if (sessionId != null) {
+            if (dbLinkInfo.getUserSession() != null) {
+                appUser = dbLinkInfo.getAppUserId();
+            } else {
+                appUser = left(dbLinkInfo.getSessionOrTokenId(), 32);
+            }
+        }
         IDataResult dataResult = new DataResult();
         IDataRow lastEjb = null;
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
@@ -944,8 +951,14 @@ public abstract class AbstractDAO implements IGenericDAO {
                 operacion = "?";
                 break;
         }
+        String device;
+        if (getUserSession(sessionId) != null) {
+            device = getUserSession(sessionId).getIp();
+        } else {
+            device = getDBLinkInfo(sessionId).getUuidDevice();
+        }
         auditEjb.setValue("operacion", operacion);
-        auditEjb.setValue("iprequest", sessions.getUserSession(sessionId).getIp());
+        auditEjb.setValue("iprequest", device);
         auditEjb.setValue("sessionid", sessionId);
         auditEjb = ejb.copyTo(auditEjb);
         em.persist(auditEjb);
@@ -1078,7 +1091,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (maxRows == 0) {
             return new ArrayList<>();
         }
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         Query q;
         q = em.createQuery(queryString);
@@ -1141,7 +1154,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @Override
     public <T extends IDataRow> List<T> refreshAll(String sessionId, List<T> rows) throws Exception {
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         for (int i = 0; i <= rows.size(); i++) {
             em.refresh(rows.get(i));
@@ -1164,7 +1177,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     public Long getCount(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("getCount");
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         Long result;
         String persistUnit = dbLinkInfo.getPersistUnit();
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
@@ -1202,14 +1215,14 @@ public abstract class AbstractDAO implements IGenericDAO {
     public Long getCount2(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("getCount2");
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         String persistUnit = dbLinkInfo.getPersistUnit();
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
         queryString = "select count(*) from (" + queryString + ") x";
         LOGGER.debug(queryString);
 
         List<Object> result = this.findByNativeQuery(sessionId, queryString, parameters);
-        return Long.parseLong(result.get(0).toString());
+        return Long.valueOf(result.get(0).toString());
     }
 
     /**
@@ -1290,7 +1303,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @Override
     public Connection getConnection(String sessionId) {
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         // Para eclipse link
         Connection connection = getEntityManager(getEntityId(dbLinkInfo))
                 .unwrap(java.sql.Connection.class);
@@ -1307,7 +1320,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @Override
     public Connection getConnection(String sessionId, IDBConnectFactory conn) {
-        IDBLinkInfo dbLinkInfo = sessions.getDBLinkInfo(sessionId);
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         Connection result = conn.getConnection(em);
         return result;

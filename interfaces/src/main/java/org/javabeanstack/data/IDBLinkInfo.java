@@ -40,4 +40,5 @@ public interface IDBLinkInfo extends Serializable {
     void setToken(IAppAuthConsumerToken token, IOAuthConsumer oAuthConsumer)  throws Exception;
     String getAppUserId();
     String getSessionOrTokenId();
+    String getUuidDevice();
 }

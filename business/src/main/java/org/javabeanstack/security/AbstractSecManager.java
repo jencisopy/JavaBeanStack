@@ -34,6 +34,7 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.model.IAppAuthConsumerToken;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
 
@@ -265,6 +266,27 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
                     ErrorManager.showError(exp, LOGGER);
                 }
             }
+        }
+        return null;
+    }
+    
+    @Override
+    public IAppAuthConsumerToken getAppAuthConsumerToken(String token) {
+        String sqlComando;
+        sqlComando = "select a "
+                + " from AppAuthConsumerToken a"
+                + " where a.token  = :token";
+
+        Map<String, Object> params = new HashMap();
+        params.put("token", token.trim());
+        IDataRow appToken;
+        try {
+            appToken = getDAO().findByQuery("", sqlComando, params);
+            if (appToken != null) {
+                return (IAppAuthConsumerToken) appToken;
+            }
+        } catch (Exception exp) {
+            ErrorManager.showError(exp, LOGGER);
         }
         return null;
     }

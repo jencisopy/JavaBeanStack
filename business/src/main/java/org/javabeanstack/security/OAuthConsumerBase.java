@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -123,9 +124,13 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         parameters.put("token", token);
         try {
             IAppAuthConsumerToken auth = dao.findByQuery(null, queryString, parameters);
-            if (auth != null){
-                auth.setLastUsed(LocalDates.now());
-                dao.merge(null, auth);
+            if (auth != null) {
+                LocalDateTime start = auth.getLastUsed();
+                LocalDateTime end = LocalDates.now();
+                if (start == null || Duration.between(start, end).getSeconds() > 2) {
+                    auth.setLastUsed(LocalDates.now());
+                    dao.merge(null, auth);
+                }
             }
             return auth;
         } catch (Exception ex) {
@@ -155,7 +160,11 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 //Busca por uuidDevice
                 queryString = "select o from AppAuthConsumerToken o where appAuthConsumer.consumerKey = :consumerKey and uuidDevice = :uuidOrTokenSecret";
                 auth = dao.findByQuery(null, queryString, parameters);
-                if (auth != null){
+            }
+            if (auth != null) {
+                LocalDateTime start = auth.getLastUsed();
+                LocalDateTime end = LocalDates.now();
+                if (start == null || Duration.between(start, end).getSeconds() > 2) {
                     auth.setLastUsed(LocalDates.now());
                     dao.merge(null, auth);
                 }
@@ -316,7 +325,6 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         return requestToken(consumerKey, null, null, null);
     }
 
-    
     /**
      * Graba una solicitud de token, debe completarse el proceso en otro
      * programa.
@@ -328,8 +336,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public boolean requestToken(String consumerKey, String uuidDevice) {
         return requestToken(consumerKey, uuidDevice, null, null);
-    }    
-    
+    }
+
     /**
      * Graba una solicitud de token, debe completarse el proceso en otro
      * programa.
@@ -396,10 +404,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @param uuidDevice identificador unico del dispositivo.
      * @param userName
      * @param userEmail
-     * @return valor del token. 
+     * @return valor del token.
      */
     @Override
-    public String createToken(String consumerKey, IOAuthConsumerData data, 
+    public String createToken(String consumerKey, IOAuthConsumerData data,
             String uuidDevice, String userName, String userEmail) throws TokenGenericException {
         if (uuidDevice != null) {
             //Verificar existencia de un token anterior generado con las mismas especificaciones
@@ -430,7 +438,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 data.setIdAppUser(usuario.getIduser());
                 data.setAdministrator(false);
                 //Si es administrador o analista
-                if (usuario.getAllRoles().contains(IAppUser.ADMINISTRADOR) || usuario.getRol().contains(IAppUser.ANALISTA)){
+                if (usuario.getAllRoles().contains(IAppUser.ADMINISTRADOR) || usuario.getRol().contains(IAppUser.ANALISTA)) {
                     data.setAdministrator(true);
                 }
             }
@@ -504,7 +512,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerTokenNew.setTokenSecret(authConsumerToken.getTokenSecret());
             authConsumerTokenNew.setUuidDevice(authConsumerToken.getUuidDevice());
             authConsumerTokenNew.setUserName(authConsumerToken.getUserName());
-            authConsumerTokenNew.setUserEmail(authConsumerToken.getUserEmail());            
+            authConsumerTokenNew.setUserEmail(authConsumerToken.getUserEmail());
 
             IDataResult dataResult = dao.persist(null, authConsumerTokenNew);
             if (!dataResult.isSuccessFul()) {
@@ -570,10 +578,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             return false;
         }
         try {
-            if (status.equalsIgnoreCase("block")){
+            if (status.equalsIgnoreCase("block")) {
                 authConsumerToken.setBlocked(true);
             }
-            if (status.equalsIgnoreCase("unblock")){
+            if (status.equalsIgnoreCase("unblock")) {
                 authConsumerToken.setBlocked(false);
             }
             IDataResult dataResult = dao.merge(null, authConsumerToken);
@@ -583,7 +591,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         return false;
     }
-    
+
     /**
      * Crea un consumerKey y configura el registro AppAuthConsumer para que
      * valide el consumerKey

@@ -196,4 +196,14 @@ public class DBLinkInfo implements IDBLinkInfo {
         }
         return result;
     }
+
+    @Override
+    public String getUuidDevice() {
+        LOGGER.debug("getUuidDevice in");
+        String result = "";
+        if (token != null) {
+            result = token.getUuidDevice();
+        }
+        return result;
+    }
 }
