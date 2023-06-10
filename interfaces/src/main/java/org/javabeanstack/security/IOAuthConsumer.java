@@ -58,7 +58,10 @@ public interface IOAuthConsumer {
     boolean requestToken(String consumerKey, String uuidDevice);    
     boolean requestToken(String consumerKey, String uuidDevice, String userName, String userEmail);    
     boolean isValidToken(String token);
+    boolean isValidToken(IAppAuthConsumerToken authToken);    
     boolean isValidToken(String token, boolean noCheckCredentials);
+    boolean isValidToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials);
+    
     String getDataKeyValue(String token, String property);
     String getDataKeyValue(IAppAuthConsumerToken token, String property);
     IAppUser getUserMapped(IAppAuthConsumerToken token);

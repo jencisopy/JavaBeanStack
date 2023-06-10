@@ -13,6 +13,7 @@ import org.javabeanstack.security.model.IUserSession;
 public interface ISecManager {
     IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes);
     IUserSession reCreateSession(String sessionId, Object idcompany);
+    IUserSession createSessionFromToken(String token);
     String getCompanyList();
     String getUserRol(String userLogin);
     Boolean isUserMemberOf(String user, String userGroup);    
@@ -21,8 +22,7 @@ public interface ISecManager {
     IUserSession login2(String userLogin, String password) throws Exception;
     void logout(IUserSession userSession);
     void logout(String sessionId);
-    IClientAuthRequestInfo getClientAuthCache(String authHeader);
-    void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo);
+    IClientAuthRequestInfo getClientAuthRequestCache(String authHeader);
     IAppUser getAppUserFromPwd(String appUserPass);
     IAppAuthConsumerToken getAppAuthConsumerToken(String token);
 }

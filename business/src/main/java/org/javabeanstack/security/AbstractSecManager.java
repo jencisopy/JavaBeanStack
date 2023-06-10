@@ -70,12 +70,7 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
      */
     @Override
     public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes) {
-        IUserSession userSession = getSessions().createSession(userLogin, password, idcompany, idleSessionExpireInMinutes);
-        //Grabación de log de passwords.
-        if (!isExistUserPwdLog(userSession.getSessionId())) {
-            insertUserPwdLog(userSession.getSessionId());
-        }
-        return userSession;
+        return getSessions().createSession(userLogin, password, idcompany, idleSessionExpireInMinutes);
     }
 
     /**
@@ -91,6 +86,18 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
         return getSessions().reCreateSession(sessionId, idcompany);
     }
 
+    /**
+     * Crea una sesión de usuario para acceso a la app
+     *
+     * @param token
+     * la sesión.
+     * @return objeto conteniendo datos del login exitoso o rechazado
+     */
+    @Override
+    public IUserSession createSessionFromToken(String token) {
+        return getSessions().createSessionFromToken(token);
+    }
+    
     /**
      * Devuelve verdadero si sus credenciales para el logeo son válidas o falso
      * si no
@@ -140,6 +147,7 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
         return sesion.getSessionId() != null;
     }
 
+    
     /**
      * Devuelve los roles asignados a un usuario solicitado
      *
@@ -222,13 +230,8 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
     }
 
     @Override
-    public IClientAuthRequestInfo getClientAuthCache(String authHeader) {
-        return getSessions().getClientAuthCache(authHeader);
-    }
-
-    @Override
-    public void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo) {
-        getSessions().addClientAuthCache(authHeader, authRequestInfo);
+    public IClientAuthRequestInfo getClientAuthRequestCache(String token) {
+        return getSessions().getClientAuthRequestCache(token);
     }
 
     @Override

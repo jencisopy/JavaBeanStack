@@ -53,6 +53,7 @@ public class UserSession implements IUserSession{
     private Integer idleSessionExpireInMinutes;
     private IDBFilter dbFilter;
     private Map<String, Object> info = new HashMap();
+    private IClientAuthRequestInfo clientAuthRequestInfo;
 
     /**
      * Devuelve el objeto usuario
@@ -290,5 +291,15 @@ public class UserSession implements IUserSession{
     @Override
     public void addInfo(String key, Object info) {
         this.info.put(key, info);
+    }
+
+    @Override
+    public IClientAuthRequestInfo getClientAuthRequestInfo() {
+        return this.clientAuthRequestInfo;
+    }
+
+    @Override
+    public void setClientAuthRequestInfo(IClientAuthRequestInfo requestInfo) {
+        this.clientAuthRequestInfo = requestInfo;
     }
 }

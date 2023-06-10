@@ -89,4 +89,6 @@ public interface IUserSession extends Serializable {
     Map<String,Object> getInfo();
     Object getInfo(String key);    
     void addInfo(String key, Object info);
+    IClientAuthRequestInfo getClientAuthRequestInfo();
+    void setClientAuthRequestInfo(IClientAuthRequestInfo requestInfo);
 }

@@ -716,7 +716,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         if (getUserSession() != null) {
             IUserSession sesion = getDao().getUserSession(getUserSession().getSessionId());
             if (sesion == null) {
-                throw new SessionError("El identificador de la sesión es inválido");
+                throw new SessionError("El identificador de la sesión es inválido o expiro");
             }
             if (sesion.getError() != null) {
                 throw new SessionError(sesion.getError().getMessage());

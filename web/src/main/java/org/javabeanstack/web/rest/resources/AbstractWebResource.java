@@ -28,10 +28,9 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.data.services.IDataService;
-import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.security.IOAuthConsumer;
-import org.javabeanstack.security.model.ClientAuthRequestInfo;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
+import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.ws.resources.IWebResource;
 
 /**
@@ -39,10 +38,11 @@ import org.javabeanstack.ws.resources.IWebResource;
  * @author Jorge Enciso
  */
 public abstract class AbstractWebResource implements IWebResource {
-    private static final Logger LOGGER = Logger.getLogger(AbstractWebResource.class);    
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractWebResource.class);
 
     @EJB
-    private IOAuthConsumer oAuthConsumer;  
+    private IOAuthConsumer oAuthConsumer;
 
     @Context
     HttpServletRequest requestContext;
@@ -52,11 +52,12 @@ public abstract class AbstractWebResource implements IWebResource {
 
     @Override
     public abstract ISecManager getSecManager();
-    
+
     @Override
     public Long getIdCompany(String authHeader) {
-        IClientAuthRequestInfo info = getSecManager().getClientAuthCache(authHeader);
-        if (info != null){
+        String token = getTokenFromHeader(authHeader);
+        IClientAuthRequestInfo info = getSecManager().getClientAuthRequestCache(token);
+        if (info != null) {
             return info.getIdcompany();
         }
         return null;
@@ -73,14 +74,15 @@ public abstract class AbstractWebResource implements IWebResource {
     }
 
     public String getToken(String authHeader) {
-        IClientAuthRequestInfo info = getSecManager().getClientAuthCache(authHeader);
-        if (info != null){
+        String token = getTokenFromHeader(authHeader);
+        IClientAuthRequestInfo info = getSecManager().getClientAuthRequestCache(token);
+        if (info != null) {
             return info.getToken();
         }
         return null;
     }
-    
-    protected IOAuthConsumer getOAuthConsumer(){
+
+    protected IOAuthConsumer getOAuthConsumer() {
         return oAuthConsumer;
     }
 
@@ -88,49 +90,46 @@ public abstract class AbstractWebResource implements IWebResource {
         return getOAuthConsumer().isValidToken(token);
     }
 
-    protected void setToken(String tokenHeader){
-        String[] tokens = tokenHeader.split("\\ ");
-        String token = tokens[1];
-        Long idcompany = 0L;
+    protected void setToken(String tokenHeader) {
+        String token = getTokenFromHeader(tokenHeader);
         //Si el token es null
         if (Strings.isNullOrEmpty(token)) {
             throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
         }
-        //Si ya se utilizo este token recientemente
-        if (getSecManager().getClientAuthCache(tokenHeader) != null){
+        //Si ya esta activo este token en la sesiones
+        if (getSecManager().getClientAuthRequestCache(token) != null) {
             return;
         }
-        //Verificar válidez del token
-        if (!verifyToken(token)){
+        //Crear la sesión
+        IUserSession userSession = getSecManager().createSessionFromToken(token);
+        //Si no se puedo crear la sesion, probablemente el token no existe o esta bloqueado o ya expiro.
+        if (userSession == null) {
             // Verificar y traer credenciales del servidor y grabar en el local
-            if (!verifyTokenInMainServer(token)){
-                LOGGER.error("Este token ya expiró o es incorrecto Server: "+token);
-                throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");                
+            if (!verifyTokenInMainServer(token)) {
+                LOGGER.error("Este token ya expiró o es incorrecto Server: " + token);
+                throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");
             }
-            //Reverificar en el local
-            if (!verifyToken(token)){
-                LOGGER.error("Este token ya expiró o es incorrecto: local "+token);
-                throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");                
-            }
+            userSession = getSecManager().createSessionFromToken(token);            
         }
-        //Asignar idcompany
-        IAppCompany appCompanyToken = getOAuthConsumer().getCompanyMapped(token);
-        if (appCompanyToken != null) {
-            if (appCompanyToken.getIdcompanymask() != null) {
-                idcompany = appCompanyToken.getIdcompanymask();
-            }
-            else{
-                idcompany = appCompanyToken.getIdcompany();
-            }
+        //Reverificar en el local
+        if (userSession == null) {
+            LOGGER.error("Este token ya expiró o es incorrecto: local " + token);
+            throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");
         }
-        // Guardar los datos de autenticación en el cache.
-        IClientAuthRequestInfo requestInfo = new ClientAuthRequestInfo();
-        requestInfo.setIdcompany(idcompany);
-        requestInfo.setAppAuthToken(getOAuthConsumer().findAuthToken(token));
-        getSecManager().addClientAuthCache(tokenHeader, requestInfo);
     }
 
-    protected boolean verifyTokenInMainServer(String token){
+    protected String getTokenFromHeader(String tokenHeader) {
+        if (Strings.isNullOrEmpty(tokenHeader)) {
+            throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
+        }
+        String[] tokens = tokenHeader.split("\\ ");
+        if (tokens == null || tokens.length < 1) {
+            throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
+        }
+        return tokens[1];
+    }
+
+    protected boolean verifyTokenInMainServer(String token) {
         //Implementar en clases hijas
         return false;
     }

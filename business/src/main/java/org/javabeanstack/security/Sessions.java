@@ -58,6 +58,7 @@ import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.security.model.ClientAuthRequestInfo;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.util.LocalDates;
 
@@ -76,10 +77,10 @@ import org.javabeanstack.util.LocalDates;
 public class Sessions implements ISessions {
 
     private static final Logger LOGGER = Logger.getLogger(Sessions.class);
+
     protected final Map<String, Object> sessionVar = new HashMap<>();
     protected boolean oneSessionPerUser = false;
     private SecretKey secretKey;
-    private final Map<String, IClientAuthRequestInfo> tokenCache = new HashMap();
     private final Map<SessionInfo, Object> sessionsInfo = new HashMap();
 
     @EJB
@@ -185,7 +186,7 @@ public class Sessions implements ISessions {
             }
         }
         // Verificar si tiene permiso para acceder a los datos de la empresa
-        if (!session.getUser().getRol().contains(IAppUser.ANALISTA) 
+        if (!session.getUser().getRol().contains(IAppUser.ANALISTA)
                 && !checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
             session.setUser(null);
             String mensaje = "No tiene autorización para acceder a esta empresa";
@@ -218,6 +219,108 @@ public class Sessions implements ISessions {
         // Agregar sesión al pool de sesiones
         sessionVar.put(sessionId, session);
         LOGGER.debug("Sesión creada: " + sessionId);
+        return true;
+    }
+
+    
+    /**
+     * Crea una sesión de usuario para acceso a la app
+     *
+     * @param token token de acceso.
+     * @return objeto conteniendo datos del login exitoso o rechazado
+     */
+    @Override
+    @Lock(LockType.WRITE)
+    public IUserSession createSessionFromToken(String token) {
+        LOGGER.debug("CREATESESSION IN FROM TOKEN");
+        try {
+            //Limpiar sesion si existiese todavia
+            sessionVar.remove(token);
+            //Buscar el Token
+            IAppAuthConsumerToken authToken = oAuthConsumer.findAuthToken(token);
+            //Verificar válidez del token
+            if (!oAuthConsumer.isValidToken(token)) {
+                LOGGER.error("Este token ya expiró o es incorrecto: local " + token);
+                throw new Exception("Este token ya expiró o es incorrecto");
+            }
+            //Crear objeto sesion.
+            IUserSession session = new UserSession();
+            IAppUser appUser = (IAppUser)dao.findByQuery(null, "select o from AppUserLight o where code = 'TOKEN'", null);
+            if (appUser == null) {
+                appUser = (IAppUser) dao.findListByQuery(null, "select o from AppUserLight o where type = 1", null, 0, 1).get(0);
+                appUser.setCode("TOKEN");
+                appUser.setFullName(token);
+            }
+            session.setUser(appUser);
+            processCreateSessionFromToken(session, authToken, 30);
+            return session;
+        } catch (Exception exp) {
+            ErrorManager.showError(exp, LOGGER);
+        }
+        return null;
+    }
+
+    /**
+     * Procesa la creación de la sesión del usuario al sistema.
+     *
+     * @param session variable creada en el metodo login que va a ser procesada.
+     * @param authToken token
+     * @param idleSessionExpireInMinutes minutos sin actividad antes de cerrar
+     * la sesión.
+     * @return verdadero o falso si pudo o no crear la sesión.
+     * @throws Exception
+     */
+    @Lock(LockType.WRITE)
+    protected boolean processCreateSessionFromToken(IUserSession session, IAppAuthConsumerToken authToken, Integer idleSessionExpireInMinutes) throws Exception {
+        LOGGER.debug("PROCESSCREATESESSION IN FROM TOKEN");
+        if (authToken == null || session.getUser() == null) {
+            return false;
+        }
+        //Asignar idcompany
+        Long idcompany, idcompanytoken;
+        IAppCompany appCompanyToken = oAuthConsumer.getCompanyMapped(authToken);
+        if (appCompanyToken == null) {
+            throw new Exception("La empresa definida en el token no existe");
+        }
+        idcompany = appCompanyToken.getIdcompany();
+        if (appCompanyToken.getIdcompanymask() != null) {
+            idcompanytoken = appCompanyToken.getIdcompanymask();
+        } else {
+            idcompanytoken = appCompanyToken.getIdcompany();
+        }
+
+        String token = authToken.getToken();
+        // Guardar los datos de autenticación en el cache.
+        IClientAuthRequestInfo requestInfo = new ClientAuthRequestInfo();
+        requestInfo.setIdcompany(idcompanytoken);
+        requestInfo.setAppAuthToken(authToken);
+
+        Map<String, Object> parameters = new HashMap();
+        parameters.put("idcompany", idcompany);
+
+        IAppCompany company = dao.findByQuery(null,
+                "select o from AppCompanyLight o "
+                + " where idcompany = :idcompany", parameters);
+
+        // Agregar atributos adicionales a la sesión
+        String persistUnit = company.getPersistentUnit().trim();
+        session.setPersistenceUnit(persistUnit); //Unidad de persistencia
+        session.setCompany(company); // Empresa logueada
+        session.setIdCompany(idcompany);
+        session.setClientAuthRequestInfo(requestInfo);
+
+        // Id de sesión 
+        session.setSessionId(token);
+        // Tiempo de expiración en minutos desde ultima actividad
+        session.setIdleSessionExpireInMinutes(idleSessionExpireInMinutes);
+
+        // Metodo que se ejecuta al final del proceso con el fin de que en clases derivadas
+        // se pueda realizar tareas adicionales como anexar otros atributos a la sesión.
+        afterCreateSession(session);
+        // Agregar sesión al pool de sesiones
+        sessionVar.put(token, session);
+        //
+        LOGGER.debug("Sesión creada: " + token);
         return true;
     }
 
@@ -423,15 +526,18 @@ public class Sessions implements ISessions {
         if (sessionIdEncrypted == null) {
             return null;
         }
-        String sessionId;
-        try {
-            sessionId = decrypt(sessionIdEncrypted);
-            LOGGER.debug("SESSION ENCRYPTADA: " + sessionIdEncrypted);
-            LOGGER.debug("SESSION : " + sessionId);
-        } catch (Exception exp) {
-            return null;
-        }
+        String sessionId = sessionIdEncrypted;
         UserSession sesion = (UserSession) sessionVar.get(sessionId);
+        if (sesion == null) {
+            try {
+                sessionId = decrypt(sessionIdEncrypted);
+                LOGGER.debug("SESSION ENCRYPTADA: " + sessionIdEncrypted);
+            } catch (Exception exp) {
+                return null;
+            }
+            sesion = (UserSession) sessionVar.get(sessionId);
+        }
+        LOGGER.debug("SESSION : " + sessionId);
         if (sesion != null) {
             Integer expireInMinutes = sesion.getIdleSessionExpireInMinutes();
             if (expireInMinutes == null) {
@@ -449,6 +555,9 @@ public class Sessions implements ISessions {
             if (idleInMinutes >= expireInMinutes) {
                 sessionVar.remove(sessionId);
                 sesion.setUser(null);
+                sesion.setCompany(null);
+                sesion.setClientAuthRequestInfo(null);
+                sesion.setEmpresa(null);
                 String mensaje = "La sesión expiro";
                 sesion.setError(new ErrorReg(mensaje, 6, ""));
                 return sesion;
@@ -471,17 +580,15 @@ public class Sessions implements ISessions {
         IDBLinkInfo dbLinkInfo = new DBLinkInfo();
         if (!Strings.isNullorEmpty(sessionId)) {
             IUserSession userSession = getUserSession(sessionId);
-            if (userSession != null) {
+            if (userSession != null && userSession.getUser() != null) {
                 dbLinkInfo.setUserSession(userSession);
-            } else {
-                if (oAuthConsumer.isValidToken(sessionId)) {
+                //Si la conexión fue hecha via token
+                if (userSession.getClientAuthRequestInfo() != null) {
                     IAppAuthConsumerToken token = oAuthConsumer.findAuthToken(sessionId);
-                    if (token != null) {
-                        try {
-                            dbLinkInfo.setToken(token, oAuthConsumer, true);
-                        } catch (Exception exp) {
-                            ErrorManager.showError(exp, LOGGER);
-                        }
+                    try {
+                        dbLinkInfo.setToken(token, oAuthConsumer, true);
+                    } catch (Exception exp) {
+                        ErrorManager.showError(exp, LOGGER);
                     }
                 }
             }
@@ -595,23 +702,21 @@ public class Sessions implements ISessions {
     }
 
     @Override
-    public IClientAuthRequestInfo getClientAuthCache(String authHeader) {
-        IClientAuthRequestInfo info = tokenCache.get(authHeader);
+    public IClientAuthRequestInfo getClientAuthRequestCache(String token) {
+        if (sessionVar.get(token) == null) {
+            return null;
+        }
+        IClientAuthRequestInfo info = ((IUserSession) sessionVar.get(token)).getClientAuthRequestInfo();
         //Si no existe
         if (info == null) {
             return null;
         }
         //Si se registro en el cache hace más de un día eliminar del cache
         if (LocalDates.daysInterval(info.getLogDate(), LocalDates.now()) > 1) {
-            tokenCache.remove(authHeader);
+            sessionVar.remove(token);
             return null;
         }
         return info;
-    }
-
-    @Override
-    public void addClientAuthCache(String authHeader, IClientAuthRequestInfo authRequestInfo) {
-        tokenCache.put(authHeader, authRequestInfo);
     }
 
     public class SessionInfo {

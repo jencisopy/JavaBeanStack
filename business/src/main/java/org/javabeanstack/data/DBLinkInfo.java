@@ -28,8 +28,6 @@ import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.model.IUserSession;
-import org.javabeanstack.util.Fn;
-import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 
 /**
@@ -44,8 +42,7 @@ public class DBLinkInfo implements IDBLinkInfo {
     private IUserSession userSession;
     private IAppAuthConsumerToken token;
     private IAppCompany appCompanyToken;
-    private IAppUser appUserToken;
-    private IDBFilter dbFilterToken;
+    
 
     /**
      * Devuelve DBFilter conteniendo los filtros que deben ser aplicados en los
@@ -56,11 +53,8 @@ public class DBLinkInfo implements IDBLinkInfo {
     @Override
     public IDBFilter getDBFilter() {
         LOGGER.debug("getDBFilter in");
-        if (userSession != null) {
+        if (userSession != null && userSession.getUser() != null) {
             return userSession.getDBFilter();
-        }
-        if (token != null) {
-            return dbFilterToken;
         }
         return null;
     }
@@ -72,7 +66,7 @@ public class DBLinkInfo implements IDBLinkInfo {
     @Override
     public Long getIdCompany() {
         LOGGER.debug("getIdCompany in");
-        if (userSession == null && token == null) {
+        if (userSession == null || userSession.getUser() == null) {
             return null;
         }
         if (userSession != null) {
@@ -94,14 +88,11 @@ public class DBLinkInfo implements IDBLinkInfo {
     @Override
     public String getPersistUnit() {
         LOGGER.debug("getPersistUnit in");
-        if (userSession == null && token == null) {
+        if (userSession == null || userSession.getUser() == null) {
             return IDBManager.CATALOGO;
         }
-        if (userSession != null) {
+        if (userSession != null && userSession.getUser() != null) {
             return userSession.getPersistenceUnit();
-        }
-        if (token != null && appCompanyToken != null) {
-            return Fn.nvl(appCompanyToken.getPersistentUnit(), "").trim();
         }
         return null;
     }
@@ -154,8 +145,6 @@ public class DBLinkInfo implements IDBLinkInfo {
         }
         this.token = token;
         this.appCompanyToken = oAuthConsumer.getCompanyMapped(token);
-        this.appUserToken = oAuthConsumer.getUserMapped(token.getToken());
-        this.dbFilterToken = oAuthConsumer.getDBFilter(token);
     }
 
 
@@ -168,40 +157,29 @@ public class DBLinkInfo implements IDBLinkInfo {
     public String getAppUserId() {
         LOGGER.debug("getAppUserId in");
         String result = "";
-        if (getUserSession() != null) {
+        if (getUserSession() != null && getUserSession().getUser() != null) {
             result = getUserSession().getUser().getPass();
-        }
-        if (Strings.isNullorEmpty(result) && token != null) {
-            if (appUserToken != null) {
-                result = appUserToken.getPass();
-            }
         }
         return result;
     }
 
-    /**
-     * Devuelve el identificador de la sesión o el token
-     *
-     * @return el identificador de la sesión o el token
-     */
     @Override
     public String getSessionOrTokenId() {
         LOGGER.debug("getSessionOrTokenId in");
-        String result = "";
-        if (getUserSession() != null) {
-            result = getUserSession().getSessionId();
+        if (token != null) {
+            return token.getToken();
         }
-        if (Strings.isNullorEmpty(result) && token != null) {
-            result = token.getToken();
+        if (getUserSession() != null && getUserSession().getUser() != null) {
+            return getUserSession().getSessionId();
         }
-        return result;
+        return "";
     }
 
     @Override
     public String getUuidDevice() {
         LOGGER.debug("getUuidDevice in");
         String result = "";
-        if (token != null) {
+        if (getUserSession() != null && getUserSession().getUser() != null && token != null) {
             result = token.getUuidDevice();
         }
         return result;

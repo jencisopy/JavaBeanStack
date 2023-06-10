@@ -1051,7 +1051,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     public static <T extends IGenericDAO> IDataNativeQuery create(T dao, String sessionId) throws Exception{
         IDataLink data = new DataLink(dao);
         IUserSession userSession = dao.getUserSession(sessionId);
-        if (userSession != null){
+        if (userSession != null && userSession.getUser() != null){
             data.setUserSession(userSession);
         }
         else{

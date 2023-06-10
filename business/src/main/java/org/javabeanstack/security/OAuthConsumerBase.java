@@ -715,6 +715,17 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     /**
      * Determina si un token es válido o no
      *
+     * @param authToken
+     * @return verdadero si es válido y falso si no.
+     */
+    @Override
+    public boolean isValidToken(IAppAuthConsumerToken authToken) {
+        return isValidToken(authToken, false);
+    }
+    
+    /**
+     * Determina si un token es válido o no
+     *
      * @param token token
      * @param noCheckCredentials
      * @return verdadero si es válido y falso si no.
@@ -744,9 +755,42 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         if (noCheckCredentials) {
             return true;
         }
-        //TODO agregar en la variable sessión
         return dao.isCredentialValid(getUserMapped(result).getIduser(), getCompanyMapped(result).getIdcompany());
     }
+    
+    /**
+     * Determina si un token es válido o no
+     *
+     * @param authToken
+     * @param noCheckCredentials
+     * @return verdadero si es válido y falso si no.
+     */
+    @Override
+    public boolean isValidToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials) {
+        if (authToken == null) {
+            return false;
+        }
+        //Si el token esta bloqueado
+        if (authToken.getBlocked()) {
+            return false;
+        }
+        if (authToken.getAppAuthConsumerKey() == null) {
+            return false;
+        }
+        //Si el consumerKey esta bloqueado
+        if (authToken.getAppAuthConsumerKey().getBlocked()) {
+            return false;
+        }
+        //Si expiro el customerKey
+        if (!authToken.getAppAuthConsumerKey().getExpiredDate().isAfter(LocalDateTime.now())) {
+            return false;
+        }
+        if (noCheckCredentials) {
+            return true;
+        }
+        return dao.isCredentialValid(getUserMapped(authToken).getIduser(), getCompanyMapped(authToken).getIdcompany());
+    }
+    
 
     /**
      * Devuelve el valor de una propiedad que se encuentra en el campo "data" de

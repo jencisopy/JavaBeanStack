@@ -803,7 +803,7 @@ public abstract class AbstractDataService implements IDataService {
             rows.add(row);
             String setKey = "1";
             if (row != null) {
-                setKey = row.getClass().getSimpleName().toLowerCase();
+                setKey = row.getClass().getSimpleName();
             }
             dataSet.add(setKey, (List<IDataRow>) rows);
             dataResult = update(sessionId, dataSet);
@@ -982,7 +982,7 @@ public abstract class AbstractDataService implements IDataService {
         IDataSet dataSet = new DataSet();
         String setKey = "1";
         if (ejbs.get(0) != null) {
-            setKey = ejbs.get(0).getClass().getSimpleName().toLowerCase();
+            setKey = ejbs.get(0).getClass().getSimpleName();
         }
         dataSet.add(setKey, (List<IDataRow>) ejbs);
         return update(sessionId, dataSet);
@@ -1210,11 +1210,11 @@ public abstract class AbstractDataService implements IDataService {
         Class fieldType = source.getFieldType(fieldId);
         Object id;
         if (fieldType.isAssignableFrom(Long.class)) {
-            id = Long.parseLong(result.get(0).toString());
+            id = Long.valueOf(result.get(0).toString());
         } else if (fieldType.isAssignableFrom(Integer.class)) {
-            id = Integer.parseInt(result.get(0).toString());
+            id = Integer.valueOf(result.get(0).toString());
         } else if (fieldType.isAssignableFrom(Short.class)) {
-            id = Short.parseShort(result.get(0).toString());
+            id = Short.valueOf(result.get(0).toString());
         } else {
             id = result.get(0).toString();
         }

@@ -206,7 +206,7 @@ public class LogManager implements ILogManager {
         String origin = "";
         if (!Strings.isNullorEmpty(sessionId)) {
             IUserSession userSession = sessions.getUserSession(sessionId);
-            if (userSession != null) {
+            if (userSession != null && userSession.getUser() != null) {
                 idcompany = userSession.getIdCompany();
                 iduser = userSession.getUser().getIduser();
                 origin = userSession.getIp();
