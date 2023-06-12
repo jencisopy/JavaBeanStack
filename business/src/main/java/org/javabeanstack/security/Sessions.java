@@ -703,10 +703,11 @@ public class Sessions implements ISessions {
 
     @Override
     public IClientAuthRequestInfo getClientAuthRequestCache(String token) {
-        if (sessionVar.get(token) == null) {
+        IUserSession session = getUserSession(token);
+        if (session == null || session.getError() != null) {
             return null;
         }
-        IClientAuthRequestInfo info = ((IUserSession) sessionVar.get(token)).getClientAuthRequestInfo();
+        IClientAuthRequestInfo info = session.getClientAuthRequestInfo();
         //Si no existe
         if (info == null) {
             return null;
