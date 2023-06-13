@@ -614,7 +614,10 @@ public class Sessions implements ISessions {
             String userPass = data.getUserPass();
             if (!Fn.nvl(userLogin, "").isEmpty()) {
                 IUserSession session = login(userLogin, userPass);
-                if (session == null) {
+                if (session == null || session.getError() != null) {
+                    if (session.getError() != null){
+                        LOGGER.info("Consumer data ERROR: "+session.getError().getMessage());
+                    }
                     return false;
                 }
                 iduser = session.getUser().getIduser();
@@ -623,7 +626,11 @@ public class Sessions implements ISessions {
                     return false;
                 }
             }
-            return checkCompanyAccess(iduser, idcompany);
+            if (!checkCompanyAccess(iduser, idcompany)){
+                LOGGER.info("Consumer data ERROR: "+"El usuario no tiene acceso a la empresa");
+                return false;
+            }
+            return true;
         } catch (Exception exp) {
             ErrorManager.showError(exp, LOGGER);
         }
