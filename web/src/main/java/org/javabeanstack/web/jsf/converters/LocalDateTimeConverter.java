@@ -23,9 +23,9 @@ package org.javabeanstack.web.jsf.converters;
 
 /**
  * Convertidor de fecha local a string y vice versa
+ *
  * @author mtrinidad
  */
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,50 +34,41 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import org.apache.commons.lang.StringUtils;
 import org.javabeanstack.util.LocalDates;
 import org.primefaces.component.calendar.Calendar;
 
 @ApplicationScoped
 @FacesConverter("localDateTimeConverter")
-public class LocalDateTimeConverter implements Converter
-{
+public class LocalDateTimeConverter implements Converter {
+
     @Override
-    public Object getAsObject(FacesContext context, UIComponent component, String value)
-    {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(extractPattern(component, context));
-        try
-        {
-            String sTime="00:00:00";
-            if (value.length()>10){
-                sTime=value.substring(11);
+    public Object getAsObject(FacesContext context, UIComponent component, String value) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(extractPattern(component));
+        try {
+            String sTime = "00:00:00";
+            if (value.length() > 10) {
+                sTime = value.substring(11);
             }
             LocalDate dateLocal = LocalDate.parse(value, formatter);
-            return LocalDates.toDateTime(dateLocal.toString()+"T"+sTime,"yyyy-MM-dd'T'HH:mm:ss");
-        }
-        catch (Exception e)
-        {
+            return LocalDates.toDateTime(dateLocal.toString() + "T" + sTime, "yyyy-MM-dd'T'HH:mm:ss");
+        } catch (Exception e) {
             return null;
         }
     }
 
     @Override
-    public String getAsString(FacesContext context, UIComponent component, Object value)
-    {
-        if (value == null || (value instanceof String && StringUtils.isBlank((String) value)))
-        {
+    public String getAsString(FacesContext context, UIComponent component, Object value) {
+        if (value == null || (value instanceof String && ((String) value).trim().isEmpty())) {
             return "";
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(extractPattern(component, context));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(extractPattern(component));
         return formatter.format((LocalDateTime) value);
     }
 
-    private String extractPattern(UIComponent component, FacesContext context)
-    {
+    private String extractPattern(UIComponent component) {
         // try to get infos from calendar component
-        if (component instanceof Calendar)
-        {
+        if (component instanceof Calendar) {
             Calendar calendarComponent = (Calendar) component;
             return calendarComponent.getPattern();
         }

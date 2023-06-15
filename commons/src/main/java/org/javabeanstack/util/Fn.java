@@ -309,6 +309,9 @@ public class Fn {
         String result = "";
         try {
             if (value instanceof Number) {
+                if (format == null){
+                    format = "##,###,###,##0.00";
+                }
                 result = Fn.numberToString(value, format);
             } else if (value instanceof Timestamp) {
                 if (Fn.nvl(format, "").isEmpty()) {

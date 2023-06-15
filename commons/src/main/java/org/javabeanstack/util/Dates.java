@@ -28,7 +28,6 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import org.apache.log4j.Logger;
-
 /**
  * Funciones wrapper que facilitan el manejo de variables Date
  *

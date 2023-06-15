@@ -56,14 +56,14 @@ public class AppResourceSearcher implements Serializable {
         fileSystemPath = appConfig.getFileSystemPath(this.getUserSession().getSessionId());
     }
 
-    public IAppResource getAppResource(){
+    public IAppResource getAppResource() {
         return appResource;
     }
-    
-    public String getFileSystemPath(){
+
+    public String getFileSystemPath() {
         return fileSystemPath;
     }
-    
+
     public IXmlDom<Document, Element> getXmlDom(String resourcePath,
             String elementPath,
             Map<String, String> params) {
@@ -74,7 +74,7 @@ public class AppResourceSearcher implements Serializable {
             String[] path = fileSystemPath.split(",");
             for (String url : path) {
                 try {
-                    if (url.trim().isEmpty()){
+                    if (url.trim().isEmpty()) {
                         continue;
                     }
                     url = IOUtil.addbs(url.trim()) + "xmls";
@@ -114,6 +114,9 @@ public class AppResourceSearcher implements Serializable {
             params.put("encoding", "UTF-8");
             params.put("path", "/xml/");  // path alternativo de busqueda
             params.put("readFromJAR", "YES");
+            if (!resourcePath.toLowerCase().startsWith("file://")) {
+                resourcePath = "file://" + resourcePath;
+            }
             xmlResource.config(resourcePath, "", elementPath, false, params);
         }
         return xmlResource;
