@@ -30,6 +30,7 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import org.apache.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
+import org.javabeanstack.data.IDataRow;
 import org.w3c.dom.Document;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
@@ -220,7 +221,6 @@ public class AppGenericConfig implements IAppConfig {
     }
 
     @Override
-    @Lock(LockType.WRITE)
     public IDataResult setSystemParam(IAppSystemParam param) throws Exception {
         IDataResult result;
         if (param.getId() != null && param.getIdAppSystemParam() != 0L) {
@@ -234,6 +234,8 @@ public class AppGenericConfig implements IAppConfig {
                 result = dao.merge(null, param);
             } else {
                 //Sino existe agregar en la tabla
+                param.setIdAppSystemParam(0L);
+                param.setPersistMode(IDataRow.MERGE);
                 result = dao.persist(null, param);
             }
         }
@@ -244,7 +246,6 @@ public class AppGenericConfig implements IAppConfig {
     }
 
     @Override
-    @Lock(LockType.WRITE)
     public void setSystemParams(List<IAppSystemParam> params) throws Exception {
         //Implementar en clases derivadas
         for (IAppSystemParam param : params) {
