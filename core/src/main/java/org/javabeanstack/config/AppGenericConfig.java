@@ -29,6 +29,7 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import org.apache.log4j.Logger;
+import org.javabeanstack.data.IDataResult;
 import org.w3c.dom.Document;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
@@ -217,4 +218,38 @@ public class AppGenericConfig implements IAppConfig {
         }
         return Fn.nvl(path, "");
     }
+
+    @Override
+    @Lock(LockType.WRITE)
+    public IDataResult setSystemParam(IAppSystemParam param) throws Exception {
+        IDataResult result;
+        if (param.getId() != null && param.getIdAppSystemParam() != 0L) {
+            result = dao.merge(null, param);
+        } else {
+            //Verificar si existe
+            IAppSystemParam paramMerge = getSystemParam(param.getParam());
+            if (paramMerge != null) {
+                //Si existe actualizar el registro
+                param.setId(paramMerge.getId());
+                result = dao.merge(null, param);
+            } else {
+                //Sino existe agregar en la tabla
+                result = dao.persist(null, param);
+            }
+        }
+        if (!result.isSuccessFul()){
+            LOGGER.error(result.getErrorMsg());
+        }
+        return result;
+    }
+
+    @Override
+    @Lock(LockType.WRITE)
+    public void setSystemParams(List<IAppSystemParam> params) throws Exception {
+        //Implementar en clases derivadas
+        for (IAppSystemParam param : params) {
+            setSystemParam(param);
+        }
+    }
+
 }

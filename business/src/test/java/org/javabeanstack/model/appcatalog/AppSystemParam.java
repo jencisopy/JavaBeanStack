@@ -22,6 +22,7 @@
 package org.javabeanstack.model.appcatalog;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -31,6 +32,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
@@ -248,7 +251,75 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
 
 
     @Override
-    public String toString() {
-        return "net.makerapp.model.tables.Systemparam[ idsystemparam=" + idAppSystemParam + " ]";
+    public Object getValue() {
+        if (paramType == null) {
+            return null;
+        }
+        Object result = null;
+        switch (paramType) {
+            case 'C':
+                result = getValueChar();
+                break;
+            case 'L':
+                result = getValueBoolean();
+                break;
+            case 'N':
+                result = getValueNumber();
+                break;
+            case 'D':
+                result = getValueDate();
+                break;
+            default:
+                break;
+        }
+        return result;
+    }
+
+    @Override
+    public void setValue(Object value) throws Exception {
+        if (value == null) {
+            return;
+        }
+        if (paramType == null) {
+            if (value instanceof String) {
+                setParamType('C');
+                setValueChar((String) value);
+            } else if (value instanceof Boolean) {
+                setParamType('B');
+                setValueBoolean((Boolean) value);
+            } else if (value instanceof LocalDateTime) {
+                setParamType('D');
+                setValueDate((LocalDateTime) value);
+            } else if (value instanceof BigDecimal) {
+                setParamType('N');
+                setValueNumber(((BigDecimal) value).longValue());
+            } else if (value instanceof Number) {
+                setParamType('N');
+                setValueNumber(Long.valueOf(value.toString()));
+            }
+        } else {
+            switch (paramType) {
+                case 'C':
+                    setValueChar((String) value);
+                    break;
+                case 'L':
+                    setValueBoolean((Boolean) value);
+                    break;
+                case 'N':
+                    setValueNumber(Long.valueOf(value.toString()));
+                    break;
+                case 'D':
+                    setValueDate((LocalDateTime)value);
+                    break;
+                default:
+                    throw new Exception("Tipo de dato no contemplado");
+            }
+        }
+    }
+    
+    @PrePersist
+    @PreUpdate
+    public void prePersistAndPreUpdate() {
+        fechamodificacion = LocalDateTime.now();
     }
 }

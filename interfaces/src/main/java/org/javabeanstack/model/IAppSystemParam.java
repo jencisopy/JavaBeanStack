@@ -38,6 +38,7 @@ public interface IAppSystemParam extends IDataRow {
     String getValueChar();
     LocalDateTime getValueDate();
     Long getValueNumber();
+    Object getValue();
 
     void setIdAppSystemParam(Long idsystemparam);
     void setParam(String param);
@@ -48,4 +49,5 @@ public interface IAppSystemParam extends IDataRow {
     void setValueChar(String valueChar);
     void setValueDate(LocalDateTime valueDate);
     void setValueNumber(Long valueNumber);
+    void setValue(Object value) throws Exception;
 }
