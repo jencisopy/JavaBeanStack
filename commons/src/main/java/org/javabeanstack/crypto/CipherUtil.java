@@ -63,6 +63,7 @@ public class CipherUtil {
      * @throws InvalidKeyException
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
+     * @throws java.io.UnsupportedEncodingException
      */
     public static String encryptBlowfishToHex(String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         return encryptToHex(CipherUtil.BLOWFISH, clearText, key);
@@ -80,6 +81,7 @@ public class CipherUtil {
      * @throws InvalidKeyException
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
+     * @throws java.io.UnsupportedEncodingException
      */
     public static String encryptBlowfishToBase64(String clearText, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         return encryptToBase64(CipherUtil.BLOWFISH, clearText, key);
@@ -97,6 +99,7 @@ public class CipherUtil {
      * @throws InvalidKeyException
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
+     * @throws java.io.UnsupportedEncodingException
      */
     public static String decryptBlowfishFromHex(String encrypted, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
         return decryptFromHex(CipherUtil.BLOWFISH, encrypted, key);
@@ -115,6 +118,7 @@ public class CipherUtil {
      * @throws InvalidKeyException
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException
+     * @throws java.io.UnsupportedEncodingException
      */
     public static String decryptBlowfishFromBase64(String encrypted, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
         return decryptFromBase64(CipherUtil.BLOWFISH, encrypted, key);

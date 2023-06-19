@@ -144,7 +144,7 @@ public class FacesContextUtil {
     }
 
     public void showError(String title, Map<String, IErrorReg> errors) {
-        if (errors != null && errors.size() > 0) {
+        if (errors != null && !errors.isEmpty()) {
             Iterator iterator = errors.keySet().iterator();
             String key;
             while (iterator.hasNext()) {

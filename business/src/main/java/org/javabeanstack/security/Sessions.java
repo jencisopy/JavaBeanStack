@@ -615,7 +615,7 @@ public class Sessions implements ISessions {
             if (!Fn.nvl(userLogin, "").isEmpty()) {
                 IUserSession session = login(userLogin, userPass);
                 if (session == null || session.getError() != null) {
-                    if (session.getError() != null){
+                    if (session != null && session.getError() != null){
                         LOGGER.info("Consumer data ERROR: "+session.getError().getMessage());
                     }
                     return false;

@@ -129,7 +129,7 @@ public class AppGenericConfig implements IAppConfig {
         if (dom == null) {
             return false;
         }
-        boolean result = true;
+        boolean result;
         try {
             result = DomW3cParser.setPropertyValue(dom, value, property, nodePath);
         } catch (Exception ex) {

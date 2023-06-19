@@ -377,7 +377,7 @@ public abstract class AbstractAuthController extends AbstractController {
      * @param userSession datos del usuario.
      */
     private void loadCompanyList(IUserSession userSession) {
-        if (userCompanyAllowedList.size() > 0) {
+        if (!userCompanyAllowedList.isEmpty()) {
             userCompanyAllowedList.clear();
         }
         try {

@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppCompany;
-import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.model.IAppAuthConsumerToken;

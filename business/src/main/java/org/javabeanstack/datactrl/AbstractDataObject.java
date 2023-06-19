@@ -240,7 +240,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (ejb == null) {
             return "";
         }
-        if (ejb.getErrors() != null && ejb.getErrors().size() > 0) {
+        if (ejb.getErrors() != null && !ejb.getErrors().isEmpty()) {
             Iterator iterator = ejb.getErrors().keySet().iterator();
             IErrorReg error;
             String key;
@@ -265,7 +265,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (this.row == null) {
             return "";
         }
-        if (this.row.getErrors() != null && this.row.getErrors().size() > 0) {
+        if (this.row.getErrors() != null && !this.row.getErrors().isEmpty()) {
             return this.row.getErrors().get(fieldName.toLowerCase()).getMessage();
         }
         return "";
@@ -1806,7 +1806,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                     if (!this.getRow().isRowChecked()) {
                         row.setErrors(this.checkDataRow());
                     }
-                    if (this.getRow().getErrors() != null && this.getRow().getErrors().size() > 0) {
+                    if (this.getRow().getErrors() != null && !this.getRow().getErrors().isEmpty()) {
                         //Ejecutar afterCheckData
                         this.afterCheckData(allRows);
                         this.goTo(rowNumber);
@@ -2191,7 +2191,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
 
     @Override
     public void removeFilter() {
-        if (filters.size() > 0) {
+        if (!filters.isEmpty()) {
             String key = String.valueOf(filters.size() - 1);
             filters.remove(key);
         }

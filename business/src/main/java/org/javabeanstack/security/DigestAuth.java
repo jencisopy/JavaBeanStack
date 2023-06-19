@@ -127,8 +127,7 @@ public class DigestAuth {
      * header "www-autenticate" del paquete de respuesta del servidor.
      */
     public String getResponseHeader(ServerAuth responseAuth) {
-        String value = "";
-        value = type;
+        String value = type;
         if (type.equalsIgnoreCase("Basic")) {
             value += " realm=\"Restricted\"";
             return value;
@@ -416,7 +415,7 @@ public class DigestAuth {
         if (!compareServerAndClientAuth(clientAuth, serverAuth)) {
             return false;
         }
-        String result = "";
+        String result;
         //Algoritmo MD5-sess 
         String ha1 = DigestUtil.md5(DigestUtil.md5(clientAuth.getUsername() + ":" + clientAuth.getRealm() + ":" + serverAuth.getPassword()) + ":" + clientAuth.getNonce() + ":" + clientAuth.getCnonce());
         String ha2 = DigestUtil.md5(clientAuth.getMethod() + ":" + clientAuth.getUri());
