@@ -120,8 +120,8 @@ public class DataReport {
      */
     private String sqlSentence;
 
-    protected Map<String, Object> preference1;
-    protected Map<String, Object> preference2;
+    protected Map<String, Object> preference1 = new HashMap();
+    protected Map<String, Object> preference2 = new HashMap();
     
     private int dateGroup = 0; // 0 && Ninguno, 1 año, 2 año y mes
 
@@ -141,6 +141,10 @@ public class DataReport {
         this.dateGroup = dateGroup;
     }
 
+    public void init(IDataLink dao, Map<String, Object> preference1, Map<String, Object> preference2) {
+        throw new UnsupportedOperationException("Debe implementar el metodo " + getClass().getName());
+    }
+    
     public void init(Map<String, Object> preference1, Map<String, Object> preference2) {
         throw new UnsupportedOperationException("Debe implementar el metodo " + getClass().getName());
     }
