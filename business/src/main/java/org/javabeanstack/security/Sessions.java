@@ -246,6 +246,9 @@ public class Sessions implements ISessions {
             IClientAuthRequestInfo requestInfo = new ClientAuthRequestInfo();
             requestInfo.setAppAuthToken(authToken);
             String userLogin = Fn.nvl(requestInfo.getPropertyValue("userlogin"),"TOKEN");
+            if (userLogin.isEmpty()){
+                userLogin = "TOKEN";
+            }
             //Crear objeto sesion.
             IUserSession session = new UserSession();
             IAppUser appUser = (IAppUser)dao.findByQuery(null, "select o from AppUserLight o where code = :userLogin", Fn.queryParams("userLogin",userLogin));
