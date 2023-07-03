@@ -122,6 +122,7 @@ public class OAuthConsumerData implements IOAuthConsumerData{
         String result = "idappuser="+nvl(idAppUser,"0").toString().trim()+"\n";
         result += "idcompany="+nvl(idCompany,0).toString().trim()+"\n";
         result += "administrator="+nvl(administrator,false).toString().trim()+"\n";
+        result += "userlogin="+nvl(userLogin,"").trim()+"\n";
         result += getOtherDataString(otherData);
         return result;
     }

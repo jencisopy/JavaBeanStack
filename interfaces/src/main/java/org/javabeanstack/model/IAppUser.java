@@ -14,6 +14,7 @@ public interface IAppUser extends IDataRow, Serializable {
     public static final String ANALISTA = "00";
     public static final String SUPERUSER = "01";
     public static final String ADMINISTRADOR = "20";
+    public static final String TOKEN = "25";    
     public static final String USUARIO = "30";    
     
     public static final Short ISUSER = 1;

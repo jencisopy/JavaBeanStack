@@ -243,13 +243,23 @@ public class Sessions implements ISessions {
                 LOGGER.error("Este token ya expiró o es incorrecto: local " + token);
                 throw new Exception("Este token ya expiró o es incorrecto");
             }
+            IClientAuthRequestInfo requestInfo = new ClientAuthRequestInfo();
+            requestInfo.setAppAuthToken(authToken);
+            String userLogin = Fn.nvl(requestInfo.getPropertyValue("userlogin"),"TOKEN");
             //Crear objeto sesion.
             IUserSession session = new UserSession();
-            IAppUser appUser = (IAppUser)dao.findByQuery(null, "select o from AppUserLight o where code = 'TOKEN'", null);
+            IAppUser appUser = (IAppUser)dao.findByQuery(null, "select o from AppUserLight o where code = :userLogin", Fn.queryParams("userLogin",userLogin));
             if (appUser == null) {
-                appUser = (IAppUser) dao.findListByQuery(null, "select o from AppUserLight o where type = 1", null, 0, 1).get(0);
-                appUser.setCode("TOKEN");
-                appUser.setFullName(token);
+                Class appUserModel = dao.findListByQuery(null, "select o from AppUserLight o where type = 1", null, 0, 1).get(0).getClass();
+                appUser = (IAppUser)appUserModel.getConstructor().newInstance();
+                appUser.setId(0L);
+                appUser.setCode(userLogin);
+                appUser.setType(IAppUser.ISUSER);
+                appUser.setFullName("TOKEN");
+                appUser.setDescription("Acceso via token");
+                appUser.setRol(IAppUser.USUARIO);
+                appUser.setExpiredDate(LocalDates.toDateTime("31/12/9999"));
+                appUser.setDisabled(false);
             }
             session.setUser(appUser);
             processCreateSessionFromToken(session, authToken, 30);

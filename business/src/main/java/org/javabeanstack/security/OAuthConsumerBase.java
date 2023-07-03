@@ -438,7 +438,9 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 data.setIdAppUser(usuario.getIduser());
                 data.setAdministrator(false);
                 //Si es administrador o analista
-                if (usuario.getAllRoles().contains(IAppUser.ADMINISTRADOR) || usuario.getRol().contains(IAppUser.ANALISTA)) {
+                if (usuario.getAllRoles().contains(IAppUser.ADMINISTRADOR) 
+                        || usuario.getRol().contains(IAppUser.ANALISTA)
+                        || usuario.getRol().contains(IAppUser.SUPERUSER)) {
                     data.setAdministrator(true);
                 }
             }
@@ -732,7 +734,6 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean isValidToken(String token, boolean noCheckCredentials) {
-        //TODO Verificar en la session
         IAppAuthConsumerToken result = findAuthToken(token);
         if (result == null) {
             return false;
@@ -754,6 +755,14 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         if (noCheckCredentials) {
             return true;
+        }
+        //No existe la empresa o no tiene acceso a ella
+        if (getCompanyMapped(result) == null){
+            return false;
+        }
+        //No existe el usuario
+        if (getUserMapped(result) == null){
+            return false;
         }
         return dao.isCredentialValid(getUserMapped(result).getIduser(), getCompanyMapped(result).getIdcompany());
     }
@@ -787,6 +796,14 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         if (noCheckCredentials) {
             return true;
+        }
+        //No existe la empresa o no tiene acceso a ella
+        if (getCompanyMapped(authToken) == null){
+            return false;
+        }
+        //No existe el usuario
+        if (getUserMapped(authToken) == null){
+            return false;
         }
         return dao.isCredentialValid(getUserMapped(authToken).getIduser(), getCompanyMapped(authToken).getIdcompany());
     }
