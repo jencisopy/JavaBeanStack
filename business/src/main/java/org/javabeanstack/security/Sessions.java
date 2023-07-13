@@ -186,8 +186,7 @@ public class Sessions implements ISessions {
             }
         }
         // Verificar si tiene permiso para acceder a los datos de la empresa
-        if (!session.getUser().getRol().contains(IAppUser.ANALISTA)
-                && !checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
+        if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
             session.setUser(null);
             String mensaje = "No tiene autorización para acceder a esta empresa";
             LOGGER.debug(mensaje);
@@ -264,6 +263,7 @@ public class Sessions implements ISessions {
                 appUser.setExpiredDate(LocalDates.toDateTime("31/12/9999"));
                 appUser.setDisabled(false);
             }
+            LOGGER.debug("CREATESESSION IN FROM TOKEN con el usuario "+userLogin);
             session.setUser(appUser);
             processCreateSessionFromToken(session, authToken, 30);
             return session;
@@ -639,7 +639,7 @@ public class Sessions implements ISessions {
                     return false;
                 }
             }
-            if (!checkCompanyAccess(iduser, idcompany)){
+            if (idcompany != 0 && !checkCompanyAccess(iduser, idcompany)){
                 LOGGER.info("Consumer data ERROR: "+"El usuario no tiene acceso a la empresa");
                 return false;
             }
