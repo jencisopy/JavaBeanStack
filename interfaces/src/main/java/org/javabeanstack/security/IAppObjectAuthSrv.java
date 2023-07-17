@@ -22,9 +22,11 @@
 package org.javabeanstack.security;
 
 import java.util.Map;
+import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.model.IAppObjectAuth;
 import org.javabeanstack.model.IAppUser;
+import org.w3c.dom.Document;
 
 /**
  *
@@ -36,6 +38,9 @@ public interface IAppObjectAuthSrv extends IDataService {
     Integer checkAuth(String sessionId, Long idAppObject, IAppUser user, String action, Map<String, String> checkResult, Integer authDenyDefault);        
     Integer checkAuthField(String sessionId, Long idAppObject, Long iduser, String field, String action);
     Integer checkAuthField(String sessionId, Long idAppObject, IAppUser user, String field, String action);    
-    String getAuthXml(Long idAppObject, Long iduser);
-    IAppObjectAuth getAppObjectAuthList();
+    Document getAuthXmlDom(Long idAppObject);
+    Document getAuthXmlDom(Long idAppObject, Long iduser);
+    IAppObjectAuth getAppObjectAuth(Long idAppObject, Long iduser);
+    
+    IDataResult saveAppObjectAuth(String sessionId, IAppObjectAuth ejb) throws Exception;
 }

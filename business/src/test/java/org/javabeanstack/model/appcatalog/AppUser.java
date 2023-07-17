@@ -258,13 +258,13 @@ public class AppUser extends DataRow implements IAppUser {
     @Override
     public String getHighRol() {
         // Este es el valor del usuario normal
-        String result="30";    
+        String result=USUARIO;    
         try{
             if (this.getUserMemberList() == null || this.getUserMemberList().isEmpty()){
-                return Fn.nvl(rol,"30").trim();
+                return Fn.nvl(rol,USUARIO).trim();
             }
             for (IAppUserMember userMember: this.getUserMemberList()){
-                String role = Fn.nvl(userMember.getUserGroup().getRol(),"30").trim();
+                String role = Fn.nvl(userMember.getUserGroup().getRol(),USUARIO).trim();
                 if (Integer.parseInt(role) < Integer.parseInt(result)){
                     result = role;
                 }
@@ -272,7 +272,7 @@ public class AppUser extends DataRow implements IAppUser {
         }
         catch (Exception exp)    {
             ErrorManager.showError(exp, LOGGER);
-            result = Fn.nvl(rol,"30").trim();
+            result = Fn.nvl(rol,USUARIO).trim();
         }
         return result.toUpperCase();
     }    
@@ -280,25 +280,25 @@ public class AppUser extends DataRow implements IAppUser {
     @Override
     public String getAllRoles() {
         // Este es el valor del usuario normal
-        String result = "30";
+        String result = USUARIO;
         try {
             // Si es grupo
             if (this.getType() == 2) {
-                result = Fn.nvl(rol, "30").trim();
+                result = Fn.nvl(rol, USUARIO).trim();
             } else {
                 // Si es usuario
                 if (this.getUserMemberList() == null || this.getUserMemberList().isEmpty()) {
-                    return Fn.nvl(rol, "30").trim();
+                    return Fn.nvl(rol, USUARIO).trim();
                 }
                 String roles = "";
                 for (IAppUserMember userMember : this.getUserMemberList()) {
-                    roles += Fn.nvl(userMember.getUserGroup().getRol(), "30").trim()+",";                                    
+                    roles += Fn.nvl(userMember.getUserGroup().getRol(), USUARIO).trim()+",";                                    
                 }
                 result = roles;                
             }
         } catch (Exception exp) {
             ErrorManager.showError(exp, LOGGER);
-            result = Fn.nvl(rol, "30").trim();
+            result = Fn.nvl(rol, USUARIO).trim();
         }
         return result.toUpperCase();
     }
@@ -435,10 +435,7 @@ public class AppUser extends DataRow implements IAppUser {
             return false;
         }
         final AppUser other = (AppUser) obj;
-        if (!Objects.equals(this.iduser, other.iduser)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.iduser, other.iduser);
     }
 
     @Override
@@ -448,11 +445,6 @@ public class AppUser extends DataRow implements IAppUser {
         }
         AppUser obj = (AppUser) o;
         return (this.code.trim().equals(obj.getLogin().trim()));
-    }
-
-    @Override
-    public String toString() {
-        return "Usuario{" + "idusuario=" + iduser + ", codigo=" + code + ", nombre=" + fullName + ", descripcion=" + description + ", disable=" + disabled + ", expira=" + expiredDate + ", rol=" + rol + ", tipo=" + type + '}';
     }
 
     @PreUpdate
@@ -478,6 +470,13 @@ public class AppUser extends DataRow implements IAppUser {
     
     @Override
     public final boolean isAdministrator(){
-        return getAllRoles().contains(IAppUser.ADMINISTRADOR) || getRol().contains(IAppUser.ANALISTA);
+        return getAllRoles().contains(ADMINISTRADOR) 
+                || getRol().contains(ANALISTA)
+                || getRol().contains(SUPERUSER);
     }
+
+    @Override
+    public String toString() {
+        return "org.javabeanstack.model.appcatalog.AppUser{" + "iduser=" + iduser + ", code=" + code + ", fullName=" + fullName + ", description=" + description + ", disabled=" + disabled + ", expiredDate=" + expiredDate + ", rol=" + rol + ", type=" + type + '}';
+    }    
 }

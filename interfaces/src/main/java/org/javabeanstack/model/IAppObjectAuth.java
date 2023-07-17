@@ -1,6 +1,7 @@
 package org.javabeanstack.model;
 
 import org.javabeanstack.data.IDataRow;
+import org.w3c.dom.Document;
 
 
 /**
@@ -52,4 +53,7 @@ public interface IAppObjectAuth extends IDataRow{
     
     Integer getCopyFrom();        
     void setCopyFrom(Integer copyFrom);   
+    
+    Document getAuthXmlDom();
+    void setAuthXmlDom(Document xmlDom);
 }

@@ -29,7 +29,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.OutputKeys;
@@ -425,9 +427,25 @@ public class DomW3cParser {
      * @throws javax.xml.transform.TransformerConfigurationException
      */
     public static String getXmlText(Node content, String defaultCharSet) throws TransformerConfigurationException, TransformerException {
+        return getXmlText(content, defaultCharSet, null);
+    }
+
+    /**
+     * Devuelve el texto xml de un objeto DOM
+     *
+     * @param content objeto DOM
+     * @param defaultCharSet
+     * @param properties
+     * @return texto xml
+     * @throws javax.xml.transform.TransformerConfigurationException
+     */
+    public static String getXmlText(Node content, String defaultCharSet, Map<String,String> properties) throws TransformerConfigurationException, TransformerException {
         defaultCharSet = Fn.nvl(defaultCharSet, DEFAULTCHARSET);
         if (content == null){
             return null;
+        }
+        if (properties == null){
+            properties = new HashMap();
         }
         String encoding;
         if (content instanceof Document) {
@@ -436,11 +454,13 @@ public class DomW3cParser {
             encoding = content.getOwnerDocument().getInputEncoding();
         }
         encoding = Fn.nvl(encoding, defaultCharSet);
+        String indent = Fn.nvl(properties.get("indent"),"no");
+        String indent_amount = Fn.nvl(properties.get("indent_amount"),"10");
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "10");
+        transformer.setOutputProperty(OutputKeys.INDENT, indent);
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", indent_amount);
         transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
         DOMSource source = new DOMSource(content);
         StreamResult result = new StreamResult(new StringWriter());
@@ -448,7 +468,7 @@ public class DomW3cParser {
 
         return result.getWriter().toString();
     }
-
+    
     /**
      * Devuelve la lista de hijos de un nodo
      * @param document document element
