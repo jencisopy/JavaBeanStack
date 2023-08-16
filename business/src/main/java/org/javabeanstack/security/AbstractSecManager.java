@@ -274,14 +274,14 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
     }
     
     @Override
-    public IAppAuthConsumerToken getAppAuthConsumerToken(String token) {
+    public IAppAuthConsumerToken getAppAuthConsumerToken(String deviceOrToken) {
         String sqlComando;
         sqlComando = "select a "
                 + " from AppAuthConsumerToken a"
-                + " where a.token  = :token";
+                + " where a.token  = :token or uuiddevice = :token";
 
         Map<String, Object> params = new HashMap();
-        params.put("token", token.trim());
+        params.put("token", deviceOrToken.trim());
         IDataRow appToken;
         try {
             appToken = getDAO().findByQuery("", sqlComando, params);

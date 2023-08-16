@@ -59,7 +59,8 @@ import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 
 /**
- *
+ * Gestiona las tareas para mostrar un reporte ya sea en formato pdf, excel, 
+ * word, html u otros.
  * @author Jorge Enciso
  */
 public class JasperReportUtil {
@@ -93,6 +94,15 @@ public class JasperReportUtil {
         this.fileSystemPath = fileSystemPath;
     }
 
+    /**
+     * Muestra el informe según parametros recibidos.
+     * @param report reporte en formato InputStream.
+     * @param parameters parametros del reporte.
+     * @param data datos a mostrar.
+     * @throws JRException
+     * @throws IOException
+     * @throws NamingException 
+     */
     public void showReport(InputStream report, Map<String, Object> parameters,
             List<IDataQueryModel> data) throws JRException, IOException, NamingException {
 
@@ -105,6 +115,16 @@ public class JasperReportUtil {
         print(reporte, parameters, jasperPrint);
     }
 
+    /**
+     * 
+     * @param reportName nombre del reporte.
+     * @param parameters parametros del reporte.
+     * @param data datos a mostrar.
+     * @param classRef 
+     * @throws JRException
+     * @throws IOException
+     * @throws NamingException 
+     */
     public void showReport(String reportName, Map<String, Object> parameters,
             List<IDataQueryModel> data,
             Class classRef) throws JRException, IOException, NamingException {
@@ -121,6 +141,15 @@ public class JasperReportUtil {
         print(reportName, parameters, jasperPrint);
     }
 
+    /**
+     * Muestra un informe según parametros recibidos.
+     * @param reportName nombre del reporte.
+     * @param parameters parametros del reporte.
+     * @param jasperPrint gestor de impresión.
+     * @throws JRException
+     * @throws IOException
+     * @throws NamingException 
+     */
     public void print(String reportName, Map<String, Object> parameters,
             JasperPrint jasperPrint) throws JRException, IOException, NamingException {
         String reporte;
@@ -199,6 +228,11 @@ public class JasperReportUtil {
         }
     }
 
+    /**
+     * Convierte los datos a mostrar en un map que interprete el jasper.
+     * @param data datos a convertir.
+     * @return Datos convertidos en un map.
+     */
     protected Map[] convertTo(List<IDataQueryModel> data) {
         Map[] dataRows = new HashMap[data.size()];
         int indice = 0;
@@ -213,6 +247,16 @@ public class JasperReportUtil {
         return dataRows;
     }
 
+    /**
+     * Devuelve el reporte con el path completo, necesario para generar el 
+     * informe. Para ello utiliza una variable fileSystemPath, donde se 
+     * encuentra los caminos a buscar el reporte y el orden de las carpetas
+     * en la cual hay una precedencia, luego de no encontrar el reporte busca
+     * en la base de datos y por ultimo en el .war.
+     * 
+     * @param reportNameJasper nombre del reporte
+     * @return el reporte con el path completo
+     */
     public String getFullPathReport(String reportNameJasper) {
         reportNameJasper = reportNameJasper.toLowerCase();
         if (reportNameJasper.endsWith(".jrxml")) {
@@ -253,6 +297,15 @@ public class JasperReportUtil {
         return IOUtil.getFileName(reportNameJasper);
     }
 
+    /**
+     * Devuelve el reporte en formato JasperReport, busca primero en el 
+     * fileSystemPath y si no encuentra, en la base de datos y por ultimo en 
+     * el .war.
+     * @param reportNameJasper nombre del reporte
+     * @param classRef clase de referencia para busqueda del reporte en el .war.
+     * @return  el reporte en formato JasperReport
+     * @throws JRException 
+     */
     public JasperReport getJasperReportFrom(String reportNameJasper, Class classRef) throws JRException {
         JasperReport jasperReport = null;
         reportNameJasper = reportNameJasper.toLowerCase();

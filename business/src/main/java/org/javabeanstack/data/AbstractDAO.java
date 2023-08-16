@@ -834,12 +834,14 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (dataSet == null || dataSet.size() == 0) {
             return null;
         }
-        String appUser = null;
+        String appUser;
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        if (sessionId != null) {
-            if (dbLinkInfo.getUserSession() != null) {
-                appUser = left(dbLinkInfo.getSessionOrTokenId(), 32);
-            }
+        //Si es por una sesión normal o por dispositivo movil a travez de un 
+        //un webservice.
+        if (Fn.nvl(dbLinkInfo.getUuidDevice(),"").isEmpty()){
+            appUser = dbLinkInfo.getAppUserId();
+        } else {
+            appUser = left(dbLinkInfo.getUuidDevice(), 32);
         }
         IDataResult dataResult = new DataResult();
         IDataRow lastEjb = null;
@@ -955,7 +957,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             if (session.getClientAuthRequestInfo() != null) {
                 device = getDBLinkInfo(sessionId).getUuidDevice();
             } else {
-                device = session.getIp(); 
+                device = session.getIp();
             }
         }
         auditEjb.setValue("operacion", operacion);

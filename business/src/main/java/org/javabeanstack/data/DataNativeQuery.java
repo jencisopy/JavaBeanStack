@@ -680,10 +680,10 @@ public class DataNativeQuery implements IDataNativeQuery {
         this.maxResult = 1;
         List<IDataQueryModel> result = execQuery(this.dataLink);
         if (result == null || result.isEmpty()){
-            return new DataQueryModel();
+            return null;
         }
         if (result.get(0) == null){
-            return new DataQueryModel();
+            return null;
         }
         return result.get(0);
     }
