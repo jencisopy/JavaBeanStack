@@ -1569,4 +1569,28 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         return errorReturn;
     }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<Object[]> findListObjsByQuery(String sessionId,
+            String queryString,
+            Map<String, Object> parameters,
+            int first, int max) throws Exception {
+        LOGGER.debug(Strings.replicate("-", 50));
+        LOGGER.debug("findListObjsByQuery");
+        LOGGER.debug(queryString);
+
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
+        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+
+        Query query = em.createQuery(queryString);
+        if (parameters != null && !parameters.isEmpty()) {
+            populateQueryParameters(query, parameters, queryString);
+        }
+        if (max > 0) {
+            query.setFirstResult(first);
+            query.setMaxResults(max);
+        }
+        return query.getResultList();
+    }
 }

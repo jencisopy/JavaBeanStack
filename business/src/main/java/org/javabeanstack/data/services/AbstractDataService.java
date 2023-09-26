@@ -1265,4 +1265,9 @@ public abstract class AbstractDataService implements IDataService {
     public void dbRollBack(){
         dao.dbRollBack();
     }
+
+    @Override
+    public List<Object[]> findListObjsByQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
+        return dao.findListObjsByQuery(sessionId, queryString, parameters, first, max);
+    }
 }

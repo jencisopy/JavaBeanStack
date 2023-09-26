@@ -529,4 +529,10 @@ public interface IGenericDAO extends Serializable {
     public <T extends IDataRow> boolean isAuditAble(T ejb);
     public <T extends IDataRow> boolean isAuditAble(String entityName);    
     public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz);
+    
+    public List<Object[]> findListObjsByQuery(String sessionId,
+            String queryString,
+            Map<String, Object> parameters,
+            int first, int max) throws Exception;
+    
 }
