@@ -35,6 +35,7 @@ import org.javabeanstack.data.services.IDataService;
  */
 
 public interface IDataLink  {
+    String getSchema();
     IGenericDAO getDao();
     <T extends IDataService> T getDataService();
     

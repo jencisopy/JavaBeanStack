@@ -127,6 +127,7 @@ public class DataFilter {
         Map<String, Object> values = getSentence();
         parameters = (Map<String, Object>) values.get("parameters");
         filterExpression = (String) values.get("expression");
+        initParams();        
     }
 
     /**

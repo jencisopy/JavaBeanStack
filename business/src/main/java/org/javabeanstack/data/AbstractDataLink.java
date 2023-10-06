@@ -858,4 +858,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         }
         return userSession.getIdCompany();
     }
+
+    @Override
+    public String getSchema() {
+        IDBLinkInfo dbInfo = getDBLinkInfo();
+        this.persistUnit = dbInfo.getPersistUnit();
+        return getDao().getSchema(persistUnit);
+    }
 }
