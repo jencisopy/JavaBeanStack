@@ -106,6 +106,10 @@ public class DataFilter {
         return null;
     }
 
+    public <T extends AbstractDataObject> void beforeExecute(T context){
+    }
+    
+    
     /**
      * Selecciona datos en un controller.
      *
@@ -113,12 +117,16 @@ public class DataFilter {
      * @param context controller.
      */
     public <T extends AbstractDataObject> void execute(T context) {
+        beforeExecute(context);
         context.removeFilter("borrar");
         context.setFilter(filterExpression);
         context.setFilterParams(parameters);
-        //context.requery();
+        afterExecute(context);
     }
 
+    public <T extends AbstractDataObject> void afterExecute(T context){
+    }
+    
     /**
      * Crea la sentencia o expresión para el filtrado, utiliza a getSentence()
      * para tal efecto.

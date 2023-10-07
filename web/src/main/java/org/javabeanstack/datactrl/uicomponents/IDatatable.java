@@ -107,5 +107,7 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     
     boolean doAction(String action);
     boolean revert();
+    
+    void reset();
 }
 
