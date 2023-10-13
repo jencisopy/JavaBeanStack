@@ -29,6 +29,7 @@ import java.util.Objects;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 import org.apache.log4j.Logger;
+import org.javabeanstack.annotation.AuditEntity;
 
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.error.ErrorReg;
@@ -409,7 +410,6 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldname
      * @return valor de un atributo o campo.
      */
-
     @Override
     public Object getValue(String fieldname) {
         return DataInfo.getFieldValue(this, fieldname);
@@ -421,7 +421,6 @@ public class DataRow implements IDataRow, Cloneable {
      * @param fieldname nombre del campo
      * @return tipo de dato del campo solicitado.
      */
-
     @Override
     public Class getFieldType(String fieldname) {
         Class result = DataInfo.getFieldType(this.getClass(), fieldname);
@@ -676,4 +675,12 @@ public class DataRow implements IDataRow, Cloneable {
         return target;
     }
 
+    @Override
+    public String getAuditEntity() {
+        AuditEntity auditEntityAnnotation = getClass().getAnnotation(AuditEntity.class);
+        if (auditEntityAnnotation != null) {
+            return auditEntityAnnotation.name().toLowerCase();
+        }
+        return null;
+    }
 }

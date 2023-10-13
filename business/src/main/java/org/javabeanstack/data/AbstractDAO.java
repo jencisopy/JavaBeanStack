@@ -835,6 +835,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             return null;
         }
         String appUser;
+        boolean auditable;
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         //Si es por una sesión normal o por dispositivo movil a travez de un 
         //un webservice.
@@ -858,6 +859,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                     if (event != null) {
                         event.beforeSave(sessionId, ejb);
                     }
+                    auditable = ejb.isAuditAble();                    
                     lastEjb = ejb;
                     switch (ejb.getAction()) {
                         case IDataRow.INSERT:
@@ -892,7 +894,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                         default:
                             break;
                     }
-                    auditSave(em, sessionId, ejb);
+                    auditSave(em, sessionId, ejb, auditable);
                     ejb.setErrors((Map<String, IErrorReg>) null);
                     //Ejecutar evento post grabación
                     if (event != null) {
@@ -931,8 +933,8 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
     }
 
-    private <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb) throws Exception {
-        if (!isAuditAble(ejb)) {
+    private <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb, boolean auditAble) throws Exception {
+        if (!auditAble && !isAuditAble(ejb)) {
             return;
         }
         IDataRow auditEjb = (IDataRow) ejb.getAuditClass().getConstructor().newInstance();
@@ -946,6 +948,9 @@ public abstract class AbstractDAO implements IGenericDAO {
                 break;
             case IDataRow.DELETE:
                 operacion = "D";
+                break;
+            case IDataRow.READ:
+                operacion = "R";
                 break;
             default:
                 operacion = "?";
@@ -979,14 +984,15 @@ public abstract class AbstractDAO implements IGenericDAO {
         try {
             //Por nombre de la clase
             String entidad1 = ejb.getClass().getSimpleName().toLowerCase();
-            //Por el valor en la anotación AuditEntity en la clase
-            AuditEntity auditAnnotation = ejb.getClass().getAnnotation(AuditEntity.class);
             //Por el nombre de la anotación Table en la clase.
             Table tableAnnotation = ejb.getClass().getAnnotation(Table.class);
             String entidad2 = tableAnnotation.name().toLowerCase();
+            //Por el valor en la anotación AuditEntity o un valor personalizado
+            //determinado en la clase
+            String auditEntity = ejb.getAuditEntity();
             String entidad3 = "*";
-            if (auditAnnotation != null) {
-                entidad3 = auditAnnotation.name();
+            if (auditEntity != null) {
+                entidad3 = auditEntity;
             }
 
             Map<String, Object> params = new Parameters()
