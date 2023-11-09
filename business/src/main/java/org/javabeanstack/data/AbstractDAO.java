@@ -45,7 +45,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.transaction.Status;
 import javax.transaction.TransactionSynchronizationRegistry;
 import org.apache.log4j.Logger;
-import org.javabeanstack.annotation.AuditEntity;
 import org.javabeanstack.data.events.IDAOEvents;
 
 import org.javabeanstack.error.ErrorReg;
@@ -894,12 +893,13 @@ public abstract class AbstractDAO implements IGenericDAO {
                         default:
                             break;
                     }
-                    auditSave(em, sessionId, ejb, auditable);
                     ejb.setErrors((Map<String, IErrorReg>) null);
                     //Ejecutar evento post grabación
                     if (event != null) {
                         event.afterSave(sessionId, ejb);
                     }
+                    //Auditoria
+                    auditSave(em, sessionId, ejb, auditable);                    
                 }
                 for (IDataRow ejb : ejbsRes) {
                     if (ejb.getAction() != IDataRow.DELETE) {
