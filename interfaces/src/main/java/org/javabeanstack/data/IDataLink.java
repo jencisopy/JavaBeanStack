@@ -57,6 +57,8 @@ public interface IDataLink  {
     <T extends IDataRow> List<T> findListByNamedQuery(String namedQuery, Map<String, Object> parameters, int first, int max) throws Exception;
     <T extends IDataRow> List<T> findListByQuery(String queryString, Map<String, Object> parameters) throws Exception;
     <T extends IDataRow> List<T> findListByQuery(String queryString, Map<String, Object> parameters, int first, int max) throws Exception;
+    
+    List<Object[]> findListObjsByQuery(String queryString, Map<String, Object> parameters,int first, int max) throws Exception;    
 
     <T extends IDataRow> T refreshRow(T row) throws Exception;
     <T extends IDataRow> IDataResult update(T ejb) throws Exception;

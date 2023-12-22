@@ -18,10 +18,9 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.data;
- 
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,10 +36,11 @@ import org.javabeanstack.util.Strings;
 
 /**
  * Es un wrapper de AbstractDao, gestiona el acceso a los datos.
- * 
+ *
  * @author Jorge Enciso
  */
 public abstract class AbstractDataLink implements IDataLink, Serializable {
+
     /**
      * Unidad de persistencia donde esta configurado los parámetros de la
      * conexión a la base de datos
@@ -80,7 +80,6 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public abstract <T extends IDataService> T getDataService();
 
-
     /**
      * Unidad de persistencia donde esta configurado los parámetros de la
      * conexión a la base de datos
@@ -101,10 +100,10 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @return dataResult (resultado del persist)
      */
     @Override
-    public <T extends IDataRow> IDataResult persist(T ejb) throws SessionError{
+    public <T extends IDataRow> IDataResult persist(T ejb) throws SessionError {
         ejb.setAction(IDataRow.INSERT);
         return update(ejb);
-    }    
+    }
 
     /**
      * Agregar registros a la tabla
@@ -115,8 +114,8 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult persist(List<T> ejbs) throws SessionError{
-        ejbs.forEach( ejb -> {
+    public <T extends IDataRow> IDataResult persist(List<T> ejbs) throws SessionError {
+        ejbs.forEach(ejb -> {
             ejb.setAction(IDataRow.INSERT);
         });
         return update(ejbs);
@@ -131,7 +130,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @return dataResult (resultado del merge)
      */
     @Override
-    public <T extends IDataRow> IDataResult merge(T ejb) throws SessionError{
+    public <T extends IDataRow> IDataResult merge(T ejb) throws SessionError {
         ejb.setAction(IDataRow.UPDATE);
         return update(ejb);
     }
@@ -145,7 +144,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult merge(List<T> ejbs) throws SessionError{
+    public <T extends IDataRow> IDataResult merge(List<T> ejbs) throws SessionError {
         ejbs.forEach((ejb) -> {
             ejb.setAction(IDataRow.UPDATE);
         });
@@ -161,7 +160,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @return dataResult (resultado del remove)
      */
     @Override
-    public <T extends IDataRow> IDataResult remove(T ejb) throws SessionError{
+    public <T extends IDataRow> IDataResult remove(T ejb) throws SessionError {
         ejb.setAction(IDataRow.DELETE);
         return update(ejb);
     }
@@ -175,13 +174,13 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult remove(List<T> ejbs) throws SessionError{
+    public <T extends IDataRow> IDataResult remove(List<T> ejbs) throws SessionError {
         ejbs.forEach((ejb) -> {
             ejb.setAction(IDataRow.DELETE);
         });
         return update(ejbs);
     }
-    
+
     /**
      * Agrega, actualiza o borra registros de la base de datos
      *
@@ -195,7 +194,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Verificar si la sesión es válida
         checkUserSession();
         IDataResult dataResult = getDao().update(getSessionId(), ejb);
-        if (dataResult.isSuccessFul() && (dataResult.isRemoveDeleted() || ejb.getAction() == IDataRow.DELETE)){
+        if (dataResult.isSuccessFul() && (dataResult.isRemoveDeleted() || ejb.getAction() == IDataRow.DELETE)) {
             dataResult.setRowsUpdated(ejb);
         }
         return dataResult;
@@ -216,11 +215,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         //Procesar solo los registros modificados
         List<T> ejbs2 = this.getRowsChanged(ejbs);
         IDataResult dataResult = getDao().update(getSessionId(), ejbs2);
-        if (dataResult.isSuccessFul()){
-            dataResult.setRowsUpdated(ejbs);            
+        if (dataResult.isSuccessFul()) {
+            dataResult.setRowsUpdated(ejbs);
             // Eliminar registros borrados de la lista            
             removeDeleted(ejbs);
-            dataResult.setRemoveDeleted(Boolean.TRUE);            
+            dataResult.setRemoveDeleted(Boolean.TRUE);
         }
         return dataResult;
     }
@@ -228,8 +227,8 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     /**
      * Agregar, actualiza o borra registros de la base de datos
      *
-     * @param dataSet cada elemento del dataSet contiene una lista con los objetos 
-     * mapeados a los registros de cada tabla
+     * @param dataSet cada elemento del dataSet contiene una lista con los
+     * objetos mapeados a los registros de cada tabla
      * @return dataResult (resultado del update)
      * @throws org.javabeanstack.exceptions.SessionError
      */
@@ -240,21 +239,20 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         // Procesar solo registros modificados.
         IDataSet dataSetChanged = dataSet.getChanged();
         IDataResult dataResult = getDao().update(getSessionId(), dataSetChanged);
-        if (dataResult.isSuccessFul()){
-            dataResult.setRowsUpdated(dataSet);            
+        if (dataResult.isSuccessFul()) {
+            dataResult.setRowsUpdated(dataSet);
             // Eliminar registros borrados de la lista                    
-            for (Map.Entry<String, List<? extends IDataRow>> entry: dataSet.getMapListSet().entrySet()){
+            for (Map.Entry<String, List<? extends IDataRow>> entry : dataSet.getMapListSet().entrySet()) {
                 List<? extends IDataRow> ejbs = entry.getValue();
-                removeDeleted(ejbs);                
+                removeDeleted(ejbs);
             }
-            if (dataSet.getMapDataObject() != null && !dataSet.getMapDataObject().isEmpty()){
-                dataResult.setRemoveDeleted(Boolean.TRUE);                
+            if (dataSet.getMapDataObject() != null && !dataSet.getMapDataObject().isEmpty()) {
+                dataResult.setRemoveDeleted(Boolean.TRUE);
             }
         }
         return dataResult;
     }
 
-    
     /**
      * Devuelve un registro de datos.
      *
@@ -265,16 +263,16 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @throws Exception
      * @throws org.javabeanstack.exceptions.SessionError
      */
-    @Override 
+    @Override
     public <T extends IDataRow> T find(Class<T> entityClass, Object id) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        if (id == null){
+        if (id == null) {
             return null;
         }
         return getDao().findById(entityClass, getSessionId(), id);
     }
-    
+
     /**
      * Devuelve un registro de datos.
      *
@@ -285,11 +283,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @throws Exception
      * @throws org.javabeanstack.exceptions.SessionError
      */
-    @Override 
+    @Override
     public <T extends IDataRow> T findById(Class<T> entityClass, Object id) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        if (id == null){
+        if (id == null) {
             return null;
         }
         return getDao().findById(entityClass, getSessionId(), id);
@@ -309,7 +307,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     public <T extends IDataRow> T findByUk(T ejb) throws Exception, SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        if (ejb == null){
+        if (ejb == null) {
             return null;
         }
         return getDao().findByUk(getSessionId(), ejb);
@@ -317,7 +315,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
 
     /**
      * Devuelve un registro
-     * 
+     *
      * @param <T> tipo de dato generalmente hereda de DataRow
      * @param queryString sentencia JPQL que se ejecutará para recuperar los
      * datos
@@ -477,6 +475,15 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         return getDao().findByNativeQuery(getSessionId(), queryString, parameters, first, max);
     }
 
+    @Override
+    public List<Object[]> findListObjsByQuery(String queryString,
+            Map<String, Object> parameters,
+            int first, int max) throws Exception {
+        // Verificar si la sesión es válida
+        checkUserSession();
+        return getDao().findListObjsByQuery(getSessionId(), queryString, parameters, first, max);
+    }
+
     /**
      * Refresca los datos de un registro en la base de datos.
      *
@@ -492,7 +499,6 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         checkUserSession();
         return getDao().refreshRow(getSessionId(), row);
     }
-
 
     /**
      * Devuelve la cantidad de registros que resultaria de una sentencia JPQL
@@ -516,7 +522,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      *
      * @param queryString sentencia JPQL
      * @param parameters parametros de la sentencia
-     * @return la cantidad de registros 
+     * @return la cantidad de registros
      * @throws Exception
      * @throws org.javabeanstack.exceptions.SessionError
      */
@@ -567,7 +573,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      */
     @Override
     public void setUserSession(IUserSession userSession) throws SessionError {
-        if (userSession ==  null){
+        if (userSession == null) {
             this.userSession = null;
             this.persistUnit = IDBManager.CATALOGO;
             return;
@@ -579,6 +585,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
 
     /**
      * Devuelve un objeto DataNativeQuery que permitira ejecutar
+     *
      * @return instancia de un objeto DataNativeQuery
      */
     @Override
@@ -590,12 +597,13 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
 
     /**
      * Genera una expresión con las relaciones de las entidades solicitadas.
+     *
      * @param entities lista de entidades (tablas, vistas)
      * @param typeRela tipo de relacion (inner, left, right, full) es opcional
      * @param schema nombre del schema que se agregará en la instrucción.
      * @return expresión join.
      * @throws Exception
-     * @throws SessionError 
+     * @throws SessionError
      */
     @Override
     public String getEntitiesRelation(String entities, String typeRela, String schema) throws Exception, SessionError {
@@ -603,7 +611,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         if (Strings.isNullorEmpty(entities)) {
             return "";
         }
-        if (Strings.isNullorEmpty(schema)){
+        if (Strings.isNullorEmpty(schema)) {
             schema = this.getDao().getSchema(persistUnit);
         }
         entities = entities.toLowerCase().replace("{schema}.", "");
@@ -632,14 +640,13 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         }
         String expresion = schema + "." + entidades[0][0] + " " + entidades[0][1];
         String leftEntidad, leftAlias, rightEntidad, rightAlias;
-        IDataLink dao;        
-        if (!this.getPersistUnit().equals(IDBManager.CATALOGO)){
-            dao = new DataLink(this.getDao());                
-        }
-        else{
+        IDataLink dao;
+        if (!this.getPersistUnit().equals(IDBManager.CATALOGO)) {
+            dao = new DataLink(this.getDao());
+        } else {
             dao = this;
-        } 
-        
+        }
+
         for (int i = 0; i < analizar.length; i++) {
             if (i + 1 == analizar.length) {
                 continue;
@@ -649,18 +656,18 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
             for (int j = i + 1; j < analizar.length; j++) {
                 rightEntidad = entidades[j][0].toLowerCase();
                 rightAlias = entidades[j][1].toLowerCase();
-                
+
                 Map<String, Object> params = new HashMap();
-                params.put("entityPK", rightEntidad );
-                params.put("entityFK", leftEntidad );
-                
+                params.put("entityPK", rightEntidad);
+                params.put("entityFK", leftEntidad);
+
                 List<IAppTablesRelation> data = dao.findListByNamedQuery("AppTablesRelation.findByEntity", params);
-                if (data.isEmpty()){
+                if (data.isEmpty()) {
                     params.put("entityPK", leftEntidad);
                     params.put("entityFK", rightEntidad);
                     data = dao.findListByNamedQuery("AppTablesRelation.findByEntity", params);
                 }
-                    
+
                 if (data.isEmpty()) {
                     continue;
                 }
@@ -706,11 +713,12 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
 
     /**
      * Verifica la sesión del usuario
+     *
      * @return id de la sesión.
-     * @throws SessionError 
+     * @throws SessionError
      */
     private String checkUserSession() throws SessionError {
-        if (!Strings.isNullorEmpty(token)){
+        if (!Strings.isNullorEmpty(token)) {
             return token;
         }
         if (getUserSession() != null) {
@@ -727,8 +735,10 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     }
 
     /**
-     * Agrega valores de parametros constantes (ej. :true=true, :false=false etc, :idempresa)
-     * @param queryString  sentencia
+     * Agrega valores de parametros constantes (ej. :true=true, :false=false
+     * etc, :idempresa)
+     *
+     * @param queryString sentencia
      * @param parameters objeto parametros
      * @return parametros con los valores adicionales.
      */
@@ -742,12 +752,12 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         if (Strings.findString(":false", queryString.toLowerCase()) >= 0) {
             parameters.put("false", false);
         }
-        if (Strings.findString(":idempresa", queryString.toLowerCase()) >= 0 
+        if (Strings.findString(":idempresa", queryString.toLowerCase()) >= 0
                 && getUserSession() != null) {
             parameters.put("idempresa", getIdCompany());
         }
         if (Strings.findString(":idcompany", queryString.toLowerCase()) >= 0
-                && getUserSession() != null) {                
+                && getUserSession() != null) {
             parameters.put("idcompany", getIdCompany());
         }
         if (Strings.findString(":today", queryString.toLowerCase()) >= 0) {
@@ -762,6 +772,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     /**
      * Devuelve la lista de filas que fuerón modificadas pasibles de actualizar
      * en la base de datos.
+     *
      * @param <T>
      * @param dataRows lista de objetos
      * @return lista de filas modificadas.
@@ -778,6 +789,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
 
     /**
      * Elimina los registros marcados para borrar de la lista de objetos
+     *
      * @param <T>
      * @param dataRows lista de objetos.
      */
@@ -791,19 +803,19 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
             }
         }
     }
-    
+
     /**
      * Objeto con la información necesaria para acceder a la base de datos.
      * (persistunit, session del usuario)
+     *
      * @return DBLinkInfo()
      */
     @Override
-    public IDBLinkInfo getDBLinkInfo(){
-        String sessionId=null;
-        if (!Strings.isNullorEmpty(token)){
+    public IDBLinkInfo getDBLinkInfo() {
+        String sessionId = null;
+        if (!Strings.isNullorEmpty(token)) {
             sessionId = token;
-        }
-        else if(userSession != null){
+        } else if (userSession != null) {
             sessionId = userSession.getSessionId();
         }
         return getDao().getDBLinkInfo(sessionId);
@@ -811,13 +823,14 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
 
     /**
      * Devuelve el identificador de la sesión o el token
+     *
      * @return el identificador de la sesión o el token
      */
-    protected final String getSessionId(){
-        if (!Strings.isNullorEmpty(token)){
+    protected final String getSessionId() {
+        if (!Strings.isNullorEmpty(token)) {
             return token;
         }
-        if (userSession == null){
+        if (userSession == null) {
             return null;
         }
         return userSession.getSessionId();
@@ -825,16 +838,18 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
 
     /**
      * Devuelve el token string
+     *
      * @return token
      */
     @Override
     public String getToken() {
         return token;
     }
-    
+
     /**
      * Asigna el token al objeto
-     * @param token 
+     *
+     * @param token
      */
     @Override
     public void setToken(String token) {
@@ -843,17 +858,18 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         this.persistUnit = dbInfo.getPersistUnit();
         this.idCompany = dbInfo.getIdCompany();
     }
-    
+
     /**
      * Devuelve el identificador de la empresa
+     *
      * @return identificador de la empresa
      */
     @Override
-    public Long getIdCompany(){
-        if (!Strings.isNullorEmpty(token)){
+    public Long getIdCompany() {
+        if (!Strings.isNullorEmpty(token)) {
             return idCompany;
         }
-        if (userSession == null){
+        if (userSession == null) {
             return null;
         }
         return userSession.getIdCompany();
