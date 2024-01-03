@@ -33,7 +33,7 @@ public class ErrorReg implements IErrorReg{
     /** Nro del error, ver en AppMessage */
     private int    errorNumber = 0;
     private String entity = "";
-    private String fieldName = "";
+    private String fieldName = "noFieldSet";
     private String[] fieldNames;    
     private Exception exception;
     private boolean warning = false;
