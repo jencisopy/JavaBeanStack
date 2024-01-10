@@ -502,19 +502,18 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public void setFilterParams(Map filterParams) {
         this.filterParams = filterParams;
     }
-    
+
     @Override
     public void addFilterParams(Map filterParams) {
-        if (filterParams == null){
+        if (filterParams == null) {
             return;
         }
-        if (this.filterParams == null || this.filterParams.isEmpty()){
+        if (this.filterParams == null || this.filterParams.isEmpty()) {
             this.filterParams = filterParams;
             return;
         }
         this.filterParams.putAll(filterParams);
     }
-    
 
     @Override
     public void setFirstRow(int first) {
@@ -1925,8 +1924,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                     return false;
                 }
                 // Asignar el registro resultante de la actualización
-                row = (T) dataResult.getRowUpdated();
-                if (row != null) {
+                if (dataResult.getRowUpdated() != null) {
+                    row = (T) dataResult.getRowUpdated();
                     dataRows.set(recno, row);
                     row.setOldValues();
                     // Eliminar de la lista local el registro actual si esta marcado para ser borrado
@@ -1983,7 +1982,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 }
             } else {
                 //Resultado de la grabación
-                if (dataResult.getMapResult().get(row.getClass().getSimpleName()) != null 
+                if (dataResult.getMapResult().get(row.getClass().getSimpleName()) != null
                         && dataResult.getMapResult().get(row.getClass().getSimpleName()).get(0) != null) {
                     row = (T) dataResult.getMapResult().get(row.getClass().getSimpleName()).get(0);
                 }
