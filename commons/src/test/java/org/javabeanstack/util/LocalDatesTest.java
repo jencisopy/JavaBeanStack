@@ -186,6 +186,12 @@ public class LocalDatesTest {
         String expResult = "1972/05/19 15:20";
         String result = LocalDates.toString(dateTime, format);
         assertEquals(expResult, result);
+        
+        format = "yyyyMMdd";
+        expResult = "19720519";
+        result = LocalDates.toString(dateTime, format);
+        assertEquals(expResult, result);
+        
     }
 
     /**

@@ -541,6 +541,9 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Override
     public <T extends IDataRow> boolean checkUniqueKey(String sessionId, T row) {
+        if (row == null){
+            return true;
+        }        
         try {
             // Buscar registro por la clave unica 
             if (row.getQueryUK() == null) {
@@ -573,11 +576,14 @@ public abstract class AbstractDataService implements IDataService {
      * @param fieldName nombre del campo
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones sobre la base de datos.
-     * @return verdadero si no esta duplicado y falso si lo esta.
+     * @return verdadero si existe y falso si no existe.
      */
     @Override
     public <T extends IDataRow> boolean checkForeignKey(String sessionId, T row, String fieldName) {
         boolean result = true;
+        if (row == null){
+            return result;
+        }        
         try {
             Class clase = row.getClass();
             Field field = DataInfo.getDeclaredField(clase, fieldName);
@@ -610,8 +616,11 @@ public abstract class AbstractDataService implements IDataService {
 
     @Override
     public <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName){
+        IErrorReg result = new ErrorReg();         
+        if (row == null){
+            return result;
+        }        
         int[] operacion;
-        IErrorReg result = new ErrorReg(); 
         CheckMethod anotation;
         // Ejecutar metodos de chequeo de datos
         for (Method method : this.methodList) {
@@ -662,6 +671,9 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row) {
         Map<String, IErrorReg> errors = new HashMap<>();
+        if (row == null){
+            return errors;
+        }
         String fieldName;
         int[] operacion;
         IErrorReg result;
