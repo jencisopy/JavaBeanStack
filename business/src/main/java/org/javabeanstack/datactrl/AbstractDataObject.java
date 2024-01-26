@@ -1802,7 +1802,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 this.goTo(i);
                 if (this.getRow().getAction() > 0) {
                     // Verificar si el registro fue chequeado
-                    if (!this.getRow().isRowChecked()) {
+                    if (!this.getRow().isRowChecked()
+                            || (this.getRow().getErrors() != null && !this.getRow().getErrors().isEmpty())) {
                         row.setErrors(this.checkDataRow());
                     }
                     if (this.getRow().getErrors() != null && !this.getRow().getErrors().isEmpty()) {
