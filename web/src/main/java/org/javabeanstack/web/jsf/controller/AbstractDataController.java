@@ -704,6 +704,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
         if (success) {
             action = "";
+            if (getRow() != null && getRow().getAction() < 0){
+                getRow().setAction(0);                            
+            }
         }
         noLazyRowsLoad = false;
     }
