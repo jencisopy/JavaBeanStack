@@ -24,6 +24,7 @@ package org.javabeanstack.events;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.faces.event.AjaxBehaviorEvent;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.datactrl.IDataObject;
 
@@ -33,8 +34,13 @@ import org.javabeanstack.datactrl.IDataObject;
  * @param <T>
  */
 public interface ICtrlEvents<T extends IDataObject> extends Serializable{
-    void onRowSelect(T context, Object event);
-    void onRowFilter(T context);
-    void onChange(T context, String fieldname);
-    <X extends IDataRow> List<X> onCompleteText(T context, String text);    
+    T getContext();
+    void setContext(T context);
+    void onRowSelect(Object event);
+    void onRowFilter();
+    void onChange(String fieldname);
+    void onItemSelect(String fieldName);
+    void onBlur(AjaxBehaviorEvent event);
+    void onBlur(String fieldName);
+    <X extends IDataRow> List<X> onCompleteText(String text);    
 }

@@ -28,6 +28,7 @@ import java.util.TreeMap;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.javabeanstack.data.IDataNativeQuery;
@@ -61,6 +62,7 @@ import org.javabeanstack.web.util.AppResourceSearcher;
  * @param <T>
  */
 public abstract class AbstractDataController<T extends IDataRow> extends AbstractDataObject<T> {
+
     /**
      * Lista de registros de la selección de datos en un proceso que trae los
      * datos por bloque (pagina a pagina)
@@ -94,12 +96,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     private String action = "";
 
-    private ICtrlEvents ctrlEvents = new CtrlEventLocal();
+    private ICtrlEvents ctrlEvents = new CtrlEventLocal(this);
 
     private String xmlResourcePath = "";
 
     private IXmlDom<Document, Element> xmlResource;
-    
+
     /**
      * Lista de campos de busquedas los cuales serán parte del filtro en el
      * metodo onCompleteText
@@ -114,10 +116,13 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     protected abstract AppResourceSearcher getAppResource();
+
     public abstract IDatatable getDataTable();
+
     public abstract void configDataTables();
+
     public abstract void configDataTables(IDatatable dataTable, String nodeName);
-    
+
     public String getXmlResourcePath() {
         return xmlResourcePath;
     }
@@ -125,14 +130,14 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     public void setXmlResourcePath(String xmlResourcePath) {
         this.xmlResourcePath = xmlResourcePath;
     }
-    
-    public Integer checkAuthorization(String action){
+
+    public Integer checkAuthorization(String action) {
         return IAppObjectAuth.ALLOWED;
     }
-    
+
     public IXmlDom<Document, Element> getXmlResource() {
         if (xmlResource == null) {
-            xmlResource = getAppResource().getXmlDom(xmlResourcePath, "XML", null);            
+            xmlResource = getAppResource().getXmlDom(xmlResourcePath, "XML", null);
         }
         return xmlResource;
     }
@@ -140,6 +145,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     public void setXmlResource(T context) {
         //Leer de la tabla AppResourceSearcher o de un xml
         xmlResource = getAppResource().getXmlDom(xmlResourcePath, "XML", null);
+    }
+
+    public ICtrlEvents getEvents() {
+        return ctrlEvents;
     }
     
     public ICtrlEvents getCtrlEvents() {
@@ -343,7 +352,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public void onRowSelect(SelectEvent event) {
         if (ctrlEvents != null) {
-            ctrlEvents.onRowSelect(this, event);
+            ctrlEvents.onRowSelect(event);
         }
     }
 
@@ -352,7 +361,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public void onRowFilter() {
         if (ctrlEvents != null) {
-            ctrlEvents.onRowFilter(this);
+            ctrlEvents.onRowFilter();
         }
     }
 
@@ -364,7 +373,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     public List<T> onCompleteText(String text) {
         if (ctrlEvents != null) {
-            return ctrlEvents.onCompleteText(this, text);
+            return ctrlEvents.onCompleteText(text);
         }
         return null;
     }
@@ -444,13 +453,13 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         boolean result = true;
         //Verificar permiso 
         Integer authorization = checkAuthorization(operation);
-        if (authorization.equals(IAppObjectAuth.DENIED)){
+        if (authorization.equals(IAppObjectAuth.DENIED)) {
             facesCtx.showWarn("No esta autorizado para realizar esta operación");
             action = "";
             return false;
         }
-        action = operation;        
-        
+        action = operation;
+
         // Si no es agregar nuevo registro refrescar el registro actual
         if (!Fn.inList(operation.toLowerCase(), "insert", "agregar", "1")) {
             refreshRow();
@@ -469,7 +478,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             case "update":
             case "modificar":
             case "confirm":
-            case "anular":                
+            case "anular":
                 result = this.allowAction(IDataRow.MODIFICAR);
                 break;
             case "3":
@@ -483,7 +492,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             case "read":
                 result = this.allowAction(IDataRow.CONSULTAR);
                 break;
-            case "-5":                
+            case "-5":
             case "imprimir":
             case "print":
                 result = this.allowAction(IDataRow.IMPRIMIR);
@@ -500,7 +509,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         initAction(operation, result);
         facesCtx.addCallbackParam("result", result);
         if (result) {
-            String refreshUI = Fn.nvl((String)getProperty("AFTERACTION_REFRESH_UICOMPONENT"),"");
+            String refreshUI = Fn.nvl((String) getProperty("AFTERACTION_REFRESH_UICOMPONENT"), "");
             refreshUIComponent(refreshUI);
         }
         return result;
@@ -683,11 +692,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             } else {
                 facesCtx.showInfo("Operación realizada con exito");
             }
-            if (getRow() != null){
+            if (getRow() != null) {
                 setRowSelected(getRow());
             }
             //Renderizar componentes
-            refreshUIComponent((String)getProperty("AFTERACTION_REFRESH_UICOMPONENT"));
+            refreshUIComponent((String) getProperty("AFTERACTION_REFRESH_UICOMPONENT"));
         }
         if (Fn.toLogical(getProperty("AFTERINSERT_INSERT_AGAIN"))) {
             //Para inserción multiples
@@ -704,8 +713,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
         if (success) {
             action = "";
-            if (getRow() != null && getRow().getAction() < 0){
-                getRow().setAction(0);                            
+            if (getRow() != null && getRow().getAction() < 0) {
+                getRow().setAction(0);
             }
         }
         noLazyRowsLoad = false;
@@ -748,8 +757,44 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
+        private IDataObject context;
+
+        public CtrlEventLocal(){
+        }
+        
+        public CtrlEventLocal(IDataObject context){
+            this.context = context;            
+        }
+        
         @Override
-        public void onRowSelect(IDataObject context, Object event) {
+        public void setContext(IDataObject context) {
+            this.context = context;            
+        }
+
+        @Override
+        public IDataObject getContext() {
+            return this.context;
+        }
+
+        @Override
+        public void onItemSelect(String fieldName) {
+            throw new UnsupportedOperationException("Not supported yet."); 
+        }
+
+        @Override
+        public void onBlur(AjaxBehaviorEvent event) {
+            throw new UnsupportedOperationException("Not supported yet."); 
+        }
+
+        @Override
+        public void onBlur(String fieldName) {
+            throw new UnsupportedOperationException("Not supported yet."); 
+        }
+        
+        
+        
+        @Override
+        public void onRowSelect(Object event) {
             int recno = getDataRows()
                     .indexOf((T) ((org.primefaces.event.SelectEvent) event).getObject());
             if (context.goTo(recno)) {
@@ -758,7 +803,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
 
         @Override
-        public void onRowFilter(IDataObject context) {
+        public void onRowFilter() {
             String tableTextFooter = (String) getProperty("tableTextFooter");
             if (Strings.isNullorEmpty(tableTextFooter)) {
                 return;
@@ -775,11 +820,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
 
         @Override
-        public void onChange(IDataObject context, String fieldname) {
+        public void onChange(String fieldname) {
         }
 
         @Override
-        public List<T> onCompleteText(IDataObject context, String text) {
+        public List<T> onCompleteText(String text) {
             if (text.isEmpty()) {
                 setFilter("");
             } else {
@@ -791,11 +836,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             return rows;
         }
     }
-    
-    protected boolean beforeLazyRowsLoad(){
+
+    protected boolean beforeLazyRowsLoad() {
         return true;
     }
-    
+
     public void doFilter(String table, String filterTag) {
         //Implementar en clases derivadas.
     }
