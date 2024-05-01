@@ -35,6 +35,7 @@ import org.javabeanstack.datactrl.IDataObject;
  */
 public interface ICtrlEvents<T extends IDataObject> extends Serializable{
     T getContext();
+    <X extends IDataRow> X getRow();
     void setContext(T context);
     void onRowSelect(Object event);
     void onRowFilter();

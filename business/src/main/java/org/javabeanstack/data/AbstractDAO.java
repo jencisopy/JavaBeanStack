@@ -58,6 +58,7 @@ import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import static org.javabeanstack.util.Fn.nvl;
+import org.javabeanstack.util.LocalDates;
 import static org.javabeanstack.util.Strings.left;
 import org.javabeanstack.util.Parameters;
 import org.javabeanstack.util.Strings;
@@ -121,6 +122,45 @@ public abstract class AbstractDAO implements IGenericDAO {
         return dbManager.getEntityManager(keyId);
     }
 
+    private Query createQuery(String sessionId, String queryString, Map<String, Object> parameters){
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
+        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        
+        parameters = addQueryParams(queryString, parameters);
+        Query query = em.createQuery(queryString);
+        if (parameters != null && !parameters.isEmpty()) {
+            populateQueryParameters(query, parameters, queryString);
+        }
+        return query;
+    }
+    
+    /**
+     * Agrega valores de parametros constantes (ej. :true=true, :false=false
+     * etc, :idempresa)
+     *
+     * @param queryString sentencia
+     * @param parameters objeto parametros
+     * @return parametros con los valores adicionales.
+     */
+    private Map<String, Object> addQueryParams(String queryString, Map<String, Object> parameters) {
+        if (parameters == null) {
+            parameters = new HashMap<>();
+        }
+        if (Strings.findString(":true", queryString.toLowerCase()) >= 0) {
+            parameters.put("true", true);
+        }
+        if (Strings.findString(":false", queryString.toLowerCase()) >= 0) {
+            parameters.put("false", false);
+        }
+        if (Strings.findString(":today", queryString.toLowerCase()) >= 0) {
+            parameters.put("today", LocalDates.today());
+        }
+        if (Strings.findString(":now", queryString.toLowerCase()) >= 0) {
+            parameters.put("now", LocalDates.now());
+        }
+        return parameters;
+    }
+    
     /**
      * Recupera todos los registros de una tabla
      *
@@ -422,13 +462,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug("findListByQuery");
         LOGGER.debug(queryString);
 
-        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
-
-        Query query = em.createQuery(queryString);
-        if (parameters != null && !parameters.isEmpty()) {
-            populateQueryParameters(query, parameters, queryString);
-        }
+        Query query = createQuery(sessionId, queryString, parameters);
         if (max > 0) {
             query.setFirstResult(first);
             query.setMaxResults(max);
@@ -755,13 +789,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         sqlString = Strings.textMerge(sqlString, getQueryConstants(persistUnit));
         LOGGER.debug(sqlString);
 
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         ErrorReg error = new ErrorReg();
         try {
-            Query jpql = em.createQuery(sqlString);
-            if (parameters != null && !parameters.isEmpty()) {
-                populateQueryParameters(jpql, parameters, sqlString);
-            }
+            Query jpql = createQuery(sessionId, sqlString, parameters);
             jpql.executeUpdate();
         } catch (Exception exp) {
             error.setMessage(exp.getLocalizedMessage());
@@ -1100,10 +1130,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (maxRows == 0) {
             return new ArrayList<>();
         }
-        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
         Query q;
-        q = em.createQuery(queryString);
+        q = createQuery(sessionId, queryString, null);
+        
         if (maxRows >= 0) {
             q.setMaxResults(maxRows);
         }
@@ -1200,15 +1229,12 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         LOGGER.debug(queryString);
 
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
-        Query query = em.createQuery(queryString);
-        if (parameters != null && !parameters.isEmpty()) {
-            populateQueryParameters(query, parameters, queryString);
-        }
+        Query query = createQuery(sessionId, queryString, parameters);
         result = ((Number) query.getSingleResult()).longValue();
         return result;
     }
 
+   
     /**
      * Calcula la cantidad de registros que devolveria una sentencia sql
      *
@@ -1352,6 +1378,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
         });
     }
+
 
     /**
      * Setea valores predeterminados de ciertas constantes en los queries.
@@ -1586,13 +1613,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug("findListObjsByQuery");
         LOGGER.debug(queryString);
 
-        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
-
-        Query query = em.createQuery(queryString);
-        if (parameters != null && !parameters.isEmpty()) {
-            populateQueryParameters(query, parameters, queryString);
-        }
+        Query query = createQuery(sessionId, queryString, parameters);
         if (max > 0) {
             query.setFirstResult(first);
             query.setMaxResults(max);

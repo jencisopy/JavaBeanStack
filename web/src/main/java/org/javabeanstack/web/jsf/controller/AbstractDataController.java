@@ -150,7 +150,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     public ICtrlEvents getEvents() {
         return ctrlEvents;
     }
-    
+
     public ICtrlEvents getCtrlEvents() {
         return ctrlEvents;
     }
@@ -759,16 +759,16 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
         private IDataObject context;
 
-        public CtrlEventLocal(){
+        public CtrlEventLocal() {
         }
-        
-        public CtrlEventLocal(IDataObject context){
-            this.context = context;            
+
+        public CtrlEventLocal(IDataObject context) {
+            this.context = context;
         }
-        
+
         @Override
         public void setContext(IDataObject context) {
-            this.context = context;            
+            this.context = context;
         }
 
         @Override
@@ -777,22 +777,28 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
 
         @Override
+        public <X extends IDataRow> X getRow() {
+            if (context == null) {
+                return null;
+            }
+            return (X) context.getRow();
+        }
+
+        @Override
         public void onItemSelect(String fieldName) {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void onBlur(AjaxBehaviorEvent event) {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void onBlur(String fieldName) {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
-        
-        
-        
+
         @Override
         public void onRowSelect(Object event) {
             int recno = getDataRows()
