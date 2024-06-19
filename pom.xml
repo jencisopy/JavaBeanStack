@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.javabeanstack</groupId>
     <artifactId>jbs-parent</artifactId>
-    <version>1.5.6-SNAPSHOT</version>
+    <version>1.5.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>Framework para construcción de aplicaciones Java EE 8</description>
     <url>http://javabeanstack.org</url>
@@ -40,6 +40,17 @@
     </modules>
     <distributionManagement>  
         <snapshotRepository>
+            <id>nexus</id>
+            <url>http://serverapps.oym.com.py:8081/repository/maven-snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>nexus</id>
+            <url>http://serverapps.oym.com.py:8081/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>  
+    <!--    
+    <distributionManagement>  
+        <snapshotRepository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </snapshotRepository>
@@ -48,7 +59,7 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>      
-
+    -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
