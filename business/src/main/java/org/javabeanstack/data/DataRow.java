@@ -291,12 +291,39 @@ public class DataRow implements IDataRow, Cloneable {
      * @return devuelve map con una lista de errores por campo si lo hubiese.
      */
     @XmlTransient
+    @Override 
+    public Map<String, IErrorReg> getWarnings() {
+        if (this.errors == null) {
+            this.errors = new HashMap();
+            return this.errors;
+        }
+        Map<String, IErrorReg> warnings = new HashMap();
+        for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+            if (!entry.getValue().isWarning()) {
+                warnings.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return warnings;
+    }
+    
+    /**
+     *
+     * @return devuelve map con una lista de errores por campo si lo hubiese.
+     */
+    @XmlTransient
     @Override
     public Map<String, IErrorReg> getErrors() {
         if (this.errors == null) {
             this.errors = new HashMap();
+            return this.errors;
         }
-        return this.errors;
+        Map<String, IErrorReg> errorNoWarns = new HashMap();
+        for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+            if (!entry.getValue().isWarning()) {
+                errorNoWarns.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return errorNoWarns;
     }
 
     /**

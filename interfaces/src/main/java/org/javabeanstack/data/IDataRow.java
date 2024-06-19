@@ -60,6 +60,7 @@ public interface IDataRow extends Serializable{
     public void      setFieldsChecked(Map fieldsChecked);        
     public void      setFieldChecked(String fieldName, boolean fieldChecked);    
     public Map<String, IErrorReg> getErrors();
+    public Map<String, IErrorReg> getWarnings();
     public Object    getId();    
     public Object    getIdAlternative();    
     public Object    getRowkey();

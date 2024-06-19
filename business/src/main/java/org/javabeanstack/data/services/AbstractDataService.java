@@ -77,14 +77,14 @@ public abstract class AbstractDataService implements IDataService {
     protected List<Method> methodList = this.getListCheckMethods();
     @EJB
     protected IGenericDAO dao;
-    
+
     protected boolean inheritCheckMethod = false;
-    
+
     @Override
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         return dao.getDBLinkInfo(sessionId);
     }
-    
+
     /**
      * Devuelve la unidad de persistencia asociado a la empresa en la cual
      * inicio sesión el usuario.
@@ -161,10 +161,9 @@ public abstract class AbstractDataService implements IDataService {
     protected final List<Method> getListCheckMethods() {
         List methods = new ArrayList();
         Method[] methodsFromClass;
-        if (!inheritCheckMethod){
+        if (!inheritCheckMethod) {
             methodsFromClass = this.getClass().getDeclaredMethods();
-        }
-        else {
+        } else {
             methodsFromClass = this.getClass().getMethods();
         }
         for (Method method : methodsFromClass) {
@@ -541,9 +540,9 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Override
     public <T extends IDataRow> boolean checkUniqueKey(String sessionId, T row) {
-        if (row == null){
+        if (row == null) {
             return true;
-        }        
+        }
         try {
             // Buscar registro por la clave unica 
             if (row.getQueryUK() == null) {
@@ -581,9 +580,9 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> boolean checkForeignKey(String sessionId, T row, String fieldName) {
         boolean result = true;
-        if (row == null){
+        if (row == null) {
             return result;
-        }        
+        }
         try {
             Class clase = row.getClass();
             Field field = DataInfo.getDeclaredField(clase, fieldName);
@@ -615,11 +614,11 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     @Override
-    public <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName){
-        IErrorReg result = new ErrorReg();         
-        if (row == null){
+    public <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName) {
+        IErrorReg result = new ErrorReg();
+        if (row == null) {
             return result;
-        }        
+        }
         int[] operacion;
         CheckMethod anotation;
         // Ejecutar metodos de chequeo de datos
@@ -636,7 +635,7 @@ public abstract class AbstractDataService implements IDataService {
                 if (Fn.inArrayInteger(row.getAction(), operacion)) {
                     result = (IErrorReg) method.invoke(this, sessionId, row);
                     //Si el resultado es un error guardar información en el objeto errors
-                    if (result != null && !"".equals(result.getMessage())) {
+                    if (result != null && !result.isWarning() && !"".equals(result.getMessage())) {
                         row.setFieldChecked(fieldName, false);
                         break;
                     } else {
@@ -651,10 +650,13 @@ public abstract class AbstractDataService implements IDataService {
                 break;
             }
         }
+        if (result == null){
+            result = new ErrorReg();            
+        }
         result.setFieldName(fieldName);
         return result;
     }
-    
+
     /**
      * Chequea la validez de los datos del registro, ejecutando todos los
      * metodos marcados como validadores (CheckMethod).
@@ -671,7 +673,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row) {
         Map<String, IErrorReg> errors = new HashMap<>();
-        if (row == null){
+        if (row == null) {
             return errors;
         }
         String fieldName;
@@ -740,8 +742,8 @@ public abstract class AbstractDataService implements IDataService {
                 if (Fn.inArrayInteger(row.getAction(), operacion)) {
                     result = (IErrorReg) method.invoke(this, sessionId, row);
                     //Si el resultado es un error guardar información en el objeto errors
-                    if (result != null 
-                            && !"".equals(result.getMessage()) 
+                    if (result != null
+                            && !"".equals(result.getMessage())
                             && !result.isWarning()) {
                         errors.put(fieldName.toLowerCase(), result);
                         row.setFieldChecked(fieldName, false);
@@ -758,7 +760,14 @@ public abstract class AbstractDataService implements IDataService {
             }
         }
         row.setErrors(errors);
-        if (errors.isEmpty()) {
+        boolean error = false;
+        for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+            if (!entry.getValue().isWarning()) {
+                error = true;
+                break;
+            }
+        }
+        if (!error) {
             row.setRowChecked(true);
         }
         return errors;
@@ -918,7 +927,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> String getSelectCmd(String sessionId, Class<T> type, String order, String filter) {
         String comando;
-        String filtro = "";
+        String filtro;
 
         filter = Fn.nvl(filter, "");
         order = Fn.nvl(order, "");
@@ -1069,7 +1078,7 @@ public abstract class AbstractDataService implements IDataService {
     public IErrorReg jpqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
-    
+
     @Deprecated
     @Override
     public <T extends IDataRow> List<T> getData(String sessionId, String queryString, int maxRows, boolean noCache) throws Exception {
@@ -1254,27 +1263,27 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     @Override
-    public Map<String, String> getQueryConstants(String persistUnit){
+    public Map<String, String> getQueryConstants(String persistUnit) {
         return dao.getQueryConstants(persistUnit);
     }
-    
+
     @Override
-    public <T extends IDataRow> boolean isAuditAble(T ejb) {    
+    public <T extends IDataRow> boolean isAuditAble(T ejb) {
         return dao.isAuditAble(ejb);
     }
 
     @Override
-    public <T extends IDataRow> boolean isAuditAble(String entityName) {    
+    public <T extends IDataRow> boolean isAuditAble(String entityName) {
         return dao.isAuditAble(entityName);
     }
 
     @Override
-    public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz) {    
+    public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz) {
         return dao.isAuditAble(clazz);
     }
-    
+
     @Override
-    public void dbRollBack(){
+    public void dbRollBack() {
         dao.dbRollBack();
     }
 

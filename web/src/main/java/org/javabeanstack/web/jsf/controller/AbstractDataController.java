@@ -46,6 +46,7 @@ import org.javabeanstack.datactrl.uicomponents.IDatatable;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.xml.IXmlDom;
 import org.w3c.dom.Document;
@@ -678,9 +679,17 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         facesCtx.addCallbackParam("result", success);
         if (getErrorApp() != null) {
             facesCtx.showError("Error", getErrorApp().getMessage());
-        } else if (!success) {
-            facesCtx.showError("Error", getRow().getErrors());
+        } else if (getRow() != null) {
+            Map<String, IErrorReg> warnings = getRow().getWarnings();
+            if (warnings != null && !warnings.isEmpty()) {
+                facesCtx.showWarn("Warn", warnings);
+            }
+            Map<String, IErrorReg> errors = getRow().getErrors();
+            if (errors != null && !errors.isEmpty()) {
+                facesCtx.showError("Error", getRow().getErrors());
+            }
         }
+
         // Esto con el fin de que no se ejecute el metodo load del lazydatarows
         // en caso de que se actualize un dataTable
         getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
@@ -698,6 +707,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             //Renderizar componentes
             refreshUIComponent((String) getProperty("AFTERACTION_REFRESH_UICOMPONENT"));
         }
+
         if (Fn.toLogical(getProperty("AFTERINSERT_INSERT_AGAIN"))) {
             //Para inserción multiples
             if (success && Fn.inList(action, "1", "insert", "agregar")) {
