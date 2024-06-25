@@ -35,4 +35,5 @@ import java.lang.annotation.Target;
 public @interface CheckMethod {
     String fieldName();
     int[] action();
+    String level() default "ALL"; //Valores ALL, ENTITY, ROW, FIELD, 
 }

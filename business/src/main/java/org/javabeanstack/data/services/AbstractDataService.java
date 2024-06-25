@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -650,8 +651,8 @@ public abstract class AbstractDataService implements IDataService {
                 break;
             }
         }
-        if (result == null){
-            result = new ErrorReg();            
+        if (result == null) {
+            result = new ErrorReg();
         }
         result.setFieldName(fieldName);
         return result;
@@ -676,18 +677,21 @@ public abstract class AbstractDataService implements IDataService {
         if (row == null) {
             return errors;
         }
-        String fieldName;
+        String fieldName, level;
         int[] operacion;
         IErrorReg result;
         CheckMethod anotation;
         row.setRowChecked(false);
+        Map<String, Object> properties = row.getProperties();
         // Preparar el registro para las verificaciones.
         if (row.getFieldsChecked() == null || row.getFieldsChecked().isEmpty()) {
             setFieldsToCheck(row);
         }
+
         try {
             // Chequeo de clave duplicada solo si la operación es agregar o modificar
-            if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
+            if (!Fn.toLogical(properties.get("UNIQUEKEY_NOCHECK"))
+                    && Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 if (!checkUniqueKey(sessionId, row)) {
                     errors.put("UNIQUEKEY",
                             new ErrorReg("Este registro ya existe",
@@ -699,11 +703,13 @@ public abstract class AbstractDataService implements IDataService {
             // Ejecutar control de foreignkey
             // Chequeo del foreignkey solo si la operación es agregar o modificar
             // Colocar valores por defectos en campos numericos y boolean
-            if (Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
+            if (!Fn.toLogical(properties.get("FOREIGNKEY_NOCHECK"))
+                    && Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 for (Field field : DataInfo.getDeclaredFields(row.getClass())) {
                     fieldName = field.getName();
                     // Si tiene una marca para no validar el foreignkey
                     CheckForeignkey annotation = field.getAnnotation(CheckForeignkey.class);
+                    //Se verifica el level All, Entity, Row
                     if (annotation != null && !annotation.check()) {
                         continue;
                     }
@@ -732,6 +738,11 @@ public abstract class AbstractDataService implements IDataService {
             anotation = method.getAnnotation(CheckMethod.class);
             fieldName = anotation.fieldName();
             operacion = anotation.action();
+            level = anotation.level();
+            //Se verifica el level All, Entity, Row
+            if (level.equals("FIELD")){
+                continue;
+            }
             // Si existe un error previo sobre este campo continuar con las otras validaciones
             if (errors.containsKey(fieldName.toLowerCase())) {
                 continue;
@@ -760,6 +771,16 @@ public abstract class AbstractDataService implements IDataService {
             }
         }
         row.setErrors(errors);
+        //Eliminar warnings si asi se configuro
+        boolean warnings = Fn.nvl((Boolean) properties.get("WARNINGS"), true);
+        if (!warnings) {
+            Iterator<Map.Entry<String, IErrorReg>> it = errors.entrySet().iterator();
+            while (it.hasNext()) {
+                if (it.next().getValue().isWarning()){
+                    it.remove();
+                }
+            }
+        }
         boolean error = false;
         for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
             if (!entry.getValue().isWarning()) {

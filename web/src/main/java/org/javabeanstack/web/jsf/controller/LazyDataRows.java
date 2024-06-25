@@ -79,6 +79,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             return null;
         }
         Object id;
+        if (!rowKey.contains("}")){
+            return null;
+        }
         String rowKeyValue = rowKey.substring(rowKey.indexOf("}") + 1);
         String rowKeyType = rowKey.substring(1, rowKey.indexOf("}"));
         if (context.getRow() != null) {

@@ -71,6 +71,8 @@ public class DataRow implements IDataRow, Cloneable {
     protected Boolean onSetterActivated = true;
     @XmlTransient
     protected Boolean onGetterActivated = true;
+    @XmlTransient
+    private Map<String, Object> properties;
 
     private boolean auditable = false;
     private Class<? extends IDataRow> auditTable;
@@ -709,5 +711,18 @@ public class DataRow implements IDataRow, Cloneable {
             return auditEntityAnnotation.name().toLowerCase();
         }
         return null;
+    }
+
+    @Override
+    public Map<String, Object> getProperties() {
+        if (properties == null){
+            properties = new HashMap();
+        }
+        return properties;
+    }
+
+    @Override
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
     }
 }
