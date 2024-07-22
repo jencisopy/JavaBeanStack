@@ -33,6 +33,7 @@ import org.javabeanstack.model.IAppAuthConsumerToken;
 public interface IDBLinkInfo extends Serializable {
     IDBFilter getDBFilter();
     Long getIdCompany();
+    Long getIdCompanyPeriodo();
     String getPersistUnit();
     IUserSession getUserSession();
     void setUserSession(IUserSession userSession);

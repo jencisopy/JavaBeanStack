@@ -59,6 +59,8 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * Identificador de la empresa
      */
     private Long idCompany;
+    
+    private Long idperiodo;
 
     /**
      * Es el objeto responsable del acceso a los datos
@@ -760,6 +762,10 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
                 && getUserSession() != null) {
             parameters.put("idcompany", getIdCompany());
         }
+        if (Strings.findString(":idperiodo", queryString.toLowerCase()) >= 0
+                && getUserSession() != null) {
+            parameters.put("idperiodo", getIdperiodo());
+        }
         if (Strings.findString(":today", queryString.toLowerCase()) >= 0) {
             parameters.put("today", LocalDates.today());
         }
@@ -857,6 +863,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         IDBLinkInfo dbInfo = getDBLinkInfo();
         this.persistUnit = dbInfo.getPersistUnit();
         this.idCompany = dbInfo.getIdCompany();
+        this.idperiodo = dbInfo.getIdCompanyPeriodo();
     }
 
     /**
@@ -875,6 +882,17 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         return userSession.getIdCompany();
     }
 
+    @Override
+    public Long getIdperiodo() {
+        if (!Strings.isNullorEmpty(token)) {
+            return idperiodo;
+        }
+        if (userSession == null) {
+            return null;
+        }
+        return userSession.getCompany().getIdperiod();
+    }
+    
     @Override
     public String getSchema() {
         IDBLinkInfo dbInfo = getDBLinkInfo();

@@ -41,6 +41,7 @@ public interface IDataLink  {
     
     String getPersistUnit();    
     Long getIdCompany();
+    Long getIdperiodo();
     IUserSession getUserSession();
     Map<String, Object> getEntityManagerProp();
     Map<String, Object> getPersistUnitProp();

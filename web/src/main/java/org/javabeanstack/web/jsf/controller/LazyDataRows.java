@@ -97,6 +97,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         id = getIdValue(rowKeyType, rowKeyValue);
         //Buscar el registro que coincida con el id en la lista de registros       
         for (T row : getRows()) {
+            if (row == null){
+                continue;
+            }
             if (row.getId().equals(id)) {
                 return row;
             }

@@ -596,6 +596,13 @@ public class DataNativeQuery implements IDataNativeQuery {
                 }
             }
         }
+        if (!queryParams.containsKey("idperiodo")) {
+            if (Strings.findString(":idperiodo", querySentence.toLowerCase()) >= 0) {
+                if (getDataLink().getUserSession() != null || !isNullorEmpty(getDataLink().getToken())) {
+                    queryParams.put("idperiodo", getDataLink().getIdperiodo());
+                }
+            }
+        }
         if (!queryParams.containsKey("today")) {
             if (Strings.findString(":today", querySentence.toLowerCase()) >= 0) {
                 queryParams.put("today", LocalDates.today());

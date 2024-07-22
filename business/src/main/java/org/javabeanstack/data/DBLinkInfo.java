@@ -41,7 +41,6 @@ public class DBLinkInfo implements IDBLinkInfo {
     private IUserSession userSession;
     private IAppAuthConsumerToken token;
     private IAppCompany appCompanyToken;
-    
 
     /**
      * Devuelve DBFilter conteniendo los filtros que deben ser aplicados en los
@@ -76,6 +75,25 @@ public class DBLinkInfo implements IDBLinkInfo {
                 return appCompanyToken.getIdcompanymask();
             }
             return appCompanyToken.getIdcompany();
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public Long getIdCompanyPeriodo() {
+        LOGGER.debug("getIdperiodo in");
+        if (userSession == null || userSession.getUser() == null) {
+            return null;
+        }
+        if (userSession != null) {
+            return userSession.getCompany().getIdperiod();
+        }
+        if (token != null && appCompanyToken != null) {
+            return appCompanyToken.getIdperiod();
         }
         return null;
     }
@@ -145,7 +163,6 @@ public class DBLinkInfo implements IDBLinkInfo {
         this.token = token;
         this.appCompanyToken = oAuthConsumer.getCompanyMapped(token);
     }
-
 
     /**
      * Devuelve el identificador del usuario
