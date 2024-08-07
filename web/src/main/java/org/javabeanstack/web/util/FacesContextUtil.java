@@ -149,8 +149,10 @@ public class FacesContextUtil {
             String key;
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
-                String titleShow = Fn.nvl(title, "Error ") + " en " + key;
-                getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, titleShow, errors.get(key).getMessage()));
+                if (!errors.get(key).isWarning()) {
+                    String titleShow = Fn.nvl(title, "Error ") + " en " + key;
+                    getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, titleShow, errors.get(key).getMessage()));
+                }
             }
             if (!Strings.isNullorEmpty(messageView)) {
                 refreshView(messageView);
@@ -175,7 +177,7 @@ public class FacesContextUtil {
 
     public void showWarn(String title, String message) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, title, message));
-        if (!Strings.isNullorEmpty(messageView)){
+        if (!Strings.isNullorEmpty(messageView)) {
             refreshView(messageView);
         }
     }
@@ -186,22 +188,24 @@ public class FacesContextUtil {
             refreshView(messageView);
         }
     }
-    
+
     public void showWarn(String title, Map<String, IErrorReg> errors) {
         if (errors != null && !errors.isEmpty()) {
             Iterator iterator = errors.keySet().iterator();
             String key;
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
-                String titleShow = Fn.nvl(title, "Advertencia ") + " en " + key;
-                getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_WARN, titleShow, errors.get(key).getMessage()));
+                if (errors.get(key).isWarning()) {
+                    String titleShow = Fn.nvl(title, "Advertencia ") + " en " + key;
+                    getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_WARN, titleShow, errors.get(key).getMessage()));
+                }
             }
             if (!Strings.isNullorEmpty(messageView)) {
                 refreshView(messageView);
             }
         }
     }
-    
+
     public String getIp() {
         HttpServletRequest request = (HttpServletRequest) getFacesContext().getExternalContext().getRequest();
         String ip = request.getHeader("X-FORWARDED-FOR");
