@@ -1984,6 +1984,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             } else {
                 //Resultado de la grabación
                 if (dataResult.getMapResult().get(row.getClass().getSimpleName()) != null
+                        && !dataResult.getMapResult().get(row.getClass().getSimpleName()).isEmpty()
                         && dataResult.getMapResult().get(row.getClass().getSimpleName()).get(0) != null) {
                     row = (T) dataResult.getMapResult().get(row.getClass().getSimpleName()).get(0);
                 }
