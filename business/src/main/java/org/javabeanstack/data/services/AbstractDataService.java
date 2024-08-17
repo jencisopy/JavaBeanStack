@@ -694,7 +694,7 @@ public abstract class AbstractDataService implements IDataService {
                     && Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 if (!checkUniqueKey(sessionId, row)) {
                     errors.put("UNIQUEKEY",
-                            new ErrorReg("Este registro ya existe",
+                            new ErrorReg("Este registro ya existe - " + row.toString(),
                                     50001,
                                     DataInfo.getUniqueFields(row.getClass())));
                     return errors;

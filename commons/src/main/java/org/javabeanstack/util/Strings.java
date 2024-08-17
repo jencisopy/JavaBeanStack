@@ -53,7 +53,10 @@ public class Strings {
      * @return verdadero si "string" es nulo o vacio.
      */
     public static Boolean isNullorEmpty(String string) {
-        return string == null || string.isEmpty();
+        if (string != null){
+            return string.trim().isEmpty();
+        }
+        return string == null;
     }
 
     /**
