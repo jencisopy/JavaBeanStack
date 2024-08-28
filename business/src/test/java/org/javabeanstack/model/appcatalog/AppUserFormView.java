@@ -142,7 +142,7 @@ public class AppUserFormView extends DataRow {
         return appUserFormViewColumnList;
     }
     
-    public List<AppUserFormViewColumn> getChild() {
+    public List<AppUserFormViewColumn> getChildren() {
         return appUserFormViewColumnList;
     }
     
