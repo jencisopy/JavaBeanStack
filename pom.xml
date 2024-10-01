@@ -38,7 +38,17 @@
         <module>commons</module>
         <module>web</module>
     </modules>
-    <distributionManagement>  
+    <distributionManagement> 
+        <!--
+        <snapshotRepository>
+            <id>nexus</id>
+            <url>http://173.249.44.142:8081/repository/maven-snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>nexus</id>
+            <url>http://173.249.44.142:8081/repository/maven-releases/</url>
+        </repository>
+        -->
         <snapshotRepository>
             <id>nexus</id>
             <url>http://serverapps.oym.com.py:8081/repository/maven-snapshots/</url>
@@ -47,6 +57,7 @@
             <id>nexus</id>
             <url>http://serverapps.oym.com.py:8081/repository/maven-releases/</url>
         </repository>
+            
     </distributionManagement>  
     <!--    
     <distributionManagement>  

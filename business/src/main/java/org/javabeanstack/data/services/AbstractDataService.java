@@ -740,7 +740,7 @@ public abstract class AbstractDataService implements IDataService {
             operacion = anotation.action();
             level = anotation.level();
             //Se verifica el level All, Entity, Row
-            if (level.equals("FIELD")){
+            if (level.equals("FIELD") && !Fn.toLogical(properties.get("FIELD_CHECK_INCLUDE"))){
                 continue;
             }
             // Si existe un error previo sobre este campo continuar con las otras validaciones
