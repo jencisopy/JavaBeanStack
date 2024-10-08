@@ -799,8 +799,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         if (fieldValue != null) {
             Map<String, Object> param = new HashMap();
-            param.put("id", fieldValue);
-            String filter = fieldName + " = :id";
+            param.put("fieldValue", fieldValue);
+            String filter = fieldName + " = :fieldValue";
             setFilter(filter);
             setOrder(order);
             setMaxRows(maxrows);
@@ -820,8 +820,8 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         if (fieldValue != null && !fieldValue.equals(idParent)) {
             Map<String, Object> param = new HashMap();
-            param.put("id", fieldValue);
-            String filter = fieldName + " = :id";
+            param.put("fieldValue", fieldValue);
+            String filter = fieldName + " = :fieldValue";
             setFilter(filter);
             setOrder(order);
             setMaxRows(maxrows);
