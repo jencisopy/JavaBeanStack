@@ -1579,12 +1579,21 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         try {
             errorApp = null;
             T newRow = (T) row.clone();
+            newRow.setId(null);
             newRow.setAction(IDataRow.INSERT);
             if (!this.beforeInsertRow(newRow)) {
                 return false;
             }
-            dataRows.add(newRow);
-            this.moveLast();
+            Long idAlternative = (long) Math.floor(Math.random() * (100000 - 1 + 1) + 1);
+            newRow.setIdAlternative(idAlternative);
+            //
+            if (Fn.toLogical(getProperty("INSERT_FIRST"))) {
+                dataRows.add(0, newRow);
+                this.moveFirst();
+            } else {
+                dataRows.add(newRow);
+                this.moveLast();
+            }
             //
             this.afterInsertRow();
             return true;

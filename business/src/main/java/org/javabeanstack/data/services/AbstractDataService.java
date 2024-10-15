@@ -617,6 +617,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName) {
         IErrorReg result = new ErrorReg();
+        IErrorReg resultWarning = new ErrorReg();
         if (row == null) {
             return result;
         }
@@ -640,6 +641,9 @@ public abstract class AbstractDataService implements IDataService {
                         row.setFieldChecked(fieldName, false);
                         break;
                     } else {
+                        if (result != null && result.isWarning() && !"".equals(result.getMessage())){
+                            resultWarning = result;
+                        }
                         // Paso la verificación del atributo
                         row.setFieldChecked(fieldName, true);
                     }
@@ -651,8 +655,8 @@ public abstract class AbstractDataService implements IDataService {
                 break;
             }
         }
-        if (result == null) {
-            result = new ErrorReg();
+        if (result == null || result.getErrorNumber() == 0) {
+            result = resultWarning;
         }
         result.setFieldName(fieldName);
         return result;

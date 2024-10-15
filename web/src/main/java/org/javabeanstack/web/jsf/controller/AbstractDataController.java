@@ -462,17 +462,23 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         action = operation;
 
         // Si no es agregar nuevo registro refrescar el registro actual
-        if (!Fn.inList(operation.toLowerCase(), "insert", "agregar", "1")) {
+        if (!Fn.inList(operation.toLowerCase(), "insert", "insertcopy"," agregar", "1")) {
             refreshRow();
         }
         switch (operation.toLowerCase()) {
             case "1":
             case "insert":
+            case "insertcopy":
             case "agregar":
                 result = this.allowAction(IDataRow.AGREGAR);
                 if (result) {
-                    rowsSelected = null;
-                    result = insertRow();
+                    rowsSelected = null;                    
+                    if (operation.equals("insertcopy")){
+                        result = insertRowFrom();
+                    }
+                    else{
+                        result = insertRow();                        
+                    }
                 }
                 break;
             case "2":
