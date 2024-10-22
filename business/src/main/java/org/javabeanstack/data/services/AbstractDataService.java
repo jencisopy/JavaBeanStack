@@ -63,6 +63,7 @@ import org.javabeanstack.util.ParamsUtil;
 import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 import org.javabeanstack.annotation.CheckForeignkey;
+import org.javabeanstack.data.events.IDAOEvents;
 
 /**
  * Esta clase deriva de AbstractDAO, a travéz de ella se recupera, válida y se
@@ -1315,5 +1316,10 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public List<Object[]> findListObjsByQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
         return dao.findListObjsByQuery(sessionId, queryString, parameters, first, max);
+    }
+    
+    @Override
+    public IDAOEvents getEvents(){
+        return null;
     }
 }
