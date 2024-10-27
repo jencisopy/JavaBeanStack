@@ -76,6 +76,7 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     List<IColumnModel> getColumns();
     List<IColumnModel> getColumns(String formView);
     String getColumnStyle(String columnName, Object row);
+    String getColumnHref(String link, Object row);
     String getColumnValueWithMask(String columnName, Object row, String mask);
     String getMask(Object value, String mask);
 
