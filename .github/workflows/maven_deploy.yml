@@ -7,6 +7,7 @@ on:
 
 jobs:
   build:
+    enviroment: oym  
     runs-on: ubuntu-latest
 
     steps:
@@ -23,20 +24,6 @@ jobs:
         env:
           OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
           OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
-        run: echo "Environment variables for Maven credentials set."
-
-      - name: Setup Maven credentials
         run: |
           echo $OYM_USERNAME
-          
-          if [[ -f "maven-settings.xml" ]]; then
-            sed -i "s/{OYM_USERNAME}/$OYM_USERNAME/g" maven-settings.xml
-            sed -i "s/{OYM_PASSWORD}/$OYM_PASSWORD/g" maven-settings.xml
-          else
-            echo "maven-settings.xml file not found!"
-            exit 1
-          fi
-
-      - name: Running tests and deploying
-        run: |
           mvn deploy -s maven-settings.xml -DskipTests -P javadoc
