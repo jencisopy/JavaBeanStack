@@ -29,8 +29,8 @@ jobs:
 
       - name: Maven Deploy
         env:
-          OYM_USERNAME: ${{ USERNAME }}
-          OYM_PASSWORD: ${{ PASSWORD }}
+          OYM_USERNAME: ${{ vars.USERNAME }}
+          OYM_PASSWORD: ${{ vars.PASSWORD }}
 
         run: |
           cat $GITHUB_WORKSPACE/settings.xml
