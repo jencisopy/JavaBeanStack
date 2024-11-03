@@ -31,3 +31,5 @@ jobs:
         run: |
           echo $OYM_USERNAME
           mvn deploy -s $GITHUB_WORKSPACE/maven-settings.xml -DskipTests -P javadoc
+          env:
+            GITHUB_TOKEN: ${{ github.token }}
