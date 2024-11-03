@@ -4,7 +4,7 @@
         <proxies/>
         <servers>
                 <server>
-                        <id>oym</id>
+                        <id>nexus</id>
                         <username>${env.OYM_USERNAME}</username>
                         <password>${env.OYM_PASSWORD}</password>
                 </server>
