@@ -9,6 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: oym
+    permissions:
+      contents: read
+      packages: write    
 
     steps:
       - uses: actions/checkout@v4
