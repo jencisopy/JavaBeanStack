@@ -11,7 +11,7 @@ jobs:
     environment: oym
     permissions:
       contents: read
-      packages: write    
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -22,10 +22,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           architecture: x64
+          cache: maven
 
       - name: Maven Deploy
         env:
-          MAVEN_USERNAME: ${{ secrets.OYM_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OYM_PASSWORD }}
+          OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
+          OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
         run: |
-          mvn deploy -DskipTests -P javadoc
+          mvn deploy -s maven-settings.xml -DskipTests -P javadoc
