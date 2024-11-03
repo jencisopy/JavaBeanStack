@@ -20,4 +20,4 @@ jobs:
           architecture: x64
 
       - name: Running tests and deploying
-        run: mvn deploy -s maven-settings.yml -DskipTest -P javadoc 
+        run: mvn deploy -s maven-settings.xml -DskipTest -P javadoc  
