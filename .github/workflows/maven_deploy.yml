@@ -20,10 +20,10 @@ jobs:
           distribution: 'temurin'
           architecture: x64
 
-      - name: Set environment variables
-        env:
-          OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
-          OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
+      - name: Maven Deploy
+      #  env:
+      #    OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
+      #    OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
         run: |
           echo $OYM_USERNAME
           mvn deploy -s maven-settings.xml -DskipTests -P javadoc
