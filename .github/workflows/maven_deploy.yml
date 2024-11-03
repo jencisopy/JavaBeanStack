@@ -25,7 +25,7 @@ jobs:
 
       - name: Maven Deploy
         env:
-          OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
-          OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
+          MAVEN_USERNAME: ${{ secrets.OYM_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OYM_PASSWORD }}
         run: |
-          mvn deploy -s maven-settings.xml -DskipTests -P javadoc
+          mvn deploy -DskipTests -P javadoc
