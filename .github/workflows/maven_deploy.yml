@@ -22,13 +22,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           architecture: x64
-          cache: 'maven'
+          settings-path: ${{ github.workspace }}
+          server-id: oym
+          server_username: ${{ secrets.OYM_USERNAME }}
+          server_password: ${{ secrets.OYM_PASSWORD }}
 
       - name: Maven Deploy
-        env:
-          OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
-          OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
         run: |
-          set $OYM_USERNAME=deployment
-          echo $OYM_USERNAME
-          mvn deploy -s maven-settings.xml -DskipTests -P javadoc
+          mvn deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests -P javadoc
