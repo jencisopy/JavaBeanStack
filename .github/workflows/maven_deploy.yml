@@ -34,4 +34,5 @@ jobs:
 
         run: |
           cat $GITHUB_WORKSPACE/settings.xml
+          echo $OYM_USERNAME
           mvn deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests -P javadoc
