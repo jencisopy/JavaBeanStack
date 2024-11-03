@@ -4,9 +4,9 @@
         <proxies/>
         <servers>
                 <server>
-                        <id>ossrh</id>
-                        <username>${OSSRH_USERNAME}</username>
-                        <password>${OSSRH_PASSWORD}</password>
+                        <id>oym</id>
+                        <username>${{ secrets.OYM_USERNAME }}</username>
+                        <password>${{ secrets.OYM_PASSWORD }}</password>
                 </server>
         </servers>
         <mirrors/>
