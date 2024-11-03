@@ -22,8 +22,8 @@ jobs:
       - name: Setup password and username
         run: |
           if [[ -f "maven-settings.xml" ]]; then
-            sed -i 's/{OYM_USERNAME}/${{ secrets.OYM_USERNAME }}/g' maven-settings.xml
-            sed -i 's/{OYM_PASSWORD}/${{ secrets.OYM_PASSWORD }}/g' maven-settings.xml
+            sed -i "s/{OYM_USERNAME}/${{ secrets.OYM_USERNAME }}/g" maven-settings.xml
+            sed -i "s/{OYM_PASSWORD}/${{ secrets.OYM_PASSWORD }}/g" maven-settings.xml
           else
             echo "maven-settings.xml file not found!"
             exit 1
