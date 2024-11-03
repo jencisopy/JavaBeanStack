@@ -24,10 +24,14 @@ jobs:
           architecture: x64
           settings-path: ${{ github.workspace }}
           server-id: oym
-          server-username: ${{ secrets.OYM_USERNAME }}
-          server-password: ${{ secrets.OYM_PASSWORD }}
+          server-username: OYM_USERNAME
+          server-password: OYM_PASSWORD
 
       - name: Maven Deploy
+        env:
+          OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
+          OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
+
         run: |
           cat $GITHUB_WORKSPACE/settings.xml
           mvn deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests -P javadoc
