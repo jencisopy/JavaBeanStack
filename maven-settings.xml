@@ -5,8 +5,8 @@
         <servers>
                 <server>
                         <id>oym</id>
-                        <username>${{ secrets.OYM_USERNAME }}</username>
-                        <password>${{ secrets.OYM_PASSWORD }}</password>
+                        <username>{OYM_USERNAME}</username>
+                        <password>{OYM_PASSWORD}</password>
                 </server>
         </servers>
         <mirrors/>
