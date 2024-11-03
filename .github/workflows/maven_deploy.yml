@@ -19,9 +19,11 @@ jobs:
           distribution: 'temurin'
           architecture: x64
 
-      - name: Running tests and deploying
+      - name: Setting enviroments
         env:
           OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
           OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
+
+      - name: Running tests and deploying
         run: |
           mvn deploy -s maven-settings.xml -DskipTests -P javadoc
