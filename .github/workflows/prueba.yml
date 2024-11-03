@@ -20,7 +20,4 @@ jobs:
           architecture: x64
 
       - name: Running tests and deploying
-        run: |
-          echo ${{ secrets.OYM_USERNAME }}  
-          # mvn -B verify
-          # mvn deploy -s maven-settings.yml -DskipTest -P javadoc 
+        run: mvn deploy -s maven-settings.yml -DskipTest -P javadoc 
