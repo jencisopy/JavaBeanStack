@@ -23,17 +23,15 @@ jobs:
           distribution: 'temurin'
           architecture: x64
           settings-path: ${{ github.workspace }}
-          server-id: oym
-          server-username: OYM_USERNAME
-          server-password: OYM_PASSWORD
+
+      - name: Prepare Maven Settings
+        run: |
+          rm -f $GITHUB_WORKSPACE/settings.xml
+          cp maven-settings.xml $GITHUB_WORKSPACE/settings.xml
 
       - name: Maven Deploy
         env:
-          OYM_USERNAME: ${{ vars.USERNAME }}
-          OYM_PASSWORD: ${{ vars.PASSWORD }}
+          OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
+          OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
 
-        run: |
-          cat $GITHUB_WORKSPACE/settings.xml
-          echo $OYM_USERNAME
-          echo $OYM_PASSWORD
-          mvn deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests 
+        run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests -P javadoc
