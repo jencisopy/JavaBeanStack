@@ -7,8 +7,8 @@ on:
 
 jobs:
   build:
-    enviroment: oym  
     runs-on: ubuntu-latest
+    enviroment: oym
 
     steps:
       - uses: actions/checkout@v4
