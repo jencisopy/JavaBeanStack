@@ -43,15 +43,20 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     
     String getId();
     void setId(String id);
+    
     String getXmlSet();
     void setXmlSet(String xmlSet);
+    
     O getContext();
     void setContext(O context);
+    
     <K extends IDatatable> Map<String, K> getChildren();
     <K extends IDatatable> void setChild(K child);
     void refreshChild(String id);
     void refreshChildren();
+    
     void refresh();
+    
     Object getProperty(String key);
     void setProperty(String key, Object value);
 
@@ -72,6 +77,9 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     String getFormViewSelected();    
     void setFormViewSelected(String formView);
     Map<String, List<IColumnModel>> getFormViewsColumns();    
+    
+    String[] getEditables();
+    void setEditables(String[] editables);
 
     List<IColumnModel> getColumns();
     List<IColumnModel> getColumns(String formView);
@@ -80,12 +88,15 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     String getColumnValueWithMask(String columnName, Object row, String mask);
     String getMask(Object value, String mask);
 
+    boolean isAllowEditField(Object row, String fieldName);
+    
     void beforeRowSelect(SelectEvent event);
     void onRowSelect(SelectEvent event);
     void afterRowSelect(SelectEvent event);
     void onColumnSetView(String formName, String viewName);    
     void onColumnReorder(Object event);
     void onColumnToggle(Object pToggleEvent);
+    void onChange(Object row, String fieldName);
     
     String getTableButtonsBarTemplate(String table);
     String getTableButtonsBarTemplate();
@@ -104,6 +115,7 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     boolean isTableVisible(String table);
     boolean isTableVisible();
     boolean isTablesVisible();
+    
     void setTableVisible(String table, boolean visible);
     
     boolean doAction(String action);
