@@ -323,7 +323,7 @@ public class DataNativeQuery implements IDataNativeQuery {
                     if (isNullorEmpty(alias)){
                         alias = entity;
                     }
-                    String filter = dbFilter.getFilterExpr(clazz, alias.trim());
+                    String filter = dbFilter.getFilterExpr(clazz, alias.trim(), false);
                     if (!isNullorEmpty(filter)){
                         result = operador + filter;
                     }

@@ -39,6 +39,7 @@ public interface IDBFilter<E extends IDBFilterElement> extends Serializable {
     String getFilterExpr(Integer element, String alias);
     String getFilterExpr(Integer element, Integer group, String alias);    
     <T extends IDataRow> String getFilterExpr(Class<T> clazz, String alias);    
+    <T extends IDataRow> String getFilterExpr(Class<T> clazz, String alias, boolean jpqlSentence);    
     String getAllFilterExpr();
     String getAllFilterExpr(String alias);
     String getAllFilterExpr(Integer group);

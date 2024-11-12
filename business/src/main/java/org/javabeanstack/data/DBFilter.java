@@ -216,10 +216,11 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
      * @param <T>
      * @param clazz modelo.
      * @param alias etiqueta a agregar en las expresiones.
+     * @param jpqlSentence
      * @return filtro que puede aplicarse al modelo dado.
      */
     @Override
-    public <T extends IDataRow> String getFilterExpr(Class<T> clazz, String alias) {
+    public <T extends IDataRow> String getFilterExpr(Class<T> clazz, String alias, boolean jpqlSentence) {
         String result = "";
         String separador = "";
         int c = 0;
@@ -231,7 +232,7 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
                     result += separador + expr;
                     separador = " and ";
                 }
-            } else {
+            } else if (jpqlSentence){
                 org.javabeanstack.annotation.DBFilter annotation
                         = clazz.getAnnotation(org.javabeanstack.annotation.DBFilter.class);
                 //Si esta definido en la anotación el campo y la expresión
@@ -252,6 +253,20 @@ public class DBFilter implements IDBFilter<DBFilterElement> {
             c++;
         }
         return result;
+    }
+    
+    /**
+     * Devuelve una expresión completa de todos los filtros que pueden ser
+     * aplicados a un modelo dado.
+     *
+     * @param <T>
+     * @param clazz modelo.
+     * @param alias etiqueta a agregar en las expresiones.
+     * @return filtro que puede aplicarse al modelo dado.
+     */
+    @Override
+    public <T extends IDataRow> String getFilterExpr(Class<T> clazz, String alias) {
+        return getFilterExpr(clazz, alias, true);
     }
 
     /**
