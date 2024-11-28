@@ -23,13 +23,16 @@ package org.javabeanstack.data;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 import org.apache.log4j.Logger;
 import org.javabeanstack.annotation.AuditEntity;
+import org.javabeanstack.annotation.SignatureField;
 
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.error.ErrorReg;
@@ -293,7 +296,7 @@ public class DataRow implements IDataRow, Cloneable {
      * @return devuelve map con una lista de errores por campo si lo hubiese.
      */
     @XmlTransient
-    @Override 
+    @Override
     public Map<String, IErrorReg> getWarnings() {
         if (this.errors == null) {
             this.errors = new HashMap();
@@ -307,7 +310,7 @@ public class DataRow implements IDataRow, Cloneable {
         }
         return warnings;
     }
-    
+
     /**
      *
      * @return devuelve map con una lista de errores por campo si lo hubiese.
@@ -664,7 +667,7 @@ public class DataRow implements IDataRow, Cloneable {
         }
     }
 
-    @XmlTransient    
+    @XmlTransient
     @Override
     public Boolean getOnGetterActivated() {
         return onGetterActivated;
@@ -719,7 +722,7 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     @Override
     public Map<String, Object> getProperties() {
-        if (properties == null){
+        if (properties == null) {
             properties = new HashMap();
         }
         return properties;
@@ -728,5 +731,42 @@ public class DataRow implements IDataRow, Cloneable {
     @Override
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
+    }
+
+    @Override
+    public String getTextToSign() {
+        String retornar = "";
+        Field[] fields = getClass().getDeclaredFields();
+        IDataRow ejb;
+        for (Field field : fields) {
+            SignatureField annotation = field.getAnnotation(SignatureField.class);
+            if (annotation != null) {
+                field.setAccessible(true);
+                try {
+                    Object obj = field.get(this);
+                    if (obj != null && obj instanceof IDataRow) {
+                        ejb = (IDataRow) obj;
+                        if (ejb.getId() != null) {
+                            retornar += "{" + Fn.nvl(DataInfo.getIdFieldName(ejb.getClass()), field.getName()) + ":" + ejb.getId().toString() + "}";
+                        }
+                    } else if (obj != null) {
+                        String value;
+                        if (obj instanceof BigDecimal) {
+                            value = Fn.getValueFormatted(obj);
+                        } else if (obj instanceof Number) {
+                            value = Fn.getValueFormatted(obj, "##,###,###,##0");
+                        } else if (obj instanceof LocalDateTime) {
+                            value = Fn.getValueFormatted(obj, "yyyy-MM-dd'T'HH:mm");
+                        } else {
+                            value = obj.toString();
+                        }
+                        retornar += "{" + field.getName() + ":" + value + "}";
+                    }
+                } catch (Exception e) {
+                    ErrorManager.showError(e, LOGGER);
+                }
+            }
+        }
+        return retornar;
     }
 }

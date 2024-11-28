@@ -23,6 +23,8 @@ package org.javabeanstack.web.jsf.converters;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.util.HashMap;
+import java.util.Map;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -127,5 +129,25 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
                 .getSessionMap()
                 .get("userSession");
         return userSession;
+    }
+    
+    protected Map<String, Object> getValuesFrom(String value) {
+        int ini = value.indexOf("{") + 1;
+        int fin = value.lastIndexOf("}") - 1;
+        Map<String, Object> retornar = new HashMap();
+        String[] proceso = value.substring(ini, fin).split(",");
+        for (String proceso1 : proceso) {
+            String[] elementos = proceso1.split(":");
+            if (elementos[0].trim().startsWith("\"")) {
+                elementos[0] = elementos[0].replace("\"", "");
+            }
+            if (elementos[1].trim().startsWith("\"")) {
+                elementos[1] = elementos[1].trim().replace("\"", "");
+                retornar.put(elementos[0].trim(), elementos[1]);
+            } else {
+                retornar.put(elementos[0].trim(), Long.valueOf(elementos[1]));
+            }
+        }
+        return retornar;
     }
 }

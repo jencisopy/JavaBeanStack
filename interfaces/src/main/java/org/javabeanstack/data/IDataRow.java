@@ -98,4 +98,5 @@ public interface IDataRow extends Serializable{
     
     public Map<String, Object> getProperties();
     public void setProperties(Map<String, Object> properties);
+    public String getTextToSign();
 }
