@@ -27,7 +27,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 import org.apache.log4j.Logger;
@@ -754,7 +753,7 @@ public class DataRow implements IDataRow, Cloneable {
                         if (obj instanceof BigDecimal) {
                             value = Fn.getValueFormatted(obj);
                         } else if (obj instanceof Number) {
-                            value = Fn.getValueFormatted(obj, "##,###,###,##0");
+                            value = Fn.getValueFormatted(obj, "##0");
                         } else if (obj instanceof LocalDateTime) {
                             value = Fn.getValueFormatted(obj, "yyyy-MM-dd'T'HH:mm");
                         } else {
