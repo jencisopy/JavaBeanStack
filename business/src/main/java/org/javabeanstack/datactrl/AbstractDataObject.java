@@ -247,7 +247,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
                 error = ejb.getErrors().get(key);
-                msgErrores += error.getMessage() + "-" + key + "\n";
+                msgErrores += error.getMessage().trim() + " - " + key + "\n";
             }
             return msgErrores;
         }

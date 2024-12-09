@@ -28,6 +28,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.apache.commons.validator.routines.EmailValidator;
 
 /**
  * Funciones utiles
@@ -346,5 +347,9 @@ public class Fn {
             return "";
         }
         return nvl(result,"").trim();
+    }
+    
+    public static boolean isEmailValid(String emailAdress){
+        return EmailValidator.getInstance().isValid(emailAdress);
     }
 }
