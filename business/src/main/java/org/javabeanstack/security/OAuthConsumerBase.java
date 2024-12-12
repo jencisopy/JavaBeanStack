@@ -487,7 +487,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             //Verificar existencia de un token anterior generado con las mismas especificaciones
             // ConsumerKey + uuiDevice
             IAppAuthConsumerToken tokenExists
-                    = findAuthToken(authConsumerToken.getConsumerKey(),
+                    = findAuthToken(authConsumerToken.getAppAuthConsumerKey().getConsumerKey(),
                             authConsumerToken.getUuidDevice());
             if (tokenExists != null) {
                 // Si ya existe un token y esta bloqueado, generar error
@@ -503,7 +503,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             }
         }
         try {
-            IAppAuthConsumer appConsumer = findAuthConsumer(authConsumerToken.getConsumerKey());
+            IAppAuthConsumer appConsumer = findAuthConsumer(authConsumerToken.getAppAuthConsumerKey().getConsumerKey());
             //No existe el consumer key
             if (appConsumer == null) {
                 appConsumer = createAuthConsumer(authConsumerToken.getAppAuthConsumerKey());

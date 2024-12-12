@@ -41,8 +41,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.hibernate.annotations.DynamicUpdate;
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.IAppAuthConsumerToken;
@@ -53,38 +53,40 @@ import org.javabeanstack.util.LocalDateTimeAdapter;
  * @author Jorge Enciso
  */
 @Entity
+@DynamicUpdate
 @Table(name = "appauthconsumertoken")
 @XmlRootElement
 @SequenceGenerator(name = "APPAUTHCONSUMERTOKEN_SEQ", allocationSize = 1, sequenceName = "APPAUTHCONSUMERTOKEN_SEQ")
-public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerToken{
+public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "APPAUTHCONSUMERTOKEN_SEQ")
     @Basic(optional = false)
     @Column(name = "idappauthconsumertoken")
     private Long idappauthconsumertoken;
-    
+
     @Basic(optional = false)
     @NotNull
     @Column(name = "uuidDevice")
     private String uuidDevice;
-    
+
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 500)
     @Column(name = "token")
     private String token;
-    
+
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 100)
     @Column(name = "tokenSecret")
     private String tokenSecret;
-    
+
     @Lob
     @Size(max = 2147483647)
     @Column(name = "data")
     private String data;
-    
+
     @Basic(optional = false)
     @NotNull
     @Column(name = "blocked")
@@ -97,21 +99,21 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     @Size(max = 100)
     @Column(name = "userEmail")
     private String userEmail;
-    
+
     @Column(name = "lastUsed")
-    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)    
+    @XmlJavaTypeAdapter(type = LocalDateTime.class, value = LocalDateTimeAdapter.class)
     private LocalDateTime lastUsed;
 
-    @Column(name = "fechacreacion",insertable = false, updatable = false)    
-    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)                    
+    @Column(name = "fechacreacion", insertable = false, updatable = false)
+    @XmlJavaTypeAdapter(type = LocalDateTime.class, value = LocalDateTimeAdapter.class)
     private LocalDateTime fechacreacion;
-    
+
     @NotNull
     @Column(name = "fechamodificacion")
-    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)                    
+    @XmlJavaTypeAdapter(type = LocalDateTime.class, value = LocalDateTimeAdapter.class)
     private LocalDateTime fechamodificacion;
-    
-    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)
+
+    @XmlJavaTypeAdapter(type = LocalDateTime.class, value = LocalDateTimeAdapter.class)
     @Column(name = "fechareplicacion")
     private LocalDateTime fechareplicacion;
 
@@ -119,15 +121,13 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     @Column(name = "appuser")
     private String appuser;
 
-    @JoinColumn(name = "idappauthconsumer", referencedColumnName = "idappauthconsumer",nullable = true)
+    @JoinColumn(name = "idappauthconsumer", referencedColumnName = "idappauthconsumer", nullable = true)
     @ManyToOne
     private AppAuthConsumer appAuthConsumer;
-    
+
     @Size(max = 100)
     @Transient
     private String consumerKey = getConsumerKey();
-    
-
 
     public AppAuthConsumerToken() {
         this.idappauthconsumertoken = 0L;
@@ -136,7 +136,6 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     public AppAuthConsumerToken(Long idappauthconsumertoken) {
         this.idappauthconsumertoken = idappauthconsumertoken;
     }
-
 
     public Long getIdappauthconsumertoken() {
         return idappauthconsumertoken;
@@ -260,19 +259,19 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
 
     @Override
     public String getConsumerKey() {
-        if (consumerKey != null){
+        if (consumerKey != null) {
             return consumerKey;
         }
-        if (appAuthConsumer == null){
+        if (appAuthConsumer == null) {
             return null;
         }
         return appAuthConsumer.getConsumerKey();
     }
 
-    public void setConsumerKey(String consumerKey){
+    public void setConsumerKey(String consumerKey) {
         this.consumerKey = consumerKey;
     }
-    
+
     @XmlElement(type = AppAuthConsumer.class)
     @Override
     public IAppAuthConsumer getAppAuthConsumerKey() {
@@ -281,19 +280,18 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
 
     @Override
     public void setAppAuthConsumerKey(IAppAuthConsumer appAuthConsumer) {
-        this.appAuthConsumer = (AppAuthConsumer)appAuthConsumer;
-        if (appAuthConsumer != null){
-            consumerKey = appAuthConsumer.getConsumerKey();            
+        this.appAuthConsumer = (AppAuthConsumer) appAuthConsumer;
+        if (appAuthConsumer != null) {
+            consumerKey = appAuthConsumer.getConsumerKey();
         }
     }
-    
-    
+
     @PreUpdate
     @PrePersist
     public void preUpdate() {
         fechamodificacion = LocalDateTime.now();
-    }    
-        
+    }
+
     @Override
     public String toString() {
         return "org.javabeanstack.model.appcatalog.Appauthconsumertoken{ idappauthconsumertoken=" + idappauthconsumertoken + " }";

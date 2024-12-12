@@ -32,6 +32,7 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.security.model.IUserSession;
+import org.javabeanstack.web.rest.exceptions.TokenError;
 import org.javabeanstack.ws.resources.IWebResource;
 
 /**
@@ -95,7 +96,7 @@ public abstract class AbstractWebResource implements IWebResource {
         String token = getTokenFromHeader(tokenHeader);
         //Si el token es null
         if (Strings.isNullOrEmpty(token)) {
-            throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
+            throw new TokenError("Debe proporcionar el token de autorización");
         }
         //Si ya esta activo este token en la sesiones
         if (getSecManager().getClientAuthRequestCache(token) != null) {
@@ -108,24 +109,24 @@ public abstract class AbstractWebResource implements IWebResource {
             // Verificar y traer credenciales del servidor y grabar en el local
             if (!verifyTokenInMainServer(token)) {
                 LOGGER.error("Este token ya expiró o es incorrecto Server: " + token);
-                throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");
+                throw new TokenError("Este token ya expiró o es incorrecto");
             }
             userSession = getSecManager().createSessionFromToken(token);            
         }
         //Reverificar en el local
         if (userSession == null) {
             LOGGER.error("Este token ya expiró o es incorrecto: local " + token);
-            throw new org.javabeanstack.web.rest.exceptions.TokenError("Este token ya expiró o es incorrecto");
+            throw new TokenError("Este token ya expiró o es incorrecto");
         }
     }
 
     protected String getTokenFromHeader(String tokenHeader) {
         if (Strings.isNullOrEmpty(tokenHeader)) {
-            throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
+            throw new TokenError("Debe proporcionar el token de autorización");
         }
         String[] tokens = tokenHeader.split("\\ ");
         if (tokens == null || tokens.length < 1) {
-            throw new org.javabeanstack.web.rest.exceptions.TokenError("Debe proporcionar el token de autorización");
+            throw new TokenError("Debe proporcionar el token de autorización");
         }
         return tokens[1];
     }
