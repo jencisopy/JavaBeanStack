@@ -27,6 +27,7 @@ import java.util.List;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.model.IAppAuthConsumerToken;
@@ -61,6 +62,11 @@ public interface IOAuthConsumer {
     boolean isValidToken(IAppAuthConsumerToken authToken);    
     boolean isValidToken(String token, boolean noCheckCredentials);
     boolean isValidToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials);
+
+    IErrorReg checkToken(String token);
+    IErrorReg checkToken(IAppAuthConsumerToken authToken);    
+    IErrorReg checkToken(String token, boolean noCheckCredentials);
+    IErrorReg checkToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials);
     
     String getDataKeyValue(String token, String property);
     String getDataKeyValue(IAppAuthConsumerToken token, String property);

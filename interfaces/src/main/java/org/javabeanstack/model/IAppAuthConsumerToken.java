@@ -53,6 +53,8 @@ public interface IAppAuthConsumerToken extends IDataRow {
     LocalDateTime getLastUsed();
     void setLastUsed(LocalDateTime lastUsed);
 
+    String getConsumerKey();
+    
     IAppAuthConsumer getAppAuthConsumerKey();
     void setAppAuthConsumerKey(IAppAuthConsumer authConsumer);
 }

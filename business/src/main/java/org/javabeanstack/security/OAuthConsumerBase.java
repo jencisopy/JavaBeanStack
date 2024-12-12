@@ -48,6 +48,8 @@ import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.exceptions.TokenGenericException;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
@@ -485,7 +487,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             //Verificar existencia de un token anterior generado con las mismas especificaciones
             // ConsumerKey + uuiDevice
             IAppAuthConsumerToken tokenExists
-                    = findAuthToken(authConsumerToken.getAppAuthConsumerKey().getConsumerKey(),
+                    = findAuthToken(authConsumerToken.getConsumerKey(),
                             authConsumerToken.getUuidDevice());
             if (tokenExists != null) {
                 // Si ya existe un token y esta bloqueado, generar error
@@ -501,7 +503,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             }
         }
         try {
-            IAppAuthConsumer appConsumer = findAuthConsumer(authConsumerToken.getAppAuthConsumerKey().getConsumerKey());
+            IAppAuthConsumer appConsumer = findAuthConsumer(authConsumerToken.getConsumerKey());
             //No existe el consumer key
             if (appConsumer == null) {
                 appConsumer = createAuthConsumer(authConsumerToken.getAppAuthConsumerKey());
@@ -710,6 +712,153 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return verdadero si es válido y falso si no.
      */
     @Override
+    public IErrorReg checkToken(String token) {
+        return checkToken(token, false);
+    }
+
+    /**
+     * Determina si un token es válido o no
+     *
+     * @param authToken
+     * @return verdadero si es válido y falso si no.
+     */
+    @Override
+    public IErrorReg checkToken(IAppAuthConsumerToken authToken) {
+        return checkToken(authToken, false);
+    }
+
+    /**
+     * Determina si un token es válido o no
+     *
+     * @param token token
+     * @param noCheckCredentials
+     * @return verdadero si es válido y falso si no.
+     */
+    @Override
+    public IErrorReg checkToken(String token, boolean noCheckCredentials) {
+        IAppAuthConsumerToken result = findAuthToken(token);
+        IErrorReg errorReturn = new ErrorReg();
+        if (result == null) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(token,"")+", no existe");
+            return errorReturn;
+        }
+        //Si el token esta bloqueado
+        if (result.getBlocked()) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(token,"")+", esta bloqueado");
+            return errorReturn;
+        }
+        if (result.getAppAuthConsumerKey() == null) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(token,"")+", consumer key no existe");
+            return errorReturn;
+        }
+        //Si el consumerKey esta bloqueado
+        if (result.getAppAuthConsumerKey().getBlocked()) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(token,"")+", consumer key esta bloqueado");
+            return errorReturn;
+        }
+        //Si expiro el customerKey
+        if (!result.getAppAuthConsumerKey().getExpiredDate().isAfter(LocalDateTime.now())) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(token,"")+", consumer key expiro");
+            return errorReturn;
+        }
+        if (noCheckCredentials) {
+            return errorReturn;
+        }
+        //No existe la empresa o no tiene acceso a ella
+        if (getCompanyMapped(result) == null){
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(token,"")+", No existe la empresa o no tiene acceso a ella");
+            return errorReturn;
+        }
+        //No existe el usuario
+        if (getUserMapped(result) == null){
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(token,"")+", no existe el usuario");
+            return errorReturn;
+        }
+        if (!dao.isCredentialValid(getUserMapped(result).getIduser(), getCompanyMapped(result).getIdcompany())){
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(token,"")+", credencial inválida");
+            return errorReturn;
+        }
+        return errorReturn;
+    }
+    
+    
+    /**
+     * Determina si un token es válido o no
+     *
+     * @param authToken
+     * @param noCheckCredentials
+     * @return verdadero si es válido y falso si no.
+     */
+    @Override
+    public IErrorReg checkToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials) {
+        IErrorReg errorReturn = new ErrorReg();                    
+        if (authToken == null) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Authtoken es nulo");
+            return errorReturn;
+        }
+        //Si el token esta bloqueado
+        if (authToken.getBlocked()) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(authToken.getToken(),"")+", esta bloqueado");
+            return errorReturn;
+        }
+        if (authToken.getAppAuthConsumerKey() == null) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(authToken.getToken(),"")+", consumer key no existe");
+            return errorReturn;
+        }
+        //Si el consumerKey esta bloqueado
+        if (authToken.getAppAuthConsumerKey().getBlocked()) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(authToken.getToken(),"")+", consumer key esta bloqueado");
+            return errorReturn;
+        }
+        //Si expiro el customerKey
+        if (!authToken.getAppAuthConsumerKey().getExpiredDate().isAfter(LocalDateTime.now())) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(authToken.getToken(),"")+", consumer key expiro");
+            return errorReturn;
+        }
+        if (noCheckCredentials) {
+            return errorReturn;
+        }
+        //No existe la empresa o no tiene acceso a ella
+        if (getCompanyMapped(authToken) == null){
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(authToken.getToken(),"")+", No existe la empresa o no tiene acceso a ella");
+            return errorReturn;
+        }
+        //No existe el usuario
+        if (getUserMapped(authToken) == null){
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(authToken.getToken(),"")+", no existe el usuario");
+            return errorReturn;
+        }
+        if (!dao.isCredentialValid(getUserMapped(authToken).getIduser(), getCompanyMapped(authToken).getIdcompany())){
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: "+Fn.nvl(authToken.getToken(),"")+", credencial inválida");
+            return errorReturn;
+        }
+        return errorReturn;
+    }
+
+    
+    /**
+     * Determina si un token es válido o no
+     *
+     * @param token token
+     * @return verdadero si es válido y falso si no.
+     */
+    @Override
     public boolean isValidToken(String token) {
         return isValidToken(token, false);
     }
@@ -740,17 +889,21 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         //Si el token esta bloqueado
         if (result.getBlocked()) {
+            LOGGER.info("Token: "+Fn.nvl(token,"")+", esta bloqueado");
             return false;
         }
         if (result.getAppAuthConsumerKey() == null) {
+            LOGGER.info("Token: "+Fn.nvl(token,"")+", consumer key no existe");
             return false;
         }
         //Si el consumerKey esta bloqueado
         if (result.getAppAuthConsumerKey().getBlocked()) {
+            LOGGER.info("Token: "+Fn.nvl(token,"")+", consumer key esta bloqueado");            
             return false;
         }
         //Si expiro el customerKey
         if (!result.getAppAuthConsumerKey().getExpiredDate().isAfter(LocalDateTime.now())) {
+            LOGGER.info("Token: "+Fn.nvl(token,"")+", consumer key expiro");            
             return false;
         }
         if (noCheckCredentials) {
@@ -758,10 +911,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         //No existe la empresa o no tiene acceso a ella
         if (getCompanyMapped(result) == null){
+            LOGGER.info("Token: "+Fn.nvl(token,"")+", No existe la empresa o no tiene acceso a ella");            
             return false;
         }
         //No existe el usuario
         if (getUserMapped(result) == null){
+            LOGGER.info("Token: "+Fn.nvl(token,"")+", no existe el usuario");            
             return false;
         }
         return dao.isCredentialValid(getUserMapped(result).getIduser(), getCompanyMapped(result).getIdcompany());

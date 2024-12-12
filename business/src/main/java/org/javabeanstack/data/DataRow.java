@@ -732,6 +732,7 @@ public class DataRow implements IDataRow, Cloneable {
         this.properties = properties;
     }
 
+    @XmlTransient
     @Override
     public String getTextToSign() {
         String retornar = "";

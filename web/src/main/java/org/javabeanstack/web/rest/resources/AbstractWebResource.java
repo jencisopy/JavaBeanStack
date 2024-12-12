@@ -28,6 +28,7 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.security.model.IUserSession;
@@ -86,8 +87,8 @@ public abstract class AbstractWebResource implements IWebResource {
         return oAuthConsumer;
     }
 
-    public Boolean verifyToken(String token) {
-        return getOAuthConsumer().isValidToken(token);
+    public IErrorReg verifyToken(String token) {
+        return getOAuthConsumer().checkToken(token);
     }
 
     protected void setToken(String tokenHeader) {

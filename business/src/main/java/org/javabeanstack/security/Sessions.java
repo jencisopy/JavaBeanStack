@@ -52,6 +52,8 @@ import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.data.IGenericDAO;
+import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
@@ -238,9 +240,10 @@ public class Sessions implements ISessions {
             //Buscar el Token
             IAppAuthConsumerToken authToken = oAuthConsumer.findAuthToken(token);
             //Verificar válidez del token
-            if (!oAuthConsumer.isValidToken(token)) {
-                LOGGER.error("Este token ya expiró o es incorrecto: local " + token);
-                throw new Exception("Este token ya expiró o es incorrecto");
+            IErrorReg error = oAuthConsumer.checkToken(token);
+            if (error.getErrorNumber() > 0) {
+                LOGGER.error(error.getMessage());
+                throw new SessionError(error.getMessage());
             }
             IClientAuthRequestInfo requestInfo = new ClientAuthRequestInfo();
             requestInfo.setAppAuthToken(authToken);

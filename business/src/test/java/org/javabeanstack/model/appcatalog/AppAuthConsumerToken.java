@@ -36,10 +36,12 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppAuthConsumer;
@@ -117,9 +119,15 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     @Column(name = "appuser")
     private String appuser;
 
-    @JoinColumn(name = "idappauthconsumer", referencedColumnName = "idappauthconsumer")
+    @JoinColumn(name = "idappauthconsumer", referencedColumnName = "idappauthconsumer",nullable = true)
     @ManyToOne
     private AppAuthConsumer appAuthConsumer;
+    
+    @Size(max = 100)
+    @Transient
+    private String consumerKey = getConsumerKey();
+    
+
 
     public AppAuthConsumerToken() {
         this.idappauthconsumertoken = 0L;
@@ -250,6 +258,21 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
         this.appuser = appuser;
     }
 
+    @Override
+    public String getConsumerKey() {
+        if (consumerKey != null){
+            return consumerKey;
+        }
+        if (appAuthConsumer == null){
+            return null;
+        }
+        return appAuthConsumer.getConsumerKey();
+    }
+
+    public void setConsumerKey(String consumerKey){
+        this.consumerKey = consumerKey;
+    }
+    
     @XmlElement(type = AppAuthConsumer.class)
     @Override
     public IAppAuthConsumer getAppAuthConsumerKey() {
@@ -259,7 +282,11 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     @Override
     public void setAppAuthConsumerKey(IAppAuthConsumer appAuthConsumer) {
         this.appAuthConsumer = (AppAuthConsumer)appAuthConsumer;
+        if (appAuthConsumer != null){
+            consumerKey = appAuthConsumer.getConsumerKey();            
+        }
     }
+    
     
     @PreUpdate
     @PrePersist
