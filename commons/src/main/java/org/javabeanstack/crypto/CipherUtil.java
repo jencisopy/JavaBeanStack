@@ -25,9 +25,14 @@ package org.javabeanstack.crypto;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -45,12 +50,14 @@ import org.javabeanstack.util.Fn;
  * @author Jorge Enciso
  */
 public class CipherUtil {
+
     public static final String BLOWFISH = "Blowfish";
     public static final String AES_CBC = "AES/CBC/PKCS5Padding";
+    public static final String RSA_ECB = "RSA/ECB/NoPadding";
 
-    private CipherUtil(){
+    private CipherUtil() {
     }
-    
+
     /**
      * Encripta un texto utilizando el algoritmo Blowfish y devuelve el
      * resultado en formato string hexadecimal.
@@ -105,7 +112,6 @@ public class CipherUtil {
         return decryptFromHex(CipherUtil.BLOWFISH, encrypted, key);
     }
 
-   
     /**
      * Desencripta un mensaje cifrado con el algoritmo blowfish, el mensaje esta
      * en formato string base 64.
@@ -234,7 +240,6 @@ public class CipherUtil {
         cipher.init(Cipher.ENCRYPT_MODE, keyspec);
         return cipher.doFinal(clearText.getBytes());
     }
-
 
     /**
      * Encripta un mensaje
@@ -418,11 +423,13 @@ public class CipherUtil {
     }
 
     /**
-     * Devuelve una clave simetrica aleatoria a ser utilizada en un proceso de cifrado
+     * Devuelve una clave simetrica aleatoria a ser utilizada en un proceso de
+     * cifrado
+     *
      * @param algoritm algoritmo (blowfish, aes etc)
      * @param keyBitSize tamaño de la clave
      * @return clave simetrica aleatoria
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      */
     public static SecretKey getSecureRandomKey(String algoritm, int keyBitSize) throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance(algoritm);
@@ -430,14 +437,52 @@ public class CipherUtil {
         keyGenerator.init(keyBitSize, secureRandom);
         return keyGenerator.generateKey();
     }
-    
+
     /**
-     * Devuelve una clave simetrica aleatoria a ser utilizada en un proceso de cifrado
+     * Devuelve una clave simetrica aleatoria a ser utilizada en un proceso de
+     * cifrado
+     *
      * @param algoritm algoritmo (blowfish, aes etc)
      * @return clave simetrica aleatoria
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      */
     public static SecretKey getSecureRandomKey(String algoritm) throws NoSuchAlgorithmException {
         return getSecureRandomKey(algoritm, 256);
     }
+
+    public static byte[] encryptRSA(String plainText, PublicKey publicKey) throws Exception {
+        if (plainText == null){
+            return null;
+        }
+        Cipher cipher = Cipher.getInstance(RSA_ECB);
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        return cipher.doFinal(plainText.getBytes());        
+    }
+
+    public static byte[] decryptRSA(byte[] encryptedText, PrivateKey privateKey) throws Exception {
+        Cipher cipher = Cipher.getInstance(RSA_ECB);
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] decrypted = cipher.doFinal(encryptedText);        
+        int i = 0;
+        while(decrypted[i] == 0) i++;
+        return Arrays.copyOfRange(decrypted, i, decrypted.length);
+    }
+    
+    /**
+     * Genera una clave publica y otra privada
+     *
+     * @param size 
+     * @return
+     * @throws Exception
+     */
+    public static KeyPair generateRSAKeyPair(int size) throws Exception {
+        SecureRandom secureRandom = new SecureRandom();
+        if (size == 0){
+            size = 512;
+        }
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(size, secureRandom);
+        return keyPairGenerator.generateKeyPair();
+    }
+
 }

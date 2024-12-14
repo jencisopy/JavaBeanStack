@@ -76,6 +76,9 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     private Map<String, Object> properties;
     @XmlTransient
+    private String signature="SINFIRMA";
+    
+    @XmlTransient
     private boolean auditable = false;
     private Class<? extends IDataRow> auditTable;
 
@@ -734,6 +737,17 @@ public class DataRow implements IDataRow, Cloneable {
 
     @XmlTransient
     @Override
+    public String getSignature() {
+        return signature;
+    }
+
+    @Override
+    public void setSignature(String signature) {
+        this.signature = signature; 
+    }
+    
+    @XmlTransient
+    @Override
     public String getTextToSign() {
         String retornar = "";
         Field[] fields = getClass().getDeclaredFields();
@@ -767,6 +781,7 @@ public class DataRow implements IDataRow, Cloneable {
                 }
             }
         }
+        retornar += "{SIGNATURE:"+Fn.nvl(signature, "")+"}";
         return retornar;
     }
 }

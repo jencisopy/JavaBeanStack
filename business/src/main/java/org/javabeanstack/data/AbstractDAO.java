@@ -122,9 +122,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         return dbManager.getEntityManager(keyId);
     }
 
-    private Query createQuery(String sessionId, String queryString, Map<String, Object> parameters){
+    protected final Query createQuery(String sessionId, String queryString, Map<String, Object> parameters){
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
         
         parameters = addQueryParams(queryString, parameters);
         Query query = em.createQuery(queryString);
@@ -142,7 +142,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @param parameters objeto parametros
      * @return parametros con los valores adicionales.
      */
-    private Map<String, Object> addQueryParams(String queryString, Map<String, Object> parameters) {
+    protected final Map<String, Object> addQueryParams(String queryString, Map<String, Object> parameters) {
         if (parameters == null) {
             parameters = new HashMap<>();
         }
@@ -180,7 +180,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(entityClass.toString());
 
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
         CriteriaQuery<T> cq = em.getCriteriaBuilder().createQuery(entityClass);
         cq.select(cq.from(entityClass));
@@ -211,7 +211,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             return null;
         }
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
         T row = em.find(entityClass, id);
         if (row == null) {
             return null;
@@ -258,7 +258,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         // Buscar registro por la clave unica
         T row;
-        Query q = getEntityManager(getEntityId(dbLinkInfo)).createQuery(ejb.getQueryUK());
+        Query q = getEntityManager(getEntityManagerId(dbLinkInfo)).createQuery(ejb.getQueryUK());
 
         for (Parameter param : q.getParameters()) {
             q.setParameter(param, ejb.getValue(param.getName()));
@@ -386,7 +386,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(queryString);
 
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
         Query query = em.createQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -506,7 +506,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             String namedQuery,
             Map<String, Object> parameters) throws Exception {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
         Query query = em.createNamedQuery(namedQuery);
         if (parameters != null && !parameters.isEmpty()) {
@@ -594,7 +594,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             int first, int max) throws Exception {
 
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
         Query query = em.createNamedQuery(namedQuery);
         if (parameters != null && !parameters.isEmpty()) {
@@ -633,7 +633,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
         LOGGER.debug(queryString);
 
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
         Query query = em.createNativeQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -672,7 +672,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
         LOGGER.debug(queryString);
 
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
         Query query = em.createNativeQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -715,7 +715,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         queryString = Strings.textMerge(queryString, getQueryConstants(persistUnit));
         LOGGER.debug(queryString);
 
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
         Query query = em.createNativeQuery(queryString, clazz);
         if (parameters != null && !parameters.isEmpty()) {
@@ -750,7 +750,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         sqlString = Strings.textMerge(sqlString, getQueryConstants(persistUnit));
         LOGGER.debug(sqlString);
 
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
         ErrorReg error = new ErrorReg();
         try {
             Query sql = em.createNativeQuery(sqlString);
@@ -875,7 +875,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         IDataResult dataResult = new DataResult();
         IDataRow lastEjb = null;
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
         // Recorrer los objetos a actualizar en la base
         for (Map.Entry<String, List<? extends IDataRow>> entry : dataSet.getMapListSet().entrySet()) {
@@ -963,7 +963,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
     }
 
-    private <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb, boolean auditAble) throws Exception {
+    protected final <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb, boolean auditAble) throws Exception {
         if (!auditAble && !isAuditAble(ejb)) {
             return;
         }
@@ -1193,7 +1193,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> List<T> refreshAll(String sessionId, List<T> rows) throws Exception {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
         for (int i = 0; i <= rows.size(); i++) {
             em.refresh(rows.get(i));
         }
@@ -1340,7 +1340,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     public Connection getConnection(String sessionId) {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         // Para eclipse link
-        Connection connection = getEntityManager(getEntityId(dbLinkInfo))
+        Connection connection = getEntityManager(getEntityManagerId(dbLinkInfo))
                 .unwrap(java.sql.Connection.class);
         return connection;
     }
@@ -1356,13 +1356,13 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public Connection getConnection(String sessionId, IDBConnectFactory conn) {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        EntityManager em = getEntityManager(getEntityId(dbLinkInfo));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
         Connection result = conn.getConnection(em);
         return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    private void populateQueryParameters(Query query, Map<String, Object> parameters, String queryString) {
+    protected final void populateQueryParameters(Query query, Map<String, Object> parameters, String queryString) {
         parameters.entrySet().forEach(entry -> {
             try {
                 if (queryString != null) {
@@ -1441,7 +1441,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @param appUser identificador del usuario.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    private void setAppUser(IDataRow ejb, String appUser) {
+    protected final void setAppUser(IDataRow ejb, String appUser) {
         try {
             if (DataInfo.isFieldExist(ejb.getClass(), "appuser")) {
                 ejb.setValue("appuser", appUser);
@@ -1458,7 +1458,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * datos correcta (unidad de persistencia, sesión id etc).
      * @return id o clave para acceder o crear un entity manager.
      */
-    private String getEntityId(IDBLinkInfo dbLinkInfo) {
+    protected final String getEntityManagerId(IDBLinkInfo dbLinkInfo) {
         LOGGER.debug("getEntityId()");
         String persistUnit;
         if (dbLinkInfo == null) {
@@ -1490,7 +1490,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @param persistUnit unidad de persistencia
      * @return id o clave para acceder o crear un entity manager.
      */
-    private String getEntityId(String persistUnit) {
+    protected final String getEntityId(String persistUnit) {
         LOGGER.debug("getEntityId()");
         if (Strings.isNullorEmpty(persistUnit)) {
             persistUnit = IDBManager.CATALOGO;
@@ -1508,7 +1508,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @param ejb
      * @throws CompanyError
      */
-    private <T extends IDataRow> void checkFieldIdcompany(IDBLinkInfo dbLinkInfo, T ejb) throws CompanyError {
+    protected final <T extends IDataRow> void checkFieldIdcompany(IDBLinkInfo dbLinkInfo, T ejb) throws CompanyError {
         if (dbLinkInfo == null || ejb == null) {
             return;
         }
