@@ -742,7 +742,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public boolean requery(String filterExtra, Map filterParams) {
         this.addFilter(filterExtra);
-        this.filterParams = filterParams;
+        this.addFilterParams(filterParams);
         return requery();
     }
 
@@ -800,11 +800,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (fieldValue != null) {
             Map<String, Object> param = new HashMap();
             param.put("fieldValue", fieldValue);
-            String filter = fieldName + " = :fieldValue";
-            setFilter(filter);
+            String filtro = fieldName + " = :fieldValue";
+            setFilter(filtro);
             setOrder(order);
             setMaxRows(maxrows);
-            setFilterParams(param);
+            addFilterParams(param);
             if (maxrows != 0) {
                 this.requery();
             }
@@ -821,11 +821,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (fieldValue != null && !fieldValue.equals(idParent)) {
             Map<String, Object> param = new HashMap();
             param.put("fieldValue", fieldValue);
-            String filter = fieldName + " = :fieldValue";
-            setFilter(filter);
+            String filtro = fieldName + " = :fieldValue";
+            setFilter(filtro);
             setOrder(order);
             setMaxRows(maxrows);
-            setFilterParams(param);
+            addFilterParams(param);
             this.requery();
             result = true;
         }

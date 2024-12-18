@@ -74,6 +74,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     private String subQueryFromSentence;
     private String subQueryAlias;
     private boolean applyDBQueryFilter = true;
+    private boolean noReturnNulls = false;
 
     /**
      * Asigna la lista de columnas
@@ -90,6 +91,26 @@ public class DataNativeQuery implements IDataNativeQuery {
         return this;
     }
 
+    /**
+     * Si getColumnStr,Int, Number,LocalDate van a devolver valores por defecto 
+     * si el valor de la columna es nulo
+     * @return verdadero si va a devolver valores por defecto si es nulo
+     */
+    @Override
+    public boolean isNoReturnNulls() {
+        return noReturnNulls;
+    }
+
+    /**
+     * Setea la propiedad defaultValues
+     * @param defaultValues 
+     */
+    @Override
+    public void setNoReturnNulls(boolean defaultValues) {
+        this.noReturnNulls = defaultValues;
+    }
+
+    
     /**
      * Asigna la/s entidad/es desde donde se extraeran la información.
      *
@@ -715,7 +736,8 @@ public class DataNativeQuery implements IDataNativeQuery {
             } else {
                 list = dataLink.findByNativeQuery(querySentence, queryParams);
             }
-            result = converToNativeQuery(list, this.columnExpr);
+            Map<String, Object> properties = getProperties();
+            result = converToNativeQuery(list, this.columnExpr, properties);
             this.first = 0;
             this.maxResult = 0;
         } catch (SessionError ex) {
@@ -729,6 +751,17 @@ public class DataNativeQuery implements IDataNativeQuery {
         return result;
     }
 
+    private Map<String, Object> getProperties(){
+        Map<String, Object> properties = new HashMap();
+        if (noReturnNulls){
+            properties.put("noReturnNulls", noReturnNulls);
+        }
+        if (properties.isEmpty()){
+            return null;
+        }
+        return properties;
+    }
+    
     /**
      * Convierte una lista de objetos al tipo IDataQueryModel
      *
@@ -740,7 +773,22 @@ public class DataNativeQuery implements IDataNativeQuery {
         if (source == null) {
             return new ArrayList();
         }
-        return DataQueryModel.convertToDataQueryModel(source, columns);
+        return DataQueryModel.convertToDataQueryModel(source, columns, null);
+    }
+    
+    /**
+     * Convierte una lista de objetos al tipo IDataQueryModel
+     *
+     * @param source lista de registros
+     * @param columns lista de las etiquetas de las columnas
+     * @param properties propiedades para la conversión.
+     * @return devuelve misma lista de registros pero como tipo IDataQueryModel
+     */
+    public static final List<IDataQueryModel> converToNativeQuery(List<Object> source, String columns, Map<String, Object> properties) {
+        if (source == null) {
+            return new ArrayList();
+        }
+        return DataQueryModel.convertToDataQueryModel(source, columns, properties);
     }
 
     /**

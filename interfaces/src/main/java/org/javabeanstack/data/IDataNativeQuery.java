@@ -34,6 +34,19 @@ import java.util.Map;
  */
 public interface IDataNativeQuery {
     /**
+     * Si getColumnStr,Int, Number,LocalDate van a devolver valores por defecto 
+     * si el valor de la columna es nulo
+     * @return verdadero si va a devolver valores por defecto si es nulo
+     */
+    public boolean isNoReturnNulls();
+    
+    /**
+     * Setea la propiedad noReturnNulls
+     * @param noReturnNulls 
+     */
+    public void setNoReturnNulls(boolean noReturnNulls);
+            
+    /**
      * Asigna las columnas que iran en la sentencia SELECT
      * @param columns Son las columnas de la sentencia select
      * @return objeto DataNativeQuery con los datos asignados

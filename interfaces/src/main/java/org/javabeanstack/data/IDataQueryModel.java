@@ -23,6 +23,7 @@ package org.javabeanstack.data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 
 
@@ -57,4 +58,9 @@ public interface IDataQueryModel {
     public void setColumn(String columnName, Object value);
     public void setValue(int index, Object value);
     public void setValue(String columnName, Object value);
+    public Map<String, Object> getProperties();
+    public void setProperties(Map<String, Object> properties);
+    public Object getProperty(String key);
+    public void setProperty(String key, Object value);
+    
 }

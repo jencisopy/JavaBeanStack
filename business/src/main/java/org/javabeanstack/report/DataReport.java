@@ -664,7 +664,7 @@ public class DataReport {
                         + " and included = true";
                 List list = 
                         getDataLink().getDao().findListByQuery(null,select1, params);
-                result.addAll(DataQueryModel.convertToDataQueryModel(list, "entity, expr1, expr2"));
+                result.addAll(DataQueryModel.convertToDataQueryModel(list, "entity, expr1, expr2", null));
             } 
             if (isNullorEmpty(relationType) || "1-*".equals(relationType)) {
                 String select2;                
@@ -676,7 +676,7 @@ public class DataReport {
                         + " and included = true";
                 List list = 
                         getDataLink().getDao().findListByQuery(null,select2, params);
-                result.addAll(DataQueryModel.convertToDataQueryModel(list, "entity, expr1, expr2"));
+                result.addAll(DataQueryModel.convertToDataQueryModel(list, "entity, expr1, expr2", null));
             }
             return result;
         }

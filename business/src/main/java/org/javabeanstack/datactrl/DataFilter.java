@@ -120,7 +120,7 @@ public class DataFilter {
         beforeExecute(context);
         context.removeFilter("borrar");
         context.setFilter(filterExpression);
-        context.setFilterParams(parameters);
+        context.addFilterParams(parameters);
         afterExecute(context);
     }
 

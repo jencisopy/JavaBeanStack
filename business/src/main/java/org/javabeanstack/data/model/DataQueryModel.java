@@ -26,7 +26,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.javabeanstack.data.IDataQueryModel;
@@ -46,6 +48,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     private Object columnId;
     private String[] columnList;
     private Object row;
+    private Map<String, Object> properties;
 
     /**
      *
@@ -60,6 +63,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
             return getColumn(0);
         }
         return columnId;
+    }
+
+    
+    
+    private boolean getNoReturnNulls() {
+        return Fn.toLogical(getProperty("noReturnNulls"));
     }
 
     @Override
@@ -123,9 +132,15 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         // Buscar un nombre de columna en la matriz
         int index = Fn.findInMatrix(columnList, columnName, false);
         if (index < 0) {
+            if (getNoReturnNulls()){
+                return "";
+            }
             return null;
         }
         if (getColumn(index) == null) {
+            if (getNoReturnNulls()){
+                return "";
+            }
             return null;
         }
         return getColumn(index).toString();
@@ -139,6 +154,9 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     @Override
     public String getColumnStr(int index) {
         if (getColumn(index) == null) {
+            if (getNoReturnNulls()){
+                return "";
+            }
             return null;
         }
         return getColumn(index).toString();
@@ -159,12 +177,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof BigDecimal) {
-            return (BigDecimal) getColumn(index);
-        }
         String argument;
         if (getColumn(index) == null) {
             return BigDecimal.ZERO;
+        }
+        if (getColumn(index) instanceof BigDecimal) {
+            return (BigDecimal) getColumn(index);
         }
         argument = getColumn(index).toString().trim();
         if (!StringUtils.isNumeric(argument)) {
@@ -186,12 +204,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof BigDecimal) {
-            return (BigDecimal) getColumn(index);
-        }
         String argument;
         if (getColumn(index) == null) {
             return BigDecimal.ZERO;
+        }
+        if (getColumn(index) instanceof BigDecimal) {
+            return (BigDecimal) getColumn(index);
         }
         argument = getColumn(index).toString().trim();
         if (!StringUtils.isNumeric(argument)) {
@@ -215,12 +233,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof Long) {
-            return (Long) getColumn(index);
-        }
         String argument;
         if (getColumn(index) == null) {
             return 0L;
+        }
+        if (getColumn(index) instanceof Long) {
+            return (Long) getColumn(index);
         }
         argument = getColumn(index).toString().trim();
         if (!StringUtils.isNumeric(argument)) {
@@ -242,12 +260,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof Long) {
-            return (Long) getColumn(index);
-        }
         String argument;
         if (getColumn(index) == null) {
             return 0L;
+        }
+        if (getColumn(index) instanceof Long) {
+            return (Long) getColumn(index);
         }
         argument = getColumn(index).toString().trim();
         if (!StringUtils.isNumeric(argument)) {
@@ -271,12 +289,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof Integer) {
-            return (Integer) getColumn(index);
-        }
         String argument;
         if (getColumn(index) == null) {
             return 0;
+        }
+        if (getColumn(index) instanceof Integer) {
+            return (Integer) getColumn(index);
         }
         argument = getColumn(index).toString().trim();
         if (!StringUtils.isNumeric(argument)) {
@@ -298,12 +316,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         if (index < 0) {
             return null;
         }
-        if (getColumn(index) instanceof Integer) {
-            return (Integer) getColumn(index);
-        }
         String argument;
         if (getColumn(index) == null) {
             return 0;
+        }
+        if (getColumn(index) instanceof Integer) {
+            return (Integer) getColumn(index);
         }
         argument = getColumn(index).toString().trim();
         if (!StringUtils.isNumeric(argument)) {
@@ -328,6 +346,9 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
             return null;
         }
         if (getColumn(index) == null) {
+            if (getNoReturnNulls()){
+                return LocalDates.toDateTime("01/01/1900");
+            }
             return null;
         }
         if (getColumn(index) instanceof LocalDateTime) {
@@ -353,6 +374,9 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
             return null;
         }
         if (getColumn(index) == null) {
+            if (getNoReturnNulls()){
+                return LocalDates.toDateTime("01/01/1900");
+            }
             return null;
         }
         if (getColumn(index) instanceof LocalDateTime) {
@@ -562,15 +586,16 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
      *
      * @param source lista de registros
      * @param columns lista de las etiquetas de las columnas
+     * @param properties
      * @return devuelve misma lista de registros pero como tipo IDataQueryModel
      */
-    public static final List<IDataQueryModel> convertToDataQueryModel(List<Object> source, String columns) {
+    public static final List<IDataQueryModel> convertToDataQueryModel(List<Object> source, String columns, Map<String, Object> properties) {
         if (source == null) {
             return new ArrayList();
         }
         List<IDataQueryModel> target = new ArrayList<>(source.size());
         for (int i = 0; i < source.size(); i++) {
-            target.add(convertToDataQueryModel(source.get(i), columns));
+            target.add(convertToDataQueryModel(source.get(i), columns, properties));
         }
         return target;
     }
@@ -580,9 +605,10 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
      *
      * @param source Array de objetos.
      * @param columns lista de columnas correspondientes al array de objetos.
+     * @param properties
      * @return objeto de tipo DataQueryModel
      */
-    public static final IDataQueryModel convertToDataQueryModel(Object source, String columns) {
+    public static final IDataQueryModel convertToDataQueryModel(Object source, String columns, Map<String, Object> properties) {
         if (source == null) {
             return null;
         }
@@ -590,9 +616,10 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         IDataQueryModel row = new DataQueryModel();
         row.setRow(source);
         row.setColumnList(columnsLabel);
+        row.setProperties(properties);
         return row;
     }
-
+    
     /**
      * Crea los labels o nombres de columnas a partir de una lista de campos.
      *
@@ -637,5 +664,31 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
             exprList[i] = exprList[i].trim();
         }
         return exprList;
+    }
+
+    @Override
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    @Override
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
+    }
+    
+    @Override
+    public Object getProperty(String key) {
+        if (properties == null){
+            return null;
+        }
+        return properties.get(key);
+    }
+
+    @Override
+    public void setProperty(String key, Object value) {
+        if (properties == null){
+            properties = new HashMap();
+        }
+        properties.put(key, value);
     }
 }
