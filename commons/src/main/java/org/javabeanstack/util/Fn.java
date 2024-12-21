@@ -26,6 +26,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -352,4 +353,28 @@ public class Fn {
     public static boolean isEmailValid(String emailAdress){
         return EmailValidator.getInstance().isValid(emailAdress);
     }
+    
+    /**
+     * Devuelve verdadero si el valor que se pasa como parametro es nulo o vacio
+     * @param lista lista de valor
+     * @return verdadero si "string" es nulo o vacio.
+     */
+    public static Boolean isNullorEmpty(List lista) {
+        if (lista != null){
+            return lista.isEmpty();
+        }
+        return lista == null;
+    }    
+    
+    /**
+     * Devuelve verdadero si el valor que se pasa como parametro es nulo o vacio
+     * @param map lista de valor
+     * @return verdadero si "string" es nulo o vacio.
+     */
+    public static Boolean isNullorEmpty(Map map) {
+        if (map != null){
+            return map.isEmpty();
+        }
+        return map == null;
+    }    
 }
