@@ -48,6 +48,9 @@ public class IOUtil {
      * @return verdadero si existe, falso si no
      */
     public static boolean isFileExist(String filePath) {
+        if (Strings.isNullorEmpty(filePath)){
+            return false;
+        }
         File f = new File(filePath);
         return f.exists() && !f.isDirectory();
     }
@@ -59,6 +62,9 @@ public class IOUtil {
      * @return verdadero si existe, falso si no.
      */
     public static boolean isFolderExist(String folder) {
+        if (Strings.isNullorEmpty(folder)){
+            return false;
+        }
         File f = new File(folder);
         return f.exists() && f.isDirectory();
     }
