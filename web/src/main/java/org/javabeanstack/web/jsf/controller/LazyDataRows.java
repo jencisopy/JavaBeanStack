@@ -52,6 +52,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     private static final Logger LOGGER = Logger.getLogger(LazyDataRows.class);
     public AbstractDataController context;
     private boolean noCount = false;
+    private int timesLoaded = 0;
 
     public LazyDataRows(AbstractDataController context) {
         this.context = context;
@@ -218,7 +219,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             }
             if (context.getFacesCtx().getFacesContext().getAttributes().get("nolazyload") != null) {
                 Boolean noLazyLoad = (Boolean) context.getFacesCtx().getFacesContext().getAttributes().get("nolazyload");
-                if (noLazyLoad) {
+                if (timesLoaded > 0 && noLazyLoad) {
                     return context.getDataRows();
                 }
                 context.getFacesCtx().getFacesContext().getAttributes().put("nolazyload", false);
@@ -245,6 +246,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             }
             context.requery();
             List<T> rows = context.getDataRows();
+            timesLoaded++;
             setRowCount(pageSize);            
             if (!noCount) {
                 setRowCount(context.getDAO().getCount(context.getLastQuery(), context.getFilterParams()).intValue());
