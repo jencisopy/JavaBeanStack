@@ -1915,7 +1915,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             //Chequear las filas en busca de errores
             if (!this.checkData(allRows)) {
-                errorApp = new Exception(getErrorMsg(true));
+                if (errorApp != null){
+                    errorApp = new Exception(getErrorMsg(true));
+                }
                 return false;
             }
             //
