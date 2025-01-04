@@ -772,7 +772,7 @@ public class DataRow implements IDataRow, Cloneable {
                         } else if (obj instanceof LocalDateTime) {
                             value = Fn.getValueFormatted(obj, "yyyy-MM-dd'T'HH:mm");
                         } else {
-                            value = obj.toString();
+                            value = obj.toString().replaceAll("\\s+$",""); //se elimina espacios a la derecha.
                         }
                         retornar += "{" + field.getName() + ":" + value + "}";
                     }
