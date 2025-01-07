@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
@@ -168,6 +169,9 @@ public class DataFilter {
                             && annotation.nullOrEmptyExpression().isEmpty()) {
                         continue;
                     }
+                    if ((valor instanceof Number && valor.toString().equals("0"))){
+                        continue;                        
+                    }
                     //Si es nulo y no se tiene que incluir en el filtro
                     if (valor instanceof Boolean && !(Boolean)valor
                             && annotation.falseExpression().isEmpty()) {
@@ -175,6 +179,10 @@ public class DataFilter {
                     }
                     //Si es una lista, es nulo o vacio, no se tiene que incluir en el filtro
                     if (valor instanceof List && ((List)valor).isEmpty()) {
+                        continue;
+                    }
+                    //Si es una lista, es nulo o vacio, no se tiene que incluir en el filtro
+                    if (valor instanceof HashSet && ((HashSet)valor).isEmpty()) {
                         continue;
                     }
                     params2.put(annotation, valor);
