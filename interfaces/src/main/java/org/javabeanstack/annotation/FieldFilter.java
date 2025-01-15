@@ -59,5 +59,7 @@ public @interface FieldFilter {
      */
     String order() default "";
     
-    String falseExpression() default "";
+    String falseExpression() default "false";
+    
+    String ceroInclude() default "false";
 }

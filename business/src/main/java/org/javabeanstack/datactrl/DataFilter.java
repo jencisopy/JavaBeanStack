@@ -49,11 +49,11 @@ public class DataFilter {
     private String filterExpression;
     private Map<String, Object> parameters = new HashMap();
 
-    public DataFilter(){
+    public DataFilter() {
         initParams();
     }
 
-    private void initParams(){
+    private void initParams() {
         LocalDateTime today = today();
         LocalDateTime yesterday = today.minusDays(1L);
         LocalDateTime tomorrow = today.plusDays(1L);
@@ -61,14 +61,14 @@ public class DataFilter {
         addParam("today", today);
         addParam("tomorrow", tomorrow);
         addParam("firstDayWeek", getFirstDayOfWeek());
-        
+
         addParam("firstDayMonth", getFirstDayOfMonth());
         addParam("lastDayMonth", getLastTimeOfDay(getLastDayOfMonth()));
-        
+
         addParam("firstDayYear", getFirstDayOfYear());
         addParam("lastDayYear", getLastTimeOfDay(getLastDayOfYear()));
     }
-    
+
     public String getFilterExpression() {
         return filterExpression;
     }
@@ -107,10 +107,9 @@ public class DataFilter {
         return null;
     }
 
-    public <T extends AbstractDataObject> void beforeExecute(T context){
+    public <T extends AbstractDataObject> void beforeExecute(T context) {
     }
-    
-    
+
     /**
      * Selecciona datos en un controller.
      *
@@ -125,9 +124,9 @@ public class DataFilter {
         afterExecute(context);
     }
 
-    public <T extends AbstractDataObject> void afterExecute(T context){
+    public <T extends AbstractDataObject> void afterExecute(T context) {
     }
-    
+
     /**
      * Crea la sentencia o expresión para el filtrado, utiliza a getSentence()
      * para tal efecto.
@@ -136,7 +135,7 @@ public class DataFilter {
         Map<String, Object> values = getSentence();
         parameters = (Map<String, Object>) values.get("parameters");
         filterExpression = (String) values.get("expression");
-        initParams();        
+        initParams();
     }
 
     /**
@@ -169,20 +168,21 @@ public class DataFilter {
                             && annotation.nullOrEmptyExpression().isEmpty()) {
                         continue;
                     }
-                    if ((valor instanceof Number && valor.toString().equals("0"))){
-                        continue;                        
+                    if ((valor instanceof Number && valor.toString().equals("0"))
+                            && !annotation.ceroInclude().equalsIgnoreCase("true")) {
+                        continue;
                     }
                     //Si es nulo y no se tiene que incluir en el filtro
-                    if (valor instanceof Boolean && !(Boolean)valor
-                            && annotation.falseExpression().isEmpty()) {
+                    if (valor instanceof Boolean && !(Boolean) valor
+                            && !annotation.falseExpression().equalsIgnoreCase("true")) {
                         continue;
                     }
                     //Si es una lista, es nulo o vacio, no se tiene que incluir en el filtro
-                    if (valor instanceof List && ((List)valor).isEmpty()) {
+                    if (valor instanceof List && ((List) valor).isEmpty()) {
                         continue;
                     }
                     //Si es una lista, es nulo o vacio, no se tiene que incluir en el filtro
-                    if (valor instanceof HashSet && ((HashSet)valor).isEmpty()) {
+                    if (valor instanceof HashSet && ((HashSet) valor).isEmpty()) {
                         continue;
                     }
                     params2.put(annotation, valor);

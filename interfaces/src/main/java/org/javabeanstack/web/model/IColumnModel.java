@@ -73,4 +73,7 @@ public interface IColumnModel extends Serializable {
     public void setFilterMode(String filterMode);
     public String getFilterMask(); //Valores posibles (left_blank_10, right_blank_8)
     public void setFilterMask(String filterMask);
+    public String getColumnType(); //Valores posibles (autocomplete, selectonemenu, inputNumber, inputText, outputText)
+    public void setColumnType(String columnType);
+    
 }

@@ -47,6 +47,7 @@ public class ColumnModel implements IColumnModel {
     private String mask;
     private String filterMode;
     private String filterMask;    
+    private String columnType;    
 
     public ColumnModel() {
     }
@@ -295,6 +296,16 @@ public class ColumnModel implements IColumnModel {
     @Override
     public void setFilterMask(String filterMask) {
         this.filterMask = filterMask;
+    }
+
+    @Override
+    public String getColumnType() {
+        return this.columnType;
+    }
+
+    @Override
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
     }
     
     @Override
