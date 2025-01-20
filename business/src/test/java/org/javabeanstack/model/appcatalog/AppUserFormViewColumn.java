@@ -99,7 +99,14 @@ public class AppUserFormViewColumn extends DataRow {
     @Column(name = "columnFilter")
     private String columnFilter;
     
+    @Size(max = 50)
+    @Column(name = "columnType")
+    private String columnType;
 
+    @Size(max = 200)
+    @Column(name = "columnTitle")
+    private String columnTitle;
+    
     public AppUserFormViewColumn() {
     }
 
@@ -224,6 +231,21 @@ public class AppUserFormViewColumn extends DataRow {
         this.columnFilter = columnFilter;
     }
 
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
+    }
+
+    public String getColumnTitle() {
+        return columnTitle;
+    }
+
+    public void setColumnTitle(String columnTitle) {
+        this.columnTitle = columnTitle;
+    }
     
     @Override
     public String toString() {

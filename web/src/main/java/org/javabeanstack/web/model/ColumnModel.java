@@ -47,7 +47,8 @@ public class ColumnModel implements IColumnModel {
     private String mask;
     private String filterMode;
     private String filterMask;    
-    private String columnType;    
+    private String type;    
+    private String title;
 
     public ColumnModel() {
     }
@@ -299,13 +300,23 @@ public class ColumnModel implements IColumnModel {
     }
 
     @Override
-    public String getColumnType() {
-        return this.columnType;
+    public String getType() {
+        return this.type;
     }
 
     @Override
-    public void setColumnType(String columnType) {
-        this.columnType = columnType;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @Override
+    public String getTitle() {
+        return this.title;
+    }
+
+    @Override
+    public void setTitle(String title) {
+        this.title = title;
     }
     
     @Override
