@@ -41,6 +41,8 @@ public interface IDataResult extends Serializable{
     public Exception getException();
     public <T extends IDataRow> T getRowUpdated();
     public <T extends IDataRow> List<T> getRowsUpdated();    
+    
+    public <T extends IDataRow> T getRowUpdated(String key);
     public <T extends IDataRow> List<T> getRowsUpdated(String key);
 
     public void setException(Exception ex);    

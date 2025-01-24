@@ -114,6 +114,25 @@ public class DataResult implements IDataResult {
         return (List<T>) entry.getValue();
     }
 
+    
+    /**
+     * Devuelve el primer ejb del conjunto que ha sido procesado.
+     *
+     * @param <T>
+     * @param key identificador de la lista
+     * @return lista ejb con los datos que han sido grabados.
+     */
+    @Override
+    public <T extends IDataRow> T getRowUpdated(String key) {
+        if (Fn.nvl(key, "").isEmpty()) {
+            key = "1";
+        }
+        if (mapResult.get(key) == null || mapResult.get(key).isEmpty()){
+            return null;
+        }
+        return (T) mapResult.get(key).get(0);
+    }
+    
     /**
      * Devuelve una lista ejb del conjunto que ha sido procesado.
      *

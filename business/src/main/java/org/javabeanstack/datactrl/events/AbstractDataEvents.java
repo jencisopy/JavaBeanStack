@@ -233,7 +233,7 @@ public abstract class AbstractDataEvents<O extends IDataObject, T extends IDataR
      */
     @Override
     public boolean beforeUpdate(boolean allRows) {
-        LOGGER.debug("beforeUpdate IN ");                        
+        LOGGER.debug("beforeUpdate IN ");   
         return true;
     }
 
