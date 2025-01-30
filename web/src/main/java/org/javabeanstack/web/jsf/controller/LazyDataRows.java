@@ -261,6 +261,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 }
             }
             context.setRowSelected(null);
+            context.afterLazyRowsLoad();
             return rows;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);

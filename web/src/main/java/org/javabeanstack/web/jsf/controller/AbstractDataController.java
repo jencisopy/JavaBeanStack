@@ -863,6 +863,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return true;
     }
 
+    protected void afterLazyRowsLoad() {
+        //Implentar en clases derivadas
+    }
+    
     public void doFilter(String table, String filterTag) {
         //Implementar en clases derivadas.
     }

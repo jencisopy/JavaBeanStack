@@ -76,8 +76,8 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     private Map<String, Object> properties;
     @XmlTransient
-    private String signature="SINFIRMA";
-    
+    private String signature = "SINFIRMA";
+
     @XmlTransient
     private boolean auditable = false;
     private Class<? extends IDataRow> auditTable;
@@ -341,6 +341,18 @@ public class DataRow implements IDataRow, Cloneable {
     @Override
     public void setErrors(Map<String, IErrorReg> errorReg) {
         this.errors = errorReg;
+        if (getErrors() != null && !getErrors().isEmpty()) {
+            boolean error = false;
+            for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+                if (!entry.getValue().isWarning()) {
+                    error = true;
+                    break;
+                }
+            }
+            if (error) {
+                setRowChecked(false);
+            }
+        }
     }
 
     /**
@@ -743,9 +755,9 @@ public class DataRow implements IDataRow, Cloneable {
 
     @Override
     public void setSignature(String signature) {
-        this.signature = signature; 
+        this.signature = signature;
     }
-    
+
     @XmlTransient
     @Override
     public String getTextToSign() {
@@ -772,7 +784,7 @@ public class DataRow implements IDataRow, Cloneable {
                         } else if (obj instanceof LocalDateTime) {
                             value = Fn.getValueFormatted(obj, "yyyy-MM-dd'T'HH:mm");
                         } else {
-                            value = obj.toString().replaceAll("\\s+$",""); //se elimina espacios a la derecha.
+                            value = obj.toString().replaceAll("\\s+$", ""); //se elimina espacios a la derecha.
                         }
                         retornar += "{" + field.getName() + ":" + value + "}";
                     }
@@ -781,7 +793,7 @@ public class DataRow implements IDataRow, Cloneable {
                 }
             }
         }
-        retornar += "{SIGNATURE:"+Fn.nvl(signature, "")+"}";
+        retornar += "{SIGNATURE:" + Fn.nvl(signature, "") + "}";
         return retornar;
     }
 }
