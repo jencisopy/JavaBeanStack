@@ -191,7 +191,7 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     }
 
     @Override
-    public void setBlocked(boolean blocked) {
+    public void setBlocked(Boolean blocked) {
         this.blocked = blocked;
     }
 
