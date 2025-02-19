@@ -1101,6 +1101,11 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     @Override
+    public void execSqlProcedure(String sessionId, String procedureName, Map<String, Object> parameters) throws Exception {
+        throw new UnsupportedOperationException("Not supported");
+    }
+    
+    @Override
     public IErrorReg jpqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }

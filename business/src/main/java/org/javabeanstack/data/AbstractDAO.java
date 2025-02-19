@@ -39,7 +39,9 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Parameter;
+import javax.persistence.ParameterMode;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.Table;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.transaction.Status;
@@ -122,10 +124,10 @@ public abstract class AbstractDAO implements IGenericDAO {
         return dbManager.getEntityManager(keyId);
     }
 
-    protected final Query createQuery(String sessionId, String queryString, Map<String, Object> parameters){
+    protected final Query createQuery(String sessionId, String queryString, Map<String, Object> parameters) {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
-        
+
         parameters = addQueryParams(queryString, parameters);
         Query query = em.createQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
@@ -133,7 +135,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         return query;
     }
-    
+
     /**
      * Agrega valores de parametros constantes (ej. :true=true, :false=false
      * etc, :idempresa)
@@ -160,7 +162,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         return parameters;
     }
-    
+
     /**
      * Recupera todos los registros de una tabla
      *
@@ -766,6 +768,39 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Ejecuta un procedimiento almacenado
+     *
+     * @param sessionId identificador de la sesión del usuario
+     * @param procedureName procedimiento almacenado
+     * @param params parámetros de la sentencia.
+     * @throws java.lang.Exception
+     */
+    @Override
+    public void execSqlProcedure(String sessionId, String procedureName, Map<String, Object> params) throws Exception {
+        LOGGER.debug(Strings.replicate("-", 50));
+        LOGGER.debug("execSqlProcedure");
+
+        IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
+        String persistUnit;
+        if (dbLinkInfo == null) {
+            persistUnit = IDBManager.CATALOGO;
+        } else {
+            persistUnit = dbLinkInfo.getPersistUnit();
+        }
+        procedureName = Strings.textMerge(procedureName, getQueryConstants(persistUnit));
+        EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
+
+        StoredProcedureQuery procedure = em.createStoredProcedureQuery(procedureName);
+        if (params != null) {
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                procedure.registerStoredProcedureParameter(entry.getKey(), entry.getValue().getClass(), ParameterMode.IN);
+                procedure.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
+        procedure.execute();
+    }
+
+    /**
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -868,7 +903,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         //Si es por una sesión normal o por dispositivo movil a travez de un 
         //un webservice.
-        if (Fn.nvl(dbLinkInfo.getUuidDevice(),"").isEmpty()){
+        if (Fn.nvl(dbLinkInfo.getUuidDevice(), "").isEmpty()) {
             appUser = dbLinkInfo.getAppUserId();
         } else {
             appUser = left(dbLinkInfo.getUuidDevice(), 32);
@@ -888,7 +923,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                     if (event != null) {
                         event.beforeSave(sessionId, ejb);
                     }
-                    auditable = ejb.isAuditAble();                    
+                    auditable = ejb.isAuditAble();
                     lastEjb = ejb;
                     switch (ejb.getAction()) {
                         case IDataRow.INSERT:
@@ -929,7 +964,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                         event.afterSave(sessionId, ejb);
                     }
                     //Auditoria
-                    auditSave(em, sessionId, ejb, auditable);                    
+                    auditSave(em, sessionId, ejb, auditable);
                 }
                 for (IDataRow ejb : ejbsRes) {
                     if (ejb.getAction() != IDataRow.DELETE) {
@@ -1132,7 +1167,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         Query q;
         q = createQuery(sessionId, queryString, null);
-        
+
         if (maxRows >= 0) {
             q.setMaxResults(maxRows);
         }
@@ -1234,7 +1269,6 @@ public abstract class AbstractDAO implements IGenericDAO {
         return result;
     }
 
-   
     /**
      * Calcula la cantidad de registros que devolveria una sentencia sql
      *
@@ -1378,7 +1412,6 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
         });
     }
-
 
     /**
      * Setea valores predeterminados de ciertas constantes en los queries.
@@ -1602,7 +1635,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         return errorReturn;
     }
-    
+
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Object[]> findListObjsByQuery(String sessionId,

@@ -362,6 +362,17 @@ public interface IGenericDAO extends Serializable {
      * @throws java.lang.Exception
      */
     public IErrorReg sqlExec(String sessionId, String sqlCommand, Map<String, Object> parameters) throws Exception;
+
+    /**
+     * Ejecuta un procedimiento almacenado
+     *
+     * @param sessionId identificador de la sesión del usuario 
+     * @param procedureName procedimiento almacenado
+     * @param params parámetros de la sentencia.
+     * @throws java.lang.Exception
+     */
+    public void execSqlProcedure(String sessionId, String procedureName, Map<String, Object> params) throws Exception;
+            
     /**
      * Ejecuta una sentencia (select, insert, update, remove) sobre la base de
      * datos
