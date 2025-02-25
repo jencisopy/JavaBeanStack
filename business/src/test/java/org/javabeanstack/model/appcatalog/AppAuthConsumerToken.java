@@ -92,6 +92,9 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     @Column(name = "blocked")
     private boolean blocked;
 
+    @Column(name = "deleted")
+    private Boolean deleted;
+    
     @Size(max = 100)
     @Column(name = "userName")
     private String userName;
@@ -195,6 +198,16 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
         this.blocked = blocked;
     }
 
+    @Override
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+    
     @Override
     public String getUserName() {
         return userName;

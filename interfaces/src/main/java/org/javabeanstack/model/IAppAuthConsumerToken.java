@@ -44,6 +44,9 @@ public interface IAppAuthConsumerToken extends IDataRow {
     Boolean getBlocked();
     void setBlocked(Boolean blocked);
 
+    Boolean getDeleted();
+    void setDeleted(Boolean deleted);
+    
     String getUserName();
     void setUserName(String userName);
 

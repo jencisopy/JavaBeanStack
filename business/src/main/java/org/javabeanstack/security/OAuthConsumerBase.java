@@ -938,6 +938,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         if (authToken.getBlocked()) {
             return false;
         }
+        //Si el token esta marcado para borrarse
+        if (Fn.toLogical(authToken.getDeleted())) {
+            return false;
+        }
         if (authToken.getAppAuthConsumerKey() == null) {
             return false;
         }
