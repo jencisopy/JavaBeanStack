@@ -775,6 +775,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @param params parámetros de la sentencia.
      * @throws java.lang.Exception
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void execSqlProcedure(String sessionId, String procedureName, Map<String, Object> params) throws Exception {
         LOGGER.debug(Strings.replicate("-", 50));

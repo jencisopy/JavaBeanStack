@@ -33,6 +33,8 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.apache.log4j.Logger;
+import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 
 import org.javabeanstack.security.model.IUserSession;
@@ -41,7 +43,6 @@ import org.javabeanstack.util.Strings;
 import org.primefaces.PrimeFaces;
 
 public class FacesContextUtil {
-
     private String messageView;
 
     public String getMessageView() {
@@ -125,6 +126,11 @@ public class FacesContextUtil {
         }
     }
 
+    public void showError(Exception exception, Logger logger) {
+        ErrorManager.showError(exception, logger);
+        showError("Error", exception.getMessage());
+    }
+    
     public void showError(String message) {
         showError("Error", message);
     }
