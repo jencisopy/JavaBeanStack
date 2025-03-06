@@ -53,6 +53,7 @@ import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.data.IDataQueryModel;
+import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.resources.IAppResource;
 import org.javabeanstack.security.model.IUserSession;
@@ -107,7 +108,7 @@ public class JasperReportUtil {
      * @throws NamingException
      */
     public void showReport(InputStream report, Map<String, Object> parameters,
-            List<IDataQueryModel> data) throws JRException, IOException, NamingException {
+            List<IDataQueryModel> data) throws JRException, IOException, NamingException, Exception {
 
         Map[] dataRows = convertTo(data);
         String reporte = parameters.get("reportname").toString();
@@ -130,9 +131,12 @@ public class JasperReportUtil {
      */
     public void showReport(String reportName, Map<String, Object> parameters,
             List<IDataQueryModel> data,
-            Class classRef) throws JRException, IOException, NamingException {
+            Class classRef) throws JRException, IOException, NamingException, Exception {
 
         Map[] dataRows = convertTo(data);
+        if (reportName == null){
+            throw new Exception("El nombre del reporte es nulo o no existe");
+        }
         if (!reportName.endsWith(".jasper")) {
             reportName += ".jasper";
         }
@@ -155,7 +159,7 @@ public class JasperReportUtil {
      * @throws NamingException
      */
     public void print(String reportName, Map<String, Object> parameters,
-            JasperPrint jasperPrint) throws JRException, IOException, NamingException {
+            JasperPrint jasperPrint) throws JRException, IOException, NamingException, Exception {
         String reporte;
         if (parameters.containsKey("reportname")) {
             reporte = parameters.get("reportname").toString();
@@ -357,7 +361,12 @@ public class JasperReportUtil {
         if (jasperReport == null && classRef != null) {
             // Buscar en la carpeta resource en el proyecto donde se encuentra classRef
             LOGGER.info(reportNameJasper);
-            jasperReport = (JasperReport) JRLoader.loadObject(IOUtil.getResourceAsStream(classRef, "/reports/" + reportNameJasper));
+            try {
+                jasperReport = (JasperReport) JRLoader.loadObject(IOUtil.getResourceAsStream(classRef, "/reports/" + reportNameJasper));                
+            } catch (NullPointerException e) {
+                ErrorManager.showError(e, LOGGER);
+                throw new JRException("Es posible que no exista el reporte " + Fn.nvl(reportNameJasper,"").toUpperCase());
+            }
         }
         return jasperReport;
     }

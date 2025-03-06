@@ -1022,19 +1022,26 @@ public abstract class AbstractDAO implements IGenericDAO {
                 operacion = "?";
                 break;
         }
-        String device = "";
+        String device = "", appUser = "";
         IUserSession session = getUserSession(sessionId);
         if (session != null) {
+            IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
             if (session.getClientAuthRequestInfo() != null) {
-                device = getDBLinkInfo(sessionId).getUuidDevice();
+                device = dbLinkInfo.getUuidDevice();
             } else {
                 device = session.getIp();
+            }
+            if (Fn.nvl(dbLinkInfo.getUuidDevice(), "").isEmpty()) {
+                appUser = dbLinkInfo.getAppUserId();
+            } else {
+                appUser = left(dbLinkInfo.getUuidDevice(), 32);
             }
         }
         auditEjb.setValue("operacion", operacion);
         auditEjb.setValue("iprequest", device);
         auditEjb.setValue("sessionid", sessionId);
         auditEjb = ejb.copyTo(auditEjb);
+        auditEjb.setValue("appuser", appUser);
         em.persist(auditEjb);
         LOGGER.info(auditEjb);
     }
