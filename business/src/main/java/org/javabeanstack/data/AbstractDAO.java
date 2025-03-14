@@ -1041,7 +1041,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         auditEjb.setValue("iprequest", device);
         auditEjb.setValue("sessionid", sessionId);
         auditEjb = ejb.copyTo(auditEjb);
-        auditEjb.setValue("appuser", appUser);
+        if (DataInfo.isFieldExist(auditEjb.getClass(), "appuser")){
+            auditEjb.setValue("appuser", appUser);            
+        }
         em.persist(auditEjb);
         LOGGER.info(auditEjb);
     }

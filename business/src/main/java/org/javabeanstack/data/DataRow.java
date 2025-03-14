@@ -80,6 +80,7 @@ public class DataRow implements IDataRow, Cloneable {
 
     @XmlTransient
     private boolean auditable = false;
+    @XmlTransient
     private Class<? extends IDataRow> auditTable;
 
     public DataRow() {

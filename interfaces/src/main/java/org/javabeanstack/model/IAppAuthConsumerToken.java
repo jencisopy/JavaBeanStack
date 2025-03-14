@@ -58,6 +58,10 @@ public interface IAppAuthConsumerToken extends IDataRow {
 
     String getConsumerKey();
     
+    String getConsumerName();
+
+    LocalDateTime getExpiredDate();
+    
     IAppAuthConsumer getAppAuthConsumerKey();
     void setAppAuthConsumerKey(IAppAuthConsumer authConsumer);
 }

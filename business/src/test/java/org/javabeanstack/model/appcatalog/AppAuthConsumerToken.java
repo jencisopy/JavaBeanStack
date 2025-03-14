@@ -132,6 +132,13 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
     @Transient
     private String consumerKey = getConsumerKey();
 
+    @Size(max = 100)
+    @Transient
+    private String consumerName = getConsumerName();
+    
+    @Transient
+    private LocalDateTime expiredDate = getExpiredDate();
+    
     public AppAuthConsumerToken() {
         this.idappauthconsumertoken = 0L;
     }
@@ -285,6 +292,37 @@ public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerTok
         this.consumerKey = consumerKey;
     }
 
+    @Override
+    public String getConsumerName() {
+        if (consumerName != null) {
+            return consumerName;
+        }
+        if (appAuthConsumer == null) {
+            return null;
+        }
+        return appAuthConsumer.getConsumerName();
+    }
+
+    public void setConsumerName(String consumerName) {
+        this.consumerName = consumerName;
+    }
+    
+    @Override
+    public LocalDateTime getExpiredDate() {
+        if (expiredDate != null) {
+            return expiredDate;
+        }
+        if (appAuthConsumer == null) {
+            return null;
+        }
+        return appAuthConsumer.getExpiredDate();
+    }
+
+    public void setExpiredDate(LocalDateTime expiredDate) {
+        this.expiredDate = expiredDate;
+    }
+    
+    
     @XmlElement(type = AppAuthConsumer.class)
     @Override
     public IAppAuthConsumer getAppAuthConsumerKey() {
