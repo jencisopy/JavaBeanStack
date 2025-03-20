@@ -263,4 +263,17 @@ public class LocalDates {
         }
         return Duration.between(start, end).toDays();
     }
+    
+    /**
+     * Dias entre dos fechas
+     * @param start fecha inicial
+     * @param end fecha final
+     * @return cantidad de dias entre las fechas dadas
+     */
+    public static Long hoursInterval(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null){
+            return null;
+        }
+        return Duration.between(start, end).toHours();
+    }
 }
