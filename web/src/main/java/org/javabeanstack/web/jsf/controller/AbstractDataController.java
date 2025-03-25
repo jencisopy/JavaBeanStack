@@ -45,7 +45,6 @@ import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.datactrl.uicomponents.IDatatable;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
-import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.xml.IXmlDom;
@@ -267,7 +266,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 this.rowSelected = (T) rowSelected;
             }
         } catch (Exception ex) {
-            ErrorManager.showError(ex, Logger.getLogger(this.getClass()));
+            getFacesCtx().showError(ex, Logger.getLogger(this.getClass()));
         }
     }
 
@@ -580,7 +579,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 return data.get(0).getColumn("maximo");
             }
         } catch (Exception ex) {
-            ErrorManager.showError(ex, Logger.getLogger(getClass()));
+            getFacesCtx().showError(ex, Logger.getLogger(getClass()));
         }
         return null;
     }

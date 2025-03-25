@@ -33,7 +33,6 @@ import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Strings;
-import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.data.services.IAppCompanySrv;
 
@@ -280,7 +279,7 @@ public abstract class AbstractAuthController extends AbstractController {
             this.lastCompanySession = emp;
             this.company = lastCompanySession;
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
+            getFacesCtx().showError(ex, LOGGER);
         }
     }
 
@@ -317,7 +316,7 @@ public abstract class AbstractAuthController extends AbstractController {
                     getFacesCtx().showError("", userSession.getError().getMessage());
                 }
             } catch (Exception ex) {
-                ErrorManager.showError(ex, LOGGER);
+                getFacesCtx().showError(ex, LOGGER);
             }
         } else {
             getFacesCtx().showError("", "Ingrese el usuario y la contraseña");
@@ -386,7 +385,7 @@ public abstract class AbstractAuthController extends AbstractController {
                 userCompanyAllowedList.add(empresa);
             });
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
+            getFacesCtx().showError(ex, LOGGER);
         }
     }
 

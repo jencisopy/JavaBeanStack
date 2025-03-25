@@ -31,7 +31,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.resources.IAppResource;
-import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.security.model.IUserSession;
 import static org.javabeanstack.data.DataNativeQuery.getClassModel;
@@ -85,7 +84,7 @@ public abstract class AbstractUserEnvironment extends AbstractController {
             userIdPrevious = id;
             return userAvatar;
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
+            getFacesCtx().showError(ex, LOGGER);
         }
         return null;
     }
@@ -109,7 +108,7 @@ public abstract class AbstractUserEnvironment extends AbstractController {
             companyIdPrevious = id;
             return companyLogo;
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
+            getFacesCtx().showError(ex, LOGGER);
         }
         return null;
     }
