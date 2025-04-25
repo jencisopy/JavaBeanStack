@@ -308,7 +308,7 @@ public class Strings {
         }
         return result;
     }
-    
+
     /**
      * Fusiona una cadena "text" con valores de los parámetros. Los valores
      * a fusionarse se encierran entre "iniPattern"{} 

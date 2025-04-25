@@ -35,6 +35,7 @@ import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.data.services.IAppCompanySrv;
+import org.javabeanstack.events.IAppSystemEvents;
 
 /**
  * Clase controller de autenticación, recibe peticiones de logeo del usuario lo
@@ -107,6 +108,8 @@ public abstract class AbstractAuthController extends AbstractController {
      * @return objeto con la lógica de las funcionalidas de AppCompany
      */
     public abstract IAppCompanySrv getAppCompanySrv();
+    
+    protected abstract IAppSystemEvents getAppSystemEvents();
 
     @PostConstruct
     public void init() {
@@ -326,16 +329,6 @@ public abstract class AbstractAuthController extends AbstractController {
     }
 
     /**
-     * Se ejecuta en el evento submit del formulario de logeo
-     *
-     * @return verdadero o falso si tuvo exito o no al crear la sesión de
-     * entrada.
-     */
-    public Boolean onSubmit() {
-        return createSession();
-    }
-
-    /**
      * Verifica los datos del usuario, contraseña y empresa para luego crear la
      * sesión de entrada si los datos proveidos fuerón correctos.
      *
@@ -359,6 +352,8 @@ public abstract class AbstractAuthController extends AbstractController {
                 getFacesCtx().getSessionMap().put("userSession", userSession);
             }
             userSession.setCompany(company);
+            //Evento de creación de sessión
+            getAppSystemEvents().onCreateSession();
         } else {
             getFacesCtx().showError("", "Empresa no válida.");
         }
@@ -399,6 +394,8 @@ public abstract class AbstractAuthController extends AbstractController {
         IUserSession sessionOld = getUserSession();
         if (sessionOld != null) {
             IUserSession session = getSecManager().reCreateSession(sessionOld.getSessionId(), idcompany);
+            //Evento de CrearSesion
+            getAppSystemEvents().onCreateSession();
             return session;
         }
         return null;

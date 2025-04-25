@@ -28,12 +28,15 @@ import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.w3c.dom.Document;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.model.IAppSystemParam;
 import org.javabeanstack.security.model.IUserSession;
@@ -145,6 +148,7 @@ public class AppGenericConfig implements IAppConfig {
      * @return el registro AppSystemParam solicitado
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)    
     public IAppSystemParam getSystemParam(Long id) {
         IAppSystemParam appSystemParam;
         String queryString
@@ -167,6 +171,7 @@ public class AppGenericConfig implements IAppConfig {
      * @return registro AppSystemParam solicitado.
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)        
     public IAppSystemParam getSystemParam(String param) {
         String queryString
                 = "select o from AppSystemParam o where LOWER(param) = '" + param.toLowerCase() + "'";
@@ -187,6 +192,7 @@ public class AppGenericConfig implements IAppConfig {
      * @return lista de registros "AppSystemParam"
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)        
     public List<IAppSystemParam> getSystemParams() {
         String queryString
                 = "select o from AppSystemParam o";
@@ -253,4 +259,23 @@ public class AppGenericConfig implements IAppConfig {
         }
     }
 
+    @Override
+    public IErrorReg checkDatabase(String sessionId) throws Exception {
+        return null;
+    }
+
+    @Override
+    public IErrorReg updateDatabase(String sessionId) throws Exception {
+        return null;
+    }
+    
+    @Override
+    public Integer getDBVersionForThisApp(){
+        return 999999;
+    }
+            
+    @Override
+    public Integer getDBVersion(String sessionId){
+        return null;
+    }
 }

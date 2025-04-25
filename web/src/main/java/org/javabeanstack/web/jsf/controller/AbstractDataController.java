@@ -46,6 +46,7 @@ import org.javabeanstack.datactrl.uicomponents.IDatatable;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.events.IAppSystemEvents;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.xml.IXmlDom;
 import org.w3c.dom.Document;
@@ -122,6 +123,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     public abstract void configDataTables();
 
     public abstract void configDataTables(IDatatable dataTable, String nodeName);
+    
+    protected abstract IAppSystemEvents getAppSystemEvents();
 
     public String getXmlResourcePath() {
         return xmlResourcePath;
@@ -736,6 +739,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     public String logout() {
+        getAppSystemEvents().onLogout();
         return facesCtx.logout();
     }
 

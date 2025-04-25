@@ -23,6 +23,7 @@ package org.javabeanstack.config;
 
 import java.util.List;
 import org.javabeanstack.data.IDataResult;
+import org.javabeanstack.error.IErrorReg;
 import org.w3c.dom.Document;
 import org.javabeanstack.model.IAppSystemParam;
 
@@ -40,4 +41,8 @@ public interface IAppConfig {
     String getFileSystemPath(String sessionId);
     IDataResult setSystemParam(IAppSystemParam param) throws Exception;
     void setSystemParams(List<IAppSystemParam> params) throws Exception;
+    IErrorReg updateDatabase(String sessionId) throws Exception; 
+    IErrorReg checkDatabase(String sessionId) throws Exception; 
+    Integer getDBVersionForThisApp();
+    Integer getDBVersion(String sessionId);
 }

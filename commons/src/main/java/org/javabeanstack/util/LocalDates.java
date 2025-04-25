@@ -265,7 +265,7 @@ public class LocalDates {
     }
     
     /**
-     * Dias entre dos fechas
+     * Horas entre dos fechas
      * @param start fecha inicial
      * @param end fecha final
      * @return cantidad de dias entre las fechas dadas
@@ -275,5 +275,18 @@ public class LocalDates {
             return null;
         }
         return Duration.between(start, end).toHours();
+    }
+    
+    /**
+     * Minutos entre dos fechas
+     * @param start fecha inicial
+     * @param end fecha final
+     * @return cantidad de dias entre las fechas dadas
+     */
+    public static Long minutesInterval(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null){
+            return null;
+        }
+        return Duration.between(start, end).toMinutes();
     }
 }

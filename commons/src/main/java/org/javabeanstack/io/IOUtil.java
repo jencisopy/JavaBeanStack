@@ -21,10 +21,14 @@
  */
 package org.javabeanstack.io;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -48,7 +52,7 @@ public class IOUtil {
      * @return verdadero si existe, falso si no
      */
     public static boolean isFileExist(String filePath) {
-        if (Strings.isNullorEmpty(filePath)){
+        if (Strings.isNullorEmpty(filePath)) {
             return false;
         }
         File f = new File(filePath);
@@ -62,7 +66,7 @@ public class IOUtil {
      * @return verdadero si existe, falso si no.
      */
     public static boolean isFolderExist(String folder) {
-        if (Strings.isNullorEmpty(folder)){
+        if (Strings.isNullorEmpty(folder)) {
             return false;
         }
         File f = new File(folder);

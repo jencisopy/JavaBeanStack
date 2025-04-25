@@ -35,7 +35,7 @@ import org.javabeanstack.events.IDataEvents;
  * @param <T> 
   */
 public interface IDataObject <T extends IDataRow>{
-    public boolean      isReadwrite();
+    public boolean      isReadWrite();
     public IDataLink    getDAO();
     public IDataLink    getDAOCatalog();
    
@@ -75,7 +75,7 @@ public interface IDataObject <T extends IDataRow>{
     public void         removeFilter(String key);
     
     public boolean      open();
-    public boolean      open(String order, String filter,boolean readwrite, int maxrows);
+    public boolean      open(String order, String filter, Boolean readwrite, int maxrows);
     public boolean      requery();
     public boolean      requery(String filterExtra, Map<String, Object> filterParams);    
     public boolean      goTo(int rownumber);

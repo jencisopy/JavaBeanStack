@@ -84,7 +84,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     /**
      * Si los datos a recuperar puede ser de lectura y escritura
      */
-    private boolean readWrite;
+    private boolean readWrite = true;
     /**
      * Filtro, se utiliza para seleccionar los datos de la base
      */
@@ -146,7 +146,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return Devuelve true si los datos son de solo lectura
      */
     @Override
-    public boolean isReadwrite() {
+    public boolean isReadWrite() {
         return readWrite;
     }
 
@@ -596,7 +596,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         filters = new HashMap();
         firstRow = 0;
         maxrows = -1;
-        return this.open("", "", true, -1);
+        return this.open("", "", null, -1);
     }
 
     /**
@@ -610,8 +610,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @return verdadero si tu exito la recuperación, falso si no
      */
     @Override
-    public boolean open(String order, String filter, boolean readwrite, int maxrows) {
+    public boolean open(String order, String filter, Boolean readwrite, int maxrows) {
         try {
+            readwrite = (readwrite == null) ? this.readWrite : readwrite;            
             errorApp = null;
             this.beforeOpen(order, filter, readwrite, maxrows);
             //
@@ -778,12 +779,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     public void openOrRequery(String filter) {
-        openOrRequery("", filter, true, -1);
+        openOrRequery("", filter, -1);
     }
 
-    public void openOrRequery(String order, String filter, boolean readwrite, int maxrows) {
+    public void openOrRequery(String order, String filter, int maxrows) {
         if (!this.isOpen()) {
-            this.open(order, filter, true, 0);
+            this.open(order, filter, null, 0);
             if (maxrows == 0) {
                 return;
             }
@@ -795,7 +796,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public boolean openOrRequery(String fieldName, Object fieldValue, String order, int maxrows) {
         boolean result = false;
         if (!this.isOpen() || fieldValue == null) {
-            this.open("", "", true, 0);
+            this.open("", "", null, 0);
         }
         if (fieldValue != null) {
             Map<String, Object> param = new HashMap();
@@ -816,7 +817,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     public boolean openOrRequeryIf(String fieldName, Object fieldValue, String order, int maxrows) {
         boolean result = false;
         if (!this.isOpen() || fieldValue == null) {
-            this.open("", "", true, 0);
+            this.open("", "", null, 0);
         }
         if (fieldValue != null && !fieldValue.equals(idParent)) {
             Map<String, Object> param = new HashMap();

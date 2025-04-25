@@ -213,12 +213,13 @@ public class Sessions implements ISessions {
         // Tiempo de expiración en minutos desde ultima actividad
         session.setIdleSessionExpireInMinutes(idleSessionExpireInMinutes);
 
-        // Metodo que se ejecuta al final del proceso con el fin de que en clases derivadas
-        // se pueda realizar tareas adicionales como anexar otros atributos a la sesión.
-        afterCreateSession(session);
         // Agregar sesión al pool de sesiones
         sessionVar.put(sessionId, session);
         LOGGER.debug("Sesión creada: " + sessionId);
+        
+        // Metodo que se ejecuta al final del proceso con el fin de que en clases derivadas
+        // se pueda realizar tareas adicionales como anexar otros atributos a la sesión.
+        afterCreateSession(session);
         return true;
     }
 
@@ -329,13 +330,14 @@ public class Sessions implements ISessions {
         // Tiempo de expiración en minutos desde ultima actividad
         session.setIdleSessionExpireInMinutes(idleSessionExpireInMinutes);
 
-        // Metodo que se ejecuta al final del proceso con el fin de que en clases derivadas
-        // se pueda realizar tareas adicionales como anexar otros atributos a la sesión.
-        afterCreateSession(session);
         // Agregar sesión al pool de sesiones
         sessionVar.put(token, session);
         //
         LOGGER.debug("Sesión creada: " + token);
+        
+        // Metodo que se ejecuta al final del proceso con el fin de que en clases derivadas
+        // se pueda realizar tareas adicionales como anexar otros atributos a la sesión.
+        afterCreateSession(session);
         return true;
     }
 
@@ -589,7 +591,7 @@ public class Sessions implements ISessions {
      * @param sessionId identificador de la sesión o el token
      * @return DBLinkInfo
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         IDBLinkInfo dbLinkInfo = new DBLinkInfo();

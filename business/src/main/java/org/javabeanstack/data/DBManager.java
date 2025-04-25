@@ -18,13 +18,13 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.data;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.ejb.Lock;
@@ -38,30 +38,38 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Dates;
+import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.Strings;
+import org.javabeanstack.xml.DomW3cParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
- * Contiene metodos para gestionar el acceso a los datos, es utilizado
- *  por GenericDAO 
- * 
+ * Contiene metodos para gestionar el acceso a los datos, es utilizado por
+ * GenericDAO
+ *
  * @author Jorge Enciso
  */
 @Startup
 @Lock(LockType.READ)
-public class DBManager implements IDBManager{
-    private static final Logger LOGGER = Logger.getLogger(DBManager.class);    
+public class DBManager implements IDBManager {
+
+    private static final Logger LOGGER = Logger.getLogger(DBManager.class);
     private int entityIdStrategic = IDBManager.PERSESSION;
-    private Date lastPurge=new Date();
-            
+    private Date lastPurge = new Date();
+
     private final Map<String, Data> entityManagers = new HashMap<>();
 
     @Resource
     SessionContext context;
 
     /**
-     * Devuelve la estrategia de acceso/creación de los entityManagers.
-     * Los valores posibles son: un entityManager por Thread o un entityManager 
-     * por sesión del usuario.
+     * Devuelve la estrategia de acceso/creación de los entityManagers. Los
+     * valores posibles son: un entityManager por Thread o un entityManager por
+     * sesión del usuario.
+     *
      * @return estrategia de acceso/creación de los entityManagers.
      */
     @Override
@@ -69,13 +77,14 @@ public class DBManager implements IDBManager{
         return entityIdStrategic;
     }
 
-    
     /**
-     * Devuelve un entityManager, lo crea si no existe en la unidad de persistencia solicitada
-     * @param key  id thread
+     * Devuelve un entityManager, lo crea si no existe en la unidad de
+     * persistencia solicitada
+     *
+     * @param key id thread
      * @return Devuelve un entityManager
-     */    
-    @Override 
+     */
+    @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public EntityManager getEntityManager(String key) {
         try {
@@ -93,25 +102,25 @@ public class DBManager implements IDBManager{
             purgeEntityManager();
             return em;
         } catch (Exception ex) {
-            ErrorManager.showError(ex,LOGGER);            
+            ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
 
     /**
-     * Crea un entitymanager dentro de un Map utiliza la unidad de persistencia 
+     * Crea un entitymanager dentro de un Map utiliza la unidad de persistencia
      * y el threadid o sessionid del usuario como clave
-     * 
-     * @param key  id thread o sessionid del usuario
+     *
+     * @param key id thread o sessionid del usuario
      * @return el entity manager creado.
      */
-    @Override 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Lock(LockType.WRITE)
-    public EntityManager createEntityManager(String key) {      
+    public EntityManager createEntityManager(String key) {
         EntityManager em;
         try {
-            String persistentUnit = key.substring(0,key.indexOf(':')).toLowerCase();
+            String persistentUnit = key.substring(0, key.indexOf(':')).toLowerCase();
             em = (EntityManager) context.lookup("java:comp/env/persistence/" + persistentUnit);
             Data data = new Data();
             data.em = em;
@@ -119,51 +128,118 @@ public class DBManager implements IDBManager{
             LOGGER.debug("--------- Se ha creado un nuevo EntityManager --------- " + key);
             return em;
         } catch (Exception ex) {
-            ErrorManager.showError(ex,LOGGER);
+            ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
-    
+
     /**
      * Elimina los entityManagers del map, a aquellos que no se esta utilizando
      * en un periodo dado.
      */
-    protected void purgeEntityManager(){
-        LOGGER.debug("purgeEntityManager() "+lastPurge);                        
+    protected void purgeEntityManager() {
+        LOGGER.debug("purgeEntityManager() " + lastPurge);
         Date now = new Date();
         //Solo procesar si la ultima purga fue hace 5 minutos.
-        if (!lastPurge.before(DateUtils.addMinutes(now, -5))){
+        if (!lastPurge.before(DateUtils.addMinutes(now, -5))) {
             return;
         }
         //Purgar aquellos entityManagers que no fueron referenciados hace 5 minutos
-        now = DateUtils.addMinutes(Dates.now(),-5);
-        for(Iterator<Map.Entry<String, Data>> it = entityManagers.entrySet().iterator(); it.hasNext(); ) {
+        now = DateUtils.addMinutes(Dates.now(), -5);
+        for (Iterator<Map.Entry<String, Data>> it = entityManagers.entrySet().iterator(); it.hasNext();) {
             Map.Entry<String, Data> entry = it.next();
-            if(entry.getValue().lastRef.before(now)) {
-                LOGGER.debug("Se elimino entityManager: " + entry.getKey());                
+            if (entry.getValue().lastRef.before(now)) {
+                LOGGER.debug("Se elimino entityManager: " + entry.getKey());
                 it.remove();
-            }        
+            }
         }
         lastPurge = new Date();
-        LOGGER.debug("Se proceso purgeEntityManager "+lastPurge);                                
+        LOGGER.debug("Se proceso purgeEntityManager " + lastPurge);
     }
-    
+
     /**
-     *  Ejecuta rollback de una transacción 
-     */    
-    @Override 
-    @Lock(LockType.WRITE)    
-    public void rollBack(){
+     * Ejecuta rollback de una transacción
+     */
+    @Override
+    @Lock(LockType.WRITE)
+    public void rollBack() {
         try {
-            context.setRollbackOnly();            
-        }
-        catch (Exception exp){
+            context.setRollbackOnly();
+        } catch (Exception exp) {
             //
         }
     }
-    
+
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public static void dbScriptUpdateExecute(IGenericDAO dao, String sessionId, Document domScript, Map<String, Object> parameters) throws Exception {
+
+        List<Element> sqlScriptNodes = DomW3cParser.getChildren(domScript, "/ROOT/SCRIPTS");
+        IErrorReg errorReturn;
+
+        //Inicio================================================
+        String initCommand = "INSERT INTO {schema}.dic_logupdate "
+                + "(secuencia, filename,script, appuser) "
+                + "     values "
+                + "(:secuencia,:filename,:script, :appuser)";
+
+        dao.sqlExec(sessionId, initCommand, parameters);
+
+        String persistUnit = dao.getDBLinkInfo(sessionId).getPersistUnit();
+        String motorDatos = dao.getDataEngine(persistUnit);
+        for (Element sqlScriptNode : sqlScriptNodes) {
+            //Solo se ejecuta los scripts que corresponde a motor de la base 
+            if (!sqlScriptNode.getAttribute("motor").equals(motorDatos)) {
+                continue;
+            }
+            String stringEnd = "\nGO\n";
+            if (!Fn.inList(motorDatos, "SQLSERVER", "Microsoft SQL Server", "SYBASE")) {
+                stringEnd = "\n/\n";
+            }
+            String script = sqlScriptNode.getTextContent();
+            //Actualizar script a ejecutarse
+            parameters.put("script", DomW3cParser.getXmlText(sqlScriptNode));
+            String command = "UPDATE {schema}.dic_logupdate "
+                + " SET script = :script "
+                + " where secuencia = :secuencia";
+            dao.sqlExec(sessionId, command, parameters);
+            parameters.put("script", "");
+            
+            while (!script.isEmpty()) {
+                String sentencia;
+                int posicion = script.toUpperCase().indexOf(stringEnd);
+                if (posicion < 0) {
+                    sentencia = Strings.substr(script, 0);
+                    script = "";
+                } else {
+                    sentencia = Strings.substr(script, 0, posicion );
+                    script = Strings.substr(script, posicion + stringEnd.length());
+                }
+                // Ejecución del Script
+                errorReturn = dao.sqlExec(sessionId, sentencia, parameters);
+                if (errorReturn.getErrorNumber() > 0) {
+                    if (!Fn.toLogical(parameters.get("CONTINUE_WITH_ERROR"))) {
+                        //Revertir proceso==================================
+                        String revertCommand = "delete from {schema}.dic_logupdate where secuencia = :secuencia";
+                        dao.sqlExec(sessionId, revertCommand, parameters);
+                        throw new Exception(errorReturn.getMessage());
+                    } else {
+                        Exception ex = new Exception("ACTUALIZACIÓN BASE DE DATOS " + errorReturn.getMessage());
+                        ErrorManager.showError(ex, LOGGER);
+                    }
+                }
+            }
+        }
+        //Fin ============================================
+        String endCommand = "UPDATE {schema}.dic_logupdate "
+                + " SET concluido = {true} "
+                + " where secuencia = :secuencia";
+
+        dao.sqlExec(sessionId, endCommand, parameters);
+    }
+
     class Data {
-         EntityManager em;
-         Date lastRef = Dates.now();
+
+        EntityManager em;
+        Date lastRef = Dates.now();
     }
 }
