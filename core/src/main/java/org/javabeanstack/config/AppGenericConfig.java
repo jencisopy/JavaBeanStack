@@ -38,6 +38,7 @@ import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.io.IOUtil;
+import org.javabeanstack.log.ILogManager;
 import org.javabeanstack.model.IAppSystemParam;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
@@ -66,6 +67,9 @@ public class AppGenericConfig implements IAppConfig {
 
     @EJB
     protected IGenericDAO dao;
+    
+    @EJB
+    protected ILogManager logMngr;
 
     /**
      * En este atributo se guardan objetos DOM que son accedidos por una clave
@@ -158,7 +162,7 @@ public class AppGenericConfig implements IAppConfig {
                     = dao.findByQuery(null, queryString, null);
             return appSystemParam;
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
+            ErrorManager.showError(ex, LOGGER, logMngr, null);
         }
         return null;
     }
@@ -181,7 +185,7 @@ public class AppGenericConfig implements IAppConfig {
                     = dao.findByQuery(null, queryString, null);
             return appSystemParam;
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
+            ErrorManager.showError(ex, LOGGER, logMngr, null);
         }
         return null;
     }
@@ -199,7 +203,7 @@ public class AppGenericConfig implements IAppConfig {
         try {
             return dao.findListByQuery(null, queryString, null);
         } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
+            ErrorManager.showError(ex, LOGGER, logMngr, null);
         }
         return new ArrayList();
     }

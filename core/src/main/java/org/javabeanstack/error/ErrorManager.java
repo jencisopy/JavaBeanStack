@@ -18,17 +18,18 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.error;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import javax.ejb.EJB;
 import org.apache.log4j.Logger;
 import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.log.ILogManager;
+import org.javabeanstack.model.IAppLogRecord;
 import org.javabeanstack.util.Fn;
+import static org.javabeanstack.util.AppUtil.*;
+import org.javabeanstack.util.Strings;
 
 /**
  * Su función es la de gestionar los errores del sistema
@@ -36,17 +37,12 @@ import org.javabeanstack.util.Fn;
  * @author Jorge Enciso
  */
 public class ErrorManager {
-    @EJB private ILogManager logManager;
 
-
-    /**
-     * Busca en "AppMessage" el nro. de mensaje y devuelve el texto.
-     *
-     * @param msgNumber nro. de mensaje
-     * @return Mensaje solicitado
-     */
-    public String getErrorMessage(Integer msgNumber) {
-        return getErrorMessage(msgNumber, logManager);
+    private static String getAppPackage() {
+        String className = getCallerStack("org.javabeanstack.error.ErrorManager").getClassName();
+        int pos = Strings.findString(".", className, 2);
+        String retornar = Strings.substr(className, 0, pos);
+        return retornar;
     }
 
     /**
@@ -64,20 +60,9 @@ public class ErrorManager {
         return message.getText();
     }
 
-
-   /**
-     * Busca en AppMessage el nro. de mensaje y devuelve el registro en formato IErrorReg
-     *
-     * @param msgNumber nro. de mensaje
-     * @param fieldName nombre del campo
-     * @return objeto IErrorReg con el registro del mensaje
-     */
-    public IErrorReg getErrorReg(Integer msgNumber, String fieldName) {
-        return getErrorReg(msgNumber, fieldName, logManager);
-    }
-
     /**
-     * Busca en AppMessage el nro. de mensaje y devuelve el registro en formato IErrorReg
+     * Busca en AppMessage el nro. de mensaje y devuelve el registro en formato
+     * IErrorReg
      *
      * @param msgNumber nro. de mensaje
      * @param fieldName nombre del campo
@@ -104,11 +89,44 @@ public class ErrorManager {
      */
     public static void showError(Exception ex, Logger logger) {
         String msg = getStackCause(ex);
-        if (msg == null || msg.isEmpty() || msg.length() < 5){
+        if (msg == null || msg.isEmpty() || msg.length() < 5) {
+            logger.error("\n" + getStackTraceText(getAppPackage()));
             logger.error(getStackTrace(ex));
             return;
         }
-        logger.error(msg);
+        logger.error(msg + getStackTraceText(getAppPackage()));
+    }
+
+    /**
+     * Muestra el error utilizando log4j
+     *
+     * @param ex
+     * @param logger
+     * @param logManager
+     * @param sessionId
+     */
+    public static void showError(Exception ex, Logger logger, ILogManager logManager, String sessionId) {
+        String msg = getStackCause(ex);
+        if (msg == null || msg.isEmpty() || msg.length() < 5) {
+            logger.error("\n" + getStackTraceText(getAppPackage()));
+            logger.error(getStackTrace(ex));
+        } else {
+            logger.error(msg + getStackTraceText(getAppPackage()));
+        }
+        //
+        try {
+            IAppLogRecord logRecord = logManager.getNewAppLogRecord(null);
+            String messageInfo = ErrorManager.getStackCause(ex) + getStackTraceText(getAppPackage());
+            logRecord.setMessageInfo(messageInfo);            
+            logRecord.setMessage(ex.getMessage());
+            logRecord.setMessageNumber(1);
+            logRecord.setEvent(IAppLogRecord.EVENT_ERROR);
+            logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
+            logRecord.setAppObject(getCallerStack("org.javabeanstack.error.ErrorManager").getClassName());
+            logManager.dbWrite(logRecord, sessionId);
+        } catch (Exception e) {
+            //
+        }
     }
 
     /**
@@ -119,18 +137,19 @@ public class ErrorManager {
      * @param level
      */
     public static void showError(Exception ex, Logger logger, int level) {
-        if (level == 1){
-            logger.error(getStackCause(ex));            
+        if (level == 1) {
+            logger.error(getStackCause(ex) + getStackTraceText(getAppPackage()));
+        } else {
+            logger.error("\n" + getStackTraceText(getAppPackage()));
+            logger.error(getStackTrace(ex));
         }
-        else{
-            logger.error(getStackTrace(ex));            
-        }
+
     }
-    
-    
+
     /**
      * Devuelve el error con el detalle de la pila de llamadas
-     * @param throwable 
+     *
+     * @param throwable
      * @return el error con el detalle de la pila de llamadas.
      */
     public static String getStackTrace(final Throwable throwable) {
@@ -142,15 +161,16 @@ public class ErrorManager {
 
     /**
      * Devuelve el error producido.
-     * @param err  
+     *
+     * @param err
      * @return error producido.
      */
     public static String getStackCause(final Throwable err) {
-        String errorMsg = ""; 
+        String errorMsg = "";
         if (err.getCause() != null) {
             errorMsg = ErrorManager.getStackCause(err.getCause());
         }
-        errorMsg += Fn.nvl(err.getMessage(),"") + "\n";
+        errorMsg += Fn.nvl(err.getMessage(), "") + "\n";
         return errorMsg;
     }
 }

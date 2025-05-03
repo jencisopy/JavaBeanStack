@@ -18,12 +18,10 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.log;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.TransactionAttribute;
@@ -38,150 +36,136 @@ import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.model.IAppLogRecord;
+import org.javabeanstack.util.AppUtil;
+import org.javabeanstack.util.LocalDates;
 
 /**
- * Su función es gestionar la escritura y lectura del log del sistema.  
- * 
+ * Su función es gestionar la escritura y lectura del log del sistema.
+ *
  * @author Jorge Enciso
  */
-@TransactionAttribute(TransactionAttributeType.REQUIRED)    
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class LogManager implements ILogManager {
+
     private static final Logger LOGGER = Logger.getLogger(LogManager.class);
-    @EJB private IGenericDAO dao;
-    @EJB private ISessions sessions;
+
+    private final String LOG_TYPE_PATH = "org.javabeanstack.model.appcatalog.AppLogEvent";
+
+    @EJB
+    private IGenericDAO dao;
+
+    @EJB
+    private ISessions sessions;
+
+    @Override
+    public <T extends IAppLogRecord> IAppLogRecord getNewAppLogRecord(Class<T> logType) {
+        try {
+            if (logType == null) {
+                Class logTypeDefault = Class.forName(LOG_TYPE_PATH);
+                return (IAppLogRecord) logTypeDefault.getConstructor().newInstance();
+            }
+            return logType.getConstructor().newInstance();
+        } catch (Exception ex) {
+            //continua con la busqueda
+        }
+        return null;
+    }
 
     /**
      * Escribe información de un evento en una tabla de la base de datos.
-     * @param <T>
-     * @param logType    
-     * @param sessionId   identificador de la sesión del usuario
-     * @param message     mensaje
-     * @param messageInfo información adicional del evento producido.
-     * @param messageNumber nro de mensaje (ver en AppMessage)
-     * @param category    (Aplicación, seguridad, Datos)
-                      IAppLogRecord.CATEGORY_APP, IAppLogRecord.CATEGORY_SECURITY, IAppLogRecord.CATEGORY_DATA
-     * @param level       (Error, Informacion, Alerta) 
-                      IAppLogRecord.LEVEL_ERROR, IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
-     * @param object
-     * @param objectField
+     *
+     * @param errorReg objeto error conteniendo la información del evento.
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message,
-                                                  String messageInfo, Integer messageNumber, String category, 
-                                                  String level, String object, String objectField) {
-        Integer lineNumber = 0;
-        Integer choose = 0;
-        return dbWrite(logType, sessionId, message, messageInfo, messageNumber, category,
-                            level, object, objectField, lineNumber, choose);
+    public boolean dbWrite(IErrorReg errorReg) {
+        return dbWrite(null, null, errorReg);
     }
 
-
-    
     /**
      * Escribe información de un evento en una tabla de la base de datos.
+     *
      * @param <T>
-     * @param logType    
-     * @param sessionId   identificador de la sesión del usuario
-     * @param message     mensaje
+     * @param logType
+     * @param error objeto error conteniendo la información del evento.
+     * @param sessionId identificador de la sesión del usuario
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    @Override
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg error) {
+        try {
+            IAppLogRecord logRecord = getNewAppLogRecord(logType);
+            String messageInfo = "";
+            if (error.getException() != null) {
+                messageInfo = ErrorManager.getStackCause(error.getException());
+            }
+            logRecord.setEvent(error.getEvent());
+            logRecord.setLevel(error.getLevel());
+            logRecord.setMessage(error.getMessage());
+            logRecord.setMessageInfo(messageInfo);
+            logRecord.setMessageNumber(error.getErrorNumber());
+            logRecord.setAppObject(error.getEntity());
+            return dbWrite(logRecord, sessionId);
+        } catch (Exception exp) {
+            ErrorManager.showError(exp, LOGGER);
+        }
+        return false;
+    }
+
+    /**
+     * Escribe información de un evento en una tabla de la base de datos.
+     *
+     * @param <T>
+     * @param logType
+     * @param sessionId identificador de la sesión del usuario
+     * @param message mensaje
      * @param messageInfo información adicional del evento producido.
      * @param messageNumber nro de mensaje (ver en AppMessage)
-     * @param category    (Aplicación, seguridad, Datos)
-                      IAppLogRecord.CATEGORY_APP, IAppLogRecord.CATEGORY_SECURITY, IAppLogRecord.CATEGORY_DATA
-     * @param level       (Error, Informacion, Alerta) 
-                      IAppLogRecord.LEVEL_ERROR, IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
+     * @param event ver en IAppLogRecord.
+     * @param level (Error, Informacion, Alerta) IAppLogRecord.LEVEL_ERROR,
+     * IAppLogRecord. LEVEL_ALERT, IAppLogRecord.LEVEL_INFO
      * @param object
-     * @param lineNumber   nro del linea del programa donde se produjo el evento.
-     * @param objectField
-     * @param choose       acción elegida por el usuario ante un pedido de ignorar o cancelar 
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
     public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, String message, String messageInfo,
-                                                        Integer messageNumber, String category, String level, String object,
-                                                        String objectField, Integer lineNumber, Integer choose) {
+            Integer messageNumber, String event, String level, String object) {
         try {
-            T logRecord = logType.getConstructor().newInstance();            
-            logRecord.setCategory(category);
+            IAppLogRecord logRecord = getNewAppLogRecord(logType);
+            logRecord.setEvent(event);
             logRecord.setLevel(level);
             logRecord.setMessage(message);
             logRecord.setMessageInfo(messageInfo);
-            logRecord.setMessageNumber(messageNumber);            
-            logRecord.setObject(object);
-            logRecord.setObjectField(objectField);
-            logRecord.setLineNumber(lineNumber);
-            logRecord.setChoose(choose);
+            logRecord.setMessageNumber(messageNumber);
+            logRecord.setAppObject(object);
 
             return dbWrite(logRecord, sessionId);
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER);
         }
         return false;
     }
 
-
     /**
      * Escribe información de un evento en una tabla de la base de datos.
+     *
      * @param <T>
-     * @param logType    
-     * @param errorReg    objeto error conteniendo la información del evento.
-     * @param sessionId   identificador de la sesión del usuario
-     * @return verdadero si tuvo exito y falso si no.
-     */
-    @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg errorReg) {
-        try {
-            T logRecord = logType.getConstructor().newInstance();
-            String messageInfo = "";
-            if (errorReg.getException() != null) {
-                 messageInfo = ErrorManager.getStackCause(errorReg.getException());
-            }
-            if (Strings.isNullorEmpty(errorReg.getFieldName())){
-                logRecord.setCategory(IAppLogRecord.CATEGORY_APP);                
-            }
-            else {
-                logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);                                
-            }
-            logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
-            logRecord.setMessage(errorReg.getMessage());
-            logRecord.setMessageInfo(messageInfo);
-            logRecord.setMessageNumber(errorReg.getErrorNumber());
-            logRecord.setObject(errorReg.getEntity());
-            logRecord.setObjectField(errorReg.getFieldName());
-            logRecord.setLineNumber(0);
-            logRecord.setChoose(0);
-            
-            return dbWrite(logRecord, sessionId);
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
-        }
-        return false;
-    }
-
-
-    /**
-     * Escribe información de un evento en una tabla de la base de datos.
-     * @param <T>
-     * @param logType    
-     * @param exp    objeto error conteniendo información del evento.
-     * @param sessionId   identificador de la sesión del usuario
+     * @param logType
+     * @param exp objeto error conteniendo información del evento.
+     * @param sessionId identificador de la sesión del usuario
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
     public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, Exception exp) {
         try {
-            T logRecord = logType.getConstructor().newInstance();
-            String messageInfo = ErrorManager.getStackCause(exp);            
-            logRecord.setCategory(IAppLogRecord.CATEGORY_APP);
+            IAppLogRecord logRecord = getNewAppLogRecord(logType);
+            String messageInfo = ErrorManager.getStackCause(exp);
+            logRecord.setEvent(IAppLogRecord.EVENT_ERROR);
             logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
             logRecord.setMessage(exp.getMessage());
             logRecord.setMessageInfo(messageInfo);
-            logRecord.setMessageNumber(0);
-            logRecord.setObject("");
-            logRecord.setObjectField("");
-            logRecord.setLineNumber(0);
-            logRecord.setChoose(0);
-            
+            logRecord.setMessageNumber(1);
+            logRecord.setAppObject(AppUtil.getInstance().getCallerStack().getClassName());
             return dbWrite(logRecord, sessionId);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -189,15 +173,15 @@ public class LogManager implements ILogManager {
         return false;
     }
 
-
     /**
      * Escribe información de un evento en una tabla de la base de datos.
-     * 
+     *
      * @param <T>
-     * @param logRecord     registro del evento.
-     * @param sessionId   identificador de la sesión del usuario
+     * @param logRecord registro del evento.
+     * @param sessionId identificador de la sesión del usuario
      * @return verdadero si tuvo exito y falso si no.
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public <T extends IAppLogRecord> boolean dbWrite(T logRecord, String sessionId) {
         String sesionId = "NINGUNA";
@@ -206,20 +190,22 @@ public class LogManager implements ILogManager {
         String origin = "";
         if (!Strings.isNullorEmpty(sessionId)) {
             IUserSession userSession = sessions.getUserSession(sessionId);
+            if (userSession != null && !Strings.isNullorEmpty(userSession.getIp())) {
+                origin = userSession.getIp();
+            }
             if (userSession != null && userSession.getUser() != null) {
                 idcompany = userSession.getIdCompany();
                 iduser = userSession.getUser().getIduser();
-                origin = userSession.getIp();
                 sesionId = Strings.dateToString(userSession.getTimeLogin())
                         + userSession.getUser().getLogin().trim();
             }
+            logRecord.setIdcompany(idcompany);
+            logRecord.setIduser(iduser);
+            logRecord.setSessionId(sesionId);
+            logRecord.setOrigin(origin);
         }
-        logRecord.setIdcompany(idcompany);
-        logRecord.setIduser(iduser);        
-        logRecord.setSessionId(sesionId);        
-        logRecord.setOrigin(origin);
-        if (logRecord.getLogTimeOrigin() == null){
-            logRecord.setLogTimeOrigin(new Date());            
+        if (logRecord.getLogTimeOrigin() == null) {
+            logRecord.setLogTimeOrigin(LocalDates.now());
         }
         IDataResult dataResult;
         try {
@@ -232,33 +218,32 @@ public class LogManager implements ILogManager {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean fWrite(String message, String file, boolean flag) {
         return true;
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)        
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean logSend() {
         return true;
     }
-    
 
     /**
-     * Busca en una tabla de mensajes en la base de datos "AppMessage" 
-     * el nro. de mensaje y devuelve el registro
+     * Busca en una tabla de mensajes en la base de datos "AppMessage" el nro.
+     * de mensaje y devuelve el registro
      *
      * @param msgNumber nro. de mensaje
      * @return Mensaje solicitado
      */
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)        
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public IAppMessage getAppMessage(Integer msgNumber) {
         try {
-            IAppMessage message = 
-                    dao.findByQuery(null,
-                                    "select o from AppMessage o where nro = " + msgNumber.toString(),
-                                    null);
+            IAppMessage message
+                    = dao.findByQuery(null,
+                            "select o from AppMessage o where nro = " + msgNumber.toString(),
+                            null);
 
             return message;
         } catch (Exception exp) {
@@ -268,19 +253,19 @@ public class LogManager implements ILogManager {
     }
 
     /**
-     * Busca en una tabla de mensajes en la base de datos "AppMessage" 
-     * el nro. de mensaje y devuelve el registro
+     * Busca en una tabla de mensajes en la base de datos "AppMessage" el nro.
+     * de mensaje y devuelve el registro
      *
      * @return Mensaje solicitado
      */
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)        
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<IAppMessage> getAppMessages() {
         try {
-            List<IAppMessage> messages = 
-                    dao.findListByQuery(null,
-                                        "select o from AppMessage o order by nro",
-                                         null);
+            List<IAppMessage> messages
+                    = dao.findListByQuery(null,
+                            "select o from AppMessage o order by nro",
+                            null);
 
             return messages;
         } catch (Exception exp) {

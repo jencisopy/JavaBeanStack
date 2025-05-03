@@ -413,9 +413,9 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
         } catch (NoResultException exp) {
             result = null;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
-            throw exp;
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER);
+            throw e;
         }
         LOGGER.debug("-RESULT-");
         LOGGER.debug(result);
@@ -973,9 +973,9 @@ public abstract class AbstractDAO implements IGenericDAO {
                     }
                 }
                 dataResult.put(entry.getKey(), ejbsRes);
-            } catch (Exception ex) {
+            } catch (Exception e) {
                 dataResult.setRowUpdated(null);
-                String msgError = ErrorManager.getStackCause(ex);
+                String msgError = ErrorManager.getStackCause(e);
                 if (lastEjb != null) {
                     lastEjb.setErrors(msgError, "", 0);
                 }
@@ -983,7 +983,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 dataResult.setSuccess(false);
                 dataResult.setErrorMsg(msgError);
                 dbRollBack();
-                ErrorManager.showError(ex, LOGGER);
+                ErrorManager.showError(e, LOGGER);
                 break;
             }
         }
@@ -1083,7 +1083,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 return true;
             }
         } catch (Exception e) {
-            ErrorManager.showError(e, Logger.getLogger(getClass()));
+            ErrorManager.showError(e, LOGGER);
         }
         return false;
     }
@@ -1116,7 +1116,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 return true;
             }
         } catch (Exception e) {
-            ErrorManager.showError(e, Logger.getLogger(getClass()));
+            ErrorManager.showError(e, LOGGER);
         }
         return false;
     }
@@ -1343,8 +1343,8 @@ public abstract class AbstractDAO implements IGenericDAO {
                 Object object = e.getValue().toString();
                 result.put(e.getKey(), object);
             });
-        } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER);
         }
         return result;
     }
@@ -1611,8 +1611,8 @@ public abstract class AbstractDAO implements IGenericDAO {
                 return false;
             }
             return sessions.checkCompanyAccess(iduser, idcompany);
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER);
         }
         return false;
     }

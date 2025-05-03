@@ -22,6 +22,8 @@
 package org.javabeanstack.events;
 
 import java.io.Serializable;
+import org.apache.log4j.Logger;
+import org.javabeanstack.error.IErrorReg;
 
 /**
  *
@@ -29,8 +31,10 @@ import java.io.Serializable;
  */
 public interface IAppSystemEvents extends Serializable{
     void onCreateSession();
+    void onCreateSession(IErrorReg error);
     void onLogin();
     void onLogout();
     void onLoadPage(String page);
     void onCompanyAccess();
+    void onError(Exception exception, Logger logger);
 }

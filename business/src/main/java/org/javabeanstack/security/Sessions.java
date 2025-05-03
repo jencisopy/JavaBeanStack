@@ -54,12 +54,14 @@ import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.exceptions.SessionError;
+import org.javabeanstack.log.ILogManager;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import static org.javabeanstack.model.IAppLogRecord.*;
 import org.javabeanstack.security.model.ClientAuthRequestInfo;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.util.LocalDates;
@@ -89,6 +91,9 @@ public class Sessions implements ISessions {
 
     @EJB
     private IOAuthConsumer oAuthConsumer;
+    
+    @EJB
+    private ILogManager logMngr;
 
     /**
      * Se ejecuta al instanciarse esta clase.
@@ -146,13 +151,14 @@ public class Sessions implements ISessions {
     @Lock(LockType.WRITE)
     public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes) {
         LOGGER.debug("CREATESESSION IN");
+        IUserSession session;
         try {
             // Verifcar si coincide usuario, contraseña y pasar resultado para ser procesado
-            IUserSession session = login(userLogin, password);
+            session = login(userLogin, password);
             processCreateSession(session, idcompany, idleSessionExpireInMinutes);
             return session;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return null;
     }
@@ -180,18 +186,26 @@ public class Sessions implements ISessions {
             IUserSession sessionCtrl = getUserSession(encrypt(sessionId));
             if (sessionCtrl != null && sessionCtrl.getUser() != null) {
                 session.setUser(null);
-                String mensaje = "Este usuario tiene una sesión activa";
+                String mensaje = session.getUser().getLogin().trim().toUpperCase() + " tiene una sesión activa";
                 LOGGER.debug(mensaje);
                 session.setError(new ErrorReg(mensaje, 4, ""));
+                session.getError().setEntity("SESSIONS.processCreateSession");
+                session.getError().setEvent(EVENT_CREATESESSION);
+                session.getError().setLevel(LEVEL_ALERT);
+                logMngr.dbWrite(session.getError());
                 return false;
             }
         }
         // Verificar si tiene permiso para acceder a los datos de la empresa
         if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
             session.setUser(null);
-            String mensaje = "No tiene autorización para acceder a esta empresa";
+            String mensaje = session.getUser().getLogin().trim().toUpperCase() + " no tiene autorización para acceder a esta empresa";
             LOGGER.debug(mensaje);
             session.setError(new ErrorReg(mensaje, 4, ""));
+            session.getError().setEntity("SESSIONS.processCreateSession");
+            session.getError().setEvent(EVENT_CREATESESSION);
+            session.getError().setLevel(LEVEL_ALERT);
+            logMngr.dbWrite(session.getError());
             return false;
         }
 
@@ -270,8 +284,8 @@ public class Sessions implements ISessions {
             session.setUser(appUser);
             processCreateSessionFromToken(session, authToken, 30);
             return session;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return null;
     }
@@ -372,8 +386,8 @@ public class Sessions implements ISessions {
             //Crear nueva sesión
             processCreateSession(session, idcompany, null);
             return session;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return null;
     }

@@ -45,7 +45,8 @@ import static org.javabeanstack.util.LocalDates.*;
  * @author Jorge Enciso
  */
 public class DataFilter {
-
+    private static final Logger LOGGER = Logger.getLogger(DataFilter.class);
+    
     private String filterExpression;
     private Map<String, Object> parameters = new HashMap();
 
@@ -101,8 +102,8 @@ public class DataFilter {
                 value = field.get(this);
             }
             return value;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, Logger.getLogger(getClass()));
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER);
         }
         return null;
     }
@@ -209,8 +210,8 @@ public class DataFilter {
                     if (!annotation.expression().isEmpty()) {
                         fields.add(annotation);
                     }
-                } catch (Exception ex) {
-                    ErrorManager.showError(ex, Logger.getLogger(getClass()));
+                } catch (Exception e) {
+                    ErrorManager.showError(e, LOGGER);
                 }
             }
         }

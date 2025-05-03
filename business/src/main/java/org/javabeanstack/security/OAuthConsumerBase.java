@@ -1032,8 +1032,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             Long iduser = Long.valueOf(getDataKeyValue(token, "idappuser"));
             IAppUser user = dao.findByQuery(null, "select o from AppUserLight o where iduser = " + iduser, null);
             return user;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
@@ -1051,8 +1051,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             Long iduser = Long.valueOf(getDataKeyValue(token, "idappuser"));
             IAppUser user = dao.findByQuery(null, "select o from AppUserLight o where iduser = " + iduser, null);
             return user;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
@@ -1070,8 +1070,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             Long idcompany = Long.valueOf(getDataKeyValue(token, "idcompany"));
             IAppCompany company = dao.findByQuery(null, "select o from AppCompanyLight o where idcompany = " + idcompany, null);
             return company;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
@@ -1089,8 +1089,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             Long idcompany = Long.valueOf(getDataKeyValue(token, "idcompany"));
             IAppCompany company = dao.findByQuery(null, "select o from AppCompanyLight o where idcompany = " + idcompany, null);
             return company;
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
@@ -1114,8 +1114,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             IUserSession userSession = new UserSession();
             userSession.setUser(user);
             return getAppCompanySrv().getAppCompanyLight(userSession);
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
@@ -1132,7 +1132,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         try {
             dao.checkAuthConsumerData(data);
             return true;
-        } catch (Exception exp) {
+        } catch (Exception ex) {
             //
         }
         return false;

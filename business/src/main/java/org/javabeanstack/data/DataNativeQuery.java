@@ -528,8 +528,8 @@ public class DataNativeQuery implements IDataNativeQuery {
         if (joinParams.isEmpty() && getEntityList().length > 1) {
             try {
                 fromExpr = dataLink.getEntitiesRelation(entityExpr, "", schema);
-            } catch (Exception exp) {
-                ErrorManager.showError(exp, LOGGER);
+            } catch (Exception ex) {
+                ErrorManager.showError(ex, LOGGER);
             }
         } // Si existe los parámetros de join crear la expresión a partir de sus parámetros.
         else if (!joinParams.isEmpty()) {
@@ -743,7 +743,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         } catch (SessionError ex) {
             throw new SessionError("La sesión expiró o es inválida");
         } catch (Exception ex) {
-            ErrorManager.showError(ex, Logger.getLogger(DataNativeQuery.class));
+            ErrorManager.showError(ex, LOGGER);
         }
         if (result == null){
             result = new ArrayList<>();

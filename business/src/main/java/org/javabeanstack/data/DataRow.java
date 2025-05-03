@@ -92,8 +92,8 @@ public class DataRow implements IDataRow, Cloneable {
         Object obj = null;
         try {
             obj = super.clone();
-        } catch (CloneNotSupportedException ex) {
-            ErrorManager.showError(ex, LOGGER);
+        } catch (CloneNotSupportedException e) {
+            ErrorManager.showError(e, LOGGER);
         }
         return obj;
     }

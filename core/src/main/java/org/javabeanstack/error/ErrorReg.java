@@ -37,6 +37,9 @@ public class ErrorReg implements IErrorReg{
     private String[] fieldNames;    
     private Exception exception;
     private boolean warning = false;
+    private String ipRequest = "";
+    private String event = "ERROR";
+    private String level = "E";
     
     public ErrorReg(){
     }
@@ -90,6 +93,21 @@ public class ErrorReg implements IErrorReg{
     }
 
     @Override
+    public String getIpRequest() {
+        return ipRequest;
+    }
+
+    @Override
+    public String getEvent() {
+        return event;
+    }
+
+    @Override
+    public String getLevel() {
+        return level;
+    }
+    
+    @Override
     public void setEntity(String entity) {
         this.entity = entity;
     }
@@ -123,6 +141,21 @@ public class ErrorReg implements IErrorReg{
     @Override
     public void setWarning(boolean warning) {
         this.warning = warning;
+    }
+
+    @Override
+    public void setIpRequest(String ip) {
+        this.ipRequest = ip;
+    }
+
+    @Override
+    public void setEvent(String event) {
+        this.event = event;
+    }
+
+    @Override
+    public void setLevel(String level) {
+        this.level = level;
     }
 }
 

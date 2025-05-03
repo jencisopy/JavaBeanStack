@@ -21,7 +21,7 @@
 */
 package org.javabeanstack.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import org.javabeanstack.data.IDataRow;
 
 /**
@@ -29,9 +29,13 @@ import org.javabeanstack.data.IDataRow;
  * @author Jorge Enciso
  */
 public interface IAppLogRecord extends IDataRow{
-    public static final String CATEGORY_APP = "A";
-    public static final String CATEGORY_SECURITY = "S";
-    public static final String CATEGORY_DATA = "D";
+    public static final String EVENT_CREATESESSION = "CREATESESSION";
+    public static final String EVENT_LOGIN = "LOGIN";
+    public static final String EVENT_LOGOUT = "LOGOUT";
+    public static final String EVENT_ERROR = "ERROR";
+    public static final String EVENT_COMPANY_IN = "COMPANYIN";
+    public static final String EVENT_LOAD_PAGE = "LOADPAGE";
+    
     public static final String LEVEL_ERROR = "E";
     public static final String LEVEL_ALERT = "A";    
     public static final String LEVEL_INFO = "I";
@@ -42,33 +46,25 @@ public interface IAppLogRecord extends IDataRow{
     Long getIduser();    
     String getLevel();
     String getOrigin();
-    String getCategory();
-    Date getLogTime();
-    Date getLogTimeOrigin();
+    String getEvent();
+    LocalDateTime getLogTime();
+    LocalDateTime getLogTimeOrigin();
     String getMessage();
     String getMessageInfo();        
     Integer getMessageNumber();    
-    Integer getErrorNumber();
-    Integer getLineNumber();
-    String getObject();
-    String getObjectField();
-    Integer getChoose();
+    String getAppObject();
     
     void setSessionId(String sessionId);
     void setIdlog(Long idlog);    
     void setIdcompany(Long idcompany);
     void setIduser(Long iduser);    
-    void setCategory(String category);
+    void setEvent(String event);
     void setLevel(String level);    
-    void setLogTime(Date dateTime);
-    void setLogTimeOrigin(Date dateTimeOrigin);
+    void setLogTime(LocalDateTime dateTime);
+    void setLogTimeOrigin(LocalDateTime dateTimeOrigin);
     void setOrigin(String origin);
     void setMessage(String message);
     void setMessageInfo(String messageInfo);    
     void setMessageNumber(Integer messageNumber);    
-    void setLineNumber(Integer lineNumber);    
-    void setErrorNumber(Integer errorNumber);
-    void setObject(String object);
-    void setObjectField(String objectField);
-    void setChoose(Integer choose);
+    void setAppObject(String object);
 }

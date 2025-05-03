@@ -124,7 +124,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
 
     public abstract void configDataTables(IDatatable dataTable, String nodeName);
     
-    protected abstract IAppSystemEvents getAppSystemEvents();
+    protected abstract IAppSystemEvents getAppSysEvents();
 
     public String getXmlResourcePath() {
         return xmlResourcePath;
@@ -739,7 +739,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     public String logout() {
-        getAppSystemEvents().onLogout();
+        getAppSysEvents().onLogout();
         return facesCtx.logout();
     }
 

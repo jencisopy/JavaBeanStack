@@ -563,7 +563,7 @@ public abstract class AbstractDataService implements IDataService {
                 }
             }
         } catch (Exception ex) {
-            ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
+            ErrorManager.showError(ex, LOGGER);
         }
         return true;
     }
@@ -652,7 +652,7 @@ public abstract class AbstractDataService implements IDataService {
             } catch (Exception ex) {
                 row.setFieldChecked(fieldName, false);
                 result = new ErrorReg(ErrorManager.getStackCause(ex), 50000, fieldName);
-                ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
+                ErrorManager.showError(ex, LOGGER);
                 break;
             }
         }
@@ -735,8 +735,8 @@ public abstract class AbstractDataService implements IDataService {
                     }
                 }
             }
-        } catch (Exception exp) {
-            ErrorManager.showError(exp, LOGGER);
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
         }
         // Ejecutar metodos de chequeo de datos
         for (Method method : this.methodList) {
@@ -772,7 +772,7 @@ public abstract class AbstractDataService implements IDataService {
                 row.setFieldChecked(fieldName, false);
                 result = new ErrorReg(ErrorManager.getStackCause(ex), 50000, fieldName);
                 errors.put(fieldName.toLowerCase(), result);
-                ErrorManager.showError(ex, Logger.getLogger(AbstractDataService.class));
+                ErrorManager.showError(ex, LOGGER);
             }
         }
         row.setErrors(errors);

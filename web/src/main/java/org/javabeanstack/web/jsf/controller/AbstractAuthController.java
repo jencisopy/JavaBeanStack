@@ -35,6 +35,8 @@ import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.data.services.IAppCompanySrv;
+import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IAppSystemEvents;
 
 /**
@@ -109,7 +111,7 @@ public abstract class AbstractAuthController extends AbstractController {
      */
     public abstract IAppCompanySrv getAppCompanySrv();
     
-    protected abstract IAppSystemEvents getAppSystemEvents();
+    protected abstract IAppSystemEvents getAppSysEvents();
 
     @PostConstruct
     public void init() {
@@ -343,19 +345,30 @@ public abstract class AbstractAuthController extends AbstractController {
         if (company != null) {
             result = true;
             IUserSession userSession = getSecManager().createSession(userLogin, password, company.getIdcompany(), null);
+            userSession.setIp(getFacesCtx().getIp());
+            userSession.setHost(getFacesCtx().getHost());
             if (userSession.getError() != null) {
                 result = false;
+                //Error en evento de creación de sessión
                 getFacesCtx().showError("", userSession.getError().getMessage());
+                userSession.getError().setIpRequest(userSession.getIp());
+                getAppSysEvents().onCreateSession(userSession.getError());
             } else {
-                userSession.setIp(getFacesCtx().getIp());
-                userSession.setHost(getFacesCtx().getHost());
                 getFacesCtx().getSessionMap().put("userSession", userSession);
+                userSession.setCompany(company);
+                //Evento de creación de sessión
+                getAppSysEvents().onCreateSession();
             }
-            userSession.setCompany(company);
-            //Evento de creación de sessión
-            getAppSystemEvents().onCreateSession();
         } else {
             getFacesCtx().showError("", "Empresa no válida.");
+            //Error en evento de creación de sessión
+            IErrorReg error = new ErrorReg();
+            error.setErrorNumber(50000);
+            error.setMessage("Empresa no válida");
+            error.setFieldName("idcompany");
+            error.setEntity("USUARIO");
+            error.setIpRequest(getFacesCtx().getIp());
+            getAppSysEvents().onCreateSession(error);
         }
         if (result) {
             getFacesCtx().addCallbackParam("originalURL", originalURL);
@@ -395,7 +408,7 @@ public abstract class AbstractAuthController extends AbstractController {
         if (sessionOld != null) {
             IUserSession session = getSecManager().reCreateSession(sessionOld.getSessionId(), idcompany);
             //Evento de CrearSesion
-            getAppSystemEvents().onCreateSession();
+            getAppSysEvents().onCreateSession();
             return session;
         }
         return null;
