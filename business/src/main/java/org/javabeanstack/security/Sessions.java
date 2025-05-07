@@ -54,7 +54,7 @@ import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.exceptions.SessionError;
-import org.javabeanstack.log.ILogManager;
+import org.javabeanstack.log.ILogManagerSecurity;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
@@ -93,7 +93,7 @@ public class Sessions implements ISessions {
     private IOAuthConsumer oAuthConsumer;
     
     @EJB
-    private ILogManager logMngr;
+    private ILogManagerSecurity logMngr;
 
     /**
      * Se ejecuta al instanciarse esta clase.
@@ -149,12 +149,12 @@ public class Sessions implements ISessions {
      */
     @Override
     @Lock(LockType.WRITE)
-    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes) {
+    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, Map<String, Object> otherParams) {
         LOGGER.debug("CREATESESSION IN");
         IUserSession session;
         try {
             // Verifcar si coincide usuario, contraseña y pasar resultado para ser procesado
-            session = login(userLogin, password);
+            session = login(userLogin, password, otherParams);
             processCreateSession(session, idcompany, idleSessionExpireInMinutes);
             return session;
         } catch (Exception e) {
@@ -189,7 +189,7 @@ public class Sessions implements ISessions {
                 String mensaje = session.getUser().getLogin().trim().toUpperCase() + " tiene una sesión activa";
                 LOGGER.debug(mensaje);
                 session.setError(new ErrorReg(mensaje, 4, ""));
-                session.getError().setEntity("SESSIONS.processCreateSession");
+                session.getError().setEntity(getClass().getName());
                 session.getError().setEvent(EVENT_CREATESESSION);
                 session.getError().setLevel(LEVEL_ALERT);
                 logMngr.dbWrite(session.getError());
@@ -202,7 +202,7 @@ public class Sessions implements ISessions {
             String mensaje = session.getUser().getLogin().trim().toUpperCase() + " no tiene autorización para acceder a esta empresa";
             LOGGER.debug(mensaje);
             session.setError(new ErrorReg(mensaje, 4, ""));
-            session.getError().setEntity("SESSIONS.processCreateSession");
+            session.getError().setEntity(getClass().getName());            
             session.getError().setEvent(EVENT_CREATESESSION);
             session.getError().setLevel(LEVEL_ALERT);
             logMngr.dbWrite(session.getError());
@@ -454,11 +454,12 @@ public class Sessions implements ISessions {
      *
      * @param userLogin usuario
      * @param password contraseña.
+     * @param otherParams
      * @return userSession conteniendo información de la sesión del usuario
      * @throws Exception
      */
     @Override
-    public IUserSession login(String userLogin, String password) throws Exception {
+    public IUserSession login(String userLogin, String password, Map<String, Object> otherParams) throws Exception {
         LOGGER.debug("LOGIN IN");
         String mensaje;
         Map<String, Object> params = new HashMap<>();
@@ -644,7 +645,7 @@ public class Sessions implements ISessions {
             String userLogin = data.getUserLogin();
             String userPass = data.getUserPass();
             if (!Fn.nvl(userLogin, "").isEmpty()) {
-                IUserSession session = login(userLogin, userPass);
+                IUserSession session = login(userLogin, userPass, null);
                 if (session == null || session.getError() != null) {
                     if (session != null && session.getError() != null){
                         LOGGER.info("Consumer data ERROR: "+session.getError().getMessage());

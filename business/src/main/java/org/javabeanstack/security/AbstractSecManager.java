@@ -66,11 +66,12 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
      * @param idcompany empresa que esta solicitando ingresar
      * @param idleSessionExpireInMinutes minutos sin actividad antes de cerrar
      * la sesión.
+     * @param otherParams
      * @return objeto conteniendo datos del login exitoso o rechazado
      */
     @Override
-    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes) {
-        return getSessions().createSession(userLogin, password, idcompany, idleSessionExpireInMinutes);
+    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, Map<String, Object> otherParams) {
+        return getSessions().createSession(userLogin, password, idcompany, idleSessionExpireInMinutes, otherParams);
     }
 
     /**
@@ -104,13 +105,14 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
      *
      * @param userLogin
      * @param password
+     * @param otherParams
      * @return verdadero si sus credenciales para el logeo son válidas o falso
      * si no
      * @throws Exception
      */
     @Override
-    public Boolean login(String userLogin, String password) throws Exception {
-        IUserSession session = getSessions().login(userLogin, password);
+    public Boolean login(String userLogin, String password, Map<String, Object> otherParams) throws Exception {
+        IUserSession session = getSessions().login(userLogin, password, otherParams);
         return session != null && session.getUser() != null;
     }
 
@@ -119,12 +121,13 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
      *
      * @param userLogin usuario
      * @param password palabra clave.
+     * @param otherParams
      * @return userSession conteniendo información de la sesión del usuario
      * @throws Exception
      */
     @Override
-    public IUserSession login2(String userLogin, String password) throws Exception {
-        return getSessions().login(userLogin, password);
+    public IUserSession login2(String userLogin, String password, Map<String, Object> otherParams) throws Exception {
+        return getSessions().login(userLogin, password, otherParams);
     }
 
     /**

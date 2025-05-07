@@ -40,12 +40,17 @@ public interface IAppLogRecord extends IDataRow{
     public static final String LEVEL_ALERT = "A";    
     public static final String LEVEL_INFO = "I";
     
+    public static final String CATEGORY_APP = "A";
+    public static final String CATEGORY_SECURITY = "S";
+    public static final String CATEGORY_DATA = "D";    
+    
     Long getIdlog();
     String getSessionId();
     Long getIdcompany();
     Long getIduser();    
     String getLevel();
-    String getOrigin();
+    String getCategory();
+    String getIpRequestFrom();
     String getEvent();
     LocalDateTime getLogTime();
     LocalDateTime getLogTimeOrigin();
@@ -53,6 +58,7 @@ public interface IAppLogRecord extends IDataRow{
     String getMessageInfo();        
     Integer getMessageNumber();    
     String getAppObject();
+    String getWebPage();
     
     void setSessionId(String sessionId);
     void setIdlog(Long idlog);    
@@ -60,11 +66,13 @@ public interface IAppLogRecord extends IDataRow{
     void setIduser(Long iduser);    
     void setEvent(String event);
     void setLevel(String level);    
+    void setCategory(String category);    
     void setLogTime(LocalDateTime dateTime);
     void setLogTimeOrigin(LocalDateTime dateTimeOrigin);
-    void setOrigin(String origin);
+    void setIpRequestFrom(String origin);
     void setMessage(String message);
     void setMessageInfo(String messageInfo);    
     void setMessageNumber(Integer messageNumber);    
     void setAppObject(String object);
+    void setWebPage(String object);
 }

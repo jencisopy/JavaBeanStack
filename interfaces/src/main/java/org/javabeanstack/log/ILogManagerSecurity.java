@@ -21,23 +21,9 @@
 */
 package org.javabeanstack.log;
 
-import java.util.List;
-import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.model.IAppMessage;
-import org.javabeanstack.model.IAppLogRecord;
-
 /**
  *
  * @author Jorge Enciso
  */
-public interface ILogManager {
-    IAppMessage getAppMessage(Integer msgNumber);
-    List<IAppMessage> getAppMessages();    
-    
-    boolean dbWrite(IErrorReg errorReg);
-    
-    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg errorReg);
-    <T extends IAppLogRecord> boolean dbWrite(T logRecord, String sessionId);
-
-    <T extends IAppLogRecord> IAppLogRecord getNewAppLogRecord(Class<T> logType);
+public interface ILogManagerSecurity extends ILogManager {
 }

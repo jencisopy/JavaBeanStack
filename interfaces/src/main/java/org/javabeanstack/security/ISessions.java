@@ -1,5 +1,6 @@
 package org.javabeanstack.security;
 
+import java.util.Map;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
@@ -13,10 +14,10 @@ import org.javabeanstack.security.model.IClientAuthRequestInfo;
 public interface ISessions {
     Boolean checkCompanyAccess(Long iduser, Long idcompany) throws Exception;
     IUserSession createSessionFromToken(String authToken);
-    IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes);
+    IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, Map<String, Object> otherParams);
     IUserSession reCreateSession(String sessionId, Object idcompany);
     IUserSession getUserSession(String sessionId);
-    IUserSession login(String userLogin, String password) throws Exception;
+    IUserSession login(String userLogin, String password, Map<String, Object> otherParams) throws Exception;
     IDBLinkInfo getDBLinkInfo(String sessionId);    
     IClientAuthRequestInfo getClientAuthRequestCache(String token);        
     boolean isUserValid(Long iduser) throws Exception;

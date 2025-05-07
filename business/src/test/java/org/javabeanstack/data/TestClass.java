@@ -37,7 +37,7 @@ public class TestClass {
             
             String appuser_login = (System.getenv("APP_USER_LOGIN") != null) ? System.getenv("APP_USER_LOGIN") : "test1";
             String appuser_pass = (System.getenv("APP_USER_PASS") != null) ? System.getenv("APP_USER_PASS") : "test1";
-            Long app_idcompany = Long.parseLong((System.getenv("APP_IDCOMPANY") != null) ? System.getenv("APP_IDCOMPANY") : "2");
+            Long app_idcompany = Long.valueOf((System.getenv("APP_IDCOMPANY") != null) ? System.getenv("APP_IDCOMPANY") : "2");
             
             Properties p = new Properties();
             p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
@@ -50,7 +50,7 @@ public class TestClass {
             context = new InitialContext(p);
 
             ISecManager secMngr = (ISecManager) context.lookup(jndiProject + "SecManager!org.javabeanstack.security.ISecManagerRemote");
-            IUserSession userSession = secMngr.createSession(appuser_login, appuser_pass, app_idcompany, null);        
+            IUserSession userSession = secMngr.createSession(appuser_login, appuser_pass, app_idcompany, null, null);        
             sessionId = userSession.getSessionId();
 
             IGenericDAO dao = (IGenericDAO) context.lookup(jndiProject + "GenericDAO!org.javabeanstack.data.IGenericDAORemote");

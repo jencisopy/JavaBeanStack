@@ -38,7 +38,7 @@ import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.io.IOUtil;
-import org.javabeanstack.log.ILogManager;
+import org.javabeanstack.log.ILogManagerData;
 import org.javabeanstack.model.IAppSystemParam;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
@@ -69,7 +69,7 @@ public class AppGenericConfig implements IAppConfig {
     protected IGenericDAO dao;
     
     @EJB
-    protected ILogManager logMngr;
+    protected ILogManagerData logMngr;
 
     /**
      * En este atributo se guardan objetos DOM que son accedidos por una clave

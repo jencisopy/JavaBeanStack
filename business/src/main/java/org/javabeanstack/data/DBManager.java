@@ -176,11 +176,17 @@ public class DBManager implements IDBManager {
         List<Element> sqlScriptNodes = DomW3cParser.getChildren(domScript, "/ROOT/SCRIPTS");
         IErrorReg errorReturn;
 
+        String logTable = "dic_logupdate";
+        Class clazz = (Class) parameters.get("classLog");
+        if (clazz != null) {
+            logTable = DataInfo.getTableName(clazz);
+        }
+
         //Inicio================================================
-        String initCommand = "INSERT INTO {schema}.dic_logupdate "
-                + "(secuencia, filename,script, appuser) "
+        String initCommand = "INSERT INTO {schema}." + logTable + " "
+                + "(secuencia, filename, script, appuser) "
                 + "     values "
-                + "(:secuencia,:filename,:script, :appuser)";
+                + "(:secuencia, :filename, :script, :appuser)";
 
         dao.sqlExec(sessionId, initCommand, parameters);
 
@@ -198,12 +204,12 @@ public class DBManager implements IDBManager {
             String script = sqlScriptNode.getTextContent();
             //Actualizar script a ejecutarse
             parameters.put("script", DomW3cParser.getXmlText(sqlScriptNode));
-            String command = "UPDATE {schema}.dic_logupdate "
-                + " SET script = :script "
-                + " where secuencia = :secuencia";
+            String command = "UPDATE {schema}." + logTable
+                    + " SET script = :script "
+                    + " where secuencia = :secuencia";
             dao.sqlExec(sessionId, command, parameters);
             parameters.put("script", "");
-            
+
             while (!script.isEmpty()) {
                 String sentencia;
                 int posicion = script.toUpperCase().indexOf(stringEnd);
@@ -211,26 +217,38 @@ public class DBManager implements IDBManager {
                     sentencia = Strings.substr(script, 0);
                     script = "";
                 } else {
-                    sentencia = Strings.substr(script, 0, posicion );
+                    sentencia = Strings.substr(script, 0, posicion);
                     script = Strings.substr(script, posicion + stringEnd.length());
                 }
                 // Ejecución del Script
-                errorReturn = dao.sqlExec(sessionId, sentencia, parameters);
-                if (errorReturn.getErrorNumber() > 0) {
-                    if (!Fn.toLogical(parameters.get("CONTINUE_WITH_ERROR"))) {
-                        //Revertir proceso==================================
-                        String revertCommand = "delete from {schema}.dic_logupdate where secuencia = :secuencia";
-                        dao.sqlExec(sessionId, revertCommand, parameters);
-                        throw new Exception(errorReturn.getMessage());
-                    } else {
+                if (sqlScriptNode.getAttribute("dataconex").equals("CATALOGO")) {
+                    //En el schema catalogo.
+                    errorReturn = dao.sqlExec(null, sentencia, parameters);
+                    if (errorReturn.getErrorNumber() > 0) {
+                        //Se permite errores y se continua
                         Exception ex = new Exception("ACTUALIZACIÓN BASE DE DATOS " + errorReturn.getMessage());
                         ErrorManager.showError(ex, LOGGER);
                     }
+                } else {
+                    //En el schema datos.
+                    errorReturn = dao.sqlExec(sessionId, sentencia, parameters);
+                    if (errorReturn.getErrorNumber() > 0) {
+                        if (!Fn.toLogical(parameters.get("CONTINUE_WITH_ERROR"))) {
+                            //Revertir proceso==================================
+                            String revertCommand = "delete from {schema}." + logTable + " where secuencia = :secuencia";
+                            dao.sqlExec(sessionId, revertCommand, parameters);
+                            throw new Exception(errorReturn.getMessage());
+                        } else {
+                            Exception ex = new Exception("ACTUALIZACIÓN BASE DE DATOS " + errorReturn.getMessage());
+                            ErrorManager.showError(ex, LOGGER);
+                        }
+                    }
                 }
+
             }
         }
         //Fin ============================================
-        String endCommand = "UPDATE {schema}.dic_logupdate "
+        String endCommand = "UPDATE {schema}." + logTable
                 + " SET concluido = {true} "
                 + " where secuencia = :secuencia";
 

@@ -113,6 +113,9 @@ public class ErrorManager {
         } else {
             logger.error(msg + getStackTraceText(getAppPackage()));
         }
+        if (logManager == null){
+            return;
+        }
         //
         try {
             IAppLogRecord logRecord = logManager.getNewAppLogRecord(null);

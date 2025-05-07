@@ -38,6 +38,7 @@ import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.events.IAppSystemEvents;
+import org.javabeanstack.util.Parameters;
 
 /**
  * Clase controller de autenticación, recibe peticiones de logeo del usuario lo
@@ -110,7 +111,7 @@ public abstract class AbstractAuthController extends AbstractController {
      * @return objeto con la lógica de las funcionalidas de AppCompany
      */
     public abstract IAppCompanySrv getAppCompanySrv();
-    
+
     protected abstract IAppSystemEvents getAppSysEvents();
 
     @PostConstruct
@@ -302,11 +303,15 @@ public abstract class AbstractAuthController extends AbstractController {
         if (!Strings.isNullorEmpty(userLogin)) {
             try {
                 // Chequea válidez de los datos ingresados.
-                IUserSession userSession = getSecManager().login2(userLogin, password);
+                Map<String, Object> otherParams = new Parameters()
+                        .put("ipRequestFrom", getFacesCtx().getIp())
+                        .getParams();
+
+                IUserSession userSession = getSecManager().login2(userLogin, password, otherParams);
                 if (userSession.getUser() != null) {
                     result = true;
-                    if (getFacesCtx().getSessionMap().get("userSession") == null){
-                        getFacesCtx().getSessionMap().put("userSession", userSession);                        
+                    if (getFacesCtx().getSessionMap().get("userSession") == null) {
+                        getFacesCtx().getSessionMap().put("userSession", userSession);
                     }
                     if (company == null) {
                         // Traer lista de empresas a la que el usuario esta permitido ingresar
@@ -344,7 +349,11 @@ public abstract class AbstractAuthController extends AbstractController {
         }
         if (company != null) {
             result = true;
-            IUserSession userSession = getSecManager().createSession(userLogin, password, company.getIdcompany(), null);
+
+            Map<String, Object> otherParams = new Parameters()
+                    .put("ipRequestFrom", getFacesCtx().getIp())
+                    .getParams();
+            IUserSession userSession = getSecManager().createSession(userLogin, password, company.getIdcompany(), null, otherParams);
             userSession.setIp(getFacesCtx().getIp());
             userSession.setHost(getFacesCtx().getHost());
             if (userSession.getError() != null) {
