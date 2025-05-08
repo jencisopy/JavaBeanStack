@@ -39,6 +39,8 @@ import org.apache.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.log.ILogManager;
+import org.javabeanstack.model.IAppLogRecord;
 import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
@@ -171,7 +173,7 @@ public class DBManager implements IDBManager {
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public static void dbScriptUpdateExecute(IGenericDAO dao, String sessionId, Document domScript, Map<String, Object> parameters) throws Exception {
+    public static void dbScriptUpdateExecute(IGenericDAO dao, String sessionId, Document domScript, Map<String, Object> parameters, ILogManager logMngr) throws Exception {
 
         List<Element> sqlScriptNodes = DomW3cParser.getChildren(domScript, "/ROOT/SCRIPTS");
         IErrorReg errorReturn;
@@ -192,6 +194,8 @@ public class DBManager implements IDBManager {
 
         String persistUnit = dao.getDBLinkInfo(sessionId).getPersistUnit();
         String motorDatos = dao.getDataEngine(persistUnit);
+        String filename = (String)parameters.get("filename");
+        
         for (Element sqlScriptNode : sqlScriptNodes) {
             //Solo se ejecuta los scripts que corresponde a motor de la base 
             if (!sqlScriptNode.getAttribute("motor").equals(motorDatos)) {
@@ -226,21 +230,77 @@ public class DBManager implements IDBManager {
                     errorReturn = dao.sqlExec(null, sentencia, parameters);
                     if (errorReturn.getErrorNumber() > 0) {
                         //Se permite errores y se continua
-                        Exception ex = new Exception("ACTUALIZACIÓN BASE DE DATOS " + errorReturn.getMessage());
+                        String message = "ERROR en PU1, SCRIPT " + filename + ", " + errorReturn.getMessage();
+                        Exception ex;
+                        if (errorReturn.getException() != null) {
+                            ex = errorReturn.getException();
+                        } else {
+                            ex = new Exception(message);
+                        }
                         ErrorManager.showError(ex, LOGGER);
+                        if (logMngr != null) {
+                            IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
+                            String messageInfo = "";
+                            if (errorReturn.getException() != null) {
+                                messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
+                            }
+                            logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
+                            logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
+                            logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
+                            logRecord.setMessage(message);
+                            logRecord.setMessageInfo(messageInfo);
+                            logRecord.setMessageNumber(1);
+                            logMngr.dbWrite(logRecord, sessionId);
+                        }
                     }
                 } else {
                     //En el schema datos.
                     errorReturn = dao.sqlExec(sessionId, sentencia, parameters);
                     if (errorReturn.getErrorNumber() > 0) {
+                        String message = "ERROR en unidad de persistencia " + persistUnit + ", SCRIPT " + filename + ", " + errorReturn.getMessage();
+                        Exception ex;
+                        if (errorReturn.getException() != null) {
+                            ex = errorReturn.getException();
+                        } else {
+                            ex = new Exception(message);
+                        }
                         if (!Fn.toLogical(parameters.get("CONTINUE_WITH_ERROR"))) {
                             //Revertir proceso==================================
                             String revertCommand = "delete from {schema}." + logTable + " where secuencia = :secuencia";
                             dao.sqlExec(sessionId, revertCommand, parameters);
-                            throw new Exception(errorReturn.getMessage());
+                            //Registrar en el log de la base
+                            if (logMngr != null) {
+                                IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
+                                String messageInfo = "";
+                                if (errorReturn.getException() != null) {
+                                    messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
+                                }
+                                logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
+                                logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
+                                logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
+                                logRecord.setMessage(message);
+                                logRecord.setMessageInfo(messageInfo);
+                                logRecord.setMessageNumber(1);
+                                logMngr.dbWrite(logRecord, sessionId);
+                            }
+                            throw ex;
                         } else {
-                            Exception ex = new Exception("ACTUALIZACIÓN BASE DE DATOS " + errorReturn.getMessage());
-                            ErrorManager.showError(ex, LOGGER);
+                            ErrorManager.showError(ex, LOGGER);                            
+                            //Registrar en el log de la base
+                            if (logMngr != null) {
+                                IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
+                                String messageInfo = "";
+                                if (errorReturn.getException() != null) {
+                                    messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
+                                }
+                                logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
+                                logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
+                                logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
+                                logRecord.setMessage(message);
+                                logRecord.setMessageInfo(messageInfo);
+                                logRecord.setMessageNumber(1);
+                                logMngr.dbWrite(logRecord, sessionId);
+                            }
                         }
                     }
                 }

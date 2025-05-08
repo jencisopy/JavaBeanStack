@@ -35,6 +35,7 @@ public interface IAppLogRecord extends IDataRow{
     public static final String EVENT_ERROR = "ERROR";
     public static final String EVENT_COMPANY_IN = "COMPANYIN";
     public static final String EVENT_LOAD_PAGE = "LOADPAGE";
+    public static final String EVENT_UPDATEDB = "UPDATEDB";
     
     public static final String LEVEL_ERROR = "E";
     public static final String LEVEL_ALERT = "A";    

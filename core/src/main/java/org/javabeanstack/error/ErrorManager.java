@@ -96,6 +96,14 @@ public class ErrorManager {
         }
         logger.error(msg + getStackTraceText(getAppPackage()));
     }
+    
+    public static String getMessageToShow(Exception ex){
+        String msg = getStackCause(ex);
+        if (msg == null || msg.isEmpty() || msg.length() < 5) {
+            return getStackTraceText(getAppPackage());
+        }
+        return msg + getStackTraceText(getAppPackage());
+    }
 
     /**
      * Muestra el error utilizando log4j

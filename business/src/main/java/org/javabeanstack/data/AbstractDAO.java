@@ -760,8 +760,9 @@ public abstract class AbstractDAO implements IGenericDAO {
                 populateQueryParameters(sql, parameters, sqlString);
             }
             sql.executeUpdate();
-        } catch (Exception exp) {
-            error.setMessage(exp.getLocalizedMessage());
+        } catch (Exception e) {
+            error.setException(e);
+            error.setMessage(e.getLocalizedMessage());
             error.setErrorNumber(1);
         }
         return error;
@@ -829,8 +830,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         try {
             Query jpql = createQuery(sessionId, sqlString, parameters);
             jpql.executeUpdate();
-        } catch (Exception exp) {
-            error.setMessage(exp.getLocalizedMessage());
+        } catch (Exception e) {
+            error.setException(e);
+            error.setMessage(e.getLocalizedMessage());
             error.setErrorNumber(1);
         }
         return error;
