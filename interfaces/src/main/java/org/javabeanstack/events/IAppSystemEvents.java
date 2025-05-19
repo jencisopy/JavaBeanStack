@@ -36,5 +36,5 @@ public interface IAppSystemEvents extends Serializable{
     void onLogout();
     void onLoadPage(String page);
     void onCompanyAccess();
-    void onError(Exception exception, Logger logger);
+    void onError(Exception e, Logger logger);
 }
