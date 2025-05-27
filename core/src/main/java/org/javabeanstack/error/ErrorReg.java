@@ -40,6 +40,7 @@ public class ErrorReg implements IErrorReg{
     private String ipRequest = "";
     private String event = "ERROR";
     private String level = "E";
+    private Object info;
     
     public ErrorReg(){
     }
@@ -54,6 +55,11 @@ public class ErrorReg implements IErrorReg{
         this.message = message;
         this.errorNumber = errorNumber;
         this.fieldNames = fieldNames;
+    }
+
+    @Override
+    public Object getInfo() {
+        return info;
     }
     
     @Override
@@ -156,6 +162,11 @@ public class ErrorReg implements IErrorReg{
     @Override
     public void setLevel(String level) {
         this.level = level;
+    }
+    
+    @Override
+    public void setInfo(Object info) {
+        this.info = info;
     }
 }
 

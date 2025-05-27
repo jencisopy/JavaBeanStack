@@ -36,6 +36,7 @@ import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.model.IAppLogRecord;
+import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.LocalDates;
 
 /**
@@ -150,6 +151,9 @@ public class LogManager implements ILogManager {
         if (logRecord.getLogTimeOrigin() == null) {
             logRecord.setLogTimeOrigin(LocalDates.now());
         }
+        logRecord.setMessage(Fn.nvl(logRecord.getMessage(),""));
+        logRecord.setMessageInfo(Fn.nvl(logRecord.getMessageInfo(),""));
+        logRecord.setMessageNumber(Fn.nvl(logRecord.getMessageNumber(),0));
         IDataResult dataResult;
         try {
             dataResult = dao.persist(null, logRecord);

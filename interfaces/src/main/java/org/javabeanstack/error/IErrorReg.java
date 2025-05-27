@@ -16,6 +16,7 @@ public interface IErrorReg extends Serializable {
     public String getIpRequest();
     public String getEvent();
     public String getLevel();
+    public Object getInfo();
 
     
     
@@ -30,5 +31,5 @@ public interface IErrorReg extends Serializable {
     public void setIpRequest(String ip);
     public void setEvent(String event);
     public void setLevel(String level);
-
+    public void setInfo(Object info);
 }
