@@ -748,6 +748,17 @@ public class DataRow implements IDataRow, Cloneable {
         this.properties = properties;
     }
 
+    @Override
+    public void addProperties(Map<String, Object> properties) {
+        if (properties == null){
+            return;
+        }
+        if (this.properties == null){
+            this.properties = new HashMap();
+        }
+        this.properties.putAll(properties);
+    }
+    
     @XmlTransient
     @Override
     public String getSignature() {
