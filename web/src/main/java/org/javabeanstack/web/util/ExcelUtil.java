@@ -21,9 +21,15 @@
  */
 package org.javabeanstack.web.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.faces.context.FacesContext;
@@ -31,13 +37,24 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
+import org.apache.poi.poifs.filesystem.NotOLE2FileException;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import static org.apache.poi.ss.usermodel.CellType.BOOLEAN;
+import static org.apache.poi.ss.usermodel.CellType.FORMULA;
+import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
+import static org.apache.poi.ss.usermodel.CellType.STRING;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.javabeanstack.data.IDataQueryModel;
+import org.javabeanstack.data.model.DataQueryModel;
+import org.javabeanstack.util.Fn;
 
 /**
  *
@@ -59,6 +76,28 @@ public class ExcelUtil {
         servletOutputStream.flush();
         servletOutputStream.close();
         FacesContext.getCurrentInstance().responseComplete();
+    }
+
+    public static Workbook openWorkbook(String filePath) throws IOException {
+        try (InputStream fileInputStream = new FileInputStream(filePath)) {
+            if (filePath.toLowerCase()
+                    .endsWith("xlsx")) {
+                return new XSSFWorkbook(fileInputStream);
+            } else if (filePath.toLowerCase()
+                    .endsWith("xls")) {
+                return new HSSFWorkbook(fileInputStream);
+            } else {
+                throw new IllegalArgumentException("The specified file is not an Excel file");
+            }
+        } catch (OLE2NotOfficeXmlFileException | NotOLE2FileException e) {
+            throw new IllegalArgumentException(
+                    "The file format is not supported. Ensure the file is a valid Excel file.", e);
+        }
+    }
+
+    public static Workbook openWorkbook(File file) throws IOException {
+        Workbook wb = WorkbookFactory.create(file);
+        return wb;
     }
 
     public static Workbook toExcel(List<IDataQueryModel> toExport) throws Exception {
@@ -104,7 +143,7 @@ public class ExcelUtil {
             }
             row = sheet.createRow(rownum++);
             for (int j = 0; j < toExport.get(0).getColumnList().length; j++) {
-                System.out.println(j);
+                //System.out.println(j);
                 cell = row.createCell(j);
                 Object[] fila = (Object[]) toExport.get(i).getRow();
                 if (fila[j] instanceof BigDecimal) {
@@ -123,5 +162,107 @@ public class ExcelUtil {
             sheet.autoSizeColumn(j);
         }
         return workBook;
+    }
+
+    public static List<IDataQueryModel> fromExcelToDataQueryModel(Sheet sheet) throws Exception {
+        if (sheet == null) {
+            return null;
+        }
+        List<String> headerNames = getHeaderNames(sheet);
+        if (headerNames.isEmpty()){
+            throw new Exception("No esta  especificado los nombres de las columnas en la primera fila");
+        }
+        List<IDataQueryModel> retornar = new ArrayList();        
+        String[] columnNames = headerNames.toArray(new String[0]);
+        //Recorrer las filas de la hoja
+        for (Row row : sheet) {
+            Cell cell = null;            
+            try {
+                if (row.getRowNum() == 0) {
+                    continue;
+                }
+                IDataQueryModel data = new DataQueryModel();
+                Object[] dataRow = new Object[columnNames.length];
+                data.setRow(dataRow);
+                data.setColumnList(columnNames);
+                //Recorrer las celdas
+                for (int i = 0; i < row.getLastCellNum(); i++) {
+                    String columnName = sheet.getRow(0).getCell(i).getStringCellValue();
+                    if (Fn.nvl(columnName, "").isEmpty()) {
+                        continue;
+                    }
+                    cell = row.getCell(i);
+                    switch (cell.getCellType()) {
+                        case NUMERIC:
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                data.setColumn(columnName, cell.getLocalDateTimeCellValue());
+                            } else {
+                                data.setColumn(columnName, cell.getNumericCellValue());
+                            }
+                            break;
+                        case BOOLEAN:
+                            data.setColumn(columnName, cell.getBooleanCellValue());
+                            break;
+                        case STRING:
+                            data.setColumn(columnName, cell.getStringCellValue());
+                            break;
+                        case FORMULA:
+                            data.setColumn(columnName, cell.getNumericCellValue());
+                            break;
+                    }
+                }
+                retornar.add(data);
+            } catch (Exception e) {
+                String errorMsg = "ERROR EN LA FILA " + row.getRowNum();
+                if (cell != null){
+                    errorMsg += ", CELDA "+cell.getAddress().formatAsString();
+                }
+                errorMsg += ", " + e.getMessage();
+                throw new Exception(errorMsg);
+            }
+        }
+        return retornar;
+    }
+
+    public static BigDecimal getBigDecimal(Cell cell) throws Exception {
+        BigDecimal retornar = null;
+        switch (cell.getCellType()) {
+            case NUMERIC:
+                retornar = BigDecimal.valueOf(cell.getNumericCellValue());
+                break;
+            case BOOLEAN:
+                throw new Exception("Imposible convertir de tipo boolean a bigdecimal");
+            case STRING:
+                retornar = new BigDecimal(cell.getStringCellValue());
+                break;
+            case FORMULA:
+                retornar = BigDecimal.valueOf(cell.getNumericCellValue());
+                break;
+        }
+        return retornar;
+    }
+
+    public static List<String> getHeaderNames(Sheet sheet) {
+        if (sheet == null){
+            return new ArrayList();
+        }
+        List<String> retornar = new ArrayList();
+        Row headerRow = sheet.getRow(0);
+        if (headerRow == null) {
+            return Collections.EMPTY_LIST;
+        }
+        //Todas las celdas debe ser string
+        boolean error = false;
+        for (Cell cell:headerRow){
+            if (!cell.getCellType().equals(STRING)){
+                error = true;
+                break;
+            }
+            retornar.add(cell.getStringCellValue());
+        }
+        if (error){
+            return new ArrayList();
+        }
+        return retornar;
     }
 }

@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -410,6 +412,16 @@ public class Strings {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddhhmmss");
         return formater.format(date);
     }
+    
+    /**
+     * Convierte una variable date a string.
+     * @param localDate variable date
+     * @return string con formato yyyyMMddhhmmss
+     */
+    public static String localDateToString(LocalDateTime localDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return localDate.format(formatter);
+    }    
 
     /**
      * Busca una cadena dentro de otra encerrada entre caracteres "comodinBegin"

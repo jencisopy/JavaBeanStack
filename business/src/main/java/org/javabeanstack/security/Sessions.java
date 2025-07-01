@@ -25,7 +25,7 @@ import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.security.model.UserSession;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -145,6 +145,7 @@ public class Sessions implements ISessions {
      * @param idcompany empresa que esta solicitando ingresar
      * @param idleSessionExpireInMinutes minutos sin actividad antes de cerrar
      * la sesión.
+     * @param otherParams
      * @return objeto conteniendo datos del login exitoso o rechazado
      */
     @Override
@@ -576,14 +577,10 @@ public class Sessions implements ISessions {
                 expireInMinutes = 30;
             }
             // Verificar si ya expiro su sesión
-            Calendar cal1 = Calendar.getInstance();
-            Calendar cal2 = Calendar.getInstance();
-            cal1.setTime(sesion.getLastReference());
-            cal2.setTime(new Date());
-            long time1 = cal1.getTimeInMillis();
-            long time2 = cal2.getTimeInMillis();
+            LocalDateTime lastReference = sesion.getLastReference();
+            
+            long idleInMinutes = LocalDates.minutesInterval(lastReference, LocalDates.now());
             // Diferencias en minutos desde la ultima vez que se hizo referencia a esta sesión.        
-            long idleInMinutes = (time2 - time1) / (60 * 1000);
             if (idleInMinutes >= expireInMinutes) {
                 sessionVar.remove(sessionId);
                 sesion.setUser(null);
@@ -594,7 +591,7 @@ public class Sessions implements ISessions {
                 sesion.setError(new ErrorReg(mensaje, 6, ""));
                 return sesion;
             }
-            sesion.setLastReference(new Date());
+            sesion.setLastReference(LocalDates.now());
         }
         return sesion;
     }

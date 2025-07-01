@@ -18,12 +18,14 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.data;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import org.javabeanstack.data.model.DataQueryModel;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,6 +49,7 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
  * @author Jorge Enciso
  */
 public class DataNativeQuery implements IDataNativeQuery {
+
     private static final Logger LOGGER = Logger.getLogger(DataNativeQuery.class);
 
     private boolean queryCreated;
@@ -92,8 +95,9 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
-     * Si getColumnStr,Int, Number,LocalDate van a devolver valores por defecto 
+     * Si getColumnStr,Int, Number,LocalDate van a devolver valores por defecto
      * si el valor de la columna es nulo
+     *
      * @return verdadero si va a devolver valores por defecto si es nulo
      */
     @Override
@@ -103,14 +107,14 @@ public class DataNativeQuery implements IDataNativeQuery {
 
     /**
      * Setea la propiedad defaultValues
-     * @param defaultValues 
+     *
+     * @param defaultValues
      */
     @Override
     public void setNoReturnNulls(boolean defaultValues) {
         this.noReturnNulls = defaultValues;
     }
 
-    
     /**
      * Asigna la/s entidad/es desde donde se extraeran la información.
      *
@@ -120,15 +124,15 @@ public class DataNativeQuery implements IDataNativeQuery {
      */
     @Override
     public IDataNativeQuery from(String entities) {
-        entityExpr = entities;        
+        entityExpr = entities;
         fromEntity = entities;
-        
+
         subQueryAlias = null;
         subQueryFrom = null;
         entityList = null;
         queryCreated = false;
         joinParams.clear();
-        filterExpr  = null;
+        filterExpr = null;
         filterExprList = null;
         orderExpr = null;
         orderList = null;
@@ -154,7 +158,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         entityList = null;
         fromEntity = null;
         joinParams.clear();
-        queryCreated = false;        
+        queryCreated = false;
         return this;
     }
 
@@ -173,10 +177,10 @@ public class DataNativeQuery implements IDataNativeQuery {
         entityList = null;
         fromEntity = null;
         joinParams.clear();
-        queryCreated = false;        
+        queryCreated = false;
         return this;
     }
-    
+
     /**
      * Asigna la/s entidad/es que formarán parte del join
      *
@@ -203,7 +207,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         queryCreated = false;
         return this;
     }
-    
+
     /**
      * Asigna la/s entidad/es que formarán parte del join
      *
@@ -226,7 +230,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     public IDataNativeQuery innerJoin(IDataNativeQuery subquery, String alias, String joinExpr) {
         return join(subquery, alias, joinExpr);
     }
-    
+
     /**
      * Asigna la/s entidad/es que formarán parte del join
      *
@@ -253,7 +257,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         queryCreated = false;
         return this;
     }
-    
+
     /**
      * Asigna los filtros en la expresión where.
      *
@@ -279,7 +283,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     @Override
     public IDataNativeQuery where(String filterExpr, Map<String, Object> params) {
         this.filterExpr = filterExpr;
-        this.filterExpr += getDBFilterExpr();        
+        this.filterExpr += getDBFilterExpr();
         this.filterExprList = null;
         queryCreated = false;
         addParams(params);
@@ -295,7 +299,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     @Override
     public IDataNativeQuery where(IDataExpression dataExpr) {
         this.filterExpr = dataExpr.getSentence();
-        this.filterExpr += getDBFilterExpr();        
+        this.filterExpr += getDBFilterExpr();
         this.filterExprList = null;
         queryCreated = false;
         if (!dataExpr.getSentenceParams().isEmpty()) {
@@ -314,79 +318,79 @@ public class DataNativeQuery implements IDataNativeQuery {
     @Override
     public IDataNativeQuery where(IDataExpression dataExpr, Map<String, Object> params) {
         this.filterExpr = dataExpr.getSentence();
-        this.filterExpr += getDBFilterExpr();        
+        this.filterExpr += getDBFilterExpr();
         this.filterExprList = null;
         queryCreated = false;
         addParams(params);
         return this;
     }
 
-    private String getDBFilterExpr(){
-        String result="";
-        if (getApplyDBFilter() 
+    private String getDBFilterExpr() {
+        String result = "";
+        if (getApplyDBFilter()
                 && this.getDataLink() != null
                 && (this.getDataLink().getUserSession() != null || !isNullorEmpty(this.getDataLink().getToken()))
-                && !this.getDataLink().getPersistUnit().equals(IDBManager.CATALOGO)){
-            
+                && !this.getDataLink().getPersistUnit().equals(IDBManager.CATALOGO)) {
+
             String operador = isNullorEmpty(filterExpr) ? "" : " and ";
             try {
                 String entityExp = getEntityList()[0];
                 int pos = entityExp.indexOf(' ') > 0 ? entityExp.indexOf(' ') : entityExp.length();
-                
-                String entity = entityExp.substring(0,pos);
-                String entityAlias = Strings.substr(entityExp, pos+1);
-                
+
+                String entity = entityExp.substring(0, pos);
+                String entityAlias = Strings.substr(entityExp, pos + 1);
+
                 IDBFilter dbFilter = getDataLink().getDBLinkInfo().getDBFilter();
 
                 Class clazz = getClassModel(dbFilter.getModelPackagePath(), entity);
-                if (clazz != null){
+                if (clazz != null) {
                     String alias = entityAlias;
-                    if (isNullorEmpty(alias)){
+                    if (isNullorEmpty(alias)) {
                         alias = entity;
                     }
                     String filter = dbFilter.getFilterExpr(clazz, alias.trim(), false);
-                    if (!isNullorEmpty(filter)){
+                    if (!isNullorEmpty(filter)) {
                         result = operador + filter;
                     }
                 }
-            }
-            catch (Exception exp){
+            } catch (Exception exp) {
                 result = "";
             }
         }
         return result;
     }
- 
+
     /**
      * Devuelve la clase del entity solicitado
-     * @param packagePath camino de busqueda de paquetes (lista de paquetes separado por ;)
+     *
+     * @param packagePath camino de busqueda de paquetes (lista de paquetes
+     * separado por ;)
      * @param entity entidad
      * @return la clase del entity solicitado
      */
-    public static Class getClassModel(String packagePath, String entity){
+    public static Class getClassModel(String packagePath, String entity) {
         String className = "";
         String[] partes = entity.split("_");
         for (String parte : partes) {
             className += Strings.capitalize(parte).trim();
         }
-        if (packagePath == null){
+        if (packagePath == null) {
             return null;
         }
         String[] path = packagePath.split(";");
-        Class clazz=null; 
+        Class clazz = null;
         for (String packages : path) {
             String classPath = packages.trim() + "." + className;
-            try{
+            try {
                 clazz = Class.forName(classPath);
                 break;
-            }
-            catch (ClassNotFoundException ex){
+            } catch (ClassNotFoundException ex) {
                 //continua con la busqueda
             }
         }
         return clazz;
     }
-    
+
     /**
      * Asigna la expresión order by
      *
@@ -398,7 +402,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         orderExpr = columnOrder;
         queryCreated = false;
         orderList = setColumnLabel(orderExpr);
-        return this; 
+        return this;
     }
 
     /**
@@ -473,10 +477,10 @@ public class DataNativeQuery implements IDataNativeQuery {
     public void createQuery() {
         querySentence = "SELECT " + columnExpr + " \r\n";
 
-        String fromExpr = getFromExpr(); 
+        String fromExpr = getFromExpr();
         querySentence += " FROM " + fromExpr + "\r\n";
-        
-        if (Strings.isNullorEmpty(filterExpr)){
+
+        if (Strings.isNullorEmpty(filterExpr)) {
             filterExpr = getDBFilterExpr();
         }
         if (!Strings.isNullorEmpty(filterExpr)) {
@@ -499,27 +503,28 @@ public class DataNativeQuery implements IDataNativeQuery {
 
     /**
      * Devuelve la expresión from
+     *
      * @return expresión from
      */
     @Override
     public final String getFromExpr() {
-        String fromExpr = "";        
+        String fromExpr = "";
         // Generar from desde un subquery
         if (subQueryFrom != null) {
             subQueryFrom.createQuery();
             String subQuerySentence = subQueryFrom.getQuerySentence();
-            fromExpr = "("+subQuerySentence+") "+subQueryAlias+ " ";
+            fromExpr = "(" + subQuerySentence + ") " + subQueryAlias + " ";
             fromExpr += getJoinExpr();
             return fromExpr;
         }
         // Generar from desde una sentencia subquery
         if (!isNullorEmpty(subQueryFromSentence)) {
             String subQuerySentence = subQueryFromSentence;
-            fromExpr = "("+subQuerySentence+") "+subQueryAlias+ " ";
+            fromExpr = "(" + subQuerySentence + ") " + subQueryAlias + " ";
             fromExpr += getJoinExpr();
             return fromExpr;
         }
-        
+
         String schema = dataLink.getDao().getSchema(dataLink.getPersistUnit());
         String joinEntityExpr = getJoinEntityExpr();
         entityExpr = fromEntity + iif(joinEntityExpr.isEmpty(), "", ", ");
@@ -542,30 +547,31 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
-     * Devuelve la expresión join 
-     * @return expresión join 
+     * Devuelve la expresión join
+     *
+     * @return expresión join
      */
-    protected final String getJoinExpr(){
-        String result="";
-        String entity; 
+    protected final String getJoinExpr() {
+        String result = "";
+        String entity;
         for (JoinParam param : joinParams) {
-            if (param.joinSubquery != null){
+            if (param.joinSubquery != null) {
                 param.joinSubquery.createQuery();
-                result += " \r\n" + param.joinType 
-                        + " (" + param.joinSubquery.getQuerySentence() + ") " 
+                result += " \r\n" + param.joinType
+                        + " (" + param.joinSubquery.getQuerySentence() + ") "
                         + param.joinSubqueryAlias
                         + " on " + param.joinExpr;
-            }
-            else{
+            } else {
                 entity = getEntityWithSchema(param.joinEntity);
                 result += " \r\n" + param.joinType + " " + entity + " on " + param.joinExpr;
             }
         }
         return result;
     }
-    
+
     /**
      * Devuelve la entidad con el prefijo del schema de la base
+     *
      * @param entity nombre de la entidad
      * @return la entidad con el prefijo del schema de la base
      */
@@ -594,7 +600,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      * etc, :idempresa)
      */
     protected void setDefaultParams() {
-        if (queryParams == null){
+        if (queryParams == null) {
             queryParams = new HashMap();
         }
         if (Strings.findString(":true", querySentence.toLowerCase()) >= 0) {
@@ -707,15 +713,15 @@ public class DataNativeQuery implements IDataNativeQuery {
         this.first = 0;
         this.maxResult = 1;
         List<IDataQueryModel> result = execQuery(this.dataLink);
-        if (result == null || result.isEmpty()){
+        if (result == null || result.isEmpty()) {
             return null;
         }
-        if (result.get(0) == null){
+        if (result.get(0) == null) {
             return null;
         }
         return result.get(0);
     }
-    
+
     /**
      * Ejecuta la sentencia y devuelve una lista de registros
      *
@@ -745,23 +751,23 @@ public class DataNativeQuery implements IDataNativeQuery {
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
-        if (result == null){
+        if (result == null) {
             result = new ArrayList<>();
         }
         return result;
     }
 
-    private Map<String, Object> getProperties(){
+    private Map<String, Object> getProperties() {
         Map<String, Object> properties = new HashMap();
-        if (noReturnNulls){
+        if (noReturnNulls) {
             properties.put("noReturnNulls", noReturnNulls);
         }
-        if (properties.isEmpty()){
+        if (properties.isEmpty()) {
             return null;
         }
         return properties;
     }
-    
+
     /**
      * Convierte una lista de objetos al tipo IDataQueryModel
      *
@@ -775,7 +781,7 @@ public class DataNativeQuery implements IDataNativeQuery {
         }
         return DataQueryModel.convertToDataQueryModel(source, columns, null);
     }
-    
+
     /**
      * Convierte una lista de objetos al tipo IDataQueryModel
      *
@@ -839,7 +845,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     protected void populateQueryParams(Map<String, Object> params) {
-        params.entrySet().forEach( param -> {
+        params.entrySet().forEach(param -> {
             queryParams.put(param.getKey(), param.getValue());
         });
     }
@@ -1018,11 +1024,12 @@ public class DataNativeQuery implements IDataNativeQuery {
 
     /**
      * Query string que cuenta la cantidad de registros
-     * @return 
+     *
+     * @return
      */
     protected String getQueryCount() {
         String query;
-        String fromExpr = getFromExpr(); 
+        String fromExpr = getFromExpr();
         query = "select 1 as xx " + "from   " + fromExpr + " \n";
         if (!Strings.isNullorEmpty(filterExpr)) {
             query += " where " + filterExpr + " \n";
@@ -1042,10 +1049,10 @@ public class DataNativeQuery implements IDataNativeQuery {
         }
         String devolver = "";
         for (JoinParam element : joinParams) {
-            if (element.joinSubquery != null){
+            if (element.joinSubquery != null) {
                 continue;
             }
-            devolver += element.joinEntity + ", ";                
+            devolver += element.joinEntity + ", ";
         }
         devolver = devolver.trim();
         if (devolver.endsWith(",")) {
@@ -1056,6 +1063,7 @@ public class DataNativeQuery implements IDataNativeQuery {
 
     /**
      * Devuelve una propiedad que indica si se va a aplicar el dbfilter si o no
+     *
      * @return propiedad que indica si se va a aplicar el dbfilter si o no
      */
     @Override
@@ -1064,8 +1072,10 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
-     * Asigna el valor a la propiedad que indica si se va a aplicar el dbfilter si o no
-     * @param apply 
+     * Asigna el valor a la propiedad que indica si se va a aplicar el dbfilter
+     * si o no
+     *
+     * @param apply
      */
     @Override
     public void setApplyDBFilter(boolean apply) {
@@ -1073,6 +1083,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     class JoinParam {
+
         String joinEntity;
         String joinExpr;
         String joinType;
@@ -1084,7 +1095,7 @@ public class DataNativeQuery implements IDataNativeQuery {
             this.joinExpr = joinExpr;
             this.joinType = joinType;
         }
-        
+
         JoinParam(IDataNativeQuery joinSubquery, String alias, String joinExpr, String joinType) {
             this.joinSubquery = joinSubquery;
             this.joinSubqueryAlias = alias;
@@ -1093,35 +1104,91 @@ public class DataNativeQuery implements IDataNativeQuery {
             this.joinType = joinType;
         }
     }
-    
+
     /**
-     * Crea un objeto DataNativeQuery 
-     * 
+     * Crea un objeto DataNativeQuery
+     *
      * @param <T>
      * @param dao acceso al dato.
      * @param sessionId identificador de la sesión del usuario
      * @return objeto DataNativeQuery
-     * @throws Exception 
+     * @throws Exception
      */
-    public static <T extends IGenericDAO> IDataNativeQuery create(T dao, String sessionId) throws Exception{
+    public static <T extends IGenericDAO> IDataNativeQuery create(T dao, String sessionId) throws Exception {
         IDataLink data = new DataLink(dao);
         IUserSession userSession = dao.getUserSession(sessionId);
-        if (userSession != null && userSession.getUser() != null){
+        if (userSession != null && userSession.getUser() != null) {
             data.setUserSession(userSession);
-        }
-        else{
+        } else {
             data.setToken(sessionId);
         }
         return data.newDataNativeQuery();
     }
-    
+
     /**
-     * Crea un objeto DataNativeQuery 
-     * 
+     * Crea un objeto DataNativeQuery
+     *
      * @param dataLink objeto que implementa el acceso a la base de datos.
      * @return objeto DataNativeQuery
      */
-    public static IDataNativeQuery create(IDataLink dataLink){
+    public static IDataNativeQuery create(IDataLink dataLink) {
         return dataLink.newDataNativeQuery();
     }
+
+    /**
+     * Copiar datos del formato DataQueryModel al formato DataRow
+     *
+     * @param <T> clase ejb que extiende de DataRow
+     * @param source lista con los datos de origen
+     * @param ejbClass clase ejb
+     * @return lista de datos con el formato ejbclass
+     * @throws Exception
+     */
+    public static <T extends IDataRow> List<T> dataQueryToEjb(List<IDataQueryModel> source, Class<T> ejbClass) throws Exception {
+        if (source == null) {
+            return new ArrayList();
+        }
+        List<T> target = new ArrayList();
+        T ejb;
+        for (IDataQueryModel row : source) {
+            ejb = ejbClass.getConstructor().newInstance();
+            ejb.setOnSetterActivated(false);
+            for (String fieldname : row.getColumnList()) {
+                Object value = row.getColumn(fieldname);
+                Class<?> classMember = ejb.getFieldType(fieldname);
+                if (value == null) {
+                    ejb.setValue(fieldname, null);
+                } else if (classMember.getName().equals(value.getClass().getName())) {
+                    ejb.setValue(fieldname, value);
+                } else if (classMember.getSimpleName().equals("Short") && !(value instanceof Short)) {
+                    Short newValueAux = Short.valueOf(value.toString());
+                    ejb.setValue(fieldname, newValueAux);
+                } else if (classMember.getSimpleName().equals("Integer") && !(value instanceof Integer)) {
+                    Integer newValueAux = Integer.valueOf(value.toString());
+                    ejb.setValue(fieldname, newValueAux);
+                } else if (classMember.getSimpleName().equals("Long") && !(value instanceof Long)) {
+                    Long newValueAux = Long.valueOf(value.toString());
+                    ejb.setValue(fieldname, newValueAux);
+                } else if (classMember.getSimpleName().equals("Character") && !(value instanceof Character)) {
+                    char newValueAux = value.toString().charAt(0);
+                    ejb.setValue(fieldname, newValueAux);
+                } else if (classMember.getSimpleName().equals("BigDecimal") && !(value instanceof BigDecimal)) {
+                    BigDecimal newValueAux = new BigDecimal(value.toString());
+                    ejb.setValue(fieldname, newValueAux);
+                } else if (classMember.getSimpleName().equals("Boolean") && !(value instanceof Boolean)) {
+                    Boolean newValueAux = (value.toString().equals("1"));
+                    ejb.setValue(fieldname, newValueAux);
+                } else if (classMember.getSimpleName().equals("LocalDateTime") && (value instanceof Date)) {
+                    ejb.setValue(fieldname, LocalDates.toDateTime((Date) value));
+                } else if (classMember.getSimpleName().equals("LocalDateTime") && (value instanceof Timestamp)) {
+                    ejb.setValue(fieldname, ((Timestamp) value).toLocalDateTime());
+                } else {
+                    ejb.setValue(fieldname, value);
+                }
+            }
+            target.add(ejb);
+        }
+        return target;
+    }
+
 }

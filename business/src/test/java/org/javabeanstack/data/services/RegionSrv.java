@@ -1,6 +1,5 @@
 package org.javabeanstack.data.services;
 
-import org.javabeanstack.data.services.DataService;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import org.apache.log4j.Logger;

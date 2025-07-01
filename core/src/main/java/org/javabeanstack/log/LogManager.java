@@ -140,7 +140,7 @@ public class LogManager implements ILogManager {
             if (userSession != null && userSession.getUser() != null) {
                 idcompany = userSession.getIdCompany();
                 iduser = userSession.getUser().getIduser();
-                sesionId = Strings.dateToString(userSession.getTimeLogin())
+                sesionId = Strings.localDateToString(userSession.getTimeLogin())
                         + userSession.getUser().getLogin().trim();
             }
             logRecord.setIdcompany(idcompany);

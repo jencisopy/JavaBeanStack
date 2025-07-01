@@ -1,6 +1,6 @@
 package org.javabeanstack.model.appcatalog;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -10,15 +10,19 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.hibernate.annotations.DynamicUpdate;
 
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppCompany;
+import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.LocalDateTimeAdapter;
+import org.javabeanstack.util.Strings;
 
 
 /**
@@ -26,80 +30,95 @@ import org.javabeanstack.model.IAppCompany;
  * @author Jorge Enciso
  */
 @Entity
-@Table(name = "empresa") 
+@DynamicUpdate
+@Table(name = "appcompany", uniqueConstraints = {@UniqueConstraint(columnNames = {"idcompany"})})
 @XmlRootElement
 public class AppCompany extends DataRow implements IAppCompany {
-    private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @NotNull
-    @Column(name = "idempresa")
+    @Column(name = "idcompany")
     private Long idcompany;
     
 
-    @Column(name = "idempresamask")
+    @Column(name = "idcompanymask")
     private Long idcompanymask;
-    @Column(name = "idperiodo")
+    
+    @Column(name = "idperiod")
     private Long idperiod;
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 50)
-    @Column(name = "nombre")
+    @Column(name = "name")
     private String name;
+    
     @Size(max = 50)
-    @Column(name = "razonsocial")
+    @Column(name = "socialname")
     private String socialName;
+    
     @Size(max = 50)
-    @Column(name = "direccion")
+    @Column(name = "address")
     private String address;
+    
     @Size(max = 50)
-    @Column(name = "telefono")
+    @Column(name = "telephonenumber")
     private String telephoneNumber;
+    
     @Size(max = 11)
-    @Column(name = "ruc")
+    @Column(name = "taxid")
     private String taxId;
+    
     @Size(max = 50)
-    @Column(name = "datos")
+    @Column(name = "persistentunit")
     private String persistentUnit;
+    
     @Size(max = 50)
     @Column(name = "menu")
     private String menu;
+    
     @Size(max = 50)
     @Column(name = "filesystem")
     private String filesystem;
 
-    @Column(name = "logo2")
-    private byte[] logo2;
+    @Column(name = "logo")
+    private byte[] logo;
+    
     @Size(max = 50)
-    @Column(name = "motordatos")
+    @Column(name = "dbengine")
     private String dbengine;
+    
     @Size(max = 4)
-    @Column(name = "pais")
+    @Column(name = "country")
     private String country;
-    @Size(max = 10)
-    @Column(name = "empresarubro")
+
+    @Column(name = "companyactivity")
     private String companyActivity;
 
-    @Column(name = "fechacreacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechacreacion;
+    @Column(name = "fechacreacion",insertable = false, updatable = false)    
+    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)            
+    private LocalDateTime fechacreacion;
+
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)            
+    private LocalDateTime fechamodificacion;
+    
     @Column(name = "fechareplicacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechareplicacion;
+    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)            
+    private LocalDateTime fechareplicacion;
+    
     @Size(max = 32)
     @Column(name = "firma")
     private String firma;
+    
     @Size(max = 32)
     @Column(name = "appuser")
     private String appuser;
 
     @OneToMany(mappedBy = "idcompanygroup")
-    private List<AppCompany> empresaList;
+    private List<AppCompany> appcompanyList;
 
-    @Column(name = "idempresagrupo")
+    @Column(name = "idcompanygroup")
     private Long idcompanygroup;
 
     public AppCompany() {
@@ -136,6 +155,9 @@ public class AppCompany extends DataRow implements IAppCompany {
 
     @Override
     public Long getIdperiod() {
+        if (idperiod == null || idperiod == 0L){
+            return 1L;
+        }
         return idperiod;
     }
 
@@ -196,7 +218,7 @@ public class AppCompany extends DataRow implements IAppCompany {
 
     @Override
     public String getPersistentUnit() {
-        return persistentUnit;
+        return persistentUnit == null ? "" : persistentUnit.trim();
     }
 
     @Override
@@ -247,7 +269,7 @@ public class AppCompany extends DataRow implements IAppCompany {
 
     @Override
     public String getCompanyActivity() {
-        return companyActivity;
+        return Fn.nvl(companyActivity,"").trim();
     }
 
     @Override
@@ -255,27 +277,27 @@ public class AppCompany extends DataRow implements IAppCompany {
         this.companyActivity = empresarubro;
     }
 
-    public Date getFechacreacion() {
+    public LocalDateTime getFechacreacion() {
         return fechacreacion;
     }
 
-    public void setFechacreacion(Date fechacreacion) {
+    public void setFechacreacion(LocalDateTime fechacreacion) {
         this.fechacreacion = fechacreacion;
     }
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
-    public void setFechamodificacion(Date fechamodificacion) {
+    public void setFechamodificacion(LocalDateTime fechamodificacion) {
         this.fechamodificacion = fechamodificacion;
     }
 
-    public Date getFechareplicacion() {
+    public LocalDateTime getFechareplicacion() {
         return fechareplicacion;
     }
 
-    public void setFechareplicacion(Date fechareplicacion) {
+    public void setFechareplicacion(LocalDateTime fechareplicacion) {
         this.fechareplicacion = fechareplicacion;
     }
 
@@ -300,23 +322,23 @@ public class AppCompany extends DataRow implements IAppCompany {
     
     @Override
     public byte[] getLogo() {
-        return logo2;
+        return logo;
     }
 
     @Override
     public void setLogo(byte[] logo) {
-        this.logo2 = logo;
+        this.logo = logo;
     }
     
     @XmlTransient
     @Override
     public List<IAppCompany> getCompanyList() {
-        return (List<IAppCompany>) (List<?>) empresaList;
+        return (List<IAppCompany>) (List<?>) appcompanyList;
     }
 
     @Override
     public void setCompanyList(List<IAppCompany> empresaList) {
-        this.empresaList = (List<AppCompany>) (List<?>) empresaList;
+        this.appcompanyList = (List<AppCompany>) (List<?>) empresaList;
     }
 
     @Override
@@ -327,30 +349,6 @@ public class AppCompany extends DataRow implements IAppCompany {
     @Override
     public void setIdcompanygroup(Long idempresagrupo) {
         this.idcompanygroup = idempresagrupo;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (idcompany != null ? idcompany.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof AppCompany)) {
-            return false;
-        }
-        AppCompany other = (AppCompany) object;
-        if ((this.idcompany == null && other.idcompany != null) || (this.idcompany != null && !this.idcompany.equals(other.idcompany))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "py.com.oym.model.Empresa[ idempresa=" + idcompany + " ]";
     }
 
     @Override
@@ -365,7 +363,7 @@ public class AppCompany extends DataRow implements IAppCompany {
     @PreUpdate
     @PrePersist
     public void preUpdate() {
-        fechamodificacion = new Date();
+        fechamodificacion = LocalDateTime.now();
     }    
     
     /**
@@ -378,5 +376,17 @@ public class AppCompany extends DataRow implements IAppCompany {
     @Override
     public boolean isApplyDBFilter() {
         return false;
+    }
+    
+    public static String getEmpresaCodigo(Long idempresa){
+        if (idempresa == null || idempresa == 0L){
+            return null;
+        }
+        return Strings.leftPad(idempresa.toString(), 2, "0");
+    }
+    
+    @Override
+    public String toString() {
+        return "org.javabeanstack.model.appcatalog.AppCompany{ idempresa=" + idcompany + " }";
     }
 }

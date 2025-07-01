@@ -23,6 +23,7 @@ package org.javabeanstack.data.services;
 
 import java.util.List;
 import java.util.Map;
+import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IGenericDAO;
@@ -43,5 +44,6 @@ public interface IDataService extends IGenericDAO{
     <T extends IDataRow> List<T> getDataRows(String sessionId, Class<T> type, String order, String filter, Map<String, Object> params, int firstRow, int maxRows) throws Exception;
     <T extends IDataRow> String getSelectCmd(String sessionId, Class<T> type, String order, String filter);
     <T extends IDataRow, X extends IDataRow> X copyTo(String sessionId, T source, X target) throws Exception;
+    <S extends IDataRow, T extends IDataRow> void importFrom(String sessionId, List<IDataQueryModel> dataQuerySource, Class<S> ejbClassSource, Class<T> ejbClassTarget, Map<String, Object> params) throws Exception;
     IDAOEvents getEvents();
 }

@@ -21,14 +21,11 @@
  */
 package org.javabeanstack.io;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.Charset;
 import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -253,5 +250,13 @@ public class IOUtil {
             result = false;
         }
         return result;
+    }
+    
+    public static void writeStringToFile(File file, String data){
+        try {
+            FileUtils.writeStringToFile(file, data, Charset.defaultCharset());            
+        } catch (IOException ex) {
+            Logger.getLogger(IOUtil.class).error(ex.getMessage());
+        }
     }
 }

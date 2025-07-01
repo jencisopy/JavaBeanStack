@@ -23,6 +23,8 @@ public class TestClass {
     static protected String sessionId;
     static protected String error;
     static protected String jndiProject = "/TestProjects-ear/TestProjects-ejb/";
+    //static protected String jndiProject = "/Maker-ear/Maker-ejb/";
+    //static protected String jndiProject = "/Maker-web/";
 
     public TestClass() {
     }

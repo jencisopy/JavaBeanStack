@@ -24,7 +24,7 @@
 package org.javabeanstack.security.model;
 
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import org.javabeanstack.data.IDBFilter;
@@ -32,6 +32,7 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
+import org.javabeanstack.util.LocalDates;
 
 /**
  * Esta clase guarda información de la sesión de un usuario.
@@ -41,8 +42,8 @@ import org.javabeanstack.model.IAppUser;
  */
 public class UserSession implements IUserSession{ 
     private IAppUser user;
-    private Date timeLogin = new Date();
-    private Date lastReference = new Date();
+    private LocalDateTime timeLogin = LocalDates.now();
+    private LocalDateTime lastReference = LocalDates.now();
     private IAppCompany company;
     private Long idcompany;
     private String ip;
@@ -81,7 +82,7 @@ public class UserSession implements IUserSession{
      * @return Devuelve la fecha y hora que fue iniciada la sesión
      */
     @Override
-    public Date getTimeLogin() {
+    public LocalDateTime getTimeLogin() {
         return timeLogin;
     }
 
@@ -90,7 +91,7 @@ public class UserSession implements IUserSession{
      * @param timeLogin fecha y hora.
      */
     @Override
-    public void setTimeLogin(Date timeLogin) {
+    public void setTimeLogin(LocalDateTime timeLogin) {
         this.timeLogin = timeLogin;
     }
 
@@ -100,7 +101,7 @@ public class UserSession implements IUserSession{
      * @return Devuelve la ultima fecha y hora que se hizo referencia a la sesión.
      */
     @Override
-    public Date getLastReference() {
+    public LocalDateTime getLastReference() {
         return lastReference;
     }
 
@@ -109,7 +110,7 @@ public class UserSession implements IUserSession{
      * @param date fecha y hora.
      */
     @Override
-    public void setLastReference(Date date) {
+    public void setLastReference(LocalDateTime date) {
         this.lastReference = date;
     }
     

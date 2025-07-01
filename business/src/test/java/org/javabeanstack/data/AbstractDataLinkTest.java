@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.javabeanstack.data.model.DataSet;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.util.LocalDates;
 
 /**
  *
@@ -56,12 +56,12 @@ import org.javabeanstack.model.IAppAuthConsumerToken;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AbstractDataLinkTest extends TestClass {
+
     private String token;
-    private static IDataService dao;    
+    private static IDataService dao;
     private String consumerKey;
-    private final String uuidDevice = "xxxx1111133333";     
-    
-    
+    private final String uuidDevice = "xxxx1111133333";
+
     public AbstractDataLinkTest() {
     }
 
@@ -72,8 +72,8 @@ public class AbstractDataLinkTest extends TestClass {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-    }    
-    
+    }
+
     /**
      * Test of getPersistUnit method, of class AbstractDataLink.
      */
@@ -225,8 +225,8 @@ public class AbstractDataLinkTest extends TestClass {
         AppTablesRelation relation = new AppTablesRelation();
         relation.setEntityPK("xx1");
         relation.setEntityFK("xx2");
-        relation.setFechacreacion(new Date());
-        relation.setFechamodificacion(new Date());
+        relation.setFechacreacion(LocalDates.now());
+        relation.setFechamodificacion(LocalDates.now());
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         IDataResult dataResult = dataLinkCat.persist(relation);
@@ -320,7 +320,7 @@ public class AbstractDataLinkTest extends TestClass {
         IDataResult dataResult = dataLink.persist(moneda);
         Moneda monedaResult = dataResult.getRowUpdated();
         List<Moneda> monedasResult = dataResult.getRowsUpdated();
-        if (!dataResult.isSuccessFul()){
+        if (!dataResult.isSuccessFul()) {
             for (Map.Entry<String, IErrorReg> entry : monedasResult.get(0).getErrors().entrySet()) {
                 System.out.println("Key: " + entry.getKey()
                         + " fieldName: " + entry.getValue().getFieldName()
@@ -330,13 +330,12 @@ public class AbstractDataLinkTest extends TestClass {
         assertNotNull(monedaResult);
         assertTrue(monedasResult.get(0).getErrors().isEmpty());
         assertTrue(dataResult.getErrorMsg().isEmpty());
-        
+
         dataResult = dataLink.remove(monedaResult);
         assertTrue(dataResult.isSuccessFul());
-        
-        
+
     }
-    
+
     /**
      * Test of persist method, of class AbstractDataLink.
      */
@@ -354,8 +353,8 @@ public class AbstractDataLinkTest extends TestClass {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
             relation.setEntityFK("xx" + i);
-            relation.setFechacreacion(new Date());
-            relation.setFechamodificacion(new Date());
+            relation.setFechacreacion(LocalDates.now());
+            relation.setFechamodificacion(LocalDates.now());
             relation.setFieldsFK("id");
             relation.setFieldsPK("id");
             relations.add(relation);
@@ -385,8 +384,8 @@ public class AbstractDataLinkTest extends TestClass {
         AppTablesRelation relation = new AppTablesRelation();
         relation.setEntityPK("xx1");
         relation.setEntityFK("xx2");
-        relation.setFechacreacion(new Date());
-        relation.setFechamodificacion(new Date());
+        relation.setFechacreacion(LocalDates.now());
+        relation.setFechamodificacion(LocalDates.now());
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         relation.setIncluded(false);
@@ -423,8 +422,8 @@ public class AbstractDataLinkTest extends TestClass {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
             relation.setEntityFK("xx" + i);
-            relation.setFechacreacion(new Date());
-            relation.setFechamodificacion(new Date());
+            relation.setFechacreacion(LocalDates.now());
+            relation.setFechamodificacion(LocalDates.now());
             relation.setFieldsFK("id");
             relation.setFieldsPK("id");
             relations.add(relation);
@@ -462,8 +461,8 @@ public class AbstractDataLinkTest extends TestClass {
         AppTablesRelation relation = new AppTablesRelation();
         relation.setEntityPK("xx1");
         relation.setEntityFK("xx2");
-        relation.setFechacreacion(new Date());
-        relation.setFechamodificacion(new Date());
+        relation.setFechacreacion(LocalDates.now());
+        relation.setFechamodificacion(LocalDates.now());
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         relation.setIncluded(false);
@@ -496,8 +495,8 @@ public class AbstractDataLinkTest extends TestClass {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
             relation.setEntityFK("xx" + i);
-            relation.setFechacreacion(new Date());
-            relation.setFechamodificacion(new Date());
+            relation.setFechacreacion(LocalDates.now());
+            relation.setFechamodificacion(LocalDates.now());
             relation.setFieldsFK("id");
             relation.setFieldsPK("id");
             relations.add(relation);
@@ -528,8 +527,8 @@ public class AbstractDataLinkTest extends TestClass {
         AppTablesRelation relation = new AppTablesRelation();
         relation.setEntityPK("xx1");
         relation.setEntityFK("xx2");
-        relation.setFechacreacion(new Date());
-        relation.setFechamodificacion(new Date());
+        relation.setFechacreacion(LocalDates.now());
+        relation.setFechamodificacion(LocalDates.now());
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         relation.setIncluded(false);
@@ -570,8 +569,8 @@ public class AbstractDataLinkTest extends TestClass {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
             relation.setEntityFK("xx" + i);
-            relation.setFechacreacion(new Date());
-            relation.setFechamodificacion(new Date());
+            relation.setFechacreacion(LocalDates.now());
+            relation.setFechamodificacion(LocalDates.now());
             relation.setFieldsFK("id");
             relation.setFieldsPK("id");
             relation.setAction(IDataRow.INSERT);
@@ -618,8 +617,8 @@ public class AbstractDataLinkTest extends TestClass {
             AppTablesRelation relation = new AppTablesRelation();
             relation.setEntityPK("xx1");
             relation.setEntityFK("xx" + i);
-            relation.setFechacreacion(new Date());
-            relation.setFechamodificacion(new Date());
+            relation.setFechacreacion(LocalDates.now());
+            relation.setFechamodificacion(LocalDates.now());
             relation.setFieldsFK("id");
             relation.setFieldsPK("id");
             relation.setAction(IDataRow.INSERT);
@@ -652,6 +651,7 @@ public class AbstractDataLinkTest extends TestClass {
 
     /**
      * Test of refreshRow method, of class AbstractDataLink.
+     *
      * @throws java.lang.Exception
      */
     @Test
@@ -771,12 +771,12 @@ public class AbstractDataLinkTest extends TestClass {
         }
         assertNotNull(dataLink.getUserSession().getSessionId());
     }
-    
+
     /**
      * Test of getPersistUnit method, of class AbstractDataLink.
      */
     @Test
-    public void test28Token() throws Exception{
+    public void test28Token() throws Exception {
         System.out.println("28-DataLink - getPersistUnit - token");
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -785,32 +785,31 @@ public class AbstractDataLinkTest extends TestClass {
         }
         createAuthConsumer();
         createToken();
-        
+
         dataLink.setToken(token);
-        
+
         String result = dataLink.getToken();
         assertNotNull(result);
-        
+
         result = dataLink.getPersistUnit();
         String expResult = "PU2";
         assertEquals(expResult, result);
-        
+
 //        Long result2 = dataLink.getIdCompany();
 //        Long expResult2 = 2L;
 //        assertEquals(expResult2, result2);
-        
         IDBLinkInfo dbInfo = dataLink.getDBLinkInfo();
         assertNotNull(dbInfo);
 
         String sqlSentence = "select * from {schema}.moneda";
         List<Object> query1 = dataLink.findByNativeQuery(sqlSentence, null);
         assertTrue(!query1.isEmpty());
-        
+
         dropToken();
         dropAuthConsumer();
         dataLink.setToken(null);
     }
-    
+
     /**
      * Test of createAuthConsumer method, of class OAuthConsumer.
      */
@@ -829,8 +828,7 @@ public class AbstractDataLinkTest extends TestClass {
         assertNotNull(result);
         consumerKey = instance.getLastAuthConsumer().getConsumerKey();
     }
-    
-    
+
     public void createToken() {
         //No hubo conexión con el servidor de aplicaciones
         if (error != null) {
@@ -848,10 +846,10 @@ public class AbstractDataLinkTest extends TestClass {
         instance.setDao(dao);
         token = instance.createToken(consumerKey, data, uuidDevice);
     }
-    
+
     public void dropToken() {
         OAuthConsumerBase instance = new OAuthConsumerImpl();
-        instance.setDao(dao);                
+        instance.setDao(dao);
         instance.dropToken(consumerKey, uuidDevice);
     }
 
@@ -860,40 +858,39 @@ public class AbstractDataLinkTest extends TestClass {
         instance.setDao(dao);
         instance.dropAuthConsumer(consumerKey);
     }
-    
+
     public class OAuthConsumerImpl extends OAuthConsumerBase {
+
         private IAppCompanySrv appCompanySrv;
-        
-        public OAuthConsumerImpl(){
-            try{
+
+        public OAuthConsumerImpl() {
+            try {
                 appCompanySrv = (IAppCompanySrv) context.lookup(jndiProject + "AppCompanySrv!org.javabeanstack.data.services.IAppCompanySrv");
-            }
-            catch (Exception exp){
+            } catch (Exception exp) {
                 System.out.println("Error instanciación appCompanySrv");
             }
         }
-                
-                
+
         @Override
         public Class<IAppAuthConsumer> getAuthConsumerClass() {
             try {
-                return (Class<IAppAuthConsumer>)Class.forName("org.javabeanstack.model.appcatalog.AppAuthConsumer");
+                return (Class<IAppAuthConsumer>) Class.forName("org.javabeanstack.model.appcatalog.AppAuthConsumer");
             } catch (ClassNotFoundException ex) {
-                System.out.println(ex.getMessage());                
+                System.out.println(ex.getMessage());
             }
             return null;
         }
 
         @Override
         public Class<IAppAuthConsumerToken> getAuthConsumerTokenClass() {
-            try {            
-                return (Class<IAppAuthConsumerToken>)Class.forName("org.javabeanstack.model.appcatalog.AppAuthConsumerToken");
+            try {
+                return (Class<IAppAuthConsumerToken>) Class.forName("org.javabeanstack.model.appcatalog.AppAuthConsumerToken");
             } catch (ClassNotFoundException ex) {
                 System.out.println(ex.getMessage());
             }
             return null;
         }
-        
+
         @Override
         protected IAppCompanySrv getAppCompanySrv() {
             return appCompanySrv;

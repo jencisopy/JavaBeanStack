@@ -94,6 +94,7 @@ public interface IDataRow extends Serializable{
     public void setOnGetterActivated(boolean onGetter);
     public void setOnSetterActivated(boolean onSetter);
     public <X extends IDataRow> X copyTo(X target) throws Exception;
+    public <X extends IDataRow> X copyTo(X target, boolean onlyFieldsNotNulls) throws Exception;
     public String getAuditEntity();
     
     public Map<String, Object> getProperties();

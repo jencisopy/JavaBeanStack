@@ -1,7 +1,7 @@
 package org.javabeanstack.security.model;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Map;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.error.IErrorReg;
@@ -47,7 +47,7 @@ public interface IUserSession extends Serializable {
      *
      * @return Devuelve la ultima fecha y hora que se hizo referencia a la sesión.
      */
-    Date getLastReference();
+    LocalDateTime getLastReference();
 
     /**
      *
@@ -66,7 +66,7 @@ public interface IUserSession extends Serializable {
      *
      * @return Devuelve la fecha y hora que fue logeada la sesión
      */
-    Date getTimeLogin();
+    LocalDateTime getTimeLogin();
     Long getIdCompany();    
     Long getIdEmpresa();
     Integer getIdleSessionExpireInMinutes();
@@ -79,10 +79,10 @@ public interface IUserSession extends Serializable {
     void setError(IErrorReg error);
     void setHost(String host);
     void setIp(String ip);
-    void setLastReference(Date date);
+    void setLastReference(LocalDateTime date);
     void setPersistenceUnit(String persistenceUnit);
     void setSessionId(String sessionId);
-    void setTimeLogin(Date timeLogin);
+    void setTimeLogin(LocalDateTime timeLogin);
     void setUser(IAppUser user);
     void setIdleSessionExpireInMinutes(Integer minutes);
     <T extends IDBFilter> void setDBFilter(T dbFilter);    

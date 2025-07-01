@@ -2,6 +2,8 @@ package org.javabeanstack.data;
 
 import java.util.List;
 import java.util.Map;
+import org.javabeanstack.model.views.PaisView;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -407,6 +409,31 @@ public class DataNativeQueryTest extends TestClass{
         System.out.println(query.getQuerySentence());
     }
     
+
+    @Test
+    public void testQuery11() throws Exception {
+        System.out.println("\n DataNativeQuery TESTQUERY11");
+        System.out.println("==========================");
+        //No hubo conexión con el servidor de aplicaciones
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+        query = (DataNativeQuery)dataLink.newDataNativeQuery();
+        
+        List<IDataQueryModel> paises 
+                = query.select("idpais, codigo, nombre, region, regionnombre")
+                .from("pais_view")
+                .execQuery();
+
+        List<PaisView> resultado = DataNativeQuery.dataQueryToEjb(paises, PaisView.class);
+        
+        System.out.println("\nTESTQUERY11");
+        System.out.println("================");
+        
+        Assert.assertNotNull(resultado);
+    }
+
     
     @Test
     public void testDBFilter() throws Exception {

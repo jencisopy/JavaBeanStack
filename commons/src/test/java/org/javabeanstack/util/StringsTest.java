@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -544,6 +545,19 @@ public class StringsTest {
         assertEquals(expResult, result);
     }
 
+    /**
+     * Test of dateToString method, of class Strings.
+     */
+    @Test
+    public void testLocalDateToString() {
+        System.out.println("dateToString");
+        LocalDateTime date = LocalDates.toDateTime("01/01/1900");
+        String expResult = "19000101";
+        String result = Strings.localDateToString(date);
+        result = result.substring(0, 8);
+        assertEquals(expResult, result);
+    }
+    
     /**
      * Test of inString method, of class Strings.
      */

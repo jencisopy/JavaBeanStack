@@ -24,6 +24,10 @@ package org.javabeanstack.data.services;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +67,12 @@ import org.javabeanstack.util.ParamsUtil;
 import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 import org.javabeanstack.annotation.CheckForeignkey;
+import org.javabeanstack.config.IAppConfig;
+import org.javabeanstack.data.DataNativeQuery;
+import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.data.events.IDAOEvents;
+import org.javabeanstack.io.IOUtil;
+import org.javabeanstack.util.LocalDates;
 
 /**
  * Esta clase deriva de AbstractDAO, a travéz de ella se recupera, válida y se
@@ -77,8 +86,12 @@ public abstract class AbstractDataService implements IDataService {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractDataService.class);
     protected List<Method> methodList = this.getListCheckMethods();
+
     @EJB
     protected IGenericDAO dao;
+
+    @EJB
+    protected IAppConfig appConfig;
 
     protected boolean inheritCheckMethod = false;
 
@@ -642,7 +655,7 @@ public abstract class AbstractDataService implements IDataService {
                         row.setFieldChecked(fieldName, false);
                         break;
                     } else {
-                        if (result != null && result.isWarning() && !"".equals(result.getMessage())){
+                        if (result != null && result.isWarning() && !"".equals(result.getMessage())) {
                             resultWarning = result;
                         }
                         // Paso la verificación del atributo
@@ -745,7 +758,7 @@ public abstract class AbstractDataService implements IDataService {
             operacion = anotation.action();
             level = anotation.level();
             //Se verifica el level All, Entity, Row
-            if (level.equals("FIELD") && !Fn.toLogical(properties.get("FIELD_CHECK_INCLUDE"))){
+            if (level.equals("FIELD") && !Fn.toLogical(properties.get("FIELD_CHECK_INCLUDE"))) {
                 continue;
             }
             // Si existe un error previo sobre este campo continuar con las otras validaciones
@@ -781,7 +794,7 @@ public abstract class AbstractDataService implements IDataService {
         if (!warnings) {
             Iterator<Map.Entry<String, IErrorReg>> it = errors.entrySet().iterator();
             while (it.hasNext()) {
-                if (it.next().getValue().isWarning()){
+                if (it.next().getValue().isWarning()) {
                     it.remove();
                 }
             }
@@ -1104,7 +1117,7 @@ public abstract class AbstractDataService implements IDataService {
     public void execSqlProcedure(String sessionId, String procedureName, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
-    
+
     @Override
     public IErrorReg jpqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
@@ -1223,6 +1236,133 @@ public abstract class AbstractDataService implements IDataService {
         return target;
     }
 
+    /**
+     *
+     * @param <S> Tipo de ejb VIEW que va a hacer de intermediario entre los
+     * datos tipo dataQueryModel y el ejb destino de tipo TABLE.
+     * @param <T> Tipo de ejb TABLE, destino de toda la migración.
+     * @param sessionId
+     * @param dataQuerySource lista de datos a importar de tipo IDataQueryModel
+     * @param ejbClassSource clase intermediario tipo VIEW
+     * @param ejbClassTarget clase destino tipo TABLE
+     * @param params (si se va a sobreescribir en caso de que ya exista, y si se
+     * debe chequear primero antes de grabar)
+     * @throws Exception
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public <S extends IDataRow, T extends IDataRow> void importFrom(String sessionId, List<IDataQueryModel> dataQuerySource, Class<S> ejbClassSource, Class<T> ejbClassTarget, Map<String, Object> params) throws Exception {
+        if (dataQuerySource == null || dataQuerySource.isEmpty()) {
+            return;
+        }
+        Long idcompany = getUserSession(sessionId).getIdCompany();
+        String companyName = getUserSession(sessionId).getCompany().getName();
+        String login = getUserSession(sessionId).getUser().getLogin();
+
+        Boolean overWrite = false;
+        Boolean checkBeforeUpdate = false;
+        Boolean searchIfExists = true;
+        if (params != null) {
+            overWrite = (Boolean) Fn.nvl(params.get("overwrite"), false);
+            checkBeforeUpdate = (Boolean) Fn.nvl(params.get("check"), false);
+            searchIfExists = (Boolean) Fn.nvl(params.get("search"), true);
+        }
+        List<S> sourceList = DataNativeQuery.dataQueryToEjb(dataQuerySource, ejbClassSource);
+        List<T> targetList = new ArrayList();
+        for (S source : sourceList) {
+            T target = ejbClassTarget.getConstructor().newInstance();
+            target.setOnSetterActivated(false);
+            source.setValue("idempresa", idcompany);
+            copyTo(sessionId, source, target);
+            if (searchIfExists) {
+                //Buscar si existe.
+                T existe = dao.findByUk(sessionId, target);
+                //Si no existe marcar para agregar
+                if (existe == null) {
+                    target.setAction(IDataRow.INSERT);
+                } else if (overWrite) {
+                    target.copyTo(existe, true);
+                    target = existe;
+                    target.setAction(IDataRow.UPDATE);
+                } else {
+                    target.setAction(0);
+                }
+            } else {
+                target.setAction(IDataRow.INSERT);
+            }
+            targetList.add(target);
+        }
+        String filePath = System.getProperty("jboss.server.config.dir");
+        if (appConfig.getSystemParam("APPLOGPATH") != null) {
+            filePath = appConfig.getSystemParam("APPLOGPATH").getValueChar();
+        }
+        filePath = IOUtil.addbs(filePath)
+                + "import_" + ejbClassTarget.getSimpleName()
+                + "_" + idcompany
+                + "_" + LocalDates.toString(LocalDates.now(), "yyyyMMddHHmmss")
+                + ".log";
+        Path file = Paths.get(filePath);
+
+        String log = "Inicio del proceso " + LocalDates.toString(LocalDates.now(), "dd/MM/yyyy dd:HH:mm:ss") + "\n";
+        log += "Empresa " + companyName + "\n";
+        log += "Usuario " + login + "\n";
+        Files.writeString(file, log, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
+        //Recorrer y grabar solo los que estaban marcados para agregar
+        Map<String, IErrorReg> errors;
+        IDataResult result;
+        int migrados = 0;
+        int conErrores = 0;
+        int yaExisten = 0;
+        for (T data : targetList) {
+            if (data.getAction() == 0) {
+                //log
+                log = data.toString() + ", ya existe \n";
+                Files.writeString(file, log, StandardOpenOption.APPEND);
+                yaExisten++;
+                continue;
+            }
+            //Si en el parametro esta configurado verificar los datos.
+            if (checkBeforeUpdate) {
+                errors = checkDataRow(sessionId, data);
+                if (!errors.isEmpty()) {
+                    log = "";
+                    for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+                        String key = entry.getKey();
+                        String message = entry.getValue().getMessage();
+                        if (!key.equals("UNIQUEKEY")) {
+                            log += "       Field: " + key + ", " + message+"\n";
+                        } else {
+                            log = message+"\n";
+                        }
+                    }
+                    if (!log.contains(data.toString())){
+                        log = data.toString() + log;
+                    }
+                    Files.writeString(file, log, StandardOpenOption.APPEND);
+                    conErrores++;
+                    continue;
+                }
+            }
+            result = dao.update(sessionId, data);
+
+            if (!result.isSuccessFul()) {
+                //log
+                log = data.toString() + ", error: " + result.getErrorMsg() + "\n";
+                Files.writeString(file, log, StandardOpenOption.APPEND);
+                conErrores++;
+            } else {
+                migrados++;
+            }
+        }
+        log = "-----------------------------------------------------------------------\n";
+        log += "Migrados con exito " + migrados + "\n";
+        log += "Registros con errores " + conErrores + "\n";
+        log += "Registros existentes que no fueron actualizados " + yaExisten + "\n";
+        log += "Fin del proceso " + LocalDates.toString(LocalDates.now(), "dd/MM/yyyy dd:HH:mm:ss");
+        Files.writeString(file, log, StandardOpenOption.APPEND);
+    }
+
     protected <T extends IDataRow> void setDefault(T row, String fieldName) throws Exception {
         if (row.getFieldType(fieldName) == BigDecimal.class) {
             row.setValue(fieldName, BigDecimal.ZERO);
@@ -1322,9 +1462,9 @@ public abstract class AbstractDataService implements IDataService {
     public List<Object[]> findListObjsByQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
         return dao.findListObjsByQuery(sessionId, queryString, parameters, first, max);
     }
-    
+
     @Override
-    public IDAOEvents getEvents(){
+    public IDAOEvents getEvents() {
         return null;
     }
 }

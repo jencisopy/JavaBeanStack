@@ -30,6 +30,7 @@ import org.javabeanstack.model.appcatalog.AppTablesRelation;
 import org.javabeanstack.model.appcatalog.AppUser;
 import org.javabeanstack.model.appcatalog.AppUserFormView;
 import org.javabeanstack.model.appcatalog.AppUserMember;
+import org.javabeanstack.util.LocalDates;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -319,8 +320,8 @@ public class DataInfoTest {
         AppTablesRelation ejb = new AppTablesRelation();
         ejb.setEntityPK("xx1");
         ejb.setEntityFK("xx2");
-        ejb.setFechacreacion(new Date());
-        ejb.setFechamodificacion(new Date());
+        ejb.setFechacreacion(LocalDates.now());
+        ejb.setFechamodificacion(LocalDates.now());
         ejb.setFieldsFK("id");
         ejb.setFieldsPK("id");
         ejb.setIncluded(false);

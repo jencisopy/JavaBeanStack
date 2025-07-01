@@ -22,7 +22,6 @@
  */
 package org.javabeanstack.data;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ import org.javabeanstack.model.appcatalog.AppTablesRelation;
 import org.javabeanstack.model.appcatalog.AppUser;
 import org.javabeanstack.model.tables.Moneda;
 import org.javabeanstack.model.views.CtactemovimientodetalleView;
+import org.javabeanstack.util.LocalDates;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -73,7 +73,7 @@ public class AbstractDAOTest extends TestClass {
             return;
         }
         List<AppUser> users = dao.findAll(AppUser.class, sessionid);
-        assertTrue(users.size() > 0);
+        assertTrue(!users.isEmpty());
     }
 
     /**
@@ -140,12 +140,12 @@ public class AbstractDAOTest extends TestClass {
             return;
         }
         List<AppUser> users = dao.find(AppUser.class, sessionid);
-        assertTrue(users.size() > 0);
+        assertTrue(!users.isEmpty());
         
         String order = "code desc";
         String filter = "";
         users = dao.find(AppUser.class, sessionid, order, filter, null);
-        assertTrue(users.size() > 0);
+        assertTrue(!users.isEmpty());
         
         filter = "code = 'Administrador'";
         users = dao.find(AppUser.class, sessionid, order, filter, null);
@@ -284,8 +284,8 @@ public class AbstractDAOTest extends TestClass {
         AppTablesRelation relation = new AppTablesRelation();
         relation.setEntityPK("xx1");
         relation.setEntityFK("xx2");
-        relation.setFechacreacion(new Date());
-        relation.setFechamodificacion(new Date());
+        relation.setFechacreacion(LocalDates.now());
+        relation.setFechamodificacion(LocalDates.now());
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         relation.setIncluded(false);
@@ -326,8 +326,8 @@ public class AbstractDAOTest extends TestClass {
         AppTablesRelation relation = new AppTablesRelation();
         relation.setEntityPK("xx1");
         relation.setEntityFK("xx2");
-        relation.setFechacreacion(new Date());
-        relation.setFechamodificacion(new Date());
+        relation.setFechacreacion(LocalDates.now());
+        relation.setFechamodificacion(LocalDates.now());
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         IDataResult dataResult = dao.persist(sessionid, relation);
@@ -360,8 +360,8 @@ public class AbstractDAOTest extends TestClass {
         AppTablesRelation relation = new AppTablesRelation();
         relation.setEntityPK("xx1");
         relation.setEntityFK("xx2");
-        relation.setFechacreacion(new Date());
-        relation.setFechamodificacion(new Date());
+        relation.setFechacreacion(LocalDates.now());
+        relation.setFechamodificacion(LocalDates.now());
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         relation.setIncluded(false);
@@ -399,8 +399,8 @@ public class AbstractDAOTest extends TestClass {
         AppTablesRelation relation = new AppTablesRelation();
         relation.setEntityPK("xx1");
         relation.setEntityFK("xx2");
-        relation.setFechacreacion(new Date());
-        relation.setFechamodificacion(new Date());
+        relation.setFechacreacion(LocalDates.now());
+        relation.setFechamodificacion(LocalDates.now());
         relation.setFieldsFK("id");
         relation.setFieldsPK("id");
         relation.setIncluded(false);

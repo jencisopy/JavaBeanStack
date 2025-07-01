@@ -14,7 +14,7 @@
  */
 package org.javabeanstack.model.appcatalog;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,13 +22,13 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.model.IAppTablesRelation;
+import org.javabeanstack.util.LocalDateTimeAdapter;
 
 /**
  *
@@ -83,14 +83,16 @@ public class AppTablesRelation extends DataRow implements IAppTablesRelation {
 
     @Transient
     @Column(name = "fechacreacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechacreacion;
+    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)                
+    private LocalDateTime fechacreacion;
+
     @Column(name = "fechamodificacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechamodificacion;
+    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)                
+    private LocalDateTime fechamodificacion;
+    
     @Column(name = "fechareplicacion")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechareplicacion;
+    @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)                
+    private LocalDateTime fechareplicacion;
 
     public AppTablesRelation() {
     }
@@ -163,38 +165,33 @@ public class AppTablesRelation extends DataRow implements IAppTablesRelation {
         this.marcado = marcado;
     }
     
-    public Date getFechacreacion() {
+    public LocalDateTime getFechacreacion() {
         return fechacreacion;
     }
 
-    public void setFechacreacion(Date fechacreacion) {
+    public void setFechacreacion(LocalDateTime fechacreacion) {
         this.fechacreacion = fechacreacion;
     }
 
-    public Date getFechamodificacion() {
+    public LocalDateTime getFechamodificacion() {
         return fechamodificacion;
     }
 
-    public void setFechamodificacion(Date fechamodificacion) {
+    public void setFechamodificacion(LocalDateTime fechamodificacion) {
         this.fechamodificacion = fechamodificacion;
     }
 
-    public Date getFechareplicacion() {
+    public LocalDateTime getFechareplicacion() {
         return fechareplicacion;
     }
 
-    public void setFechareplicacion(Date fechareplicacion) {
+    public void setFechareplicacion(LocalDateTime fechareplicacion) {
         this.fechareplicacion = fechareplicacion;
     }
 
 
     @Override
     public String toString() {
-        return "net.makerapp.model.tables.DicTablarelacion[ dicTablarelacionPK= ]";
-    }
-
-    @Override
-    public boolean equivalent(Object o) {
-        return super.equals(o);
+        return "org.javabeanstack.model.appcatalog.AppTablesRelation[ dicTablarelacionPK= ]";
     }
 }

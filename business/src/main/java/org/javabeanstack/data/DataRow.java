@@ -705,7 +705,7 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     @Override
-    public <X extends IDataRow> X copyTo(X target) throws Exception {
+    public <X extends IDataRow> X copyTo(X target, boolean onlyFieldsNotNulls) throws Exception {
         IDataRow source = this;
         if (source == null || target == null) {
             return target;
@@ -714,14 +714,26 @@ public class DataRow implements IDataRow, Cloneable {
         //Recorrer atributos del destino para copiar desde el origen
         for (Field field : fields) {
             String fieldName = field.getName();
+            if (field.getAnnotations().length == 0){
+                continue;
+            }
             Class fieldTargetClass = target.getFieldType(fieldName);
             Class fieldSourceClass = source.getFieldType(fieldName);
             //Si existe el campo en el origen
             if (fieldSourceClass != null && fieldTargetClass.isAssignableFrom(fieldSourceClass)) {
-                target.setValue(fieldName, source.getValue(fieldName));
+                if (!onlyFieldsNotNulls) {
+                    target.setValue(fieldName, source.getValue(fieldName));
+                } else if (source.getValue(fieldName) != null) {
+                    target.setValue(fieldName, source.getValue(fieldName));
+                }
             }
         }
         return target;
+    }
+
+    @Override
+    public <X extends IDataRow> X copyTo(X target) throws Exception {
+        return copyTo(target, false);
     }
 
     @XmlTransient
@@ -750,15 +762,15 @@ public class DataRow implements IDataRow, Cloneable {
 
     @Override
     public void addProperties(Map<String, Object> properties) {
-        if (properties == null){
+        if (properties == null) {
             return;
         }
-        if (this.properties == null){
+        if (this.properties == null) {
             this.properties = new HashMap();
         }
         this.properties.putAll(properties);
     }
-    
+
     @XmlTransient
     @Override
     public String getSignature() {
