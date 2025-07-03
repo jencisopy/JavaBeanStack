@@ -445,14 +445,28 @@ public class AppUserLight extends DataRow implements IAppUser {
     public boolean isApplyDBFilter() {
         return false;
     }
+
+    @Override
+    public final boolean isSuperUser(){
+        return getRol().contains(ANALISTA)
+                || getRol().contains(SUPERUSER);
+    }
     
     @Override
-    public final boolean isAdministrator(){
+    public final boolean isSysAdmin(){
         return getAllRoles().contains(ADMINISTRADOR) 
                 || getRol().contains(ANALISTA)
                 || getRol().contains(SUPERUSER);
     }
 
+    @Override
+    public final boolean isCompanyAdmin(){
+        return getAllRoles().contains(ADMINISTRADOR) 
+                || getRol().contains(ANALISTA)
+                || getRol().contains(SUPERUSER)
+                || getAllRoles().contains(ADMINCOMPANY);
+    }
+    
     @Override
     public String toString() {
         return "org.javabeanstack.model.appcatalog.AppUserLight{" + "iduser=" + iduser + ", code=" + code + ", fullName=" + fullName + ", description=" + description + ", disabled=" + disabled + ", expiredDate=" + expiredDate + ", rol=" + rol + ", type=" + type + '}';

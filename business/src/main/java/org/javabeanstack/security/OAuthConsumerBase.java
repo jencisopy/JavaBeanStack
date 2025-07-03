@@ -443,9 +443,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 data.setIdAppUser(usuario.getIduser());
                 data.setAdministrator(false);
                 //Si es administrador o analista
-                if (usuario.getAllRoles().contains(IAppUser.ADMINISTRADOR)
-                        || usuario.getRol().contains(IAppUser.ANALISTA)
-                        || usuario.getRol().contains(IAppUser.SUPERUSER)) {
+                if (usuario.isCompanyAdmin()) {
                     data.setAdministrator(true);
                 }
             }

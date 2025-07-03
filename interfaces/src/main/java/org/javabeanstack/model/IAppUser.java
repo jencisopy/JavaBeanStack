@@ -14,6 +14,8 @@ public interface IAppUser extends IDataRow, Serializable {
     public static final String ANALISTA = "00";
     public static final String SUPERUSER = "01";
     public static final String ADMINISTRADOR = "20";
+    public static final String ADMINISTRADORSYSTEM = "20";
+    public static final String ADMINCOMPANY = "21";
     public static final String TOKEN = "25";    
     public static final String USUARIO = "30";    
     
@@ -68,5 +70,7 @@ public interface IAppUser extends IDataRow, Serializable {
     void setAppRol(String appRol);    
     void setType(Short tipo);
     void setAvatar(byte[] avatar);
-    boolean isAdministrator();
+    boolean isSysAdmin();
+    boolean isCompanyAdmin();    
+    boolean isSuperUser();
 }
