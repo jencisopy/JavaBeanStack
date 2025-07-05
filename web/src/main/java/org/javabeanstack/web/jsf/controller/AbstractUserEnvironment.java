@@ -19,7 +19,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-
 package org.javabeanstack.web.jsf.controller;
 
 import java.io.FileNotFoundException;
@@ -62,6 +61,7 @@ public abstract class AbstractUserEnvironment extends AbstractController {
 
     /**
      * Devuelve el avatar del usuario logueado en formato byte
+     *
      * @return avatar del usuario logueado en formato byte
      */
     public byte[] getUserAvatar() {
@@ -115,6 +115,7 @@ public abstract class AbstractUserEnvironment extends AbstractController {
 
     /**
      * Devuelve la imagen de un avatar por defecto en formato byte
+     *
      * @return un avatar por defecto en formato byte
      */
     public byte[] getDefaultUserAvatar() {
@@ -131,6 +132,7 @@ public abstract class AbstractUserEnvironment extends AbstractController {
 
     /**
      * Devuelve un logo de empresa por defecto en formato byte
+     *
      * @return logo de empresa por defecto en formato byte
      */
     public byte[] getDefaultCompanyLogo() {
@@ -147,6 +149,7 @@ public abstract class AbstractUserEnvironment extends AbstractController {
 
     /**
      * Devuelve el avatar del usuario logueado en formato string base64
+     *
      * @return el avatar del usuario logueado en formato string base64
      */
     public String getUserAvatarAsString() {
@@ -156,9 +159,9 @@ public abstract class AbstractUserEnvironment extends AbstractController {
 
     /**
      * Devuelve el logo de la empresa seleccionada en formato string base64
+     *
      * @return logo de la empresa seleccionada en formato string base64
      */
-
     public String getCompanyLogoAsString() {
         byte[] logo = getCompanyLogo();
         return getByteAsString(logo);
@@ -166,8 +169,9 @@ public abstract class AbstractUserEnvironment extends AbstractController {
 
     /**
      * Convierte una byte a string base64
-     * @param avatar 
-     * @return 
+     *
+     * @param avatar
+     * @return
      */
     protected String getByteAsString(byte[] avatar) {
         if (avatar == null) {
@@ -177,12 +181,13 @@ public abstract class AbstractUserEnvironment extends AbstractController {
         avatarAsString = Base64.getEncoder().encodeToString(avatar);
         return avatarAsString;
     }
-    
+
     /**
      * Devuelve el contexto del proyecto ej. localhost/Maker-web
+     *
      * @return el contexto del proyecto ej. localhost/Maker-web
      */
-    public String getProjectContextName(){
-      return  getFacesCtx().getRequestContextPath();
+    public String getProjectContextName() {
+        return getFacesCtx().getRequestContextPath();
     }
 }

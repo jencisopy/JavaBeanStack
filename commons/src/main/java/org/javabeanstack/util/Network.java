@@ -26,7 +26,9 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  *
@@ -67,6 +69,34 @@ public class Network {
             } catch (SocketException ex) {
                 System.out.println("Could not find IP address for this host");
             }
+        }
+        return result;
+    }
+
+    public static List<InetAddress> getAllAddresses() {
+        List<InetAddress> result = new ArrayList();
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                if (!networkInterface.isUp()) {
+                    continue;
+                }
+                if (networkInterface.isLoopback()) {
+                    continue;
+                }
+                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress address = addresses.nextElement();
+                    if (address.isLinkLocalAddress()) {
+                        result.add(address);
+                    } else if (address.isSiteLocalAddress()) {
+                        result.add(address);
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            System.out.println("Could not find IP address for this host");
         }
         return result;
     }
