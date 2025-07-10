@@ -37,6 +37,7 @@
         <module>business</module>
         <module>commons</module>
         <module>web</module>
+        <module>aws</module>
     </modules>
     <distributionManagement> 
         <snapshotRepository>

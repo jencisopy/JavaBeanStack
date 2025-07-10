@@ -33,6 +33,7 @@ import org.javabeanstack.resources.IAppResource;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.security.model.IUserSession;
 import static org.javabeanstack.data.DataNativeQuery.getClassModel;
+import org.javabeanstack.model.IAppCompany;
 
 /**
  *
@@ -189,5 +190,14 @@ public abstract class AbstractUserEnvironment extends AbstractController {
      */
     public String getProjectContextName() {
         return getFacesCtx().getRequestContextPath();
+    }
+    
+    public IAppCompany getCompanyLogged(){
+        IUserSession userSession = getUserSession();
+        // Si no esta logueado
+        if (userSession == null || userSession.getUser() == null) {
+            return null;
+        }        
+        return userSession.getCompany();
     }
 }
