@@ -24,10 +24,12 @@ package org.javabeanstack.web.jsf.listeners;
 import javax.faces.event.PhaseEvent;
 import javax.faces.event.PhaseId;
 import javax.faces.event.PhaseListener;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class LifeCycleListener implements PhaseListener {
-    private static final Logger LOGGER = Logger.getLogger(LifeCycleListener.class);
+    private static final Logger LOGGER = LogManager.getLogger(LifeCycleListener.class);
 
     @Override
     public PhaseId getPhaseId() {

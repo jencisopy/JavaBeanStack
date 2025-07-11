@@ -25,7 +25,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 import static org.javabeanstack.util.Fn.nvl;
@@ -36,7 +38,7 @@ import org.javabeanstack.util.LocalDates;
  * @author Jorge Enciso
  */
 public class ClientAuthRequestInfo implements IClientAuthRequestInfo{
-    private static final Logger LOGGER = Logger.getLogger(ClientAuthRequestInfo.class);    
+    private static final Logger LOGGER = LogManager.getLogger(ClientAuthRequestInfo.class);    
     
     private IAppAuthConsumerToken appAuthToken;
     private Long idcompany;

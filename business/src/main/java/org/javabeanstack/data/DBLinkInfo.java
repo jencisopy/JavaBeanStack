@@ -21,7 +21,9 @@
  */
 package org.javabeanstack.data;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.error.IErrorReg;
 
 import org.javabeanstack.exceptions.SessionError;
@@ -38,7 +40,7 @@ import org.javabeanstack.model.IAppAuthConsumerToken;
  */
 public class DBLinkInfo implements IDBLinkInfo {
 
-    private static final Logger LOGGER = Logger.getLogger(DBLinkInfo.class);
+    private static final Logger LOGGER = LogManager.getLogger(DBLinkInfo.class);
     private IUserSession userSession;
     private IAppAuthConsumerToken token;
     private IAppCompany appCompanyToken;

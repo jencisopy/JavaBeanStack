@@ -25,7 +25,9 @@ import com.google.common.base.Strings;
 import javax.ejb.EJB;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.error.IErrorReg;
@@ -41,7 +43,7 @@ import org.javabeanstack.ws.resources.IWebResource;
  */
 public abstract class AbstractWebResource implements IWebResource {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractWebResource.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractWebResource.class);
 
     @EJB
     private IOAuthConsumer oAuthConsumer;

@@ -33,7 +33,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDBManager;
@@ -63,7 +65,7 @@ import org.javabeanstack.util.Strings;
  */
 public abstract class AbstractDataObject<T extends IDataRow> implements IDataObject, Serializable {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractDataObject.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractDataObject.class);
 
     /**
      * Puntero del nro de registro o fila

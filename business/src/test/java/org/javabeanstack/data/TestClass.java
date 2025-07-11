@@ -10,13 +10,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.security.model.IUserSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author Jorge Enciso
  */
 public class TestClass {
-    private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(TestClass.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestClass.class);
     static protected Context context;
     static protected IDataLink dataLink;
     static protected IDataLink dataLinkCat;

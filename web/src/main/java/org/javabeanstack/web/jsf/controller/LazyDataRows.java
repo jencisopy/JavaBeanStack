@@ -28,7 +28,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortMeta;
 import org.primefaces.model.SortOrder;
@@ -49,7 +51,7 @@ import org.javabeanstack.web.model.IColumnModel;
  */
 public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
 
-    private static final Logger LOGGER = Logger.getLogger(LazyDataRows.class);
+    private static final Logger LOGGER = LogManager.getLogger(LazyDataRows.class);
     public AbstractDataController context;
     private boolean noCount = false;
     private int timesLoaded = 0;

@@ -24,6 +24,8 @@ package org.javabeanstack.crypto;
 
 import java.util.Base64;
 import org.junit.Test;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import static org.junit.Assert.*;
 
 /**
@@ -31,7 +33,8 @@ import static org.junit.Assert.*;
  * @author Jorge Enciso
  */
 public class DigestUtilTest {
-
+    private static final Logger logger = LogManager.getLogger(DigestUtilTest.class);
+    
     public DigestUtilTest() {
     }
 
@@ -40,7 +43,7 @@ public class DigestUtilTest {
      */
     @Test
     public void testMd5() throws Exception {
-        System.out.println("md5");
+        System.out.println("test md5");
         String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
         String expResult = "5AD6F23DA25B3A54CD5AE716C401732D";
         String result = DigestUtil.md5(msg).toUpperCase();
@@ -52,7 +55,8 @@ public class DigestUtilTest {
      */
     @Test
     public void testSha256() throws Exception {
-        System.out.println("sha256");
+        System.out.println("test sha256");
+        logger.info("sha256");
         String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
         String expResult = "4D9DC750077F316B7A9D2D5C4890B1D79ABC7B7C4261D7090CBF58501E2F723B";
         String result = DigestUtil.sha256(msg).toUpperCase();
@@ -65,7 +69,8 @@ public class DigestUtilTest {
      */
     @Test
     public void testSha512() throws Exception {
-        System.out.println("sha512");
+        System.out.println("test sha512");
+        logger.info("sha512");
         String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
         String expResult = "8CABE293B89951C158AC9B56ECDD518060BE89CB760ED7AD04CF72B9F10EB38401A8959E6CFCD3146A6A02AC126D76B3DAD653500239EF8A6BB4106238B9C37C";
         String result = DigestUtil.sha512(msg).toUpperCase();
@@ -78,8 +83,9 @@ public class DigestUtilTest {
      */
     @Test
     public void testDigestToHex() throws Exception {
-        System.out.println("digestToHex");
-
+        System.out.println("test digestToHex");
+        logger.info("digestToHex");
+        
         String msg = "abcdefghijklmnñopqrstuvwxyzáéíóú";
         String expResult = "8DD69CB915630B3DDE248FC13DBA97547BCED31E";
         String result = DigestUtil.digestToHex(DigestUtil.SHA1, msg).toUpperCase();
@@ -106,6 +112,8 @@ public class DigestUtilTest {
     @Test
     public void testDigestAuth_MD5() throws Exception {
         System.out.println("DIGEST AUTH");
+        logger.info("DIGEST AUTH");
+        
         //HA1=MD5(username:realm:password) md5
         //HA2=MD5(method:digestURI)   
         //response=MD5(HA1:nonce:HA2)

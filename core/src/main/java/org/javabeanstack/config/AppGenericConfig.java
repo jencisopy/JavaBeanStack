@@ -30,7 +30,8 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.w3c.dom.Document;
@@ -63,7 +64,7 @@ import org.javabeanstack.xml.DomW3cParser;
 @Lock(LockType.READ)
 public class AppGenericConfig implements IAppConfig {
 
-    protected static final Logger LOGGER = Logger.getLogger(AppGenericConfig.class);
+    protected static final Logger LOGGER = LogManager.getLogger(AppGenericConfig.class);
 
     @EJB
     protected IGenericDAO dao;

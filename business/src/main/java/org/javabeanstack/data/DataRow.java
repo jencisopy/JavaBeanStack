@@ -29,7 +29,9 @@ import java.util.Map;
 import java.util.Objects;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.annotation.AuditEntity;
 import org.javabeanstack.annotation.SignatureField;
 
@@ -46,7 +48,7 @@ import org.javabeanstack.util.Fn;
  */
 public class DataRow implements IDataRow, Cloneable {
 
-    private static final Logger LOGGER = Logger.getLogger(DataRow.class);
+    private static final Logger LOGGER = LogManager.getLogger(DataRow.class);
     @XmlTransient
     private int persistMode = IDataRow.PERSIST;
     @XmlTransient

@@ -33,7 +33,8 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 

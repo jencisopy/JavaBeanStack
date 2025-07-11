@@ -30,7 +30,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.exceptions.SessionError;
@@ -50,7 +51,7 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
  */
 public class DataNativeQuery implements IDataNativeQuery {
 
-    private static final Logger LOGGER = Logger.getLogger(DataNativeQuery.class);
+    private static final Logger LOGGER = LogManager.getLogger(DataNativeQuery.class);
 
     private boolean queryCreated;
     private String querySentence;

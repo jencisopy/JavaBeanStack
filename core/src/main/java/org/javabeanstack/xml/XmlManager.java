@@ -30,7 +30,9 @@ import javax.ejb.LockType;
 import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.w3c.dom.Document;
 import org.javabeanstack.data.IGenericDAO;
 
@@ -44,7 +46,7 @@ import org.javabeanstack.data.IGenericDAO;
 @Lock(LockType.WRITE)
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class XmlManager implements IXmlManager {
-    private static final Logger LOGGER = Logger.getLogger(XmlManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(XmlManager.class);
     
     @EJB
     private IGenericDAO dao;

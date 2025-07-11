@@ -35,7 +35,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
@@ -58,7 +59,7 @@ import org.w3c.dom.Element;
 @Lock(LockType.READ)
 public class DBManager implements IDBManager {
 
-    private static final Logger LOGGER = Logger.getLogger(DBManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(DBManager.class);
     private int entityIdStrategic = IDBManager.PERSESSION;
     private Date lastPurge = new Date();
 

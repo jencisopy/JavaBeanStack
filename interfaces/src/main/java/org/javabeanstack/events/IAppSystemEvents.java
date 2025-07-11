@@ -22,7 +22,8 @@
 package org.javabeanstack.events;
 
 import java.io.Serializable;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
 import org.javabeanstack.error.IErrorReg;
 
 /**

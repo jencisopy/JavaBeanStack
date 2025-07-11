@@ -23,7 +23,8 @@ package org.javabeanstack.resources;
 
 import java.util.Map;
 import javax.ejb.EJB;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppCompany;
@@ -45,7 +46,7 @@ import static org.javabeanstack.util.Fn.nvl;
  * @author Jorge Enciso
  */
 public class AppResource implements IAppResource {
-    private static final Logger LOGGER = Logger.getLogger(AppResource.class);
+    private static final Logger LOGGER = LogManager.getLogger(AppResource.class);
     
     @EJB
     private IXmlManager xmlManager;

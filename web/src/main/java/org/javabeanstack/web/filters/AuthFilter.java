@@ -32,7 +32,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.io.IOUtil;
 
@@ -46,8 +47,7 @@ import org.javabeanstack.util.Fn;
  * @author Jorge Enciso
  */
 public class AuthFilter implements Filter {
-
-    private static final Logger LOGGER = Logger.getLogger(AuthFilter.class);
+    private static final Logger LOGGER = LogManager.getLogger(AuthFilter.class);
 
     @EJB
     private IAppConfig appConfig;

@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.servlet.RequestDispatcher;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.security.ISecManager;
@@ -49,7 +50,7 @@ import org.javabeanstack.util.Parameters;
 public abstract class AbstractAuthController extends AbstractController {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER = Logger.getLogger(AbstractAuthController.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractAuthController.class);
 
     /**
      * Login o identificador del usuario

@@ -29,8 +29,8 @@ import java.nio.charset.Charset;
 import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.javabeanstack.util.Strings;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Funciones que facilitan el manejo de archivos, inputStream entre otros.
@@ -123,7 +123,7 @@ public class IOUtil {
             properties.load(input);
             return properties;
         } catch (Exception ex) {
-            Logger.getLogger(IOUtil.class).error(ex.getMessage());
+            LogManager.getLogger(IOUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -144,7 +144,7 @@ public class IOUtil {
             properties.load(input);
             return properties;
         } catch (IOException ex) {
-            Logger.getLogger(IOUtil.class).error(ex.getMessage());
+            LogManager.getLogger(IOUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -165,7 +165,7 @@ public class IOUtil {
             properties.load(input);
             return properties;
         } catch (Exception ex) {
-            Logger.getLogger(IOUtil.class).error(ex.getMessage());
+            LogManager.getLogger(IOUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -246,7 +246,7 @@ public class IOUtil {
         try {
             FileUtils.writeByteArrayToFile(new File(filePath), byteArray);
         } catch (IOException ex) {
-            Logger.getLogger(IOUtil.class).error(ex.getMessage());
+            LogManager.getLogger(IOUtil.class).error(ex.getMessage());
             result = false;
         }
         return result;
@@ -256,7 +256,7 @@ public class IOUtil {
         try {
             FileUtils.writeStringToFile(file, data, Charset.defaultCharset());            
         } catch (IOException ex) {
-            Logger.getLogger(IOUtil.class).error(ex.getMessage());
+            LogManager.getLogger(IOUtil.class).error(ex.getMessage());
         }
     }
 }

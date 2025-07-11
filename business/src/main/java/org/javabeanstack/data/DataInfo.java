@@ -31,7 +31,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
@@ -44,7 +45,7 @@ import org.javabeanstack.util.Strings;
  */
 public class DataInfo {
 
-    private static final Logger LOGGER = Logger.getLogger(DataInfo.class);
+    private static final Logger LOGGER = LogManager.getLogger(DataInfo.class);
 
     private DataInfo() {
     }

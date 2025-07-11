@@ -30,7 +30,9 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.data.IDataNativeQuery;
 import org.javabeanstack.data.IDataQueryModel;
 
@@ -63,7 +65,8 @@ import org.javabeanstack.web.util.AppResourceSearcher;
  * @param <T>
  */
 public abstract class AbstractDataController<T extends IDataRow> extends AbstractDataObject<T> {
-
+    private static final Logger LOGGER = LogManager.getLogger(AbstractDataController.class);
+    
     /**
      * Lista de registros de la selección de datos en un proceso que trae los
      * datos por bloque (pagina a pagina)
@@ -269,7 +272,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 this.rowSelected = (T) rowSelected;
             }
         } catch (Exception ex) {
-            getFacesCtx().showError(ex, Logger.getLogger(this.getClass()));
+            getFacesCtx().showError(ex, LOGGER);
         }
     }
 
@@ -582,7 +585,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 return data.get(0).getColumn("maximo");
             }
         } catch (Exception ex) {
-            getFacesCtx().showError(ex, Logger.getLogger(getClass()));
+            getFacesCtx().showError(ex, LOGGER);
         }
         return null;
     }

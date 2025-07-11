@@ -2,7 +2,9 @@ package org.javabeanstack.data.services;
 
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.DBManager;
 import org.javabeanstack.data.IDataRow;
@@ -17,7 +19,7 @@ import org.javabeanstack.model.appcatalog.AppUser;
  */
 @TransactionManagement(value=TransactionManagementType.CONTAINER)
 public class UsuarioSrv extends DataService implements IUsuarioSrv {
-    private static final Logger LOGGER = Logger.getLogger(UsuarioSrv.class);
+    private static final Logger LOGGER = LogManager.getLogger(UsuarioSrv.class);
     
     @CheckMethod(fieldName = "codigo",
                  action   = {IDataRow.AGREGAR,

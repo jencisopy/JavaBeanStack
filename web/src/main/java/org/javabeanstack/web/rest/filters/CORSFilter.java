@@ -27,7 +27,8 @@ import java.io.IOException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Filtro CORS, intercepta las peticiones y agrega datos relevantes al response
@@ -35,7 +36,7 @@ import org.apache.log4j.Logger;
  */
 public class CORSFilter implements ContainerResponseFilter {
 
-    private static final Logger LOGGER = Logger.getLogger(CORSFilter.class);
+    private static final Logger LOGGER = LogManager.getLogger(CORSFilter.class);
 
    @Override
    public void filter(final ContainerRequestContext requestContext,

@@ -46,7 +46,8 @@ import javax.persistence.Table;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.transaction.Status;
 import javax.transaction.TransactionSynchronizationRegistry;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.events.IDAOEvents;
 
 import org.javabeanstack.error.ErrorReg;
@@ -76,7 +77,7 @@ import org.javabeanstack.util.Strings;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public abstract class AbstractDAO implements IGenericDAO {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractDAO.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractDAO.class);
     private static final String DEFAULT_SCHEMA_PROPERTY = "hibernate.default_schema";
     public static final String FALSE = "false";
     public static final String TRUE = "true";

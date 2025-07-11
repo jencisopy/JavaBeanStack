@@ -29,7 +29,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataRow;
@@ -43,7 +44,7 @@ import org.javabeanstack.error.ErrorManager;
  */
 public abstract class AbstractDataConverter<T extends IDataRow> implements Converter, Serializable {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractDataConverter.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractDataConverter.class);
     Class<T> clase;
 
     public AbstractDataConverter() {

@@ -43,7 +43,8 @@ import javax.ejb.LockType;
 import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.crypto.DigestUtil;
@@ -79,7 +80,7 @@ import org.javabeanstack.util.LocalDates;
 @Startup
 @Lock(LockType.READ)
 public class Sessions implements ISessions {
-    private static final Logger LOGGER = Logger.getLogger(Sessions.class);
+    private static final Logger LOGGER = LogManager.getLogger(Sessions.class);
 
     protected final Map<String, Object> sessionVar = new HashMap<>();
     protected boolean oneSessionPerUser = false;

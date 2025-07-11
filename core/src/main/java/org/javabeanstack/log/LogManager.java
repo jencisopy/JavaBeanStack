@@ -26,7 +26,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
@@ -47,7 +47,7 @@ import org.javabeanstack.util.LocalDates;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class LogManager implements ILogManager {
 
-    private static final Logger LOGGER = Logger.getLogger(LogManager.class);
+    private static final Logger LOGGER = org.apache.logging.log4j.LogManager.getLogger(LogManager.class);
 
     private final String LOG_TYPE_PATH = "org.javabeanstack.model.appcatalog.AppLogEvent";
 

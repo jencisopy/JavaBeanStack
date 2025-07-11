@@ -27,14 +27,16 @@ import org.javabeanstack.model.IAppUserMember;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.LocalDates;
 import org.javabeanstack.util.Strings;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 @Entity
 @Table(name = "appuser", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"code"})})
 @SequenceGenerator(name = "APPUSER_SEQ", allocationSize = 1, sequenceName = "APPUSER_SEQ")
 public class AppUser extends DataRow implements IAppUser {
-    private static final Logger LOGGER = Logger.getLogger(AppUser.class);
+    private static final Logger LOGGER = LogManager.getLogger(AppUser.class);
     private static final long serialVersionUID = 1L;
 
     @Id

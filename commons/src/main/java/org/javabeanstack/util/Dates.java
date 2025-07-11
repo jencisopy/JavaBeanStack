@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 /**
  * Funciones wrapper que facilitan el manejo de variables Date
  *
@@ -97,7 +97,7 @@ public class Dates {
         try {
             date = formatter.parse(dateString);
         } catch (ParseException ex) {
-            Logger.getLogger(Fn.class).error(ex.getMessage());
+            LogManager.getLogger(Dates.class).error(ex.getMessage());
         }
         return date;
     }

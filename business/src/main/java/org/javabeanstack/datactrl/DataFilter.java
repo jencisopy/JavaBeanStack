@@ -30,7 +30,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.annotation.FieldFilter;
 import static org.javabeanstack.data.DataInfo.getDeclaredField;
 import org.javabeanstack.error.ErrorManager;
@@ -45,7 +47,7 @@ import static org.javabeanstack.util.LocalDates.*;
  * @author Jorge Enciso
  */
 public class DataFilter {
-    private static final Logger LOGGER = Logger.getLogger(DataFilter.class);
+    private static final Logger LOGGER = LogManager.getLogger(DataFilter.class);
     
     private String filterExpression;
     private Map<String, Object> parameters = new HashMap();

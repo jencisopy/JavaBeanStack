@@ -15,7 +15,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.error.ErrorManager;
@@ -27,7 +28,7 @@ import org.javabeanstack.util.Fn;
 @Entity
 @Table(name = "appuser")
 public class AppUserLight extends DataRow implements IAppUser {
-    private static final Logger LOGGER = Logger.getLogger(AppUserLight.class);
+    private static final Logger LOGGER = LogManager.getLogger(AppUserLight.class);
     private static final long serialVersionUID = 1L;
 
     @Id

@@ -29,7 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.xml.transform.TransformerException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,7 +51,7 @@ import static org.javabeanstack.util.Strings.*;
  */
 public class XmlDomW3c implements IXmlDom<Document, Element> {
 
-    private static final Logger LOGGER = Logger.getLogger(XmlDomW3c.class);
+    private static final Logger LOGGER = LogManager.getLogger(XmlDomW3c.class);
     /**
      * En esta propiedad se le asignará el objeto XMLDOM.
      */

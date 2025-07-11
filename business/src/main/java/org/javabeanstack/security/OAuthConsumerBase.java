@@ -39,7 +39,9 @@ import java.util.Properties;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.ejb.EJB;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.crypto.DigestUtil;
 import org.javabeanstack.data.IDBFilter;
@@ -64,7 +66,7 @@ import org.javabeanstack.util.LocalDates;
  */
 public abstract class OAuthConsumerBase implements IOAuthConsumer {
 
-    private static final Logger LOGGER = Logger.getLogger(OAuthConsumerBase.class);
+    private static final Logger LOGGER = LogManager.getLogger(OAuthConsumerBase.class);
 
     @EJB
     private IDataService dao;

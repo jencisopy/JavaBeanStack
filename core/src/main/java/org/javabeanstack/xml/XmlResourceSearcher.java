@@ -23,7 +23,8 @@ package org.javabeanstack.xml;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppResource;
@@ -38,7 +39,7 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
  */
 public class XmlResourceSearcher<V> extends XmlSearcher<V> {
 
-    private static final Logger LOGGER = Logger.getLogger(XmlResourceSearcher.class);
+    private static final Logger LOGGER = LogManager.getLogger(XmlResourceSearcher.class);
 
     private IGenericDAO dao;
 

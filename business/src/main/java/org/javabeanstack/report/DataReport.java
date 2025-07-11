@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.data.model.DataQueryModel;
 import org.javabeanstack.data.IDataExpression;
 import org.javabeanstack.data.IDataLink;
@@ -54,7 +56,7 @@ import static org.javabeanstack.util.Fn.nvl;
  * @author Jorge Enciso
  */
 public class DataReport {
-    private static final Logger LOGGER = Logger.getLogger(DataReport.class);
+    private static final Logger LOGGER = LogManager.getLogger(DataReport.class);
 
     /**
      * Objeto manejador de datos

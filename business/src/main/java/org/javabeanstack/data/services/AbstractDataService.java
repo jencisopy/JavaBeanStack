@@ -40,7 +40,9 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Query;
 import javax.validation.constraints.NotNull;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.exceptions.SessionError;
@@ -84,7 +86,7 @@ import org.javabeanstack.util.LocalDates;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public abstract class AbstractDataService implements IDataService {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractDataService.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractDataService.class);
     protected List<Method> methodList = this.getListCheckMethods();
 
     @EJB

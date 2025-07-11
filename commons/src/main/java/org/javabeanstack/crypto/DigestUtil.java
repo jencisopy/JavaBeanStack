@@ -29,7 +29,7 @@ import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.javabeanstack.util.Fn;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * 
@@ -60,7 +60,7 @@ public class DigestUtil {
         try {
             return digestToHex("MD5", msg);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());                        
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());                        
         }
         return null;
     }
@@ -74,7 +74,7 @@ public class DigestUtil {
         try {
             return digestToHex("SHA-256", msg);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -88,7 +88,7 @@ public class DigestUtil {
         try {
             return digestToHex("SHA-512", msg);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -172,7 +172,7 @@ public class DigestUtil {
         try {
             return digestHmacToHex("HmacMD5", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -188,7 +188,7 @@ public class DigestUtil {
         try {
             return digestHmacToHex("HmacSHA1", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -203,7 +203,7 @@ public class DigestUtil {
         try {
             return digestHmacToBase64("HmacSHA1", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -218,7 +218,7 @@ public class DigestUtil {
         try {
             return digestHmacToHex("HmacSHA256", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -233,7 +233,7 @@ public class DigestUtil {
         try {
             return digestHmacToBase64("HmacSHA256", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -248,7 +248,7 @@ public class DigestUtil {
         try {
             return digestHmacToHex("HmacSHA384", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -264,7 +264,7 @@ public class DigestUtil {
         try {
             return digestHmacToBase64("HmacSHA384", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -279,7 +279,7 @@ public class DigestUtil {
         try {
             return digestHmacToHex("HmacSHA512", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }
@@ -294,7 +294,7 @@ public class DigestUtil {
         try {
             return digestHmacToBase64("HmacSHA512", msg, key.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
-            Logger.getLogger(DigestUtil.class).error(ex.getMessage());
+            LogManager.getLogger(DigestUtil.class).error(ex.getMessage());
         }
         return null;
     }

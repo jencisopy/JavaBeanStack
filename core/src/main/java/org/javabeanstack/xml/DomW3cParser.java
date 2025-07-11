@@ -45,7 +45,8 @@ import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Fn;
@@ -61,7 +62,7 @@ import static org.javabeanstack.util.Strings.*;
  */
 public class DomW3cParser {
 
-    private static final Logger LOGGER = Logger.getLogger(DomW3cParser.class);
+    private static final Logger LOGGER = LogManager.getLogger(DomW3cParser.class);
     private static final DocumentBuilderFactory FACTORY = DocumentBuilderFactory.newInstance();
     private static final XPathFactory XPATHFACTORY = XPathFactory.newInstance();
     private static final String DEFAULTCHARSET = "UTF-8";

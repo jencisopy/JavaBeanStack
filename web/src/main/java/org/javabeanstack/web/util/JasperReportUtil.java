@@ -50,7 +50,8 @@ import net.sf.jasperreports.export.SimpleHtmlExporterOutput;
 import net.sf.jasperreports.export.SimpleHtmlReportConfiguration;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.error.ErrorManager;
@@ -68,7 +69,7 @@ import org.primefaces.model.DefaultStreamedContent;
  */
 public class JasperReportUtil {
 
-    private static final Logger LOGGER = Logger.getLogger(JasperReportUtil.class);
+    private static final Logger LOGGER = LogManager.getLogger(JasperReportUtil.class);
 
     private IAppResource appResource;
     private IUserSession userSession;

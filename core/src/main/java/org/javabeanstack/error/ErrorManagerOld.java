@@ -23,7 +23,7 @@ package org.javabeanstack.error;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.log.ILogManager;
 import org.javabeanstack.model.IAppLogRecord;
@@ -36,7 +36,7 @@ import org.javabeanstack.util.Strings;
  *
  * @author Jorge Enciso
  */
-public class ErrorManager {
+public class ErrorManagerOld {
 
     private static String getAppPackage() {
         String className = getCallerStack("org.javabeanstack.error.ErrorManager").getClassName();
@@ -127,7 +127,7 @@ public class ErrorManager {
         //
         try {
             IAppLogRecord logRecord = logManager.getNewAppLogRecord(null);
-            String messageInfo = ErrorManager.getStackCause(ex) + getStackTraceText(getAppPackage());
+            String messageInfo = ErrorManagerOld.getStackCause(ex) + getStackTraceText(getAppPackage());
             logRecord.setMessageInfo(messageInfo);            
             logRecord.setMessage(ex.getMessage());
             logRecord.setMessageNumber(1);
@@ -179,7 +179,7 @@ public class ErrorManager {
     public static String getStackCause(final Throwable err) {
         String errorMsg = "";
         if (err.getCause() != null) {
-            errorMsg = ErrorManager.getStackCause(err.getCause());
+            errorMsg = ErrorManagerOld.getStackCause(err.getCause());
         }
         errorMsg += Fn.nvl(err.getMessage(), "") + "\n";
         return errorMsg;

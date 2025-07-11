@@ -24,7 +24,8 @@ package org.javabeanstack.xml;
 import java.io.IOException;
 import java.util.Date;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.javabeanstack.error.ErrorManager;
 
@@ -37,7 +38,7 @@ import org.javabeanstack.error.ErrorManager;
  */
 public class XmlCache<T> implements IXmlCache<T> {
 
-    private static final Logger LOGGER = Logger.getLogger(XmlCache.class);
+    private static final Logger LOGGER = LogManager.getLogger(XmlCache.class);
 
     private Date processTime;
     private T domObject;

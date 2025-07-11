@@ -39,7 +39,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Funciones que facilitan el manejo de las variables String.
@@ -530,7 +530,7 @@ public class Strings {
             }
         }
         catch (Exception ex) {
-            Logger.getLogger(Strings.class).error(ex.getMessage());                        
+            LogManager.getLogger(Strings.class).error(ex.getMessage());                        
         }
         return sb.toString();        
     }
@@ -556,7 +556,7 @@ public class Strings {
                 str = FileUtils.readFileToString(file, charSet);                
             }
         } catch (IOException ex) {
-            Logger.getLogger(Strings.class).error(ex.getMessage());                                    
+            LogManager.getLogger(Strings.class).error(ex.getMessage());                                    
         }
         return str;
     }

@@ -22,7 +22,9 @@
 
 package org.javabeanstack.datactrl.events;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.events.IDataEvents;
@@ -35,7 +37,7 @@ import org.javabeanstack.events.IDataEvents;
  * @param <T>
  */
 public abstract class AbstractDataEvents<O extends IDataObject, T extends IDataRow> implements IDataEvents<O,T> {
-    private static final Logger LOGGER = Logger.getLogger(AbstractDataEvents.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractDataEvents.class);
     
     private O context;
 
