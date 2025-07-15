@@ -215,6 +215,9 @@ public class AppGenericConfig implements IAppConfig {
         String separador = "";
         if (!Fn.nvl(sessionId, "").isEmpty()) {
             IUserSession userSession = dao.getUserSession(sessionId);
+            if (userSession == null){
+                return "";
+            }
             //Path resource por empresa
             if (getSystemParam("APPCOMPANY_RESOURCE_PATH") != null
                     && getSystemParam("APPCOMPANY_RESOURCE_PATH").getValueChar() != null) {
