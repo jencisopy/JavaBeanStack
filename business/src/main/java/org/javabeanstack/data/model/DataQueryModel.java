@@ -526,6 +526,18 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     @Override
+    public boolean isColumnExist(String columnName) {
+        if (!isColumnMetaDataExist()){
+            return false;
+        }
+        // Buscar un nombre de columna en la matriz
+        int index = Fn.findInMatrix(columnList, columnName, false);
+        return index >= 0;
+    }
+
+    
+    
+    @Override
     public int hashCode() {
         int hash = 5;
         hash = 47 * hash + Objects.hashCode(this.getColumnId());

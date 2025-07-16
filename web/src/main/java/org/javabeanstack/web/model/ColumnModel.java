@@ -49,6 +49,7 @@ public class ColumnModel implements IColumnModel {
     private String filterMask;    
     private String type;    
     private String title;
+    private String fnValue;
 
     public ColumnModel() {
     }
@@ -317,6 +318,16 @@ public class ColumnModel implements IColumnModel {
     @Override
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public String getFnValue() {
+        return this.fnValue;
+    }
+
+    @Override
+    public void setFnValue(String fnValue) {
+        this.fnValue = fnValue;
     }
     
     @Override

@@ -62,5 +62,6 @@ public interface IDataQueryModel {
     public void setProperties(Map<String, Object> properties);
     public Object getProperty(String key);
     public void setProperty(String key, Object value);
+    public boolean isColumnExist(String columnName);
     
 }

@@ -85,8 +85,8 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     List<IColumnModel> getColumns(String formView);
     String getColumnStyle(Object row, String columnName);
     String getColumnHref(Object row, String link);
-    String getColumnTitle(Object row, IColumnModel columns);
-    String getColumnValueWithMask(Object row, IColumnModel columns);
+    String getColumnTitle(Object row, IColumnModel column);
+    String getColumnValueWithMask(Object row, IColumnModel column);
     String getMask(Object value, String mask);
 
     boolean isAllowEditField(Object row, String fieldName);

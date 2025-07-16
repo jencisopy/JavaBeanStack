@@ -77,4 +77,6 @@ public interface IColumnModel extends Serializable {
     public void setType(String columnType);
     public String getTitle(); //Leyenda o tooltip de la columna al pasar el ratón.
     public void setTitle(String columnTitle);
+    public String getFnValue(); //Para mostrar valores que no estan en el modelo o son calculos complejos. Ver IDataCollector
+    public void setFnValue(String fnValue);
 }
