@@ -72,7 +72,8 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     
     void setRowsSelected(T[] rowsSelected);    
     void setRowSelected(T rowSelected);
-    void setRowsFiltered(List<T> rowsFiltered);    
+    void setRowsFiltered(List<T> rowsFiltered);   
+    void setDataCollector(IDataCollector dataCollector);
     
     String getFormViewSelected();    
     void setFormViewSelected(String formView);
@@ -84,7 +85,7 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     List<IColumnModel> getColumns();
     List<IColumnModel> getColumns(String formView);
     String getColumnStyle(Object row, String columnName);
-    String getColumnHref(Object row, String link);
+    String getColumnHref(Object row, IColumnModel column);
     String getColumnTitle(Object row, IColumnModel column);
     String getColumnValueWithMask(Object row, IColumnModel column);
     String getMask(Object value, String mask);
@@ -99,6 +100,7 @@ public interface IDatatable <O extends IDataObject,T extends IDataRow>{
     void onColumnToggle(Object pToggleEvent);
     void onChange(Object row, String fieldName);
     
+    IDataCollector getDataCollector();
     String getTableButtonsBarTemplate(String table);
     String getTableButtonsBarTemplate();
     String getTableCurrentPageReportTemplate(String table);

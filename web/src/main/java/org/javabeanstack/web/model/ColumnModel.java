@@ -49,7 +49,7 @@ public class ColumnModel implements IColumnModel {
     private String filterMask;    
     private String type;    
     private String title;
-    private String fnValue;
+    private String dataSourceParams;
 
     public ColumnModel() {
     }
@@ -321,13 +321,13 @@ public class ColumnModel implements IColumnModel {
     }
 
     @Override
-    public String getFnValue() {
-        return this.fnValue;
+    public String getDataSourceParams() {
+        return this.dataSourceParams;
     }
 
     @Override
-    public void setFnValue(String fnValue) {
-        this.fnValue = fnValue;
+    public void setDataSourceParams(String dataSourceParams) {
+        this.dataSourceParams = dataSourceParams;
     }
     
     @Override

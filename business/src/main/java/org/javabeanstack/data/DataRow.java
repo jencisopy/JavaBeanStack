@@ -750,6 +750,15 @@ public class DataRow implements IDataRow, Cloneable {
 
     @XmlTransient
     @Override
+    public Object getProperty(String key) {
+        if (properties == null) {
+            return null;
+        }
+        return properties.get(key);
+    }
+    
+    @XmlTransient
+    @Override
     public Map<String, Object> getProperties() {
         if (properties == null) {
             properties = new HashMap();
@@ -762,6 +771,14 @@ public class DataRow implements IDataRow, Cloneable {
         this.properties = properties;
     }
 
+    @Override
+    public void addProperty(String key, Object value) {
+        if (this.properties == null) {
+            this.properties = new HashMap();
+        }
+        this.properties.put(key, value);
+    }
+    
     @Override
     public void addProperties(Map<String, Object> properties) {
         if (properties == null) {

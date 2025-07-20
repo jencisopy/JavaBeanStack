@@ -107,6 +107,10 @@ public class AppUserFormViewColumn extends DataRow {
     @Column(name = "columnTitle")
     private String columnTitle;
     
+    @Size(max = 300)
+    @Column(name = "datasourceparams")
+    private String dataSourceParams;
+    
     public AppUserFormViewColumn() {
     }
 
@@ -245,6 +249,14 @@ public class AppUserFormViewColumn extends DataRow {
 
     public void setColumnTitle(String columnTitle) {
         this.columnTitle = columnTitle;
+    }
+
+    public String getDataSourceParams() {
+        return dataSourceParams;
+    }
+
+    public void setDataSourceParams(String dataSourceParams) {
+        this.dataSourceParams = dataSourceParams;
     }
     
     @Override

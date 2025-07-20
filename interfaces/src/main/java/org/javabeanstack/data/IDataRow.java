@@ -98,7 +98,9 @@ public interface IDataRow extends Serializable{
     public String getAuditEntity();
     
     public Map<String, Object> getProperties();
+    public Object getProperty(String key);
     public void setProperties(Map<String, Object> properties);
+    public void addProperty(String key, Object value); 
     public void addProperties(Map<String, Object> properties);
     public String getTextToSign();
     public String getSignature();
