@@ -1,41 +1,39 @@
 /*
-* Copyright (c) 2015-2017 OyM System Group S.A.
-* Capitan Cristaldo 464, Asunción, Paraguay
-* All rights reserved. 
+* JavaBeanStack FrameWork
 *
-* NOTICE:  All information contained herein is, and remains
-* the property of OyM System Group S.A. and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to OyM System Group S.A.
-* and its suppliers and protected by trade secret or copyright law.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from OyM System Group S.A.
+* Copyright (C) 2017 Jorge Enciso
+* Email: jorge.enciso.r@gmail.com
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 3 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+* MA 02110-1301  USA
  */
 package org.javabeanstack.aws;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import static org.junit.Assert.*;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Bucket;
-import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
-import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import static org.javabeanstack.aws.S3Util.*;
 
 /**
  *
@@ -45,103 +43,56 @@ public class AmazonS3test {
 
     static String accessKey;
     static String secretKey;
-    static AwsCredentials credentials;
+    static Region region;
     static S3Client s3Client;
 
     @BeforeClass
     public static void setUpClass() {
         accessKey = "";
         secretKey = "";
-        credentials = AwsBasicCredentials.create(accessKey, secretKey);
-        s3Client = S3Client
-                .builder()
-                .region(Region.SA_EAST_1)
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .build();
+        region = Region.SA_EAST_1;
+        s3Client = S3Util.newS3Client(accessKey, secretKey, region);
     }
 
-    boolean bucketExists(String bucketName) {
-        try {
-            s3Client.headBucket(request -> request.bucket(bucketName));
-            return true;
-        } catch (NoSuchBucketException exception) {
-            return false;
-        }
-    }
-
-    @Test
-    public void test01Connection() throws Exception {
-        credentials = AwsBasicCredentials.create(accessKey, secretKey);
-        assertNotNull(credentials);
-    }
 
     @Test
     public void test02CreateBucket() throws Exception {
         String bucketName = "oym-bucket-prb";
-        if (!bucketExists(bucketName)) {
-            s3Client.createBucket(request -> request.bucket(bucketName));
+        if (!isBucketExists(s3Client, bucketName)) {
+            createBucket(s3Client, bucketName);
         }
-        assertTrue(bucketExists(bucketName));
+        assertTrue(isBucketExists(s3Client, bucketName));
     }
 
     @Test
     public void test03ListBucket() throws Exception {
-        List<Bucket> allBuckets = new ArrayList();
-        String nextToken = null;
-
-        do {
-            String continuationToken = nextToken;
-            ListBucketsResponse listBucketsResponse = s3Client.listBuckets(
-                    request -> request.continuationToken(continuationToken)
-            );
-
-            allBuckets.addAll(listBucketsResponse.buckets());
-            nextToken = listBucketsResponse.continuationToken();
-        } while (nextToken != null);
+        List<Bucket> allBuckets = listBuckets(s3Client);
         assertNotNull(allBuckets);
     }
 
     @Test
     public void test04DeleteBucket() throws Exception {
         String bucketName = "oym-bucket-prb";
-        try {
-            s3Client.deleteBucket(request -> request.bucket(bucketName));
-        } catch (S3Exception exception) {
-            if (exception.statusCode() == HttpStatus.SC_CONFLICT) {
-                throw new Exception("No esta vacio");
-            }
-            throw exception;
-        }
+        deleteBucket(s3Client, bucketName);
+        assertFalse(isBucketExists(s3Client, bucketName));        
     }
 
     @Test
-    public void test05PutObject() throws Exception {
+    public void test05CopyObject() throws Exception {
         String bucketName = "oym.backup";
         File file = new File("/Proyectos/Java/JavaBeanStack/aws/src/test/archivo_enviar.txt");
 
         Map<String, String> metadata = new HashMap();
         metadata.put("company", "oym");
         metadata.put("info", "prueba");
-
-        s3Client.putObject(request
-                -> request
-                        .bucket(bucketName)
-                        .key(file.getName())
-                        .metadata(metadata)
-                        .ifNoneMatch("*"), //si no existe
-                file.toPath());
-
+        
+        copyObject(s3Client, bucketName, file, metadata);
     }
 
     @Test
     public void test06ListObject() throws Exception {
         String bucketName = "oym.backup";
-        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-                .bucket(bucketName)
-                .build();
-        ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
-        List<S3Object> contents = listObjectsV2Response.contents();
-
+        List<S3Object> contents = listObject(s3Client, bucketName);
         System.out.println("Number of objects in the bucket: " + contents.stream().count());
         contents.stream().forEach(System.out::println);
     }
@@ -150,41 +101,11 @@ public class AmazonS3test {
     public void test07DeleteObject() throws Exception {
         String bucketName = "oym.backup";
         String objectKey = "archivo_enviar.txt";
-        s3Client.deleteObject(request
-                -> request
-                        .bucket(bucketName)
-                        .key(objectKey));
+        deleteObject(s3Client, bucketName, objectKey);
     }
 
     @AfterClass
     public static void tearDownClass() {
         s3Client.close();
     }
-
-//
-//
-//String bucketName = "baeldung-bucket";
-//try {
-//    s3Client.deleteBucket(request -> request.bucket(bucketName));
-//} catch (S3Exception exception) {
-//    if (exception.statusCode() == HttpStatus.SC_CONFLICT) {
-//        throw new BucketNotEmptyException();
-//    }
-//    throw exception;
-//}
-//
-//String bucketName = "baeldung-bucket";
-//File file = new File("path-to-file");
-//
-//Map<String, String> metadata = new HashMap<>();
-//metadata.put("company", "Baeldung");
-//metadata.put("environment", "development")
-//
-//s3Client.putObject(request -> 
-//  request
-//    .bucket(bucketName)
-//    .key(file.getName())
-//    .metadata(metadata)
-//    .ifNoneMatch("*"), 
-//  file.toPath());
 }

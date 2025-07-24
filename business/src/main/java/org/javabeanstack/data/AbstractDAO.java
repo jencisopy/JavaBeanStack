@@ -97,7 +97,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     private ISessions sessions;
 
     @EJB
-    private ILogManager logManager;
+    private ILogManager logMngr;
 
     public AbstractDAO() {
     }
@@ -415,7 +415,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         } catch (NoResultException exp) {
             result = null;
         } catch (Exception e) {
-            ErrorManager.showError(e, LOGGER);
+            ErrorManager.showError(e, LOGGER, logMngr, sessionId);
             throw e;
         }
         LOGGER.debug("-RESULT-");
@@ -986,7 +986,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 dataResult.setSuccess(false);
                 dataResult.setErrorMsg(msgError);
                 dbRollBack();
-                ErrorManager.showError(e, LOGGER);
+                ErrorManager.showError(e, LOGGER, logMngr, sessionId);
                 break;
             }
         }
@@ -1086,7 +1086,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 return true;
             }
         } catch (Exception e) {
-            ErrorManager.showError(e, LOGGER);
+            ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return false;
     }
@@ -1100,7 +1100,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             IDataRow ejb = clazz.getDeclaredConstructor().newInstance();
             return isAuditAble(ejb);
         } catch (Exception e) {
-            ErrorManager.showError(e, LOGGER);
+            ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return false;
     }
@@ -1119,7 +1119,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 return true;
             }
         } catch (Exception e) {
-            ErrorManager.showError(e, LOGGER);
+            ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return false;
     }
@@ -1347,7 +1347,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                 result.put(e.getKey(), object);
             });
         } catch (Exception e) {
-            ErrorManager.showError(e, LOGGER);
+            ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return result;
     }
@@ -1615,7 +1615,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
             return sessions.checkCompanyAccess(iduser, idcompany);
         } catch (Exception e) {
-            ErrorManager.showError(e, LOGGER);
+            ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return false;
     }
@@ -1641,7 +1641,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public IErrorReg getErrorMessage(int messageNumber, String alternativeMsg, String fieldName) {
-        IAppMessage appMessage = logManager.getAppMessage(messageNumber);
+        IAppMessage appMessage = logMngr.getAppMessage(messageNumber);
         ErrorReg errorReturn = new ErrorReg(alternativeMsg, messageNumber, fieldName);
         if (appMessage != null) {
             errorReturn.setMessage(appMessage.getText());
