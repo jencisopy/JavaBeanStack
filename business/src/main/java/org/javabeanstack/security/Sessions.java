@@ -82,7 +82,7 @@ import org.javabeanstack.util.LocalDates;
 public class Sessions implements ISessions {
     private static final Logger LOGGER = LogManager.getLogger(Sessions.class);
 
-    protected final Map<String, Object> sessionVar = new HashMap<>();
+    protected final Map<String, Object> sessionVar = new HashMap();
     protected boolean oneSessionPerUser = false;
     private SecretKey secretKey;
     private final Map<SessionInfo, Object> sessionsInfo = new HashMap();
