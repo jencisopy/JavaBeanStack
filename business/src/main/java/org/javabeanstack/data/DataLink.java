@@ -22,7 +22,7 @@
 
 package org.javabeanstack.data;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import org.javabeanstack.data.services.IDataService;
 
 /**

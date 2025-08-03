@@ -14,7 +14,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>jbs-interfaces</artifactId>
             <version>${project.version}</version>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jbs-core</artifactId>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb-client-bom</artifactId>
-            <version>14.0.0.Final</version>            
+            <version>14.0.0.Final</version>
             <scope>test</scope>
             <type>pom</type>
         </dependency>
@@ -31,13 +31,13 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <version>5.4.24.Final</version>
-            <scope>test</scope>            
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.1.4</version>
+            <artifactId>jakarta.json</artifactId>
+            <version>2.1.2</version>
             <scope>test</scope>
-        </dependency>        
-    </dependencies>      
+        </dependency>
+    </dependencies>
 </project>

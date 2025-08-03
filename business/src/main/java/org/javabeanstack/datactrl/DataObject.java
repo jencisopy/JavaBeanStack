@@ -22,7 +22,7 @@
 
 package org.javabeanstack.datactrl;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.events.IDataEvents;

@@ -22,7 +22,7 @@
 package org.javabeanstack.data;
 
 import java.io.Serializable;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * Contiene metodos para gestionar el acceso a los datos, es utilizado

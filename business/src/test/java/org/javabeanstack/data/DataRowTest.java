@@ -22,7 +22,7 @@
  */
 package org.javabeanstack.data;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

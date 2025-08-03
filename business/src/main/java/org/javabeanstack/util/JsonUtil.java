@@ -27,12 +27,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.json.JsonBuilderFactory;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import org.javabeanstack.data.IDataQueryModel;
 
 /**
@@ -51,7 +51,7 @@ public class JsonUtil {
             return null;
         }
         Map<String, Object> config = new HashMap();
-        config.put("javax.json.stream.JsonGenerator.prettyPrinting", true);
+        config.put("jakarta.json.stream.JsonGenerator.prettyPrinting", true);
         JsonBuilderFactory factory = Json.createBuilderFactory(config);
         JsonArrayBuilder builder = factory.createArrayBuilder();
         data.forEach((row) -> {

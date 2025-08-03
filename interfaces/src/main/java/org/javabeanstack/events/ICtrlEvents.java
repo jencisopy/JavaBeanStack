@@ -24,7 +24,7 @@ package org.javabeanstack.events;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.event.AjaxBehaviorEvent;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.datactrl.IDataObject;
 

@@ -27,8 +27,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.validation.constraints.NotNull;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

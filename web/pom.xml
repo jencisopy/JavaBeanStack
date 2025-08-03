@@ -9,7 +9,7 @@
     <artifactId>jbs-web</artifactId>
     <packaging>jar</packaging>
     <name>JavaBeanStack-Web</name>
-    
+
     <repositories>
         <repository>
             <id>jasper-3rd-party</id>
@@ -17,7 +17,7 @@
             <url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
         </repository>
     </repositories>
-    
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -31,11 +31,11 @@
         </dependency>
 
         <!-- Libreria Primefaces -->
-        <dependency>  
-            <groupId>org.primefaces</groupId>  
-            <artifactId>primefaces</artifactId>  
-            <version>6.2</version>  
-        </dependency>  
+        <dependency>
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
+            <version>6.2</version>
+        </dependency>
         <!-- Para los reportes -->
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
@@ -51,7 +51,7 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>4.1.2</version>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
@@ -62,5 +62,5 @@
             <artifactId>guava</artifactId>
             <version>32.0.0-jre</version>
         </dependency>
-    </dependencies>            
+    </dependencies>
 </project>
