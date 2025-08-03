@@ -43,6 +43,7 @@ import org.javabeanstack.util.Dates;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.LocalDates;
 import org.javabeanstack.web.model.IColumnModel;
+import org.primefaces.model.FilterMeta;
 
 /**
  *
@@ -82,7 +83,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             return null;
         }
         Object id;
-        if (!rowKey.contains("}")){
+        if (!rowKey.contains("}")) {
             return null;
         }
         String rowKeyValue = rowKey.substring(rowKey.indexOf("}") + 1);
@@ -94,13 +95,13 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 return (T) context.getRow();
             }
         }
-        if (getRows() == null){
+        if (getRows() == null) {
             return null;
         }
         id = getIdValue(rowKeyType, rowKeyValue);
         //Buscar el registro que coincida con el id en la lista de registros
         for (T row : getRows()) {
-            if (row == null){
+            if (row == null) {
                 continue;
             }
             if (row.getId().equals(id)) {
@@ -136,7 +137,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     }
 
     @Override
-    public Object getRowKey(T row) {
+    public String getRowKey(T row) {
         if (row == null) {
             return "";
         }
@@ -150,29 +151,18 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         return null;
     }
 
-    /**
-     * Devuelve una lista de datos. Es un evento ejecutado desde el primeface
-     * cuando se puebla por primera vez la grilla, o cuando se pasa de una
-     * pagina a otra, o se filtra los datos en la grilla
-     *
-     * @param first a partir de que nro de registro va a devolver los datos.
-     * @param pageSize cantidad de registros a devolver.
-     * @param multiSortMeta
-     * @param filters filtros (campo, valor)
-     * @return lista de datos resultante de los parametros introducidos.
-     */
     @Override
-    public List<T> load(int first, int pageSize, final List<SortMeta> multiSortMeta, Map<String, Object> filters) {
+    public List<T> load(int first, int pageSize, Map<String, SortMeta> sortBy, Map<String, FilterMeta> filterBy) {
         if (context == null){
             return null;
         }
         try {
             String order = "";
-            if (multiSortMeta != null) {
-                for (SortMeta sortMeta : multiSortMeta) {
-                    final SortOrder orders = sortMeta.getSortOrder();
+            if (sortBy != null) {
+                for (SortMeta sortMeta : sortBy.values()) {
+                    final SortOrder orders = sortMeta.getOrder();
                     if (orders == SortOrder.ASCENDING || orders == SortOrder.DESCENDING) {
-                        order = order + " " + sortMeta.getSortField() + ((orders == SortOrder.ASCENDING) ? " asc" : " desc") + ",";
+                        order = order + " " + sortMeta.getField() + ((orders == SortOrder.ASCENDING) ? " asc" : " desc") + ",";
                     }
                 }
                 if (!Strings.isNullorEmpty(order)) {
@@ -181,39 +171,19 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             } else {
                 order = context.getOrder();
             }
-            return load(first, pageSize, order, filters);
+            return load(first, pageSize, order, filterBy);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
         return null;
     }
-
-    @Override
-    public List<T> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, Object> filters) {
-        if (context == null){
+    
+    private List<T> load(int first, int pageSize, String order, Map<String, FilterMeta> filters) {
+        if (context == null) {
             return null;
         }
         try {
-            String order;
-            if (sortField != null) {
-                order = sortField;
-                order += (sortOrder == SortOrder.ASCENDING) ? " asc" : " desc";
-            } else {
-                order = context.getOrder();
-            }
-            return load(first, pageSize, order, filters);
-        } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
-        }
-        return null;
-    }
-
-    private List<T> load(int first, int pageSize, String order, Map<String, Object> filters) {
-        if (context == null){
-            return null;
-        }
-        try {
-            if (!context.beforeLazyRowsLoad() || !context.isOpen()){
+            if (!context.beforeLazyRowsLoad() || !context.isOpen()) {
                 return new ArrayList();
             }
             if (context.getNoLazyRowsLoad()) {
@@ -235,7 +205,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             context.setMaxRows(pageSize);
 
             context.removeFilter("borrar");
-            context.addFilter("borrar",extraFilter);
+            context.addFilter("borrar", extraFilter);
             if (params != null && !params.isEmpty()) {
                 context.addFilterParams(params);
             }
@@ -254,10 +224,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 setRowCount(context.getDAO().getCount(context.getLastQuery(), context.getFilterParams()).intValue());
             } else {
                 if (rows != null && noCount) {
-                    if (rows.size() < pageSize){
+                    if (rows.size() < pageSize) {
                         setRowCount(first + rows.size());
-                    }
-                    else {
+                    } else {
                         setRowCount(first + pageSize + 1);
                     }
                 }
@@ -278,13 +247,14 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
      * @param filters filtro (campo, valor)
      * @return
      */
-    private Map<String, Object> getParams(Map<String, Object> filters) {
+    private Map<String, Object> getParams(Map<String, FilterMeta> filters) {
         Map<String, Object> params = new HashMap<>();
         for (Map.Entry e : filters.entrySet()) {
             Class clase;
             String key = e.getKey().toString().replace(".", "");
             clase = DataInfo.getFieldType(getEntityClass(), (String) e.getKey());
-            Object value = e.getValue();
+            //TODO: verificar valor getfiltervalue 
+            Object value = ((FilterMeta)e.getValue()).getFilterValue();
             //Si es alfanumerico, ver si tiene mascara de busqueda
             if (String.class.isAssignableFrom(clase)) {
                 value = getValueWithFilterMask((String) value, (String) e.getKey());
@@ -331,8 +301,8 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
      * @param filters filtros (campo, valor)
      * @return
      */
-    private String getFilterString(Map<String, Object> filters) {
-        if (context == null){
+    private String getFilterString(Map<String, FilterMeta> filters) {
+        if (context == null) {
             return "";
         }
         String queryWhere;
@@ -377,7 +347,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     }
 
     private String getFilterMode(String columnName) {
-        if (context == null){
+        if (context == null) {
             return "";
         }
         List<IColumnModel> columns = context.getDataTable().getColumns();
@@ -397,7 +367,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     }
 
     private String getFilterMask(String columnName) {
-        if (context == null){
+        if (context == null) {
             return "";
         }
         List<IColumnModel> columns = context.getDataTable().getColumns();
@@ -433,11 +403,10 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 } else if (parts[0].equalsIgnoreCase("left")) {
                     value = Strings.leftPad(value.trim(), size, " ");
                 }
-            }
-            else if (filterMask.toLowerCase().contains("replace")){
+            } else if (filterMask.toLowerCase().contains("replace")) {
                 String[] parts = filterMask.split(",");
                 parts[0] = Strings.substr(parts[0], 8).replace("'", "");
-                parts[1] = Strings.substr(parts[1],0,parts[1].trim().length()-1).replace("'", "");
+                parts[1] = Strings.substr(parts[1], 0, parts[1].trim().length() - 1).replace("'", "");
                 value = value.replace(parts[0], parts[1]);
             }
             return value;
@@ -445,5 +414,11 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             //nada
         }
         return value.trim();
+    }
+
+    @Override
+    public int count(Map<String, FilterMeta> filterBy) {
+        //TODO: verificar si load se ejecuta primero
+        return getRowCount();
     }
 }

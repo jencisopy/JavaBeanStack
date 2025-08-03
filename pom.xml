@@ -18,8 +18,14 @@
 
     <developers>
         <developer>
-            <name>Jorge Enciso</name>
+            <name>Jorge Andrés Enciso</name>
             <email>jenciso@javabeanstack.org</email>
+            <organization>JavaBeanStack</organization>
+            <organizationUrl>http://www.javabeanstack.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Jorge David Enciso</name>
+            <email>jorged.encyso@gmail.com</email>
             <organization>JavaBeanStack</organization>
             <organizationUrl>http://www.javabeanstack.org</organizationUrl>
         </developer>

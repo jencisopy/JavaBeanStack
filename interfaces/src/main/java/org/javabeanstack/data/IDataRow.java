@@ -63,7 +63,7 @@ public interface IDataRow extends Serializable{
     public Map<String, IErrorReg> getWarnings();
     public Object    getId();    
     public Object    getIdAlternative();    
-    public Object    getRowkey();
+    public String    getRowkey();
     public Object    getValue(String fieldname);
     public Object    getOldValue(String fieldname);
     public Object    getBeforeValue(String fieldname);    

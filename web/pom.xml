@@ -30,18 +30,12 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>jakarta.faces</groupId>
-            <artifactId>jakarta.faces-api</artifactId>
-            <version>4.0.1</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Libreria Primefaces -->
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
             <version>15.0.6</version>
+            <classifier>jakarta</classifier>
         </dependency>
 
         <!-- Para los reportes -->

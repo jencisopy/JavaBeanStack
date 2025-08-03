@@ -19,7 +19,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
  */
-
 package org.javabeanstack.web.io;
 
 import java.io.File;
@@ -40,6 +39,7 @@ public class FileHandle {
 
     /**
      * Guarda un archivo obtenido de un InputStream en el path especificado
+     *
      * @param input se espera un InputStream
      * @param path es la ubicación donde se guardará el archivo
      * @return devuelve VERDADERO o FALSO
@@ -82,24 +82,23 @@ public class FileHandle {
     }
 
     /**
-     * Lee un archivo desde una ubicacion especifica y retorna un Streamedcontent
-     * del tipo que se especifica
+     * Lee un archivo desde una ubicacion especifica y retorna un
+     * Streamedcontent del tipo que se especifica
+     *
      * @param sourcePath Ubicación fisica del archivo
      * @param outputType tipo de salida ej: "application/pdf" "image/jpg" etc
      * @return objeto StreamContent de un archivo solicitado.
      */
     public StreamedContent fileStreamTo(String sourcePath, String outputType) {
-        InputStream input = null;
         try {
-            input = new FileInputStream(sourcePath);
+            InputStream input = new FileInputStream(sourcePath);
+            return DefaultStreamedContent.builder()
+                    .stream(() -> input)
+                    .contentType(outputType)
+                    .build();
         } catch (FileNotFoundException ex) {
             // TODO: Handle with ILogManager injection
         }
-
-        return DefaultStreamedContent.builder()
-            .stream(() -> input)
-            .contentType(outputType)
-            .build();
+        return null;
     }
 }
-

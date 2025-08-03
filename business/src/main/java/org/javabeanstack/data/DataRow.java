@@ -435,14 +435,14 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @XmlTransient
     @Override
-    public Object getRowkey() {
+    public String getRowkey() {
         Object obj = getId();
         if (obj == null) {
             obj = getIdAlternative();
             if (obj == null) {
                 return "";
             }
-            return obj;
+            return obj.toString();
         }
         String fieldType;
         if (obj instanceof DataRow) {
