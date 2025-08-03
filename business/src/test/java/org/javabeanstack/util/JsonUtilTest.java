@@ -24,7 +24,7 @@ package org.javabeanstack.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.JsonArray;
+import jakarta.json.JsonArray;
 import org.javabeanstack.data.DataNativeQuery;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.data.TestClass;

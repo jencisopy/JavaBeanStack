@@ -26,7 +26,7 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.security.model.IUserSession;

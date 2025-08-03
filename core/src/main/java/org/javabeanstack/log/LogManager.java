@@ -23,9 +23,9 @@ package org.javabeanstack.log;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.ejb.EJB;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.error.ErrorManager;
@@ -60,12 +60,12 @@ public class LogManager implements ILogManager {
     protected String getLogTypePath(){
         return LOG_TYPE_PATH;
     }
-    
+
     @Override
     public <T extends IAppLogRecord> IAppLogRecord getNewAppLogRecord(Class<T> logType) {
         try {
             if (logType == null) {
-                Class logTypeDefault = Class.forName(getLogTypePath()); 
+                Class logTypeDefault = Class.forName(getLogTypePath());
                 return (IAppLogRecord) logTypeDefault.getConstructor().newInstance();
             }
             return logType.getConstructor().newInstance();

@@ -80,24 +80,26 @@ public class FileHandle {
         }
         return result;
     }
-    
+
     /**
      * Lee un archivo desde una ubicacion especifica y retorna un Streamedcontent
-     * del tipo que se especifica 
+     * del tipo que se especifica
      * @param sourcePath Ubicación fisica del archivo
      * @param outputType tipo de salida ej: "application/pdf" "image/jpg" etc
      * @return objeto StreamContent de un archivo solicitado.
      */
-    public StreamedContent fileStreamTo(String sourcePath, String outputType){
-        InputStream input=null;
-        StreamedContent content;
+    public StreamedContent fileStreamTo(String sourcePath, String outputType) {
+        InputStream input = null;
         try {
             input = new FileInputStream(sourcePath);
         } catch (FileNotFoundException ex) {
-        //  ignore
+            // TODO: Handle with ILogManager injection
         }
-        content = new DefaultStreamedContent(input, outputType);
-        return content;
+
+        return DefaultStreamedContent.builder()
+            .stream(() -> input)
+            .contentType(outputType)
+            .build();
     }
 }
 

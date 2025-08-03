@@ -28,10 +28,10 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.faces.context.FacesContext;
+import jakarta.faces.context.FacesContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -291,7 +291,7 @@ public class JasperReportUtil {
                 //Nada
             }
         }
-        // Buscar el reporte en la base de datos        
+        // Buscar el reporte en la base de datos
         if (getAppResource() != null) {
             String reportNameJrxml = reportNameJasper.replaceAll(".jasper", ".jrxml");
             byte[] report;
@@ -343,7 +343,7 @@ public class JasperReportUtil {
                 //Nada
             }
         }
-        // Buscar el reporte en la base de datos        
+        // Buscar el reporte en la base de datos
         if (getAppResource() != null) {
             String reportNameJrxml = reportNameJasper.replaceAll(".jasper", ".jrxml");
             byte[] report;
@@ -363,7 +363,7 @@ public class JasperReportUtil {
             // Buscar en la carpeta resource en el proyecto donde se encuentra classRef
             LOGGER.info(reportNameJasper);
             try {
-                jasperReport = (JasperReport) JRLoader.loadObject(IOUtil.getResourceAsStream(classRef, "/reports/" + reportNameJasper));                
+                jasperReport = (JasperReport) JRLoader.loadObject(IOUtil.getResourceAsStream(classRef, "/reports/" + reportNameJasper));
             } catch (NullPointerException e) {
                 ErrorManager.showError(e, LOGGER);
                 throw new JRException("Es posible que no exista el reporte " + Fn.nvl(reportNameJasper,"").toUpperCase());
@@ -383,7 +383,11 @@ public class JasperReportUtil {
         JasperReport jasper = getJasperReportFrom(reportName, classRef);
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasper, parameters, new JRMapArrayDataSource(dataRows));
         docPdf = JasperExportManager.exportReportToPdf(jasperPrint);
-        return new DefaultStreamedContent(new ByteArrayInputStream(docPdf), "application/pdf", reportName.replaceAll(".jasper", "") + ".pdf");
+        return DefaultStreamedContent.builder()
+            .stream(() -> new ByteArrayInputStream(docPdf))
+            .contentType("application/pdf")
+            .name(reportName.replaceAll(".jasper", "") + ".pdf")
+            .build();
     }
 }
 

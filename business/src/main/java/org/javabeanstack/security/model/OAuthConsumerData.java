@@ -24,7 +24,7 @@ package org.javabeanstack.security.model;
 
 import java.util.Map;
 import java.util.TreeMap;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.javabeanstack.security.IOAuthConsumerData;
 import static org.javabeanstack.util.Fn.nvl;
 

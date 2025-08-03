@@ -2,7 +2,7 @@ package org.javabeanstack.model;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.javabeanstack.data.IDataRow;
 
 /**

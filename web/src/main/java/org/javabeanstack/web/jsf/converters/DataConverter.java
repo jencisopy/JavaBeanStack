@@ -22,7 +22,7 @@
 
 package org.javabeanstack.web.jsf.converters;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.javabeanstack.data.DataLink;
 import org.javabeanstack.data.IDataLink;
 import org.javabeanstack.data.IDataRow;

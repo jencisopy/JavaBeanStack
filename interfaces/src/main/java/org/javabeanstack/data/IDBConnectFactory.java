@@ -22,7 +22,7 @@
 package org.javabeanstack.data;
 
 import java.sql.Connection;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  *

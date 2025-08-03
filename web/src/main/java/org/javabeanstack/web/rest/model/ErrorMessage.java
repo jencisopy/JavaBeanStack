@@ -21,7 +21,7 @@
  */
 package org.javabeanstack.web.rest.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  *

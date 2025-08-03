@@ -22,7 +22,7 @@
 
 package org.javabeanstack.security;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import org.javabeanstack.data.IGenericDAO;
 
 /**

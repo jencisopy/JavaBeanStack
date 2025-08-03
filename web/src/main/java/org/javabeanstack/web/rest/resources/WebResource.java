@@ -21,7 +21,7 @@
  */
 package org.javabeanstack.web.rest.resources;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.data.services.IDataService;
 

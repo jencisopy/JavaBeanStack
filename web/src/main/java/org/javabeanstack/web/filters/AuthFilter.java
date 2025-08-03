@@ -22,16 +22,16 @@
 package org.javabeanstack.web.filters;
 
 import java.io.IOException;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javabeanstack.config.IAppConfig;
@@ -242,7 +242,7 @@ public class AuthFilter implements Filter {
         if (urlStr.contains("/upload")) {
             return true;
         }
-        return urlStr.contains("/javax.faces.resource/");
+        return urlStr.contains("/jakarta.faces.resource/");
     }
 
     private boolean isPageInfo(String page) {
