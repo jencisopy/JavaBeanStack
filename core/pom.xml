@@ -6,20 +6,20 @@
         <artifactId>jbs-parent</artifactId>
         <version>1.5.9</version>
     </parent>
-    <groupId>org.javabeanstack</groupId>    
+    <groupId>org.javabeanstack</groupId>
     <artifactId>jbs-core</artifactId>
-    <name>JavaBeanStack-Core</name>    
+    <name>JavaBeanStack-Core</name>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jbs-interfaces</artifactId>
             <version>${project.version}</version>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jbs-commons</artifactId>
             <version>${project.version}</version>
-        </dependency>        
+        </dependency>
     </dependencies>
 </project>

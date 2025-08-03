@@ -98,7 +98,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             return null;
         }
         id = getIdValue(rowKeyType, rowKeyValue);
-        //Buscar el registro que coincida con el id en la lista de registros       
+        //Buscar el registro que coincida con el id en la lista de registros
         for (T row : getRows()) {
             if (row == null){
                 continue;
@@ -238,7 +238,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             context.addFilter("borrar",extraFilter);
             if (params != null && !params.isEmpty()) {
                 context.addFilterParams(params);
-            } 
+            }
 
             if (Strings.isNullorEmpty(order)
                     && !Strings.isNullorEmpty(context.getOrder())) {
@@ -249,13 +249,13 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             context.requery();
             List<T> rows = context.getDataRows();
             timesLoaded++;
-            setRowCount(pageSize);            
+            setRowCount(pageSize);
             if (!noCount) {
                 setRowCount(context.getDAO().getCount(context.getLastQuery(), context.getFilterParams()).intValue());
             } else {
                 if (rows != null && noCount) {
                     if (rows.size() < pageSize){
-                        setRowCount(first + rows.size());                        
+                        setRowCount(first + rows.size());
                     }
                     else {
                         setRowCount(first + pageSize + 1);
@@ -352,19 +352,19 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                     // Si el tipo de busqueda es exacta
                     filter = separador + " o." + e.getKey() + " = :" + key;
                 } else if (Fn.nvl(filterMode, "").equals("exact_trim")) {
-                    // Si el tipo de busqueda exacta 
+                    // Si el tipo de busqueda exacta
                     filter = separador + " trim(o." + e.getKey() + ") = :" + key;
                 } else if (Fn.nvl(filterMode, "").equals("exact_ltrim")) {
                     // Si el tipo de busqueda es exacta
                     filter = separador + " ltrim(o." + e.getKey() + ") = :" + key;
                 } else if (Fn.nvl(filterMode, "").equals("contain_ltrim")) {
-                    // Si el tipo de busqueda contenida 
+                    // Si el tipo de busqueda contenida
                     filter = separador + " ltrim(upper(o." + e.getKey() + ")) like upper(:" + key + ")";
                 } else if (Fn.nvl(filterMode, "").equals("contain_rtrim")) {
-                    // Si el tipo de busqueda contenida 
+                    // Si el tipo de busqueda contenida
                     filter = separador + " rtrim(upper(o." + e.getKey() + ")) like upper(:" + key + ")";
                 } else {
-                    // Si el campo es string buscar un valor contenido en el campo                
+                    // Si el campo es string buscar un valor contenido en el campo
                     filter = separador + " upper(o." + e.getKey() + ") like upper(:" + key + ")";
                 }
             } else {
