@@ -1,12 +1,12 @@
 # JavaBeanStack
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.javabeanstack/jbs-parent/badge.svg)](https://search.maven.org/search?q=org.javabeanstack)
 
-Framework para construcción de aplicaciones Java EE 7 y 8
+Framework para construcción de aplicaciones JAKARTA EE 10
 
 Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y estandarizar el desarrollo de aplicaciones empresariales. 
 
 ## Prerequisito ##
-JAVA JDK 8
+JAVA JDK 11
 
 ## Módulos ##
 ![ALL](https://github.com/jencisopy/JavaBeanStack/blob/master/miscellaneous/images/javabeanstack_all.png)
