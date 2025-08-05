@@ -199,7 +199,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             String extraFilter = "";
             Map<String, Object> params = getParams(filters);
             if (!filters.isEmpty()) {
-                extraFilter = getFilterString(filters);
+                extraFilter = getFilterExpression(filters);
             }
             context.setFirstRow(first);
             context.setMaxRows(pageSize);
@@ -301,7 +301,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
      * @param filters filtros (campo, valor)
      * @return
      */
-    private String getFilterString(Map<String, FilterMeta> filters) {
+    private String getFilterExpression(Map<String, FilterMeta> filters) {
         if (context == null) {
             return "";
         }
