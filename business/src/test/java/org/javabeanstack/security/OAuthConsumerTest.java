@@ -42,18 +42,20 @@ import org.javabeanstack.data.services.IDataServiceRemote;
 import org.javabeanstack.model.appcatalog.AppAuthConsumer;
 import org.javabeanstack.model.appcatalog.AppAuthConsumerToken;
 import org.javabeanstack.model.tables.Moneda;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 
 /**
  *
  * @author Jorge Enciso
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 public class OAuthConsumerTest extends TestClass {
     private static IDataService dao;
     private static String consumerKey;
@@ -65,7 +67,7 @@ public class OAuthConsumerTest extends TestClass {
     public OAuthConsumerTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass2() {
         try {
             dao = (IDataService) context.lookup(jndiProject + "DataService!org.javabeanstack.data.services.IDataServiceRemote");

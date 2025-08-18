@@ -47,24 +47,25 @@ import org.javabeanstack.model.tables.Pais;
 import org.javabeanstack.model.tables.Region;
 import org.javabeanstack.model.views.PaisView;
 import org.javabeanstack.util.LocalDates;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  *
  * @author Jorge Enciso
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 public class AbstractDataServiceTest extends TestClass{
     private static IDataServiceRemote dataService;
     
     public AbstractDataServiceTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass2() {
         try {
             dataService = 

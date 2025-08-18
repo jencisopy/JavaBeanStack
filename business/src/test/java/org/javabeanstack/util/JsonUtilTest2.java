@@ -27,9 +27,8 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.model.tables.Moneda;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
+import org.junit.jupiter.api.Test;
 /**
  *
  * @author Jorge Enciso

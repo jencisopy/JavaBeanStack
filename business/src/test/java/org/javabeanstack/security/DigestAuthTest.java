@@ -29,8 +29,10 @@ import org.javabeanstack.exceptions.TypeAuthInvalid;
 import org.javabeanstack.security.model.ClientAuth;
 import org.javabeanstack.security.model.ServerAuth;
 import org.javabeanstack.util.Strings;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 
 /**
  *

@@ -25,9 +25,11 @@ import java.io.File;
 import java.util.List;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.javabeanstack.data.IDataQueryModel;
-import static org.junit.Assert.*;
 import static org.javabeanstack.web.util.ExcelUtil.*;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 
 /**
  *

@@ -40,18 +40,20 @@ import org.javabeanstack.model.tables.Pais;
 import org.javabeanstack.model.tables.Region;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.data.services.IRegionSrv;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
 import org.javabeanstack.datactrl.events.DataEvents;
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
+
 
 /**
  *
  * @author Jorge Enciso
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 public class AbstractDataObjectTest extends TestClass{
     
     public AbstractDataObjectTest() {
@@ -209,12 +211,12 @@ public class AbstractDataObjectTest extends TestClass{
         dataLink.setDao(dataservice);
         IDataObject region = new DataObject(Region.class, null, dataLink, null);
         region.open();
-        Assert.assertNotNull(region.getDataRows());
+        assertNotNull(region.getDataRows());
 
         region.setOrder("codigo desc");
         region.setFilter("codigo = '01'");
         region.requery();
-        Assert.assertNotNull(region.getDataRows());
+        assertNotNull(region.getDataRows());
         //Devolver a valores por default
         dataLink.setDao(dao);
     }

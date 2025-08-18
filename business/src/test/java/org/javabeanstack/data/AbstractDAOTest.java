@@ -25,34 +25,38 @@ package org.javabeanstack.data;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.naming.NamingException;
 import org.javabeanstack.model.appcatalog.AppResource;
 import org.javabeanstack.model.appcatalog.AppTablesRelation;
 import org.javabeanstack.model.appcatalog.AppUser;
 import org.javabeanstack.model.tables.Moneda;
 import org.javabeanstack.model.views.CtactemovimientodetalleView;
 import org.javabeanstack.util.LocalDates;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 
 /**
  *
  * @author Jorge Enciso
+ * 
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 public class AbstractDAOTest extends TestClass {
     private static IGenericDAO dao;
 
     public AbstractDAOTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass2() {
         try {
             dao = (IGenericDAORemote) context.lookup(jndiProject + "GenericDAO!org.javabeanstack.data.IGenericDAORemote");
-        } catch (Exception e) {
+        } catch (NamingException e) {
             System.out.println(e.getMessage());
         }
     }

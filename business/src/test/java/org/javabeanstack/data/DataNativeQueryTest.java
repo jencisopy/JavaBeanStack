@@ -3,8 +3,11 @@ package org.javabeanstack.data;
 import java.util.List;
 import java.util.Map;
 import org.javabeanstack.model.views.PaisView;
-import org.junit.Assert;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+
 
 /**
  *
@@ -431,7 +434,7 @@ public class DataNativeQueryTest extends TestClass{
         System.out.println("\nTESTQUERY11");
         System.out.println("================");
         
-        Assert.assertNotNull(resultado);
+        assertNotNull(resultado);
     }
 
     

@@ -26,16 +26,17 @@ import javax.naming.NamingException;
 import org.javabeanstack.annotation.FieldFilter;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.exceptions.SessionError;
-import org.junit.Test;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  *
  * @author Jorge Enciso
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 public class DataFilterTest extends TestClass{
     
     public DataFilterTest() {

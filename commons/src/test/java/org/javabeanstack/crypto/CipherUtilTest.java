@@ -25,9 +25,6 @@ package org.javabeanstack.crypto;
 import java.security.KeyFactory;
 import javax.crypto.SecretKey;
 import org.javabeanstack.util.Fn;
-import org.junit.Assert;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -37,6 +34,8 @@ import java.security.spec.EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
 
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -139,7 +138,7 @@ public class CipherUtilTest {
         assertEquals(expResult, decrypted);
         
         String hex = Fn.bytesToHex(encrypted);
-        Assert.assertArrayEquals(encrypted, Fn.hexToByte(hex));
+        assertArrayEquals(encrypted, Fn.hexToByte(hex));
     }
 
     

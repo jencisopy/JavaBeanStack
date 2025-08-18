@@ -23,7 +23,6 @@
 package org.javabeanstack.data;
 
 import java.lang.reflect.Field;
-import java.util.Date;
 import java.util.List;
 import org.javabeanstack.model.appcatalog.AppResource;
 import org.javabeanstack.model.appcatalog.AppTablesRelation;
@@ -31,16 +30,17 @@ import org.javabeanstack.model.appcatalog.AppUser;
 import org.javabeanstack.model.appcatalog.AppUserFormView;
 import org.javabeanstack.model.appcatalog.AppUserMember;
 import org.javabeanstack.util.LocalDates;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  *
  * @author Jorge Enciso
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 public class DataInfoTest {
 
     public DataInfoTest() {

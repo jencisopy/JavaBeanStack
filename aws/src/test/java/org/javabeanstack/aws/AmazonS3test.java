@@ -25,15 +25,16 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import static org.javabeanstack.aws.S3Util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -46,7 +47,7 @@ public class AmazonS3test {
     static Region region;
     static S3Client s3Client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         accessKey = "";
         secretKey = "";
@@ -104,7 +105,7 @@ public class AmazonS3test {
         deleteObject(s3Client, bucketName, objectKey);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         s3Client.close();
     }

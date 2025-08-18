@@ -25,8 +25,9 @@ package org.javabeanstack.io;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  *
