@@ -42,14 +42,14 @@ import net.sf.jasperreports.engine.JasperPrintManager;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRMapArrayDataSource;
 import net.sf.jasperreports.engine.export.HtmlExporter;
-import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleHtmlExporterOutput;
 import net.sf.jasperreports.export.SimpleHtmlReportConfiguration;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
+import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -135,7 +135,7 @@ public class JasperReportUtil {
             Class classRef) throws JRException, IOException, NamingException, Exception {
 
         Map[] dataRows = convertTo(data);
-        if (reportName == null){
+        if (reportName == null) {
             throw new Exception("El nombre del reporte es nulo o no existe");
         }
         if (!reportName.endsWith(".jasper")) {
@@ -187,8 +187,7 @@ public class JasperReportUtil {
                 servletOutputStream.flush();
                 servletOutputStream.close();
                 FacesContext.getCurrentInstance().responseComplete();
-            }
-            if ("doc".equals(parameters.get("device"))) {
+            } else if ("doc".equals(parameters.get("device"))) {
                 JRDocxExporter exporter = new JRDocxExporter();
                 exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
                 HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
@@ -200,8 +199,7 @@ public class JasperReportUtil {
                 outputStream.flush();
                 outputStream.close();
                 FacesContext.getCurrentInstance().responseComplete();
-            }
-            if ("pdf".equals(parameters.get("device"))) {
+            } else if ("pdf".equals(parameters.get("device"))) {
                 String target;
                 if (parameters.containsKey("target")) {
                     target = parameters.get("target").toString();
@@ -213,25 +211,35 @@ public class JasperReportUtil {
                 ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
                 JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
                 FacesContext.getCurrentInstance().responseComplete();
-            }
-            if ("xls".equals(parameters.get("device"))) {
-                JRXlsExporter exporter = new JRXlsExporter();
+            } else if ("xlsx".equals(parameters.get("device"))) { // Condición actualizada
+                // Usamos el exportador moderno para .xlsx
+                JRXlsxExporter exporter = new JRXlsxExporter();
                 exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+
                 HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
-                httpServletResponse.setContentType("application/nd.openxmlformats-officedocument.spreadsheetml.sheet");
-                httpServletResponse.setHeader("Content-Disposition", "attachment;filename= " + reporte.replaceAll(".jasper", "") + ".xls");
+                // ContentType correcto para .xlsx
+                httpServletResponse.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                // Extensión de archivo actualizada a .xlsx
+                httpServletResponse.setHeader("Content-Disposition", "attachment;filename=" + reporte.replaceAll(".jasper", "") + ".xlsx");
+
                 OutputStream outputStream = httpServletResponse.getOutputStream();
                 exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
-                SimpleXlsReportConfiguration configuration = new SimpleXlsReportConfiguration();
+
+                // Usamos la configuración específica para XLSX
+                SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
                 configuration.setOnePagePerSheet(false);
                 configuration.setDetectCellType(true);
                 configuration.setCollapseRowSpan(false);
+                configuration.setWhitePageBackground(false);
+                configuration.setRemoveEmptySpaceBetweenRows(true);
+
                 exporter.setConfiguration(configuration);
                 exporter.exportReport();
+
                 outputStream.flush();
                 outputStream.close();
                 FacesContext.getCurrentInstance().responseComplete();
-            }
+            } 
         } else {
             JasperPrintManager.printReport(jasperPrint, false);
         }
@@ -366,7 +374,7 @@ public class JasperReportUtil {
                 jasperReport = (JasperReport) JRLoader.loadObject(IOUtil.getResourceAsStream(classRef, "/reports/" + reportNameJasper));
             } catch (NullPointerException e) {
                 ErrorManager.showError(e, LOGGER);
-                throw new JRException("Es posible que no exista el reporte " + Fn.nvl(reportNameJasper,"").toUpperCase());
+                throw new JRException("Es posible que no exista el reporte " + Fn.nvl(reportNameJasper, "").toUpperCase());
             }
         }
         return jasperReport;
@@ -384,10 +392,10 @@ public class JasperReportUtil {
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasper, parameters, new JRMapArrayDataSource(dataRows));
         docPdf = JasperExportManager.exportReportToPdf(jasperPrint);
         return DefaultStreamedContent.builder()
-            .stream(() -> new ByteArrayInputStream(docPdf))
-            .contentType("application/pdf")
-            .name(reportName.replaceAll(".jasper", "") + ".pdf")
-            .build();
+                .stream(() -> new ByteArrayInputStream(docPdf))
+                .contentType("application/pdf")
+                .name(reportName.replaceAll(".jasper", "") + ".pdf")
+                .build();
     }
 }
 
