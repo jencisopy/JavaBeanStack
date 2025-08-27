@@ -180,12 +180,12 @@ public class JasperReportUtil {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
                 httpServletResponse.setContentType("text/html;charset=UTF-8");
                 httpServletResponse.addHeader("Content-disposition", "attachment; filename=" + reporte.replaceAll(".jasper", "") + ".html");
-                ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
-                SimpleHtmlExporterOutput simpleHtmlExporterOutput = new SimpleHtmlExporterOutput(servletOutputStream);
-                exporterHTML.setExporterOutput(simpleHtmlExporterOutput);
-                exporterHTML.exportReport();
-                servletOutputStream.flush();
-                servletOutputStream.close();
+                try (ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream()) {
+                    SimpleHtmlExporterOutput simpleHtmlExporterOutput = new SimpleHtmlExporterOutput(servletOutputStream);
+                    exporterHTML.setExporterOutput(simpleHtmlExporterOutput);
+                    exporterHTML.exportReport();
+                    servletOutputStream.flush();
+                }
                 FacesContext.getCurrentInstance().responseComplete();
             } else if ("doc".equals(parameters.get("device"))) {
                 JRDocxExporter exporter = new JRDocxExporter();
@@ -193,11 +193,11 @@ public class JasperReportUtil {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
                 httpServletResponse.setContentType("application/nd.openxmlformats-officedocument.wordprocessingml.document");
                 httpServletResponse.setHeader("Content-Disposition", "attachment;filename= " + reporte.replaceAll(".jasper", "") + ".docx");
-                OutputStream outputStream = httpServletResponse.getOutputStream();
-                exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
-                exporter.exportReport();
-                outputStream.flush();
-                outputStream.close();
+                try (OutputStream outputStream = httpServletResponse.getOutputStream()) {
+                    exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
+                    exporter.exportReport();
+                    outputStream.flush();
+                }
                 FacesContext.getCurrentInstance().responseComplete();
             } else if ("pdf".equals(parameters.get("device"))) {
                 String target;
@@ -222,22 +222,22 @@ public class JasperReportUtil {
                 // Extensión de archivo actualizada a .xlsx
                 httpServletResponse.setHeader("Content-Disposition", "attachment;filename=" + reporte.replaceAll(".jasper", "") + ".xlsx");
 
-                OutputStream outputStream = httpServletResponse.getOutputStream();
-                exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
-
-                // Usamos la configuración específica para XLSX
-                SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
-                configuration.setOnePagePerSheet(false);
-                configuration.setDetectCellType(true);
-                configuration.setCollapseRowSpan(false);
-                configuration.setWhitePageBackground(false);
-                configuration.setRemoveEmptySpaceBetweenRows(true);
-
-                exporter.setConfiguration(configuration);
-                exporter.exportReport();
-
-                outputStream.flush();
-                outputStream.close();
+                try (OutputStream outputStream = httpServletResponse.getOutputStream()) {
+                    exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
+                    
+                    // Usamos la configuración específica para XLSX
+                    SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
+                    configuration.setOnePagePerSheet(false);
+                    configuration.setDetectCellType(true);
+                    configuration.setCollapseRowSpan(false);
+                    configuration.setWhitePageBackground(false);
+                    configuration.setRemoveEmptySpaceBetweenRows(true);
+                    
+                    exporter.setConfiguration(configuration);
+                    exporter.exportReport();
+                    
+                    outputStream.flush();
+                }
                 FacesContext.getCurrentInstance().responseComplete();
             } 
         } else {
