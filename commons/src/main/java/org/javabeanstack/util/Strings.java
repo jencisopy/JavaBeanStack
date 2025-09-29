@@ -277,6 +277,9 @@ public class Strings {
      * @return cadena procesada.
      */
     public static String textMerge(String text, Map<String, String> params) {
+        if (params == null || params.isEmpty()){
+            return text;
+        }
         String result = text;
         String regexSearch;
         for (Map.Entry<String, String> entry : params.entrySet()) {

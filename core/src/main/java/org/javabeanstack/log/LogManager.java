@@ -177,7 +177,7 @@ public class LogManager implements ILogManager {
         try {
             IAppMessage message
                     = dao.findByQuery(null,
-                            "select o from AppMessage o where nro = " + msgNumber.toString(),
+                            "select o from AppMessage o where number = " + msgNumber.toString(),
                             null);
 
             return message;
