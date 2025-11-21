@@ -28,8 +28,10 @@ import javax.json.JsonArray;
 import org.javabeanstack.data.DataNativeQuery;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.data.TestClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 
 /**
  *

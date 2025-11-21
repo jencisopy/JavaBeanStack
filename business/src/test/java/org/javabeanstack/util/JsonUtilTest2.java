@@ -27,8 +27,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import org.javabeanstack.data.TestClass;
 import org.javabeanstack.model.tables.Moneda;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import org.junit.jupiter.api.Test;
 
 /**
  *
