@@ -27,6 +27,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -574,7 +575,7 @@ public class Strings {
         if (input == null){
             return null;
         }
-        return IOUtils.toString(input);
+        return IOUtils.toString(input, StandardCharsets.UTF_8);
     }    
 
     /**
