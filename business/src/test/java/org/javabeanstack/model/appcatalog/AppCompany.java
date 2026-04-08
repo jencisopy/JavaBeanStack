@@ -94,6 +94,10 @@ public class AppCompany extends DataRow implements IAppCompany {
 
     @Column(name = "companyactivity")
     private String companyActivity;
+    
+    @Column(name = "information")
+    private String information;
+    
 
     @Column(name = "fechacreacion",insertable = false, updatable = false)    
     @XmlJavaTypeAdapter(type=LocalDateTime.class,  value=LocalDateTimeAdapter.class)            
@@ -351,6 +355,16 @@ public class AppCompany extends DataRow implements IAppCompany {
         this.idcompanygroup = idempresagrupo;
     }
 
+    @Override
+    public String getInformation() {
+        return information;
+    }
+
+    @Override
+    public void setInformation(String information) {
+        this.information = information;
+    }
+    
     @Override
     public boolean equivalent(Object o) {
         if (!(o instanceof AppCompany)) {
