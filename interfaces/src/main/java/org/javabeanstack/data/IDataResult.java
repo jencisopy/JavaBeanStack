@@ -37,6 +37,7 @@ public interface IDataResult extends Serializable{
     public Boolean isSuccessFul();
     public Boolean isRemoveDeleted();
     public String getErrorMsg();
+    public IErrorReg getFirstError();
     public Map<String, IErrorReg> getErrorsMap();
     public Exception getException();
     public <T extends IDataRow> T getRowUpdated();
