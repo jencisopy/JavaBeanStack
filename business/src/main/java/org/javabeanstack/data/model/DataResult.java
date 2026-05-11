@@ -189,7 +189,10 @@ public class DataResult implements IDataResult {
                 && errorsMap != null && !errorsMap.isEmpty()) {
             String retornar = "";
             for (Map.Entry entry : errorsMap.entrySet()) {
-                retornar += ((IErrorReg) entry.getValue()).getMessage() + "\n";
+                IErrorReg error = (IErrorReg) entry.getValue();
+                if (!error.isWarning()) {
+                    retornar += error.getMessage() + " - " + error.getFieldName() + "\n";
+                }
             }
             return retornar;
         }
@@ -202,7 +205,7 @@ public class DataResult implements IDataResult {
         if (errorsMap != null && !errorsMap.isEmpty()) {
             return errorsMap.entrySet().iterator().next().getValue();
         }
-        if (!Strings.isNullorEmpty(errorMsg)){
+        if (!Strings.isNullorEmpty(errorMsg)) {
             errorReturn.setErrorNumber(50000);
             errorReturn.setMessage(errorMsg);
         }
