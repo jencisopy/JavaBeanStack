@@ -734,10 +734,45 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     @Override
+    public <X extends IDataRow> void copyFrom(X source, boolean onlyFieldsNotNulls) throws Exception {
+        IDataRow target = this;
+        if (source == null || target == null) {
+            return;
+        }
+        Field[] fields = source.getClass().getDeclaredFields();
+        //Recorrer atributos del destino para copiar desde el origen
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            if (field.getAnnotations().length == 0){
+                continue;
+            }
+            Class fieldSourceClass = source.getFieldType(fieldName);            
+            Class fieldTargetClass = target.getFieldType(fieldName);
+            //Si existe el campo en el origen
+            if (fieldTargetClass != null && fieldTargetClass.isAssignableFrom(fieldSourceClass)) {
+                if (!onlyFieldsNotNulls) {
+                    target.setValue(fieldName, source.getValue(fieldName));
+                } else if (source.getValue(fieldName) != null) {
+                    target.setValue(fieldName, source.getValue(fieldName));
+                }
+            }
+        }
+    }
+    
+    @Override
     public <X extends IDataRow> X copyTo(X target) throws Exception {
         return copyTo(target, false);
     }
 
+    @Override
+    public <X extends IDataRow> void copyFrom(X source){
+        try {
+            copyFrom(source, false);            
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER);
+        }
+    }
+    
     @XmlTransient
     @Override
     public String getAuditEntity() {
