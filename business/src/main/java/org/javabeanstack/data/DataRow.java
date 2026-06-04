@@ -510,6 +510,9 @@ public class DataRow implements IDataRow, Cloneable {
 
     @Override
     public Object getIdAlternative() {
+        if (idAlternative == null){
+            return System.identityHashCode(this);
+        }
         return idAlternative;
     }
 
