@@ -548,7 +548,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public void setFirstRow(int first) {
         firstRow = first;
-
     }
 
     @Override
