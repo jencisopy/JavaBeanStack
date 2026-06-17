@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.List;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.javabeanstack.data.IDataQueryModel;
+import org.javabeanstack.model.IAppUser;
 import static org.javabeanstack.web.util.ExcelUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -74,6 +75,30 @@ public class ExcelUtilTest {
         }
     }
 
+    @Test
+    public void testFromExcelToDataRow() throws Exception {
+        String path = "./src/test/java/org/javabeanstack/web/util/prueba3.xlsx";
+        File file = new File(path);
+        Workbook wb = ExcelUtil.openWorkbook(file);
+        List<AppUser> result = fromExcelToDataRow(wb.getSheetAt(0), AppUser.class);
+        assertTrue(!result.isEmpty());
+    }
+
+    @Test
+    public void testGetLogExcelToDataRow() throws Exception {
+        String path = "./src/test/java/org/javabeanstack/web/util/prueba4.xlsx";
+        File file = new File(path);
+        Workbook wb = ExcelUtil.openWorkbook(file);
+        List<String> result = getLogExcelToDataRow(wb.getSheetAt(0), AppUser.class);
+        assertTrue(!result.isEmpty());
+        //
+        path = "./src/test/java/org/javabeanstack/web/util/prueba5.xlsx";
+        file = new File(path);
+        wb = ExcelUtil.openWorkbook(file);
+        result = getLogExcelToDataRow(wb.getSheetAt(0), AppUser.class);
+        assertTrue(!result.isEmpty());        
+    }
+    
     @Test
     public void testGetColumnNames() {
     }

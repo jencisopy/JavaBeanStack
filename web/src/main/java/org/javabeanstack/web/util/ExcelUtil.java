@@ -35,6 +35,8 @@ import java.util.List;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
@@ -52,15 +54,20 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDataQueryModel;
+import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.model.DataQueryModel;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.util.LocalDates;
 
 /**
  *
  * @author Jorge Enciso
  */
 public class ExcelUtil {
+
+    private static final Logger LOGGER = LogManager.getLogger(ExcelUtil.class);
 
     public static void downLoadFile(Workbook workBook, String fileName) throws Exception {
         if (workBook == null) {
@@ -164,19 +171,27 @@ public class ExcelUtil {
         return workBook;
     }
 
+    /**
+     * Lee los datos de una planilla excel y lo convierte a una List a tipo
+     * IDataQueryModel
+     *
+     * @param sheet planilla excel.
+     * @return Lista de registros tipo IDataQueryModel
+     * @throws Exception
+     */
     public static List<IDataQueryModel> fromExcelToDataQueryModel(Sheet sheet) throws Exception {
         if (sheet == null) {
             return null;
         }
         List<String> headerNames = getHeaderNames(sheet);
-        if (headerNames.isEmpty()){
-            throw new Exception("No esta  especificado los nombres de las columnas en la primera fila");
+        if (headerNames.isEmpty()) {
+            throw new Exception("Verifique que en la primera fila tenga nombres de columnas válidas, tipo caracter sin espacios");
         }
-        List<IDataQueryModel> retornar = new ArrayList();        
+        List<IDataQueryModel> retornar = new ArrayList();
         String[] columnNames = headerNames.toArray(new String[0]);
         //Recorrer las filas de la hoja
         for (Row row : sheet) {
-            Cell cell = null;            
+            Cell cell = null;
             try {
                 if (row.getRowNum() == 0) {
                     continue;
@@ -186,12 +201,15 @@ public class ExcelUtil {
                 data.setRow(dataRow);
                 data.setColumnList(columnNames);
                 //Recorrer las celdas
-                for (int i = 0; i < row.getLastCellNum(); i++) {
+                for (int i = 0; i < headerNames.size(); i++) {
                     String columnName = sheet.getRow(0).getCell(i).getStringCellValue();
                     if (Fn.nvl(columnName, "").isEmpty()) {
                         continue;
                     }
                     cell = row.getCell(i);
+                    if (cell == null) {
+                        continue;
+                    }
                     switch (cell.getCellType()) {
                         case NUMERIC:
                             if (DateUtil.isCellDateFormatted(cell)) {
@@ -214,8 +232,8 @@ public class ExcelUtil {
                 retornar.add(data);
             } catch (Exception e) {
                 String errorMsg = "ERROR EN LA FILA " + row.getRowNum();
-                if (cell != null){
-                    errorMsg += ", CELDA "+cell.getAddress().formatAsString();
+                if (cell != null) {
+                    errorMsg += ", CELDA " + cell.getAddress().formatAsString();
                 }
                 errorMsg += ", " + e.getMessage();
                 throw new Exception(errorMsg);
@@ -224,6 +242,176 @@ public class ExcelUtil {
         return retornar;
     }
 
+    /**
+     * Lee los datos de una planilla excel y lo convierte a una List a tipo T
+     * (IDataRow)
+     *
+     * @param <T>
+     * @param sheet planilla excel.
+     * @param clase class que extiende de IDataRow
+     * @return Lista de registros tipo IDataRow
+     * @throws Exception
+     */
+    public static <T extends IDataRow> List<T> fromExcelToDataRow(Sheet sheet, Class<T> clase) throws Exception {
+        if (sheet == null) {
+            return null;
+        }
+        List<String> headerNames = getHeaderNames(sheet);
+        if (headerNames.isEmpty()) {
+            throw new Exception("Verifique que en la primera fila tenga nombres de columnas válidas, tipo caracter sin espacios");
+        }
+        List<T> retornar = new ArrayList();
+        //Recorrer las filas de la hoja
+        for (Row row : sheet) {
+            Cell cell = null;
+            try {
+                if (row.getRowNum() == 0) {
+                    continue;
+                }
+                T dataRow = clase.getDeclaredConstructor().newInstance();
+                //Recorrer las celdas
+                for (int i = 0; i < headerNames.size(); i++) {
+                    String columnName = sheet.getRow(0).getCell(i).getStringCellValue();
+                    if (Fn.nvl(columnName, "").isEmpty()) {
+                        continue;
+                    }
+                    cell = row.getCell(i);
+                    if (cell == null) {
+                        continue;
+                    }
+                    switch (cell.getCellType()) {
+                        case NUMERIC:
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                dataRow.setValue(columnName, cell.getLocalDateTimeCellValue());
+                            } else {
+                                Object value = convertValue(cell.getNumericCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
+                                dataRow.setValue(columnName, value);
+                            }
+                            break;
+                        case BOOLEAN:
+                            dataRow.setValue(columnName, cell.getBooleanCellValue());
+                            break;
+                        case STRING:
+                            Object value = convertValue(cell.getStringCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
+                            dataRow.setValue(columnName, value);
+                            break;
+                        case FORMULA:
+                            Double cellValue = cell.getNumericCellValue();
+                            value = convertValue(cellValue, DataInfo.getFieldType(dataRow.getClass(), columnName));                                                        
+                            dataRow.setValue(columnName, value);
+                            break;
+                    }
+
+                }
+                retornar.add(dataRow);
+            } catch (Exception e) {
+                String errorMsg = "ERROR EN LA FILA " + row.getRowNum();
+                if (cell != null) {
+                    errorMsg += ", CELDA " + cell.getAddress().formatAsString();
+                }
+                errorMsg += ", " + e.getMessage();
+                throw new Exception(errorMsg);
+            }
+        }
+        return retornar;
+    }
+
+    public static <T extends IDataRow> List<String> getLogExcelToDataRow(Sheet sheet, Class<T> clase) {
+        if (sheet == null) {
+            return null;
+        }
+        List<String> retornar = new ArrayList();
+        List<String> headerNames = getHeaderNames(sheet);
+        if (headerNames.isEmpty()) {
+            retornar.add("Verifique que en la primera fila tenga nombres de columnas válidas, tipo caracter sin espacios");
+            return retornar;
+        }
+        //Recorrer las filas de la hoja
+        for (Row row : sheet) {
+            Cell cell = null;
+            try {
+                if (row.getRowNum() == 0) {
+                    continue;
+                }
+                T dataRow = clase.getDeclaredConstructor().newInstance();
+                //Recorrer las celdas
+                for (int i = 0; i < headerNames.size(); i++) {
+                    String columnName = sheet.getRow(0).getCell(i).getStringCellValue();
+                    if (Fn.nvl(columnName, "").isEmpty()) {
+                        continue;
+                    }
+                    cell = row.getCell(i);
+                    if (cell == null) {
+                        continue;
+                    }
+                    switch (cell.getCellType()) {
+                        case NUMERIC:
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                dataRow.setValue(columnName, cell.getLocalDateTimeCellValue());
+                            } else {
+                                Object value = convertValue(cell.getNumericCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
+                                dataRow.setValue(columnName, value);
+                            }
+                            break;
+                        case BOOLEAN:
+                            dataRow.setValue(columnName, cell.getBooleanCellValue());
+                            break;
+                        case STRING:
+                            Object value = convertValue(cell.getStringCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
+                            dataRow.setValue(columnName, value);
+                            break;
+                        case FORMULA:
+                            Double cellValue = cell.getNumericCellValue();
+                            value = convertValue(cellValue, DataInfo.getFieldType(dataRow.getClass(), columnName));                                                        
+                            dataRow.setValue(columnName, value);
+                            break;
+                    }
+
+                }
+            } catch (Exception e) {
+                String errorMsg = "ERROR EN LA FILA " + row.getRowNum();
+                if (cell != null) {
+                    errorMsg += ", CELDA " + cell.getAddress().formatAsString();
+                }
+                errorMsg += ", " + e.getMessage();
+                retornar.add(errorMsg);
+            }
+        }
+        return retornar;
+    }
+    
+    public static Object convertValue(Object value, Class type) {
+        if (value == null) {
+            return null;
+        } else if (type.getName().equals(value.getClass().getName())) {
+            return value;
+        } else if (type.getSimpleName().equals("BigDecimal") && !(value instanceof BigDecimal)) {
+            return new BigDecimal(value.toString());
+        } else if (type.getSimpleName().equals("Long") && !(value instanceof Long)) {
+            return Long.valueOf(value.toString().replaceAll("\\.\\d+$", ""));
+        } else if (type.getSimpleName().equals("Integer") && !(value instanceof Integer)) {
+            return Integer.valueOf(value.toString().replaceAll("\\.\\d+$", ""));
+        } else if (type.getSimpleName().equals("Short") && !(value instanceof Short)) {
+            return Short.valueOf(value.toString().replaceAll("\\.\\d+$", ""));
+        } else if (type.getSimpleName().equals("Character") && !(value instanceof Character)) {
+            return value.toString().charAt(0);
+        } else if (type.getSimpleName().equals("Boolean") && !(value instanceof Boolean)) {
+            return (value.toString().equals("1") && value.toString().equalsIgnoreCase("true"));
+        } else if (type.getSimpleName().equals("LocalDateTime") && (value instanceof Date)) {
+            return LocalDates.toDateTime((Date) value);
+        } else if (type.getSimpleName().equals("LocalDateTime") && (value instanceof Timestamp)) {
+            return ((Timestamp) value).toLocalDateTime();
+        }
+        return value;
+    }
+
+    /**
+     * Devuelve un valor BigDecimal de una celda
+     *
+     * @param cell celda
+     * @return valor BigDecimal.
+     * @throws Exception
+     */
     public static BigDecimal getBigDecimal(Cell cell) throws Exception {
         BigDecimal retornar = null;
         switch (cell.getCellType()) {
@@ -242,8 +430,15 @@ public class ExcelUtil {
         return retornar;
     }
 
+    /**
+     * Extrae los valores de la fila 1 para usarlas como nombres de las
+     * columnas.
+     *
+     * @param sheet planilla excel.
+     * @return Lista con los nombres de columnas.
+     */
     public static List<String> getHeaderNames(Sheet sheet) {
-        if (sheet == null){
+        if (sheet == null) {
             return new ArrayList();
         }
         List<String> retornar = new ArrayList();
@@ -253,14 +448,14 @@ public class ExcelUtil {
         }
         //Todas las celdas debe ser string
         boolean error = false;
-        for (Cell cell:headerRow){
-            if (!cell.getCellType().equals(STRING)){
+        for (Cell cell : headerRow) {
+            if (!cell.getCellType().equals(STRING)) {
                 error = true;
                 break;
             }
             retornar.add(cell.getStringCellValue());
         }
-        if (error){
+        if (error) {
             return new ArrayList();
         }
         return retornar;
