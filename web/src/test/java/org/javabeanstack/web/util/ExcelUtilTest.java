@@ -25,7 +25,6 @@ import java.io.File;
 import java.util.List;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.javabeanstack.data.IDataQueryModel;
-import org.javabeanstack.model.IAppUser;
 import static org.javabeanstack.web.util.ExcelUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -71,7 +70,7 @@ public class ExcelUtilTest {
         try {
             fromExcelToDataQueryModel(wb.getSheetAt(0));
         } catch (Exception e) {
-            assertTrue(e.getMessage().equals("No esta  especificado los nombres de las columnas en la primera fila"));
+            assertTrue(e.getMessage().equals("Verifique que en la primera fila tenga nombres de columnas válidas, tipo caracter sin espacios"));
         }
     }
 
