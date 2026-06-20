@@ -30,10 +30,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -394,13 +392,18 @@ public class ExcelUtil {
                     if (headerToField != null) {
                         String headerName = columnName;
                         String fieldName = headerToField.get(columnName);
-                        //Si no existe correlacion por el nombre se busca por la posición de la columna
-                        if (fieldName == null) {
-                            fieldName = headerToField.get(i.toString());
+                        //Puede que sea una columna auxiliar
+                        if (fieldName != null && fieldName.isEmpty()) {
+                            continue;
+                        } else if (fieldName == null) {
+                            fieldName = headerToField.get(String.valueOf(i));
                         }
                         columnName = fieldName;
                         if (columnName == null) {
                             throw new Exception("No se encuentra la correlación de la cabecera de la planilla con el nombre del campo de la tabla " + headerName);
+                        }
+                        if (!DataInfo.isFieldExist(clase, fieldName)) {
+                            continue;
                         }
                     }
                     cell = row.getCell(i);
@@ -503,7 +506,7 @@ public class ExcelUtil {
                 T dataRow = clase.getDeclaredConstructor().newInstance();
                 //Recorrer las celdas
                 for (Integer i = 0; i < headerNames.size(); i++) {
-                    String headerName = sheet.getRow(0).getCell(i).getStringCellValue();
+                    String headerName = headerNames.get(i);
                     String columnName = headerName;
                     if (Fn.nvl(columnName, "").isEmpty()) {
                         continue;
@@ -583,170 +586,6 @@ public class ExcelUtil {
         return retornar;
     }
 
-    /**
-     * Exporta a Excel consumiendo las filas desde un Iterator, con memoria
-     * constante. No carga todo el dataset: si el iterator es perezoso (lazy),
-     * solo mantiene en memoria el lote interno del iterator más la muestra para
-     * el cálculo de anchos.
-     *
-     * @param rows iterator de filas a exportar (idealmente lazy/paginado).
-     * @return Workbook listo para downLoadFile, o null si no hay datos.
-     */
-    public static Workbook toExcelStreamed(Iterator<IDataQueryModel> rows) throws Exception {
-        if (rows == null || !rows.hasNext()) {
-            return null;
-        }
-
-        // 1) Bufferizamos la primera muestra (SAMPLE_ROWS filas) para calcular anchos.
-        //    Es la única parte que retiene filas; en streaming no se puede muestrear todo.
-        List<IDataQueryModel> sample = new ArrayList<>();
-        while (rows.hasNext() && sample.size() < SAMPLE_ROWS) {
-            sample.add(rows.next());
-        }
-        if (sample.isEmpty()) {
-            return null;
-        }
-
-        SXSSFWorkbook workBook = new SXSSFWorkbook(100);
-        workBook.setCompressTempFiles(true);
-        SXSSFSheet sheet = workBook.createSheet("DATOS");
-
-        DataFormat dataFormat = workBook.createDataFormat();
-        Font font8 = workBook.createFont();
-        font8.setFontHeightInPoints((short) 8);
-        Font fontBold = workBook.createFont();
-        fontBold.setFontHeightInPoints((short) 8);
-        fontBold.setBold(true);
-
-        CellStyle defaultCellStyle = workBook.createCellStyle();
-        defaultCellStyle.setFont(font8);
-        CellStyle numberCellStyle = workBook.createCellStyle();
-        numberCellStyle.setFont(font8);
-        numberCellStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
-        CellStyle dateCellStyle = workBook.createCellStyle();
-        dateCellStyle.setFont(font8);
-        dateCellStyle.setDataFormat(dataFormat.getFormat("dd/mm/yyyy hh:mm:ss"));
-        CellStyle textBoldCellStyle = workBook.createCellStyle();
-        textBoldCellStyle.setFont(fontBold);
-
-        int columnCount = sample.get(0).getColumnList().length;
-
-        // 2) Anchos calculados con la muestra (primeras SAMPLE_ROWS filas)
-        int[] widthChars = computeColumnWidths(sample, columnCount, null);
-        for (int j = 0; j < columnCount; j++) {
-            sheet.setColumnWidth(j, charsToWidthUnits(widthChars[j]));
-        }
-
-        // 3) Cabecera (una sola vez)
-        int rownum = 0;
-        Row header = sheet.createRow(rownum++);
-        for (int j = 0; j < columnCount; j++) {
-            Cell cell = header.createCell(j);
-            cell.setCellStyle(textBoldCellStyle);
-            cell.setCellValue(sample.get(0).getColumnName(j));
-        }
-
-        // 4) Escribimos primero la muestra bufferizada...
-        for (IDataQueryModel item : sample) {
-            Row row = sheet.createRow(rownum++);
-            writeDataRow(row, (Object[]) item.getRow(), columnCount,
-                    defaultCellStyle, numberCellStyle, dateCellStyle);
-        }
-        sample = null; // liberamos la muestra: ya no la necesitamos
-
-        // 5) ...y luego seguimos consumiendo el resto del iterator de a una fila
-        while (rows.hasNext()) {
-            IDataQueryModel item = rows.next();
-            Row row = sheet.createRow(rownum++);
-            writeDataRow(row, (Object[]) item.getRow(), columnCount,
-                    defaultCellStyle, numberCellStyle, dateCellStyle);
-        }
-
-        return workBook;
-    }
-
-    /**
-     * Escribe una fila de datos aplicando el estilo según el tipo de cada
-     * valor. Reutilizable también por toExcel para evitar duplicar la lógica de
-     * celdas.
-     */
-    private static void writeDataRow(Row row, Object[] fila, int columnCount,
-            CellStyle defaultStyle, CellStyle numberStyle, CellStyle dateStyle) {
-        for (int j = 0; j < columnCount; j++) {
-            Cell cell = row.createCell(j);
-            Object valor = (j < fila.length) ? fila[j] : null;
-            if (valor == null) {
-                cell.setCellStyle(defaultStyle);
-            } else if (valor instanceof BigDecimal) {
-                cell.setCellStyle(numberStyle);
-                cell.setCellValue(((BigDecimal) valor).doubleValue());
-            } else if (valor instanceof Date) {          // Timestamp extiende Date
-                cell.setCellStyle(dateStyle);
-                cell.setCellValue((Date) valor);
-            } else {
-                cell.setCellStyle(defaultStyle);
-                cell.setCellValue(String.valueOf(valor));
-            }
-        }
-    }
-
-    /**
-     * Crea un Iterator perezoso que va trayendo páginas bajo demanda. Solo
-     * mantiene en memoria la página actual; al agotarla, pide la siguiente y
-     * descarta la anterior.
-     *
-     * @param fetch función que devuelve la página N (0-based) con hasta
-     * pageSize filas. Devolver lista vacía o null indica fin de datos.
-     * @param pageSize tamaño de página.
-     * @return 
-     */
-    public static Iterator<IDataQueryModel> pagedIterator(PageFetch fetch, int pageSize) {
-        return new Iterator<IDataQueryModel>() {
-            private List<IDataQueryModel> buffer = Collections.emptyList();
-            private int page = 0;
-            private int idx = 0;
-            private boolean finished = false;
-
-            @Override
-            public boolean hasNext() {
-                if (idx < buffer.size()) {
-                    return true;
-                }
-                if (finished) {
-                    return false;
-                }
-                try {
-                    buffer = fetch.getPage(page++, pageSize);
-                } catch (Exception e) {
-                    throw new RuntimeException("Error al traer la página " + (page - 1), e);
-                }
-                idx = 0;
-                if (buffer == null || buffer.isEmpty()) {
-                    finished = true;
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            public IDataQueryModel next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-                return buffer.get(idx++);
-            }
-        };
-    }
-
-    /**
-     * Función que provee una página de datos. Permite excepciones checked del
-     * DAO.
-     */
-    @FunctionalInterface
-    public interface PageFetch {
-        List<IDataQueryModel> getPage(int pageNumber, int pageSize) throws Exception;
-    }
-    
     /**
      * Convierte un valor de la celda de la planilla a un valor asignable en un
      * atributo de una clase de java.
@@ -835,7 +674,7 @@ public class ExcelUtil {
             if (cell.getCellType() != STRING) {
                 return new ArrayList();
             }
-            retornar.add(cell.getStringCellValue());
+            retornar.add(cell.getStringCellValue().trim());
         }
         return retornar;
     }

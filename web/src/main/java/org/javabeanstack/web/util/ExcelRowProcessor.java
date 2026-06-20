@@ -1,0 +1,649 @@
+/*
+* JavaBeanStack FrameWork
+*
+* Copyright (C) 2018 Jorge Enciso
+* Email: jorge.enciso.r@gmail.com
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 3 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+* MA 02110-1301  USA
+ */
+package org.javabeanstack.web.util;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
+import org.javabeanstack.data.DataInfo;
+import org.javabeanstack.data.IDataRow;
+import org.javabeanstack.util.Fn;
+
+/**
+ * Procesa una fila de una planilla Excel y la transforma en un objeto de
+ * dominio de tipo {@code T}.
+ * <p>
+ * Esta clase NO mantiene una instancia del objeto destino: solo conserva su
+ * {@link Class} en {@link #targetType}. Es la subclase, dentro de
+ * {@link #process()}, la responsable de instanciar el objeto destino a partir
+ * de {@link #targetType} y de asignarle los valores leídos de la fila.
+ * <p>
+ * El mapeo entre las columnas del Excel y los atributos del objeto destino se
+ * define mediante {@code headToField}, donde:
+ * <ul>
+ * <li>clave = encabezado de la columna en el Excel</li>
+ * <li>valor = nombre del atributo en el objeto destino</li>
+ * </ul>
+ * Si {@code headToField} es {@code null} o está vacío, se genera uno donde el
+ * nombre del atributo coincide exactamente con el encabezado de columna (es
+ * decir, se asume que los encabezados del Excel ya tienen el mismo nombre que
+ * los atributos de {@code T}).
+ * <p>
+ * Las subclases solo necesitan implementar {@link #process()}, leyendo los
+ * valores con {@link #valueOfField(String)} o {@link #valueOfColumn(String)}, y
+ * pueden validar la compatibilidad de tipos con
+ * {@link #isAssignable(Object, String)} antes de asignarlos a la instancia que
+ * ellas mismas creen a partir de {@link #targetType}.
+ *
+ * @param <T> tipo del objeto destino
+ */
+public abstract class ExcelRowProcessor<T extends IDataRow> {
+
+    /**
+     * La fila de Excel que se está procesando. Puede reasignarse con
+     * {@link #setRow(Row)}.
+     */
+    private Row row;
+
+    /**
+     * La clase del objeto destino. {@link #process()} la usa para instanciar el
+     * objeto destino que será completado con los valores de la fila.
+     */
+    protected final Class<T> targetType;
+
+    /**
+     * Mapeo de encabezado de columna del Excel a nombre del atributo en target.
+     * Ejemplo: {"Tax ID" -> "taxId"}.
+     */
+    private final Map<String, String> headToField;
+
+    /**
+     * Inverso de {@link #headToField}: nombre del atributo en target a
+     * encabezado de columna del Excel. Ejemplo: {"taxId" -> "Tax ID"}.
+     */
+    private final Map<String, String> fieldToHead;
+
+    /**
+     * Encabezado de columna del Excel a su índice de columna dentro de la
+     * planilla (base 0). Ejemplo: {"Tax ID" -> 2}.
+     */
+    private final Map<String, Integer> headToIndex;
+
+    private Map<String, Object> properties = new HashMap();
+
+    private Integer headerRowIndex;
+
+    /**
+     * Evaluador de fórmulas, creado de forma perezosa la primera vez que se
+     * encuentra una celda de tipo fórmula. Se cachea para reutilizarlo entre
+     * celdas y filas de la misma planilla.
+     */
+    private FormulaEvaluator formulaEvaluator;
+
+    /**
+     * Crea un procesador que genera automáticamente {@link #fieldToHead} y
+     * {@link #headToIndex} a partir de {@code headToField}, asumiendo que los
+     * encabezados de columna están ubicados en la fila 0 de la planilla.
+     *
+     * @param row la fila de Excel desde donde se leerán los valores
+     * @param targetType la clase del objeto destino a instanciar en {@link #process()}
+     * @param headToField mapeo de encabezado de columna del Excel a nombre del
+     * atributo en targetType; si es {@code null} o está vacío, se genera uno
+     * asumiendo que cada atributo se llama igual que su encabezado de columna
+     * @param properties propiedades de configuración del procesador (por
+     * ejemplo, {@code allowFieldNotExist}); puede ser {@code null}
+     */
+    protected ExcelRowProcessor(Row row, Class<T> targetType, Map<String, String> headToField, Map<String, Object> properties) {
+        this(row, targetType, headToField, 0, properties);
+    }
+
+    /**
+     * Crea un procesador que genera automáticamente {@link #fieldToHead} y
+     * {@link #headToIndex} a partir de {@code headToField}.
+     *
+     * @param row la fila de Excel desde donde se leerán los valores
+     * @param targetType la clase del objeto destino a instanciar en {@link #process()}
+     * @param headToField mapeo de encabezado de columna del Excel a nombre del
+     * atributo en targetType; si es {@code null} o está vacío, se genera uno
+     * asumiendo que cada atributo se llama igual que su encabezado de columna
+     * @param headerRowIndex índice (base 0) de la fila que contiene los
+     * encabezados de columna dentro de la planilla
+     * @param properties propiedades de configuración del procesador (por
+     * ejemplo, {@code allowFieldNotExist}); puede ser {@code null}
+     */
+    protected ExcelRowProcessor(Row row, Class<T> targetType,
+            Map<String, String> headToField,
+            int headerRowIndex,
+            Map<String, Object> properties) {
+        this.row = row;
+        this.targetType = targetType;
+        this.headToIndex = buildHeaderIndex(row, headerRowIndex);
+        this.headToField = (headToField == null || headToField.isEmpty())
+                ? buildDefaultHeadToField(this.headToIndex)
+                : headToField;
+        this.fieldToHead = invert(this.headToField);
+        this.headerRowIndex = headerRowIndex;
+        this.properties = properties;
+    }
+
+    /**
+     * Crea un procesador que acepta los mapas {@code fieldToHead} y
+     * {@code headToIndex} ya construidos, útil para evitar recalcularlos en
+     * cada fila de la misma planilla. Si alguno de los dos se pasa como
+     * {@code null}, se genera automáticamente (mismo comportamiento que los
+     * constructores más simples).
+     *
+     * @param row la fila de Excel desde donde se leerán los valores
+     * @param targetType la clase del objeto destino a instanciar en {@link #process()}
+     * @param headToField mapeo de encabezado de columna del Excel a nombre del
+     * atributo en targetType; si es {@code null} o está vacío, se genera uno
+     * asumiendo que cada atributo se llama igual que su encabezado de columna
+     * @param headerRowIndex índice (base 0) de la fila que contiene los
+     * encabezados de columna dentro de la planilla; solo se usa si
+     * {@code headToIndex} es {@code null} y necesita generarse
+     * @param fieldToHead mapeo inverso ya construido (nombre del atributo en
+     * targetType a encabezado de columna del Excel), o {@code null} para
+     * generarlo a partir de {@code headToField}
+     * @param headToIndex mapeo ya construido (encabezado de columna del Excel a
+     * índice de columna), o {@code null} para generarlo leyendo la fila de
+     * encabezados de la planilla
+     * @param properties propiedades de configuración del procesador (por
+     * ejemplo, {@code allowFieldNotExist}); puede ser {@code null}
+     */
+    protected ExcelRowProcessor(Row row, Class<T> targetType,
+            Map<String, String> headToField,
+            int headerRowIndex,
+            Map<String, String> fieldToHead,
+            Map<String, Integer> headToIndex,
+            Map<String, Object> properties) {
+        this.row = row;
+        this.targetType = targetType;
+        this.headToIndex = (headToIndex != null) ? headToIndex : buildHeaderIndex(row, headerRowIndex);
+        this.headToField = (headToField == null || headToField.isEmpty())
+                ? buildDefaultHeadToField(this.headToIndex)
+                : headToField;
+        this.fieldToHead = (fieldToHead != null) ? fieldToHead : invert(this.headToField);
+        this.headerRowIndex = headerRowIndex;
+        this.properties = properties;
+    }
+
+    /**
+     * Instancia un objeto destino a partir de {@link #targetType}, lee los
+     * valores necesarios de la fila (usando {@link #valueOfField(String)} o
+     * {@link #valueOfColumn(String)}), se los asigna, y lo retorna. Debe ser
+     * implementado por cada subclase concreta según sus propias reglas de
+     * negocio.
+     *
+     * @return el objeto destino de tipo {@code T} ya instanciado y completado
+     */
+    public abstract T process();
+
+    /**
+     * @return las propiedades de configuración del procesador (por ejemplo,
+     * {@code allowFieldNotExist}); nunca {@code null} (si no se establecieron,
+     * retorna un mapa vacío)
+     */
+    protected Map<String, Object> getProperties(){
+        return Fn.nvl(properties, new HashMap());
+    }
+    
+    /**
+     * Retorna el valor de la celda en {@link #row} que corresponde al ATRIBUTO
+     * de target indicado. Resuelve primero el encabezado de columna equivalente
+     * vía {@link #fieldToHead}, y luego delega en
+     * {@link #valueOfColumn(String)} para leer la celda en sí.
+     *
+     * @param fieldName nombre del atributo en {@link #targetType} (por ejemplo,
+     * "taxId")
+     * @return el valor nativo de la celda (String, Double, Boolean o
+     * LocalDateTime), o {@code null} si {@code fieldName} no tiene mapeo en
+     * {@link #fieldToHead}, la columna no existe en la fila, o la celda está
+     * vacía
+     */
+    protected Object valueOfField(String fieldName) {
+        String header = fieldToHead.get(fieldName);
+        return header == null ? null : valueOfColumn(header);
+    }
+
+    /**
+     * Retorna el valor de la celda en {@link #row} ubicada bajo el ENCABEZADO
+     * de columna indicado, preservando el tipo nativo de Java según el tipo de
+     * la celda en Excel:
+     * <ul>
+     * <li>celdas {@code STRING} retornan {@link String}</li>
+     * <li>celdas {@code NUMERIC} retornan {@link Double}, o
+     * {@link LocalDateTime} si la celda tiene formato de fecha</li>
+     * <li>celdas {@code BOOLEAN} retornan {@link Boolean}</li>
+     * <li>celdas {@code BLANK} o con tipos no soportados retornan
+     * {@code null}</li>
+     * </ul>
+     *
+     * @param columnName el encabezado de columna exactamente como aparece en la
+     * fila de encabezados del Excel (por ejemplo, "Tax ID")
+     * @return el valor nativo de la celda, o {@code null} si {@code columnName}
+     * no se encuentra en {@link #headToIndex} o la celda no existe
+     */
+    protected Object valueOfColumn(String columnName) {
+        Integer index = headToIndex.get(columnName);
+        if (index == null) {
+            return null;
+        }
+        Cell cell = row.getCell(index);
+        if (cell == null) {
+            return null;
+        }
+        return extractNativeValue(cell);
+    }
+
+    /**
+     * Valida los datos de origen de la planilla Excel antes de procesarlos.
+     * Verifica que las cabeceras sean de tipo String, que no haya nombres de
+     * columna duplicados y que los nombres de columna correspondan a atributos
+     * existentes en la clase {@code type}.
+     * <p>
+     * La propiedad {@code allowFieldNotExist} (en {@link #getProperties()})
+     * controla qué ocurre cuando un atributo mapeado no existe en {@code T}. Por
+     * defecto vale {@code true} de forma intencional: se permite que existan
+     * columnas mapeadas a atributos inexistentes (no se reporta error), de modo
+     * que la subclase pueda procesarlas manualmente en {@link #process()} (por
+     * ejemplo, columnas auxiliares o derivadas). Solo cuando se la establece
+     * explícitamente en {@code false} se exige que todo atributo mapeado exista
+     * en {@code T}, reportándose como error en caso contrario.
+     *
+     * @return mensaje de error si hubiere inconvenientes, o cadena vacía si
+     * todo es válido.
+     */
+    protected String checkMetaData() {
+        StringBuilder mensaje = new StringBuilder();
+        Row headerRow = row.getSheet().getRow(headerRowIndex);
+        short last = headerRow.getLastCellNum();
+        //Verificar datos de la cabecera
+        Set<String> seenHeaders = new HashSet<>();
+        for (int c = 0; c < last; c++) {
+            Cell cell = headerRow.getCell(c, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+            // Una cabecera vacía (definida pero en blanco) marca el fin de las columnas útiles
+            if (cell.getCellType() == CellType.BLANK
+                    || (cell.getCellType() == CellType.STRING && cell.getStringCellValue().trim().isEmpty())) {
+                break;
+            }
+            // Si llegó hasta acá y no es texto, la cabecera es inválida
+            if (cell.getCellType() != CellType.STRING) {
+                mensaje.append("En la columna ").append(c).append(" no tiene nombre válido\n");
+                continue;
+            }
+            // Las cabeceras duplicadas son ambiguas: buildHeaderIndex conservaría
+            // solo la última, por lo que se reportan como error.
+            String headerName = cell.getStringCellValue().trim();
+            if (!seenHeaders.add(headerName)) {
+                mensaje.append("El nombre de la columna ").append(headerName).append(" está duplicado\n");
+            }
+        }
+        if (mensaje.length() > 0) {
+            return mensaje.toString();
+        }
+
+        for (Map.Entry<String, String> entry : headToField.entrySet()) {
+            String header = entry.getKey();
+            String fieldName = entry.getValue();
+            if (fieldName != null && fieldName.isEmpty()) {
+                continue;
+            }
+
+            if (!Fn.nvl((Boolean) getProperties().get("allowFieldNotExist"), true)) {
+                if (!DataInfo.isFieldExist(targetType, fieldName)) {
+                    mensaje.append("El nombre de la columna ")
+                            .append(header)
+                            .append(" es incorrecta\n");
+                    continue;
+                }
+            }
+            if (DataInfo.isFieldExist(targetType, fieldName)) {
+                Object value = valueOfColumn(header); // o valueOfField(fieldName), es equivalente acá
+                if (!isAssignable(value, fieldName)){
+                    mensaje.append("El valor de la columna ")
+                            .append(header)
+                            .append(" no es asignable al atributo ")
+                            .append(fieldName)
+                            .append("\n");
+                }
+            }
+        }
+        return mensaje.toString();
+    }
+
+    /**
+     * Determina si {@code value} puede asignarse al atributo {@code fieldName}
+     * de {@code T}, consultando el tipo real del atributo vía
+     * {@link DataInfo#getFieldType(Class, String)}. La validación solo se
+     * realiza contra atributos existentes en {@code T}.
+     * <p>
+     * Además de la asignabilidad estricta
+     * ({@link Class#isAssignableFrom(Class)}), se aceptan como válidas las
+     * conversiones numéricas razonables entre los tipos nativos que puede
+     * devolver una celda y los tipos numéricos comunes del atributo destino: un
+     * valor {@link Double} (lo que devuelve una celda {@code NUMERIC}) se
+     * considera asignable a atributos {@code Integer}, {@code Long},
+     * {@code Float}, {@code BigDecimal} o {@code BigInteger} (y sus tipos
+     * primitivos equivalentes). De forma análoga, un valor
+     * {@link LocalDateTime} (lo que devuelve una celda numérica con formato de
+     * fecha) se considera asignable a atributos {@link Date}, {@link Timestamp},
+     * {@link LocalDate} o {@link LocalDateTime}.
+     *
+     * @param value valor a validar, típicamente obtenido de
+     * {@link #valueOfField(String)} o {@link #valueOfColumn(String)}
+     * @param fieldName nombre del atributo en {@code T} contra el cual se
+     * valida el tipo
+     * @return {@code true} si el atributo existe en {@code T} y
+     * {@code value} es asignable (de forma estricta o mediante una conversión
+     * numérica razonable) a su tipo; {@code false} si el atributo no existe, el
+     * tipo no es compatible, o {@code value} es {@code null} (un valor nulo
+     * siempre es asignable a cualquier atributo existente)
+     */
+    protected boolean isAssignable(Object value, String fieldName) {
+        if (!DataInfo.isFieldExist(targetType, fieldName)) {
+            return false;
+        }
+        if (value == null) {
+            return true;
+        }
+        Class<?> fieldType = DataInfo.getFieldType(targetType, fieldName);
+        if (fieldType == null) {
+            return false;
+        }
+        Class<?> valueType = value.getClass();
+
+        Class<?> wrappedFieldType = wrap(fieldType);
+        if (wrappedFieldType.isAssignableFrom(valueType)) {
+            return true;
+        }
+        if (valueType == Double.class && isNumericType(wrappedFieldType)) {
+            return true;
+        }
+        if (valueType == LocalDateTime.class && isDateType(wrappedFieldType)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return la fila de Excel que se está procesando actualmente
+     */
+    protected Row getRow() {
+        return row;
+    }
+
+    /**
+     * Reemplaza la fila de Excel sobre la cual operan
+     * {@link #valueOfField(String)} y {@link #valueOfColumn(String)}. Útil para
+     * reutilizar la misma instancia de {@link ExcelRowProcessor} (y sus mapas
+     * ya calculados) en varias filas de la misma planilla.
+     *
+     * @param row la nueva fila de Excel a procesar
+     */
+    public void setRow(Row row) {
+        this.row = row;
+    }
+
+    /**
+     * @return la clase del objeto destino, usada por {@link #process()} para
+     * instanciarlo
+     */
+    protected Class<T> getTargetType() {
+        return targetType;
+    }
+
+    /**
+     * @return el mapeo de encabezado de columna del Excel a nombre del atributo
+     * en targetType
+     */
+    public Map<String, String> getHeadToField() {
+        return headToField;
+    }
+
+    /**
+     * @return el mapeo inverso de nombre de atributo en targetType a encabezado
+     * de columna del Excel
+     */
+    public Map<String, String> getFieldToHead() {
+        return fieldToHead;
+    }
+
+    /**
+     * @return el mapeo de encabezado de columna del Excel a índice de columna
+     */
+    public Map<String, Integer> getHeadToIndex() {
+        return headToIndex;
+    }
+
+    // --- utilitarios privados ---
+    /**
+     * Construye el inverso de un mapa encabezado-a-atributo.
+     *
+     * @param map mapeo de encabezado de columna del Excel a nombre del atributo
+     * en targetType
+     * @return mapeo de nombre del atributo en targetType a encabezado de
+     * columna del Excel
+     */
+    private static Map<String, String> invert(Map<String, String> map) {
+        Map<String, String> inverted = new HashMap<>();
+        for (Map.Entry<String, String> e : map.entrySet()) {
+            inverted.put(e.getValue(), e.getKey());
+        }
+        return inverted;
+    }
+
+    /**
+     * Genera un {@code headToField} por defecto a partir de los encabezados
+     * detectados en la planilla, asumiendo que cada encabezado coincide
+     * exactamente con el nombre del atributo correspondiente en target. Se usa
+     * cuando el {@code headToField} recibido por constructor es {@code null} o
+     * está vacío.
+     *
+     * @param headToIndex mapeo de encabezado de columna a índice, ya construido
+     * @return mapeo de encabezado de columna a nombre de atributo, donde ambos
+     * valores son idénticos
+     */
+    private static Map<String, String> buildDefaultHeadToField(Map<String, Integer> headToIndex) {
+        Map<String, String> defaultMap = new HashMap<>();
+        for (String header : headToIndex.keySet()) {
+            defaultMap.put(header, header);
+        }
+        return defaultMap;
+    }
+
+    /**
+     * Lee la fila de encabezados de la planilla que contiene a {@code row}, y
+     * construye un mapeo del texto de cada encabezado no vacío a su índice de
+     * columna.
+     *
+     * @param row cualquier fila perteneciente a la planilla a indexar (se usa
+     * únicamente para acceder a {@code row.getSheet()})
+     * @param headerRowIndex índice (base 0) de la fila que contiene los
+     * encabezados
+     * @return mapeo de texto de encabezado a índice de columna; vacío si la
+     * fila de encabezados no existe
+     */
+    private Map<String, Integer> buildHeaderIndex(Row row, int headerRowIndex) {
+        Map<String, Integer> index = new HashMap<>();
+        Row headerRow = row.getSheet().getRow(headerRowIndex);
+        if (headerRow == null) {
+            return index;
+        }
+        for (Cell cell : headerRow) {
+            Object value = extractNativeValue(cell);
+            if (value != null) {
+                String text = value.toString().trim();
+                if (!text.isEmpty()) {
+                    index.put(text, cell.getColumnIndex());
+                }
+            }
+        }
+        return index;
+    }
+
+    /**
+     * Retorna el evaluador de fórmulas de la planilla, creándolo de forma
+     * perezosa la primera vez. Se reutiliza para todas las celdas y filas.
+     *
+     * @return el {@link FormulaEvaluator} asociado al libro de la fila actual
+     */
+    private FormulaEvaluator getFormulaEvaluator() {
+        if (formulaEvaluator == null) {
+            formulaEvaluator = row.getSheet().getWorkbook()
+                    .getCreationHelper().createFormulaEvaluator();
+        }
+        return formulaEvaluator;
+    }
+
+    /**
+     * Lee el valor de una celda preservando su tipo nativo de Excel. Las celdas
+     * de tipo fórmula se evalúan en el momento con {@link FormulaEvaluator}
+     * (sin depender del resultado en caché de la planilla), y se resuelve el
+     * tipo a partir del valor evaluado.
+     *
+     * @param cell la celda a leer
+     * @return el valor de la celda como String, Double, Boolean o LocalDateTime
+     * (para celdas numéricas con formato de fecha); {@code null} para celdas
+     * vacías o con tipos no soportados
+     */
+    private Object extractNativeValue(Cell cell) {
+        CellType type = cell.getCellType();
+        CellValue evaluated = null;
+        if (type == CellType.FORMULA) {
+            evaluated = getFormulaEvaluator().evaluate(cell);
+            if (evaluated == null) {
+                return null;
+            }
+            type = evaluated.getCellType();
+        }
+        switch (type) {
+            case STRING:
+                return evaluated != null ? evaluated.getStringValue() : cell.getStringCellValue();
+            case NUMERIC:
+                double numericValue = evaluated != null
+                        ? evaluated.getNumberValue()
+                        : cell.getNumericCellValue();
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return DateUtil.getLocalDateTime(numericValue);
+                }
+                return numericValue;
+            case BOOLEAN:
+                return evaluated != null ? evaluated.getBooleanValue() : cell.getBooleanCellValue();
+            case BLANK:
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Convierte un tipo primitivo a su clase wrapper equivalente (por ejemplo,
+     * {@code int.class} a {@link Integer}), de modo que las comparaciones de
+     * asignabilidad funcionen correctamente sin importar si el atributo de
+     * targetType está declarado como tipo primitivo u objeto.
+     *
+     * @param type el tipo a normalizar
+     * @return la clase wrapper si {@code type} es primitivo; {@code type} sin
+     * cambios en caso contrario
+     */
+    private static Class<?> wrap(Class<?> type) {
+        if (!type.isPrimitive()) {
+            return type;
+        }
+        if (type == int.class) {
+            return Integer.class;
+        }
+        if (type == long.class) {
+            return Long.class;
+        }
+        if (type == double.class) {
+            return Double.class;
+        }
+        if (type == float.class) {
+            return Float.class;
+        }
+        if (type == boolean.class) {
+            return Boolean.class;
+        }
+        if (type == short.class) {
+            return Short.class;
+        }
+        if (type == byte.class) {
+            return Byte.class;
+        }
+        if (type == char.class) {
+            return Character.class;
+        }
+        return type;
+    }
+
+    /**
+     * Determina si una clase representa un tipo numérico hacia el cual es
+     * razonable convertir un {@link Double} (el tipo nativo que devuelve una
+     * celda Excel numérica): {@code Integer}, {@code Long}, {@code Float},
+     * {@code BigDecimal} o {@code BigInteger}.
+     *
+     * @param wrappedType tipo ya normalizado a su forma wrapper (ver
+     * {@link #wrap(Class)})
+     * @return {@code true} si es uno de los tipos numéricos aceptados como
+     * destino de una conversión desde {@link Double}
+     */
+    private static boolean isNumericType(Class<?> wrappedType) {
+        return wrappedType == Integer.class
+                || wrappedType == Long.class
+                || wrappedType == Float.class
+                || wrappedType == BigDecimal.class
+                || wrappedType == BigInteger.class;
+    }
+
+    /**
+     * Determina si una clase representa un tipo de fecha/hora hacia el cual es
+     * razonable convertir un {@link LocalDateTime} (el tipo nativo que devuelve
+     * una celda Excel numérica con formato de fecha): {@link Date} (y sus
+     * subtipos, como {@link java.sql.Date} y {@link Timestamp}),
+     * {@link LocalDate} o {@link LocalDateTime}.
+     *
+     * @param wrappedType tipo ya normalizado a su forma wrapper (ver
+     * {@link #wrap(Class)})
+     * @return {@code true} si es uno de los tipos de fecha/hora aceptados como
+     * destino de una conversión desde {@link LocalDateTime}
+     */
+    private static boolean isDateType(Class<?> wrappedType) {
+        return Date.class.isAssignableFrom(wrappedType)
+                || wrappedType == LocalDate.class
+                || wrappedType == LocalDateTime.class;
+    }
+}
