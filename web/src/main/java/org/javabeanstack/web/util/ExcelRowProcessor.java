@@ -70,7 +70,7 @@ import org.javabeanstack.util.Fn;
  *
  * @param <T> tipo del objeto destino
  */
-public abstract class ExcelRowProcessor<T extends IDataRow> {
+public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRowProcessor<T> {
 
     /**
      * La fila de Excel que se está procesando. Puede reasignarse con
@@ -201,15 +201,40 @@ public abstract class ExcelRowProcessor<T extends IDataRow> {
     }
 
     /**
-     * Instancia un objeto destino a partir de {@link #targetType}, lee los
-     * valores necesarios de la fila (usando {@link #valueOfField(String)} o
-     * {@link #valueOfColumn(String)}), se los asigna, y lo retorna. Debe ser
-     * implementado por cada subclase concreta según sus propias reglas de
-     * negocio.
+     * Instancia un objeto destino a partir de {@link #targetType}, recorre el
+     * mapeo {@link #getHeadToField()} y asigna en el destino el valor de cada
+     * celda mediante {@link IDataRow#setValue(String, Object)}, convirtiendo
+     * previamente el valor nativo de la celda al tipo declarado del atributo
+     * con {@link ExcelUtil#convertValue(Object, Class)} (ya que {@code setValue}
+     * no realiza conversión de tipos).
+     * <p>
+     * Los atributos cuyo nombre esté vacío, o que no existan en {@code T}, se
+     * omiten silenciosamente (ver {@code allowFieldNotExist} en
+     * {@link #checkMetaData()}). Las subclases pueden sobrescribir este método
+     * si requieren reglas de negocio adicionales.
      *
      * @return el objeto destino de tipo {@code T} ya instanciado y completado
+     * @throws Exception si no se puede instanciar {@link #targetType} o si falla
+     * la asignación de algún valor
      */
-    public abstract T process();
+    @Override
+    public T process() throws Exception {
+        T target = targetType.getDeclaredConstructor().newInstance();
+        for (Map.Entry<String, String> entry : headToField.entrySet()) {
+            String header = entry.getKey();
+            String fieldName = entry.getValue();
+            if (fieldName == null || fieldName.isEmpty()) {
+                continue;
+            }
+            if (!DataInfo.isFieldExist(targetType, fieldName)) {
+                continue;
+            }
+            Object value = valueOfColumn(header);
+            Object converted = ExcelUtil.convertValue(value, DataInfo.getFieldType(targetType, fieldName));
+            target.setValue(fieldName, converted);
+        }
+        return target;
+    }
 
     /**
      * @return las propiedades de configuración del procesador (por ejemplo,
@@ -355,9 +380,10 @@ public abstract class ExcelRowProcessor<T extends IDataRow> {
      * conversiones numéricas razonables entre los tipos nativos que puede
      * devolver una celda y los tipos numéricos comunes del atributo destino: un
      * valor {@link Double} (lo que devuelve una celda {@code NUMERIC}) se
-     * considera asignable a atributos {@code Integer}, {@code Long},
-     * {@code Float}, {@code BigDecimal} o {@code BigInteger} (y sus tipos
-     * primitivos equivalentes). De forma análoga, un valor
+     * considera asignable a atributos {@code Short}, {@code Integer},
+     * {@code Long}, {@code Float}, {@code BigDecimal}, {@code BigInteger} o
+     * {@code Byte} (y sus tipos primitivos equivalentes). De forma análoga, un
+     * valor
      * {@link LocalDateTime} (lo que devuelve una celda numérica con formato de
      * fecha) se considera asignable a atributos {@link Date}, {@link Timestamp},
      * {@link LocalDate} o {@link LocalDateTime}.
@@ -413,6 +439,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> {
      *
      * @param row la nueva fila de Excel a procesar
      */
+    @Override
     public void setRow(Row row) {
         this.row = row;
     }
@@ -429,6 +456,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> {
      * @return el mapeo de encabezado de columna del Excel a nombre del atributo
      * en targetType
      */
+    @Override
     public Map<String, String> getHeadToField() {
         return headToField;
     }
@@ -437,6 +465,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> {
      * @return el mapeo inverso de nombre de atributo en targetType a encabezado
      * de columna del Excel
      */
+    @Override
     public Map<String, String> getFieldToHead() {
         return fieldToHead;
     }
@@ -444,8 +473,18 @@ public abstract class ExcelRowProcessor<T extends IDataRow> {
     /**
      * @return el mapeo de encabezado de columna del Excel a índice de columna
      */
+    @Override
     public Map<String, Integer> getHeadToIndex() {
         return headToIndex;
+    }
+
+    /**
+     * @return el índice (base 0) de la fila que contiene los encabezados de
+     * columna dentro de la planilla
+     */
+    @Override
+    public int getHeaderRowIndex() {
+        return Fn.nvl(headerRowIndex, 0);
     }
 
     // --- utilitarios privados ---
@@ -613,8 +652,8 @@ public abstract class ExcelRowProcessor<T extends IDataRow> {
     /**
      * Determina si una clase representa un tipo numérico hacia el cual es
      * razonable convertir un {@link Double} (el tipo nativo que devuelve una
-     * celda Excel numérica): {@code Integer}, {@code Long}, {@code Float},
-     * {@code BigDecimal} o {@code BigInteger}.
+     * celda Excel numérica): {@code Short}, {@code Integer}, {@code Long},
+     * {@code Float}, {@code BigDecimal}, {@code BigInteger} o {@code Byte}.
      *
      * @param wrappedType tipo ya normalizado a su forma wrapper (ver
      * {@link #wrap(Class)})
@@ -622,11 +661,13 @@ public abstract class ExcelRowProcessor<T extends IDataRow> {
      * destino de una conversión desde {@link Double}
      */
     private static boolean isNumericType(Class<?> wrappedType) {
-        return wrappedType == Integer.class
+        return wrappedType == Short.class
+                || wrappedType == Integer.class
                 || wrappedType == Long.class
                 || wrappedType == Float.class
                 || wrappedType == BigDecimal.class
-                || wrappedType == BigInteger.class;
+                || wrappedType == BigInteger.class
+                || wrappedType == Byte.class;
     }
 
     /**

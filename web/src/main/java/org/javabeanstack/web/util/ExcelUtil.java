@@ -55,7 +55,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.model.DataQueryModel;
@@ -156,16 +155,17 @@ public class ExcelUtil {
     }
 
     public static Workbook openWorkbook(String filePath) throws IOException {
+        String lowerPath = filePath.toLowerCase();
+        boolean isXlsx = lowerPath.endsWith("xlsx");
+        boolean isXls = lowerPath.endsWith("xls");
+        if (!isXlsx && !isXls) {
+            throw new IllegalArgumentException("The specified file is not an Excel file");
+        }
         try (InputStream fileInputStream = new FileInputStream(filePath)) {
-            if (filePath.toLowerCase()
-                    .endsWith("xlsx")) {
+            if (isXlsx) {
                 return new XSSFWorkbook(fileInputStream);
-            } else if (filePath.toLowerCase()
-                    .endsWith("xls")) {
-                return new HSSFWorkbook(fileInputStream);
-            } else {
-                throw new IllegalArgumentException("The specified file is not an Excel file");
             }
+            return new HSSFWorkbook(fileInputStream);
         } catch (OLE2NotOfficeXmlFileException | NotOLE2FileException e) {
             throw new IllegalArgumentException(
                     "The file format is not supported. Ensure the file is a valid Excel file.", e);
@@ -332,259 +332,49 @@ public class ExcelUtil {
         return retornar;
     }
 
-    public void getFieldMetaData(Sheet sheet, Map<String, String> fieldsEquivalent) {
-
-    }
-
     /**
-     * Lee los datos de una planilla excel y lo convierte a una List a tipo T
-     * (IDataRow)
+     * Puebla una lista de instancias del objeto destino ({@code T}) procesando
+     * las filas de una planilla excel mediante un {@link IExcelRowProcessor} ya
+     * configurado.
+     * <p>
+     * El procesador se reutiliza para cada fila (vía
+     * {@link IExcelRowProcessor#setRow(Row)}), por lo que conserva los mapas de
+     * encabezados ya calculados al construirlo.
      *
-     * @param <T>
+     * @param <T> tipo del objeto destino (IDataRow).
      * @param sheet planilla excel.
-     * @param clase class que extiende de IDataRow, es el tipo que va a resultar
-     * del proceso.
-     * @return Lista de registros tipo clase.
+     * @param processor procesador de filas ya configurado con el mapeo de
+     * columnas y la fila de encabezados.
+     * @param firstRow índice (base 0) de la primera fila de datos a procesar.
+     * @param rowCount cantidad de filas a procesar; si es menor o igual a 0 se
+     * procesan todas las filas desde {@code firstRow} hasta el final de la
+     * planilla. Las filas vacías (inexistentes) dentro del rango se omiten.
+     * @return Lista con las instancias de {@code T} pobladas a partir de las
+     * filas procesadas.
      * @throws Exception
      */
-    public static <T extends IDataRow> List<T> fromExcelToDataRow(Sheet sheet, Class<T> clase) throws Exception {
-        return fromExcelToDataRow(sheet, clase, null);
-    }
-
-    /**
-     * Lee los datos de una planilla excel y lo convierte a una List a tipo T
-     * (IDataRow)
-     *
-     * @param <T>
-     * @param sheet planilla excel.
-     * @param clase class que extiende de IDataRow, es el tipo que va a resultar
-     * del proceso.
-     * @param headerToField map donde hace la correlación entre el nombre de la
-     * columna que se extrae de la cabecera y el nombre del atributo de la
-     * clase.
-     * @return Lista de registros tipo clase.
-     * @throws Exception
-     */
-    public static <T extends IDataRow> List<T> fromExcelToDataRow(Sheet sheet, Class<T> clase, Map<String, String> headerToField) throws Exception {
-        if (sheet == null) {
-            return null;
-        }
-        List<String> headerNames = getHeaderNames(sheet);
-        if (headerNames.isEmpty()) {
-            throw new Exception("Verifique que en la primera fila tenga nombres de columnas válidas, tipo caracter sin espacios");
-        }
+    public static <T extends IDataRow> List<T> fromExcelToDataRow (
+            Sheet sheet, IExcelRowProcessor<T> processor, int firstRow, int rowCount) throws Exception {
         List<T> retornar = new ArrayList();
-        //Recorrer las filas de la hoja
-        for (Row row : sheet) {
-            Cell cell = null;
-            try {
-                if (row.getRowNum() == 0) {
-                    continue;
-                }
-                T dataRow = clase.getDeclaredConstructor().newInstance();
-                //Recorrer las celdas
-                for (Integer i = 0; i < headerNames.size(); i++) {
-                    String columnName = sheet.getRow(0).getCell(i).getStringCellValue();
-                    if (Fn.nvl(columnName, "").isEmpty()) {
-                        continue;
-                    }
-                    //Si existe una correlación columna/atributo de la clase
-                    if (headerToField != null) {
-                        String headerName = columnName;
-                        String fieldName = headerToField.get(columnName);
-                        //Puede que sea una columna auxiliar
-                        if (fieldName != null && fieldName.isEmpty()) {
-                            continue;
-                        } else if (fieldName == null) {
-                            fieldName = headerToField.get(String.valueOf(i));
-                        }
-                        columnName = fieldName;
-                        if (columnName == null) {
-                            throw new Exception("No se encuentra la correlación de la cabecera de la planilla con el nombre del campo de la tabla " + headerName);
-                        }
-                        if (!DataInfo.isFieldExist(clase, fieldName)) {
-                            continue;
-                        }
-                    }
-                    cell = row.getCell(i);
-                    if (cell == null) {
-                        continue;
-                    }
-                    Object value;
-                    switch (cell.getCellType()) {
-                        case NUMERIC:
-                            if (DateUtil.isCellDateFormatted(cell)) {
-                                dataRow.setValue(columnName, cell.getLocalDateTimeCellValue());
-                            } else {
-                                value = convertValue(cell.getNumericCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
-                                dataRow.setValue(columnName, value);
-                            }
-                            break;
-                        case BOOLEAN:
-                            dataRow.setValue(columnName, cell.getBooleanCellValue());
-                            break;
-                        case STRING:
-                            value = convertValue(cell.getStringCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
-                            dataRow.setValue(columnName, value);
-                            break;
-                        case FORMULA:
-                            switch (cell.getCachedFormulaResultType()) {
-                                case NUMERIC:
-                                    value = convertValue(cell.getNumericCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
-                                    break;
-                                case STRING:
-                                    value = convertValue(cell.getStringCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
-                                    break;
-                                case BOOLEAN:
-                                    value = cell.getBooleanCellValue();
-                                    break;
-                                default:
-                                    value = null;
-                            }
-                            dataRow.setValue(columnName, value);
-                            break;
-                    }
-
-                }
-                retornar.add(dataRow);
-            } catch (Exception e) {
-                String errorMsg = "ERROR EN LA FILA " + row.getRowNum();
-                if (cell != null) {
-                    errorMsg += ", CELDA " + cell.getAddress().formatAsString();
-                }
-                errorMsg += ", " + e.getMessage();
-                throw new Exception(errorMsg);
-            }
-        }
-        return retornar;
-    }
-
-    /**
-     * Lee los datos de una planilla excel y verifica si hay algun inconveniente
-     * antes de realizar el proceso de conversión
-     *
-     * @param <T>
-     * @param sheet planilla excel.
-     * @param clase class que extiende de IDataRow.
-     * @return Lista de registros con el detalle de inconvenientes si los
-     * hubiese.
-     */
-    public static <T extends IDataRow> List<String> getLogExcelToDataRow(Sheet sheet, Class<T> clase) {
-        return getLogExcelToDataRow(sheet, clase, null);
-    }
-
-    /**
-     * Lee los datos de una planilla excel y verifica si hay algun inconveniente
-     * antes de realizar el proceso de conversión
-     *
-     * @param <T>
-     * @param sheet planilla excel.
-     * @param clase class que extiende de IDataRow.
-     * @param headerToField map donde hace la correlación entre el nombre de la
-     * columna que se extrae de la cabecera y el nombre del atributo de la
-     * clase.
-     * @return Lista de registros con el detalle de inconvenientes si los
-     * hubiese.
-     */
-    public static <T extends IDataRow> List<String> getLogExcelToDataRow(Sheet sheet, Class<T> clase, Map<String, String> headerToField) {
-        if (sheet == null) {
-            return null;
-        }
-        List<String> retornar = new ArrayList();
-        List<String> headerNames = getHeaderNames(sheet);
-        if (headerNames.isEmpty()) {
-            retornar.add("Verifique que en la primera fila tenga nombres de columnas válidas, tipo caracter sin espacios");
+        if (sheet == null || processor == null) {
             return retornar;
         }
-        //Recorrer las filas de la hoja
-        for (Row row : sheet) {
-            Cell cell = null;
-            try {
-                if (row.getRowNum() == 0) {
-                    continue;
-                }
-                T dataRow = clase.getDeclaredConstructor().newInstance();
-                //Recorrer las celdas
-                for (Integer i = 0; i < headerNames.size(); i++) {
-                    String headerName = headerNames.get(i);
-                    String columnName = headerName;
-                    if (Fn.nvl(columnName, "").isEmpty()) {
-                        continue;
-                    }
-                    //Si existe una correlación columna/atributo de la clase
-                    if (headerToField != null) {
-                        String fieldName = headerToField.get(columnName);
-                        //Si no existe correlacion por el nombre se busca por la posición de la columna
-                        if (fieldName == null) {
-                            fieldName = headerToField.get(i.toString());
-                        }
-                        columnName = fieldName;
-                        if (columnName == null) {
-                            retornar.add("FILA " + row.getRowNum()
-                                    + ", no se encuentra la correlación de la cabecera de la planilla con el nombre del campo de la tabla " + headerName);
-                            continue;
-                        }
-                    }
-                    cell = row.getCell(i);
-                    if (cell == null) {
-                        continue;
-                    }
-                    // ===== VALIDACIÓN DE TIPO (nuevo) =====
-                    Class<?> fieldType = DataInfo.getFieldType(dataRow.getClass(), columnName);
-                    String typeError = getAssignableTypeError(cell, fieldType, columnName);
-                    if (typeError != null) {
-                        retornar.add("FILA " + row.getRowNum()
-                                + ", CELDA " + cell.getAddress().formatAsString()
-                                + ", " + typeError);
-                        continue; // no intentamos el setValue para este campo
-                    }
-                    Object value;
-                    switch (cell.getCellType()) {
-                        case NUMERIC:
-                            if (DateUtil.isCellDateFormatted(cell)) {
-                                dataRow.setValue(columnName, cell.getLocalDateTimeCellValue());
-                            } else {
-                                value = convertValue(cell.getNumericCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
-                                dataRow.setValue(columnName, value);
-                            }
-                            break;
-                        case BOOLEAN:
-                            dataRow.setValue(columnName, cell.getBooleanCellValue());
-                            break;
-                        case STRING:
-                            value = convertValue(cell.getStringCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
-                            dataRow.setValue(columnName, value);
-                            break;
-                        case FORMULA:
-                            switch (cell.getCachedFormulaResultType()) {
-                                case NUMERIC:
-                                    value = convertValue(cell.getNumericCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
-                                    break;
-                                case STRING:
-                                    value = convertValue(cell.getStringCellValue(), DataInfo.getFieldType(dataRow.getClass(), columnName));
-                                    break;
-                                case BOOLEAN:
-                                    value = cell.getBooleanCellValue();
-                                    break;
-                                default:
-                                    value = null;
-                            }
-                            dataRow.setValue(columnName, value);
-                            break;
-                    }
-
-                }
-            } catch (Exception e) {
-                String errorMsg = "ERROR EN LA FILA " + row.getRowNum();
-                if (cell != null) {
-                    errorMsg += ", CELDA " + cell.getAddress().formatAsString();
-                }
-                errorMsg += ", " + e.getMessage();
-                retornar.add(errorMsg);
+        int lastRow = (rowCount <= 0) ? sheet.getLastRowNum() : firstRow + rowCount - 1;
+        for (int r = firstRow; r <= lastRow; r++) {
+            // No se procesa la fila de encabezados
+            if (r == processor.getHeaderRowIndex()) {
+                continue;
             }
+            Row row = sheet.getRow(r);
+            if (row == null) {
+                continue;
+            }
+            processor.setRow(row);
+            retornar.add(processor.process());
         }
         return retornar;
     }
+
 
     /**
      * Convierte un valor de la celda de la planilla a un valor asignable en un
@@ -594,7 +384,7 @@ public class ExcelUtil {
      * @param type tipo a convertir.
      * @return valor con el tipo convertido.
      */
-    private static Object convertValue(Object value, Class type) {
+    public static Object convertValue(Object value, Class type) {
         if (value == null) {
             return null;
         } else if (type.getName().equals(value.getClass().getName())) {
@@ -688,7 +478,7 @@ public class ExcelUtil {
      * @param columnName nombre del atributo destino (para el mensaje).
      * @return null si es asignable, o el detalle del inconveniente.
      */
-    private static String getAssignableTypeError(Cell cell, Class<?> fieldType, String columnName) {
+    public static String getAssignableTypeError(Cell cell, Class<?> fieldType, String columnName) {
         // El atributo no existe en la clase / no hay correlación válida
         if (fieldType == null) {
             return "La columna no corresponde a ningún atributo de la clase ('" + columnName + "')";
