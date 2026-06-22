@@ -406,6 +406,8 @@ public class ExcelUtil {
             return LocalDates.toDateTime((Date) value);
         } else if (type.getSimpleName().equals("LocalDateTime") && (value instanceof Timestamp)) {
             return ((Timestamp) value).toLocalDateTime();
+        } else if (type.getSimpleName().equals("LocalDateTime") && (value instanceof String)) {
+            return LocalDates.toDateTime((String)value);
         }
         return value;
     }
