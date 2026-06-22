@@ -28,11 +28,14 @@ import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -102,6 +105,20 @@ public class ExcelUtilTest {
         return wb.createSheet().createRow(0).createCell(0);
     }
 
+    /**
+     * Celda numérica con formato de fecha (la celda se reconoce como fecha vía
+     * {@code DateUtil.isCellDateFormatted}).
+     */
+    private Cell dateCell(Workbook wb) {
+        CreationHelper helper = wb.getCreationHelper();
+        CellStyle dateStyle = wb.createCellStyle();
+        dateStyle.setDataFormat(helper.createDataFormat().getFormat("dd/mm/yyyy hh:mm:ss"));
+        Cell cell = singleCell(wb);
+        cell.setCellValue(Timestamp.valueOf(FECHA));
+        cell.setCellStyle(dateStyle);
+        return cell;
+    }
+
     // ----------------------------------------------------------------------
     // openWorkbook
     // ----------------------------------------------------------------------
@@ -132,6 +149,16 @@ public class ExcelUtilTest {
         // La extensión se valida antes de abrir el archivo (no requiere que exista).
         String path = dir.resolve("archivo.txt").toString();
         assertThrows(IllegalArgumentException.class, () -> openWorkbook(path));
+    }
+
+    @Test
+    public void testOpenWorkbookCorruptContent(@TempDir Path dir) throws Exception {
+        // Contenido xlsx (OOXML/zip) en un archivo con extensión .xls fuerza el
+        // intento de abrirlo como HSSF -> OLE2NotOfficeXmlFileException -> IllegalArgumentException
+        try (Workbook wb = buildSampleWorkbook(1)) {
+            File file = writeToTempFile(wb, dir, "mal.xls");
+            assertThrows(IllegalArgumentException.class, () -> openWorkbook(file.getAbsolutePath()));
+        }
     }
 
     // ----------------------------------------------------------------------
@@ -175,6 +202,14 @@ public class ExcelUtilTest {
         assertTrue(getHeaderNames(null).isEmpty());
     }
 
+    @Test
+    public void testGetHeaderNamesNoHeaderRow() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet(); // sheet sin ninguna fila -> getRow(0) == null
+            assertTrue(getHeaderNames(sheet).isEmpty());
+        }
+    }
+
     // ----------------------------------------------------------------------
     // fromExcelToDataQueryModel
     // ----------------------------------------------------------------------
@@ -202,6 +237,30 @@ public class ExcelUtilTest {
             Exception ex = assertThrows(Exception.class,
                     () -> fromExcelToDataQueryModel(sheet));
             assertTrue(ex.getMessage().contains("nombres de columnas válidas"), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testFromExcelToDataQueryModelNullSheet() throws Exception {
+        assertNull(fromExcelToDataQueryModel(null));
+    }
+
+    @Test
+    public void testFromExcelToDataQueryModelFormulaCell() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet();
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("total");
+            Row data = sheet.createRow(1);
+            Cell formula = data.createCell(0);
+            formula.setCellFormula("2+3");
+            // evaluar para que el resultado quede cacheado (lo lee getCachedFormulaResultType)
+            FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+            evaluator.evaluateFormulaCell(formula);
+
+            List<IDataQueryModel> result = fromExcelToDataQueryModel(sheet);
+            assertEquals(1, result.size());
+            assertEquals(5d, (Double) result.get(0).getColumn("total"), 0.0001);
         }
     }
 
@@ -234,6 +293,25 @@ public class ExcelUtilTest {
         assertNull(toExcel(List.of()));
     }
 
+    @Test
+    public void testToExcelWithWidthOverrides() throws Exception {
+        DataQueryModel model = new DataQueryModel();
+        model.setColumnList(new String[]{"codigo", "monto"});
+        model.setRow(new Object[]{"COD1", new BigDecimal("1.00")});
+
+        // override de ancho para la columna 0
+        Map<Integer, Integer> overrides = new HashMap<>();
+        overrides.put(0, 40);
+
+        try (Workbook wb = toExcel(List.of(model), overrides)) {
+            assertNotNull(wb);
+            Sheet sheet = wb.getSheetAt(0);
+            // el ancho de la columna 0 (con override) debe ser mayor al de la columna 1
+            assertTrue(sheet.getColumnWidth(0) > sheet.getColumnWidth(1),
+                    "col0=" + sheet.getColumnWidth(0) + " col1=" + sheet.getColumnWidth(1));
+        }
+    }
+
     // ----------------------------------------------------------------------
     // convertValue
     // ----------------------------------------------------------------------
@@ -250,6 +328,8 @@ public class ExcelUtilTest {
         assertEquals((short) 7, convertValue(7d, Short.class));
         // Character
         assertEquals('A', convertValue("ABC", Character.class));
+        // Character desde string vacío -> null
+        assertNull(convertValue("", Character.class));
         // Boolean
         assertEquals(true, convertValue("1", Boolean.class));
         assertEquals(true, convertValue("true", Boolean.class));
@@ -287,6 +367,24 @@ public class ExcelUtilTest {
             Cell cell = singleCell(wb);
             cell.setCellValue(true);
             assertThrows(Exception.class, () -> getBigDecimal(cell));
+        }
+    }
+
+    @Test
+    public void testGetBigDecimalFormula() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellFormula("2+3");
+            wb.getCreationHelper().createFormulaEvaluator().evaluateFormulaCell(cell);
+            assertEquals(0, BigDecimal.valueOf(5d).compareTo(getBigDecimal(cell)));
+        }
+    }
+
+    @Test
+    public void testGetBigDecimalBlankReturnsNull() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb); // celda BLANK por defecto
+            assertNull(getBigDecimal(cell));
         }
     }
 
@@ -330,6 +428,38 @@ public class ExcelUtilTest {
     }
 
     @Test
+    public void testGetAssignableTypeErrorNumericDate() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = dateCell(wb);
+            // celda fecha a atributo de fecha -> ok
+            assertNull(getAssignableTypeError(cell, LocalDateTime.class, "fecha"));
+            // celda fecha a atributo no-fecha -> error
+            assertNotNull(getAssignableTypeError(cell, Long.class, "monto"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorNumericBooleanValid() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellValue(1d);
+            assertNull(getAssignableTypeError(cell, Boolean.class, "activo"));
+            cell.setCellValue(0d);
+            assertNull(getAssignableTypeError(cell, Boolean.class, "activo"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorNumericUnsupportedType() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellValue(10d); // numérico no-fecha
+            // numérico a tipo no numérico/booleano/String -> error
+            assertNotNull(getAssignableTypeError(cell, LocalDateTime.class, "fecha"));
+        }
+    }
+
+    @Test
     public void testGetAssignableTypeErrorString() throws Exception {
         try (Workbook wb = new XSSFWorkbook()) {
             Cell cell = singleCell(wb);
@@ -338,6 +468,98 @@ public class ExcelUtilTest {
             assertNotNull(getAssignableTypeError(cell, Long.class, "monto"));
             // texto a String -> ok
             assertNull(getAssignableTypeError(cell, String.class, "codigo"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorStringNumericParsable() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellValue("123");
+            // texto numérico parseable a Long -> ok
+            assertNull(getAssignableTypeError(cell, Long.class, "monto"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorStringCharacter() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellValue("A");
+            // un solo caracter -> ok
+            assertNull(getAssignableTypeError(cell, Character.class, "letra"));
+            cell.setCellValue("AB");
+            // más de un caracter -> error
+            assertNotNull(getAssignableTypeError(cell, Character.class, "letra"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorStringBoolean() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellValue("true");
+            assertNull(getAssignableTypeError(cell, Boolean.class, "activo"));
+            cell.setCellValue("1");
+            assertNull(getAssignableTypeError(cell, Boolean.class, "activo"));
+            cell.setCellValue("xyz");
+            // texto no convertible a Boolean -> error
+            assertNotNull(getAssignableTypeError(cell, Boolean.class, "activo"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorStringToDate() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellValue("2025-01-01");
+            // texto a atributo de fecha -> error (no se valida formato de fecha)
+            assertNotNull(getAssignableTypeError(cell, LocalDateTime.class, "fecha"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorStringToOtherType() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellValue("x");
+            // texto a tipo que no es String/Character/numérico/Boolean/fecha -> ok (null)
+            assertNull(getAssignableTypeError(cell, Object.class, "otro"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorBoolean() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellValue(true);
+            // booleano a Boolean/String -> ok
+            assertNull(getAssignableTypeError(cell, Boolean.class, "activo"));
+            assertNull(getAssignableTypeError(cell, String.class, "activo"));
+            // booleano a otro tipo -> error
+            assertNotNull(getAssignableTypeError(cell, Long.class, "monto"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorFormula() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb);
+            cell.setCellFormula("1+1");
+            // fórmula (tratada como numérica) a numérico/String -> ok
+            assertNull(getAssignableTypeError(cell, Long.class, "monto"));
+            assertNull(getAssignableTypeError(cell, String.class, "codigo"));
+            // fórmula a otro tipo -> error
+            assertNotNull(getAssignableTypeError(cell, Boolean.class, "activo"));
+        }
+    }
+
+    @Test
+    public void testGetAssignableTypeErrorBlank() throws Exception {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = singleCell(wb); // celda BLANK por defecto
+            // celda en blanco -> sin error (lo maneja el flujo normal)
+            assertNull(getAssignableTypeError(cell, Long.class, "monto"));
         }
     }
 }

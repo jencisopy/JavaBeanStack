@@ -21,12 +21,7 @@
  */
 package org.javabeanstack.web.util;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -64,9 +59,10 @@ import org.javabeanstack.util.Fn;
  * <p>
  * Las subclases solo necesitan implementar {@link #process()}, leyendo los
  * valores con {@link #valueOfField(String)} o {@link #valueOfColumn(String)}, y
- * pueden validar la compatibilidad de tipos con
- * {@link #isAssignable(Object, String)} antes de asignarlos a la instancia que
- * ellas mismas creen a partir de {@link #targetType}.
+ * pueden validar la compatibilidad de tipos vía {@link #checkMetaData()} (que
+ * delega en {@link ExcelUtil#getAssignableTypeError(Cell, Class, String)}) antes
+ * de asignarlos a la instancia que ellas mismas creen a partir de
+ * {@link #targetType}.
  *
  * @param <T> tipo del objeto destino
  */
@@ -356,72 +352,18 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
                 }
             }
             if (DataInfo.isFieldExist(targetType, fieldName)) {
-                Object value = valueOfColumn(header); // o valueOfField(fieldName), es equivalente acá
-                if (!isAssignable(value, fieldName)){
-                    mensaje.append("El valor de la columna ")
-                            .append(header)
-                            .append(" no es asignable al atributo ")
-                            .append(fieldName)
-                            .append("\n");
+                Integer index = headToIndex.get(header);
+                Cell cell = (index == null) ? null : row.getCell(index);
+                if (cell != null) {
+                    Class<?> fieldType = DataInfo.getFieldType(targetType, fieldName);
+                    String error = ExcelUtil.getAssignableTypeError(cell, fieldType, fieldName);
+                    if (error != null) {
+                        mensaje.append(error).append("\n");
+                    }
                 }
             }
         }
         return mensaje.toString();
-    }
-
-    /**
-     * Determina si {@code value} puede asignarse al atributo {@code fieldName}
-     * de {@code T}, consultando el tipo real del atributo vía
-     * {@link DataInfo#getFieldType(Class, String)}. La validación solo se
-     * realiza contra atributos existentes en {@code T}.
-     * <p>
-     * Además de la asignabilidad estricta
-     * ({@link Class#isAssignableFrom(Class)}), se aceptan como válidas las
-     * conversiones numéricas razonables entre los tipos nativos que puede
-     * devolver una celda y los tipos numéricos comunes del atributo destino: un
-     * valor {@link Double} (lo que devuelve una celda {@code NUMERIC}) se
-     * considera asignable a atributos {@code Short}, {@code Integer},
-     * {@code Long}, {@code Float}, {@code BigDecimal}, {@code BigInteger} o
-     * {@code Byte} (y sus tipos primitivos equivalentes). De forma análoga, un
-     * valor
-     * {@link LocalDateTime} (lo que devuelve una celda numérica con formato de
-     * fecha) se considera asignable a atributos {@link Date}, {@link Timestamp},
-     * {@link LocalDate} o {@link LocalDateTime}.
-     *
-     * @param value valor a validar, típicamente obtenido de
-     * {@link #valueOfField(String)} o {@link #valueOfColumn(String)}
-     * @param fieldName nombre del atributo en {@code T} contra el cual se
-     * valida el tipo
-     * @return {@code true} si el atributo existe en {@code T} y
-     * {@code value} es asignable (de forma estricta o mediante una conversión
-     * numérica razonable) a su tipo; {@code false} si el atributo no existe, el
-     * tipo no es compatible, o {@code value} es {@code null} (un valor nulo
-     * siempre es asignable a cualquier atributo existente)
-     */
-    protected boolean isAssignable(Object value, String fieldName) {
-        if (!DataInfo.isFieldExist(targetType, fieldName)) {
-            return false;
-        }
-        if (value == null) {
-            return true;
-        }
-        Class<?> fieldType = DataInfo.getFieldType(targetType, fieldName);
-        if (fieldType == null) {
-            return false;
-        }
-        Class<?> valueType = value.getClass();
-
-        Class<?> wrappedFieldType = wrap(fieldType);
-        if (wrappedFieldType.isAssignableFrom(valueType)) {
-            return true;
-        }
-        if (valueType == Double.class && isNumericType(wrappedFieldType)) {
-            return true;
-        }
-        if (valueType == LocalDateTime.class && isDateType(wrappedFieldType)) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -608,83 +550,4 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
         }
     }
 
-    /**
-     * Convierte un tipo primitivo a su clase wrapper equivalente (por ejemplo,
-     * {@code int.class} a {@link Integer}), de modo que las comparaciones de
-     * asignabilidad funcionen correctamente sin importar si el atributo de
-     * targetType está declarado como tipo primitivo u objeto.
-     *
-     * @param type el tipo a normalizar
-     * @return la clase wrapper si {@code type} es primitivo; {@code type} sin
-     * cambios en caso contrario
-     */
-    private static Class<?> wrap(Class<?> type) {
-        if (!type.isPrimitive()) {
-            return type;
-        }
-        if (type == int.class) {
-            return Integer.class;
-        }
-        if (type == long.class) {
-            return Long.class;
-        }
-        if (type == double.class) {
-            return Double.class;
-        }
-        if (type == float.class) {
-            return Float.class;
-        }
-        if (type == boolean.class) {
-            return Boolean.class;
-        }
-        if (type == short.class) {
-            return Short.class;
-        }
-        if (type == byte.class) {
-            return Byte.class;
-        }
-        if (type == char.class) {
-            return Character.class;
-        }
-        return type;
-    }
-
-    /**
-     * Determina si una clase representa un tipo numérico hacia el cual es
-     * razonable convertir un {@link Double} (el tipo nativo que devuelve una
-     * celda Excel numérica): {@code Short}, {@code Integer}, {@code Long},
-     * {@code Float}, {@code BigDecimal}, {@code BigInteger} o {@code Byte}.
-     *
-     * @param wrappedType tipo ya normalizado a su forma wrapper (ver
-     * {@link #wrap(Class)})
-     * @return {@code true} si es uno de los tipos numéricos aceptados como
-     * destino de una conversión desde {@link Double}
-     */
-    private static boolean isNumericType(Class<?> wrappedType) {
-        return wrappedType == Short.class
-                || wrappedType == Integer.class
-                || wrappedType == Long.class
-                || wrappedType == Float.class
-                || wrappedType == BigDecimal.class
-                || wrappedType == BigInteger.class
-                || wrappedType == Byte.class;
-    }
-
-    /**
-     * Determina si una clase representa un tipo de fecha/hora hacia el cual es
-     * razonable convertir un {@link LocalDateTime} (el tipo nativo que devuelve
-     * una celda Excel numérica con formato de fecha): {@link Date} (y sus
-     * subtipos, como {@link java.sql.Date} y {@link Timestamp}),
-     * {@link LocalDate} o {@link LocalDateTime}.
-     *
-     * @param wrappedType tipo ya normalizado a su forma wrapper (ver
-     * {@link #wrap(Class)})
-     * @return {@code true} si es uno de los tipos de fecha/hora aceptados como
-     * destino de una conversión desde {@link LocalDateTime}
-     */
-    private static boolean isDateType(Class<?> wrappedType) {
-        return Date.class.isAssignableFrom(wrappedType)
-                || wrappedType == LocalDate.class
-                || wrappedType == LocalDateTime.class;
-    }
 }

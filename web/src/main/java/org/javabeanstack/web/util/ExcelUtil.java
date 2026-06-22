@@ -475,34 +475,34 @@ public class ExcelUtil {
      *
      * @param cell celda del excel.
      * @param fieldType tipo del atributo destino (DataInfo.getFieldType).
-     * @param columnName nombre del atributo destino (para el mensaje).
+     * @param fieldName nombre del atributo destino (para el mensaje).
      * @return null si es asignable, o el detalle del inconveniente.
      */
-    public static String getAssignableTypeError(Cell cell, Class<?> fieldType, String columnName) {
+    public static String getAssignableTypeError(Cell cell, Class<?> fieldType, String fieldName) {
         // El atributo no existe en la clase / no hay correlación válida
         if (fieldType == null) {
-            return "La columna no corresponde a ningún atributo de la clase ('" + columnName + "')";
+            return "La columna no corresponde a ningún atributo de la clase ('" + fieldName + "')";
         }
         String target = fieldType.getSimpleName();
         switch (cell.getCellType()) {
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {
                     return isDateType(fieldType) ? null
-                            : "El valor es una fecha y el atributo '" + columnName + "' es de tipo " + target;
+                            : "El valor es una fecha y el atributo '" + fieldName + "' es de tipo " + target;
                 }
                 double number = cell.getNumericCellValue();
                 if (isNumericType(fieldType) || "String".equals(target)) {
                     if (isIntegerType(fieldType) && number != Math.floor(number)) {
                         return "El valor " + number + " tiene decimales y el atributo '"
-                                + columnName + "' es de tipo entero (" + target + ")";
+                                + fieldName + "' es de tipo entero (" + target + ")";
                     }
                     return null;
                 }
                 if ("Boolean".equals(target)) {
                     return (number == 0 || number == 1) ? null
-                            : "El valor numérico " + number + " no es convertible a Boolean en '" + columnName + "'";
+                            : "El valor numérico " + number + " no es convertible a Boolean en '" + fieldName + "'";
                 }
-                return "El valor numérico no es asignable al atributo '" + columnName + "' de tipo " + target;
+                return "El valor numérico no es asignable al atributo '" + fieldName + "' de tipo " + target;
 
             case STRING:
                 String text = cell.getStringCellValue();
@@ -511,29 +511,29 @@ public class ExcelUtil {
                 }
                 if ("Character".equals(target)) {
                     return (text != null && text.length() == 1) ? null
-                            : "El texto '" + text + "' no es asignable a Character en '" + columnName + "'";
+                            : "El texto '" + text + "' no es asignable a Character en '" + fieldName + "'";
                 }
                 if (isNumericType(fieldType)) {
                     return isParsable(text, fieldType) ? null
-                            : "El texto '" + text + "' no es convertible a " + target + " en '" + columnName + "'";
+                            : "El texto '" + text + "' no es convertible a " + target + " en '" + fieldName + "'";
                 }
                 if ("Boolean".equals(target)) {
                     return isParsableBoolean(text) ? null
-                            : "El texto '" + text + "' no es convertible a Boolean en '" + columnName + "'";
+                            : "El texto '" + text + "' no es convertible a Boolean en '" + fieldName + "'";
                 }
                 if (isDateType(fieldType)) {
-                    return "El texto '" + text + "' no tiene formato de fecha para el atributo '" + columnName + "'";
+                    return "El texto '" + text + "' no tiene formato de fecha para el atributo '" + fieldName + "'";
                 }
                 return null;
 
             case BOOLEAN:
                 return ("Boolean".equals(target) || "String".equals(target)) ? null
-                        : "El valor es booleano y el atributo '" + columnName + "' es de tipo " + target;
+                        : "El valor es booleano y el atributo '" + fieldName + "' es de tipo " + target;
 
             case FORMULA:
                 // En el flujo actual la fórmula se evalúa como numérica
                 return (isNumericType(fieldType) || "String".equals(target)) ? null
-                        : "El resultado de la fórmula no es asignable al atributo '" + columnName + "' de tipo " + target;
+                        : "El resultado de la fórmula no es asignable al atributo '" + fieldName + "' de tipo " + target;
 
             default:
                 return null; // BLANK / ERROR: lo maneja el flujo normal

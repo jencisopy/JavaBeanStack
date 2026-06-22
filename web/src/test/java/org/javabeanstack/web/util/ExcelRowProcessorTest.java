@@ -333,35 +333,6 @@ public class ExcelRowProcessorTest {
     }
 
     // ----------------------------------------------------------------------
-    // isAssignable
-    // ----------------------------------------------------------------------
-
-    @Test
-    public void testIsAssignable() throws Exception {
-        try (Workbook wb = buildAppUserWorkbook()) {
-            Row data = wb.getSheetAt(0).getRow(1);
-            AppUserRowProcessor p = new AppUserRowProcessor(data, null, null);
-
-            // null siempre asignable a atributo existente
-            assertTrue(p.isAssignable(null, "code"));
-            // atributo inexistente
-            assertFalse(p.isAssignable("x", "noExiste"));
-            // String a String
-            assertTrue(p.isAssignable("texto", "code"));
-            // Double a numéricos aceptados (Long, BigDecimal, Short)
-            assertTrue(p.isAssignable(7d, "idcompany"));        // Long
-            assertTrue(p.isAssignable(100.31d, "prbNumerico")); // BigDecimal
-            assertTrue(p.isAssignable(2d, "type"));             // Short
-            // Double a String -> NO
-            assertFalse(p.isAssignable(7d, "code"));
-            // Boolean a Boolean
-            assertTrue(p.isAssignable(Boolean.TRUE, "disabled"));
-            // LocalDateTime a LocalDateTime
-            assertTrue(p.isAssignable(EXPIRED, "expiredDate"));
-        }
-    }
-
-    // ----------------------------------------------------------------------
     // checkMetaData
     // ----------------------------------------------------------------------
 
@@ -424,12 +395,12 @@ public class ExcelRowProcessorTest {
     public void testCheckMetaDataNotAssignableValue() throws Exception {
         try (Workbook wb = buildAppUserWorkbook()) {
             Sheet sheet = wb.getSheetAt(0);
-            // poner un texto en la columna idcompany (Long): no es asignable
+            // poner un texto no numérico en la columna idcompany (Long): no es convertible
             sheet.getRow(1).getCell(3).setCellValue("no-numerico");
             Row data = sheet.getRow(1);
             AppUserRowProcessor p = new AppUserRowProcessor(data, null, null);
             String msg = p.checkMetaData();
-            assertTrue(msg.contains("no es asignable"), msg);
+            assertTrue(msg.contains("no es convertible"), msg);
             assertTrue(msg.contains("idcompany"), msg);
         }
     }
