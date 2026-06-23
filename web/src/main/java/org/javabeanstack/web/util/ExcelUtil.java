@@ -360,6 +360,7 @@ public class ExcelUtil {
             return retornar;
         }
         int lastRow = (rowCount <= 0) ? sheet.getLastRowNum() : firstRow + rowCount - 1;
+        T dataRow;
         for (int r = firstRow; r <= lastRow; r++) {
             // No se procesa la fila de encabezados
             if (r == processor.getHeaderRowIndex()) {
@@ -370,7 +371,10 @@ public class ExcelUtil {
                 continue;
             }
             processor.setRow(row);
-            retornar.add(processor.process());
+            dataRow = processor.process();
+            if (dataRow != null){
+                retornar.add(dataRow);                
+            }
         }
         return retornar;
     }

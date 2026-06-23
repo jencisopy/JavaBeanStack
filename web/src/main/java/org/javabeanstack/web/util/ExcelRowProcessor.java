@@ -215,6 +215,9 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
      */
     @Override
     public T process() throws Exception {
+        if (!isMigrable()){
+            return null;
+        }
         T target = targetType.getDeclaredConstructor().newInstance();
         for (Map.Entry<String, String> entry : headToField.entrySet()) {
             String header = entry.getKey();
@@ -550,4 +553,11 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
         }
     }
 
+    /**
+     * Determina si se va a procesar el row para convertir a DataRow
+     * @return true procesa y false no.
+     */
+    protected boolean isMigrable(){
+        return true;
+    }
 }
