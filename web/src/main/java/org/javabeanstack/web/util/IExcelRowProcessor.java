@@ -24,6 +24,7 @@ package org.javabeanstack.web.util;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.javabeanstack.data.IDataRow;
 
 /**
@@ -76,4 +77,26 @@ public interface IExcelRowProcessor<T extends IDataRow> {
      * columna dentro de la planilla.
      */
     int getHeaderRowIndex();
+
+    /**
+     * @return la clase del objeto destino, usada por {@link #process()} para
+     * instanciarlo.
+     */
+    Class<T> getTargetType();
+
+    /**
+     * Valida la estructura de la planilla (encabezados de texto, sin duplicados
+     * y, según la propiedad {@code allowFieldNotExist}, compatibilidad de los
+     * tipos de columna con los atributos destino) antes de procesar sus filas.
+     *
+     * @return mensaje de error si hubiere inconvenientes, o cadena vacía si todo
+     * es válido.
+     */
+    String checkMetaData();
+
+    /**
+     * @return la hoja a la que pertenece la fila en curso, o {@code null} si
+     * aún no se asignó ninguna fila.
+     */
+    Sheet getSheet();
 }

@@ -33,6 +33,7 @@ import org.apache.poi.ss.usermodel.CellValue;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.util.Fn;
@@ -236,6 +237,15 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
 
     /**
+     * @return la clase del objeto destino, usada por {@link #process()} para
+     * instanciarlo
+     */
+    @Override
+    public Class<T> getTargetType(){
+        return targetType;
+    }
+    
+    /**
      * @return las propiedades de configuración del procesador (por ejemplo,
      * {@code allowFieldNotExist}); nunca {@code null} (si no se establecieron,
      * retorna un mapa vacío)
@@ -310,7 +320,8 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
      * @return mensaje de error si hubiere inconvenientes, o cadena vacía si
      * todo es válido.
      */
-    protected String checkMetaData() {
+    @Override
+    public String checkMetaData() {
         StringBuilder mensaje = new StringBuilder();
         Row headerRow = row.getSheet().getRow(headerRowIndex);
         short last = headerRow.getLastCellNum();
@@ -375,6 +386,18 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     protected Row getRow() {
         return row;
     }
+    
+    /**
+     * @return la hoja a la que pertenece la fila en curso, o {@code null} si
+     * aún no se asignó ninguna fila
+     */
+    @Override
+    public Sheet getSheet() {
+        if (row == null){
+            return null;
+        }
+        return row.getSheet();
+    }
 
     /**
      * Reemplaza la fila de Excel sobre la cual operan
@@ -389,13 +412,6 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
         this.row = row;
     }
 
-    /**
-     * @return la clase del objeto destino, usada por {@link #process()} para
-     * instanciarlo
-     */
-    protected Class<T> getTargetType() {
-        return targetType;
-    }
 
     /**
      * @return el mapeo de encabezado de columna del Excel a nombre del atributo
