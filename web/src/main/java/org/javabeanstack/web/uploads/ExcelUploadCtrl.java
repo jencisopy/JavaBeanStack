@@ -42,7 +42,7 @@ public class ExcelUploadCtrl implements IExcelUploadCtrl {
     private Workbook excelWorkbook = null;
 
     private FacesContextUtil facesCtx = new FacesContextUtil();
-
+    
     /**
      * Retorna la instancia de {@link FacesContextUtil} para mostrar mensajes en la vista.
      * Si la instancia es nula, la inicializa y configura la vista de mensajes
@@ -134,6 +134,7 @@ public class ExcelUploadCtrl implements IExcelUploadCtrl {
         if (!Strings.isNullorEmpty(message)){
             getFacesCtx().showInfo(message);            
         }
+        clear();        
         PrimeFaces.current().executeScript("PF('wdlg_excel_upload').hide(); clearFile();");
     }
 }

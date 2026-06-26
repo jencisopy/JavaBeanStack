@@ -512,8 +512,14 @@ public class ExcelUtilTest {
     public void testGetAssignableTypeErrorStringToDate() throws Exception {
         try (Workbook wb = new XSSFWorkbook()) {
             Cell cell = singleCell(wb);
+            // texto con formato de fecha válido (dd/MM/yyyy) -> convertible -> ok (null)
+            cell.setCellValue("20/06/2025");
+            assertNull(getAssignableTypeError(cell, LocalDateTime.class, "fecha"));
+            // texto con formato de fecha y hora válido -> ok (null)
+            cell.setCellValue("20/06/2025 10:15:30");
+            assertNull(getAssignableTypeError(cell, LocalDateTime.class, "fecha"));
+            // texto que no es fecha parseable -> error
             cell.setCellValue("2025-01-01");
-            // texto a atributo de fecha -> error (no se valida formato de fecha)
             assertNotNull(getAssignableTypeError(cell, LocalDateTime.class, "fecha"));
         }
     }

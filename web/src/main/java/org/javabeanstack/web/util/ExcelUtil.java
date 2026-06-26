@@ -383,6 +383,23 @@ public class ExcelUtil {
     /**
      * Convierte un valor de la celda de la planilla a un valor asignable en un
      * atributo de una clase de java.
+     * <p>
+     * Conversiones soportadas:
+     * <ul>
+     * <li>{@code null} y tipos ya coincidentes: se retornan sin cambios.</li>
+     * <li>Numéricos: {@code BigDecimal}, {@code Long}, {@code Integer},
+     * {@code Short} (vía {@code BigDecimal}; {@code Long/Integer/Short} de forma
+     * exacta, lanza excepción si hay pérdida de información).</li>
+     * <li>{@code Character}: primer caracter del texto.</li>
+     * <li>{@code Boolean}: {@code true} si el valor es {@code "1"} o
+     * {@code "true"} (ignorando mayúsculas).</li>
+     * <li>{@code LocalDateTime}: desde {@code Date}, {@code Timestamp} o
+     * {@code String} (este último con formato {@code dd/MM/yyyy HH:mm:ss},
+     * ver {@link org.javabeanstack.util.LocalDates#toDateTime(String)}).</li>
+     * </ul>
+     * Para cualquier otra combinación el valor se retorna sin transformar (en
+     * particular {@code String} hacia {@code LocalDate}/{@code Date}/
+     * {@code Timestamp} aún no está contemplado).
      *
      * @param value valor de la celda.
      * @param type tipo a convertir.
@@ -528,7 +545,10 @@ public class ExcelUtil {
                             : "El texto '" + text + "' no es convertible a Boolean en '" + fieldName + "'";
                 }
                 if (isDateType(fieldType)) {
-                    return "El texto '" + text + "' no tiene formato de fecha para el atributo '" + fieldName + "'";
+                    // convertValue soporta String -> fecha (ver LocalDates.toDateTime);
+                    // se valida con la misma lógica real de conversión.
+                    return isParsable(text, fieldType) ? null
+                            : "El texto '" + text + "' no tiene formato de fecha para el atributo '" + fieldName + "'";
                 }
                 return null;
 
@@ -546,6 +566,12 @@ public class ExcelUtil {
         }
     }
 
+    /**
+     * Indica si el tipo es numérico (entero o decimal).
+     *
+     * @param type tipo a evaluar.
+     * @return {@code true} si es un tipo numérico soportado.
+     */
     private static boolean isNumericType(Class<?> type) {
         String n = type.getSimpleName();
         return n.equals("BigDecimal") || n.equals("BigInteger") || n.equals("Long")
@@ -553,18 +579,40 @@ public class ExcelUtil {
                 || n.equals("Float") || n.equals("Byte");
     }
 
+    /**
+     * Indica si el tipo es numérico entero (no admite decimales).
+     *
+     * @param type tipo a evaluar.
+     * @return {@code true} si es un tipo entero.
+     */
     private static boolean isIntegerType(Class<?> type) {
         String n = type.getSimpleName();
         return n.equals("Long") || n.equals("Integer") || n.equals("Short")
                 || n.equals("Byte") || n.equals("BigInteger");
     }
 
+    /**
+     * Indica si el tipo representa una fecha u hora.
+     *
+     * @param type tipo a evaluar.
+     * @return {@code true} si es {@code LocalDateTime}, {@code LocalDate},
+     * {@code Date} o {@code Timestamp}.
+     */
     private static boolean isDateType(Class<?> type) {
         String n = type.getSimpleName();
         return n.equals("LocalDateTime") || n.equals("LocalDate")
                 || n.equals("Date") || n.equals("Timestamp");
     }
 
+    /**
+     * Verifica si el texto puede convertirse al tipo indicado reutilizando la
+     * lógica real de {@link #convertValue(Object, Class)}. Un texto vacío se
+     * considera parseable (deriva en {@code null}).
+     *
+     * @param text texto a evaluar.
+     * @param type tipo destino.
+     * @return {@code true} si la conversión no arroja excepción.
+     */
     private static boolean isParsable(String text, Class<?> type) {
         if (Fn.nvl(text, "").trim().isEmpty()) {
             return true; // celda vacía -> null, lo maneja convertValue
@@ -577,6 +625,13 @@ public class ExcelUtil {
         }
     }
 
+    /**
+     * Indica si el texto representa un valor booleano admitido
+     * ({@code true}/{@code false}/{@code 1}/{@code 0}, o vacío).
+     *
+     * @param text texto a evaluar.
+     * @return {@code true} si es convertible a {@code Boolean}.
+     */
     private static boolean isParsableBoolean(String text) {
         String v = Fn.nvl(text, "").trim().toLowerCase();
         return v.isEmpty() || v.equals("true") || v.equals("false") || v.equals("1") || v.equals("0");

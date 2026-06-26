@@ -53,6 +53,59 @@ public class ExcelImportSrv<T extends IDataRow> implements IExcelImportSrv<T> {
     
     private Workbook excelWorkbook;
 
+    /** Indica si la importación debe sobrescribir los registros ya existentes. */
+    private Boolean overWriteData = false;
+
+    /** Mensaje de error del último proceso de importación. */
+    private String errorMessage;
+
+
+    /**
+     * Retorna el mensaje de error del último proceso de importación.
+     *
+     * @return mensaje de error, o {@code null} si no se registró ninguno.
+     */
+    @Override
+    public String getErrorMessage(){
+        return errorMessage;
+    }
+
+    /**
+     * Asigna el mensaje de error del proceso de importación.
+     *
+     * @param errorMessage mensaje de error a registrar.
+     */
+    @Override
+    public void setErrorMessage(String errorMessage){
+        this.errorMessage = errorMessage;
+    }
+
+    /**
+     * Indica si durante la importación deben sobrescribirse los registros ya
+     * existentes (en lugar de únicamente insertar los nuevos). El valor nulo se
+     * normaliza a {@code false} con {@link Fn#toLogical(Object)}.
+     *
+     * @return {@code true} si se deben sobrescribir los datos existentes;
+     * {@code false} en caso contrario (valor por defecto).
+     */
+    @Override
+    public Boolean getOverWriteData(){
+        return Fn.toLogical(overWriteData);
+    }
+
+    /**
+     * Establece si durante la importación deben sobrescribirse los registros ya
+     * existentes. El valor recibido se normaliza con
+     * {@link Fn#toLogical(Object)} (nulo se interpreta como {@code false}).
+     *
+     * @param overWriteData {@code true} para sobrescribir los datos existentes;
+     * {@code false} para solo insertar nuevos.
+     */
+    @Override
+    public void setOverWriteData(Boolean overWriteData){
+        this.overWriteData = Fn.toLogical(overWriteData);
+    }
+
     /**
      * Retorna el libro Excel a procesar previamente asignado.
      *

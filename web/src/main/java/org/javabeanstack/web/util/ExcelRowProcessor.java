@@ -99,8 +99,17 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
      */
     private final Map<String, Integer> headToIndex;
 
+    /**
+     * Propiedades de configuración del procesador (por ejemplo,
+     * {@code allowFieldNotExist}). Puede ser {@code null}; se accede de forma
+     * segura vía {@link #getProperties()}.
+     */
     private Map<String, Object> properties = new HashMap();
 
+    /**
+     * Índice (base 0) de la fila que contiene los encabezados de columna dentro
+     * de la planilla.
+     */
     private Integer headerRowIndex;
 
     /**
@@ -349,14 +358,15 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
         if (mensaje.length() > 0) {
             return mensaje.toString();
         }
-
+        Row firstRow = row.getSheet().getRow(headerRowIndex + 1);
         for (Map.Entry<String, String> entry : headToField.entrySet()) {
             String header = entry.getKey();
             String fieldName = entry.getValue();
             if (fieldName != null && fieldName.isEmpty()) {
                 continue;
             }
-
+            //Si se definio que la columna de la planilla debe tener si o si un
+            //equivalente en la clase destino
             if (!Fn.nvl((Boolean) getProperties().get("allowFieldNotExist"), true)) {
                 if (!DataInfo.isFieldExist(targetType, fieldName)) {
                     mensaje.append("El nombre de la columna ")
@@ -365,9 +375,10 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
                     continue;
                 }
             }
+            //Si existe la equivalencia verificar si los tipos de datos de origen son convertibles a los tipos destinos
             if (DataInfo.isFieldExist(targetType, fieldName)) {
                 Integer index = headToIndex.get(header);
-                Cell cell = (index == null) ? null : row.getCell(index);
+                Cell cell = (index == null) ? null : firstRow.getCell(index);
                 if (cell != null) {
                     Class<?> fieldType = DataInfo.getFieldType(targetType, fieldName);
                     String error = ExcelUtil.getAssignableTypeError(cell, fieldType, fieldName);
@@ -570,8 +581,17 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
 
     /**
-     * Determina si se va a procesar el row para convertir a DataRow
-     * @return true procesa y false no.
+     * Determina si la fila actual ({@link #getRow()}) debe procesarse y
+     * convertirse en un objeto de tipo {@code T}. Es invocada al inicio de
+     * {@link #process()}: si retorna {@code false}, la fila se omite
+     * (process() retorna {@code null}).
+     * <p>
+     * La implementación base acepta todas las filas. Las subclases pueden
+     * sobrescribirla para filtrar filas según reglas de negocio (por ejemplo,
+     * descartar filas que no correspondan migrar).
+     *
+     * @return {@code true} si la fila debe procesarse; {@code false} para
+     * omitirla.
      */
     protected boolean isMigrable(){
         return true;

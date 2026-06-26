@@ -31,6 +31,38 @@ import org.javabeanstack.data.IDataRow;
 public interface IExcelImportSrv<T extends IDataRow> extends Serializable {
 
     /**
+     * Retorna el mensaje de error del último proceso de importación.
+     *
+     * @return mensaje de error, o {@code null} si no se registró ninguno.
+     */
+    String getErrorMessage();
+
+    /**
+     * Asigna el mensaje de error del proceso de importación.
+     *
+     * @param errorMessage mensaje de error a registrar.
+     */
+    void setErrorMessage(String errorMessage);
+
+    /**
+     * Indica si durante la importación deben sobrescribirse los registros ya
+     * existentes (en lugar de únicamente insertar los nuevos).
+     *
+     * @return {@code true} si se deben sobrescribir los datos existentes;
+     * {@code false} en caso contrario (valor por defecto).
+     */
+    Boolean getOverWriteData();
+
+    /**
+     * Establece si durante la importación deben sobrescribirse los registros ya
+     * existentes.
+     *
+     * @param overWriteData {@code true} para sobrescribir los datos existentes;
+     * {@code false} para solo insertar nuevos.
+     */
+    void setOverWriteData(Boolean overWriteData);
+
+    /**
      * Retorna el libro Excel a procesar previamente asignado.
      *
      * @return el {@link Workbook} a procesar, o {@code null} si aún no se asignó.
