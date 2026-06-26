@@ -27,6 +27,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.javabeanstack.data.services.IDataService;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +47,7 @@ public class ExcelImportSrvTest {
      * Implementación concreta mínima que expone el método protegido
      * {@link ExcelImportSrv#getDataFromExcelSheet(Sheet)} para poder probarlo.
      */
-    static class TestImportSrv extends ExcelImportSrv<AppUser> {
+    static class TestImportSrv extends ExcelImportSrvTest01 {
 
         List<AppUser> readSheet(Sheet sheet) throws Exception {
             return getDataFromExcelSheet(sheet);
@@ -147,6 +148,20 @@ public class ExcelImportSrvTest {
             // sin workbook asignado
             Exception ex = assertThrows(Exception.class, srv::importData);
             assertTrue(ex.getMessage().contains("planilla"), ex.getMessage());
+        }
+    }
+    
+    /**
+     * Subclase concreta mínima de {@link ExcelImportSrv} para las pruebas.
+     * Debe ser {@code static} para poder ser extendida por la clase anidada
+     * estática {@link TestImportSrv}. El servicio de datos no se utiliza en
+     * estas pruebas (solo se ejercita lectura/validación), por lo que
+     * {@link #getDataService()} no está soportado.
+     */
+    static class ExcelImportSrvTest01 extends ExcelImportSrv<AppUser> {
+        @Override
+        protected IDataService getDataService() {
+            throw new UnsupportedOperationException("getDataService no se usa en estas pruebas");
         }
     }
 }

@@ -25,20 +25,25 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.config.IAppConfig;
+import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.util.Fn;
 
 /**
- * Implementación base del servicio de importación de datos desde planillas
- * Excel. Provee métodos utilitarios para validar la estructura de la planilla y
- * convertir sus filas a objetos del modelo. Las subclases deben sobrescribir
- * {@link #importData()} para definir la lógica específica de cada tipo de
- * importación.
+ * Implementación base (abstracta) del servicio de importación de datos desde
+ * planillas Excel. Provee métodos utilitarios para validar la estructura de la
+ * planilla y convertir sus filas a objetos del modelo. Las subclases deben:
+ * <ul>
+ * <li>implementar {@link #getDataService()} para proveer el servicio de datos
+ * con el que persistir los registros, y</li>
+ * <li>sobrescribir {@link #importData()} (invocando {@code super.importData()}
+ * primero) para definir la lógica específica de cada tipo de importación.</li>
+ * </ul>
  *
  * @author jenciso
  * @param <T> tipo de la vista destino (debe implementar {@link IDataRow}).
  */
 @Dependent
-public class ExcelImportSrv<T extends IDataRow> implements IExcelImportSrv<T> {
+public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImportSrv<T> {
 
     @EJB
     private IAppConfig appConfig;
@@ -50,7 +55,7 @@ public class ExcelImportSrv<T extends IDataRow> implements IExcelImportSrv<T> {
     private List<T> dataRowsError = new ArrayList();
 
     private List<T> dataRows = new ArrayList();
-    
+
     private Workbook excelWorkbook;
 
     /** Indica si la importación debe sobrescribir los registros ya existentes. */
@@ -58,6 +63,14 @@ public class ExcelImportSrv<T extends IDataRow> implements IExcelImportSrv<T> {
 
     /** Mensaje de error del último proceso de importación. */
     private String errorMessage;
+
+    /**
+     * Provee el servicio de datos que las subclases utilizan para persistir los
+     * registros importados. Debe implementarse en cada subclase.
+     *
+     * @return el {@link IDataService} asociado a la entidad destino.
+     */
+    protected abstract IDataService getDataService();
 
 
     /**
@@ -278,6 +291,32 @@ public class ExcelImportSrv<T extends IDataRow> implements IExcelImportSrv<T> {
     }
 
     /**
+     * Valida los prerrequisitos necesarios antes de ejecutar la importación:
+     * que se haya asignado el procesador de filas, la planilla Excel y que el
+     * procesador tenga definido el tipo destino ({@code targetType}). Se invoca
+     * al inicio de {@link #importData()}.
+     *
+     * @throws Exception si no se asignó el procesador, la planilla o el tipo
+     * destino ({@code targetType}).
+     */
+    protected void checkBeforeImportData() throws Exception{
+        IExcelRowProcessor<T> processor = getExcelRowProcessor();
+        //Debe haberse definido el processor        
+        if (processor == null) {
+            throw new Exception("No se definio el processor");
+        }
+        //Debe haberse definido la planilla
+        if (getExcelWorkbook() == null){
+            throw new Exception("No se definio la planilla a procesar o la planilla no tiene hojas");
+        }
+        Class<T> type = processor.getTargetType();
+        //Debe haberse definido el tipo de dato destino a convertir.
+        if (type == null) {
+            throw new Exception("No fue definido targetType");
+        }
+    }
+    
+    /**
      * Ejecuta la importación de la planilla Excel. Esta implementación base sólo
      * valida que estén definidos los atributos necesarios; las subclases deben
      * sobrescribirla (invocando {@code super.importData()} primero) para
@@ -306,20 +345,8 @@ public class ExcelImportSrv<T extends IDataRow> implements IExcelImportSrv<T> {
      */
     @Override
     public void importData() throws Exception {
-        IExcelRowProcessor<T> processor = getExcelRowProcessor();
-        //Debe haberse definido el processor        
-        if (processor == null) {
-            throw new Exception("No se definio el processor");
-        }
-        //Debe haberse definido la planilla
-        if (getExcelWorkbook() == null){
-            throw new Exception("No se definio la planilla a procesar o la planilla no tiene hojas");
-        }
-        Class<T> type = processor.getTargetType();
-        //Debe haberse definido el tipo de dato destino a convertir.
-        if (type == null) {
-            throw new Exception("No fue definido targetType");
-        }
+        checkBeforeImportData();
+        
         //Aqui implementar logica de importación.
 
         // Ejemplo de implementación en una subclase (sobrescribiendo importData):
