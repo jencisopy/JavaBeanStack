@@ -27,7 +27,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.security.model.IUserSession;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
@@ -162,6 +164,16 @@ public class ExcelImportSrvTest {
         @Override
         protected IDataService getDataService() {
             throw new UnsupportedOperationException("getDataService no se usa en estas pruebas");
+        }
+
+        @Override
+        protected IUserSession getUserSession() {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
+
+        @Override
+        protected Class<? extends IDataRow> getTargetType() {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
     }
 }
