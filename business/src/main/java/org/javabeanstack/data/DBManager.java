@@ -22,10 +22,10 @@
 package org.javabeanstack.data;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Resource;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
@@ -33,6 +33,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.naming.InitialContext;
 import javax.persistence.EntityManager;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.LogManager;
@@ -60,10 +61,22 @@ import org.w3c.dom.Element;
 public class DBManager implements IDBManager {
 
     private static final Logger LOGGER = LogManager.getLogger(DBManager.class);
+
+    /**
+     * Prefijo JNDI donde WildFly publica el EntityManager de cada unidad de
+     * persistencia (propiedad jboss.entity.manager.jndi.name en persistence.xml).
+     * Se usa java:app porque es un namespace por deployment: permite que varios
+     * deployments (ear, war) definan las mismas PUs sin colision de nombres.
+     */
+    private static final String JNDI_EM_PREFIX
+            = System.getProperty("jbs.persistence.jndi.em.prefix", "java:app/em/");
+
     private int entityIdStrategic = IDBManager.PERSESSION;
     private Date lastPurge = new Date();
 
-    private final Map<String, Data> entityManagers = new HashMap<>();
+    //ConcurrentHashMap: getEntityManager() y purgeEntityManager() acceden y mutan
+    //el map concurrentemente bajo @Lock(READ)
+    private final Map<String, Data> entityManagers = new ConcurrentHashMap<>();
 
     @Resource
     SessionContext context;
@@ -95,9 +108,10 @@ public class DBManager implements IDBManager {
                 return null;
             }
             EntityManager em;
-            if (entityManagers.containsKey(key)) {
-                em = entityManagers.get(key).em;
-                entityManagers.get(key).lastRef = Dates.now();
+            Data data = entityManagers.get(key);
+            if (data != null) {
+                em = data.em;
+                data.lastRef = Dates.now();
                 LOGGER.debug("EntityManager ya existe: " + key);
             } else {
                 em = this.createEntityManager(key);
@@ -123,8 +137,8 @@ public class DBManager implements IDBManager {
     public EntityManager createEntityManager(String key) {
         EntityManager em;
         try {
-            String persistentUnit = key.substring(0, key.indexOf(':')).toLowerCase();
-            em = (EntityManager) context.lookup("java:comp/env/persistence/" + persistentUnit);
+            String persistentUnit = key.substring(0, key.indexOf(':')).toUpperCase();
+            em = InitialContext.doLookup(JNDI_EM_PREFIX + persistentUnit);
             Data data = new Data();
             data.em = em;
             entityManagers.put(key, data);
