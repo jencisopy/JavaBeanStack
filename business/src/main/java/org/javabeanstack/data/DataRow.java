@@ -393,6 +393,20 @@ public class DataRow implements IDataRow, Cloneable {
         error.setErrorNumber(errorNumber);
         this.setErrors(error, fieldname);
     }
+    
+    @Override
+    public String getErrorMsg(){
+        if (this.errors == null) {
+            return "";
+        }
+        String retornar = "";
+        for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+            if (!entry.getValue().isWarning()) {
+                retornar += entry.getValue().getMessage()+"\n";
+            }
+        }
+        return retornar;
+    }
 
     /**
      * Asigna tipo de operación a realizarse en la base de datos.
