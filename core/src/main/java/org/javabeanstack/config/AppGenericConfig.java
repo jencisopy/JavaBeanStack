@@ -157,10 +157,10 @@ public class AppGenericConfig implements IAppConfig {
     public IAppSystemParam getSystemParam(Long id) {
         IAppSystemParam appSystemParam;
         String queryString
-                = "select o from AppSystemParam o where idsystemparam = " + id;
+                = "select o from AppSystemParam o where idsystemparam = :id";
         try {
             appSystemParam
-                    = dao.findByQuery(null, queryString, null);
+                    = dao.findByQuery(null, queryString, Fn.queryParams("id", id));
             return appSystemParam;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER, logMngr, null);
@@ -179,11 +179,11 @@ public class AppGenericConfig implements IAppConfig {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)        
     public IAppSystemParam getSystemParam(String param) {
         String queryString
-                = "select o from AppSystemParam o where LOWER(param) = '" + param.toLowerCase() + "'";
+                = "select o from AppSystemParam o where LOWER(param) = :param";
         IAppSystemParam appSystemParam;
         try {
             appSystemParam
-                    = dao.findByQuery(null, queryString, null);
+                    = dao.findByQuery(null, queryString, Fn.queryParams("param", param.toLowerCase()));
             return appSystemParam;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER, logMngr, null);

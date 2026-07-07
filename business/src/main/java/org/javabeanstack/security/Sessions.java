@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 import javax.crypto.BadPaddingException;
 import javax.crypto.SecretKey;
@@ -82,10 +83,12 @@ import org.javabeanstack.util.LocalDates;
 public class Sessions implements ISessions {
     private static final Logger LOGGER = LogManager.getLogger(Sessions.class);
 
-    protected final Map<String, Object> sessionVar = new HashMap();
+    //ConcurrentHashMap: estos maps se mutan desde metodos con @Lock(READ)
+    //(getUserSession, getClientAuthRequestCache, addSessionInfo, etc.)
+    protected final Map<String, Object> sessionVar = new ConcurrentHashMap();
     protected boolean oneSessionPerUser = false;
     private SecretKey secretKey;
-    private final Map<SessionInfo, Object> sessionsInfo = new HashMap();
+    private final Map<SessionInfo, Object> sessionsInfo = new ConcurrentHashMap();
 
     @EJB
     protected IGenericDAO dao;
@@ -119,6 +122,11 @@ public class Sessions implements ISessions {
         IUserSession userSession = getUserSession(sessionId);
         if (userSession == null || userSession.getUser() == null) {
             removeAllSessionInfo(sessionId);
+            return;
+        }
+        //ConcurrentHashMap no admite valores nulos; remover equivale a guardar null
+        if (info == null) {
+            removeSessionInfo(sessionId, key);
             return;
         }
         sessionsInfo.put(new SessionInfo(sessionId, key), info);
@@ -187,8 +195,9 @@ public class Sessions implements ISessions {
             // Válidar que el usuario no este ya logueado                    
             IUserSession sessionCtrl = getUserSession(encrypt(sessionId));
             if (sessionCtrl != null && sessionCtrl.getUser() != null) {
-                session.setUser(null);
+                //Capturar el login antes de anular el usuario de la sesión
                 String mensaje = session.getUser().getLogin().trim().toUpperCase() + " tiene una sesión activa";
+                session.setUser(null);
                 LOGGER.debug(mensaje);
                 session.setError(new ErrorReg(mensaje, 4, ""));
                 session.getError().setEntity(getClass().getName());
@@ -200,8 +209,9 @@ public class Sessions implements ISessions {
         }
         // Verificar si tiene permiso para acceder a los datos de la empresa
         if (!checkCompanyAccess(((IAppUser) session.getUser()).getIduser(), (Long) idcompany)) {
-            session.setUser(null);
+            //Capturar el login antes de anular el usuario de la sesión
             String mensaje = session.getUser().getLogin().trim().toUpperCase() + " no tiene autorización para acceder a esta empresa";
+            session.setUser(null);
             LOGGER.debug(mensaje);
             session.setError(new ErrorReg(mensaje, 4, ""));
             session.getError().setEntity(getClass().getName());            
@@ -772,8 +782,7 @@ public class Sessions implements ISessions {
 
         @Override
         public int hashCode() {
-            int hash = 5;
-            return hash;
+            return Objects.hash(sessionId, key);
         }
 
         @Override
