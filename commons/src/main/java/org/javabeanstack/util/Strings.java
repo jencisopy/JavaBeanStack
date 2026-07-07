@@ -27,6 +27,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -277,6 +278,9 @@ public class Strings {
      * @return cadena procesada.
      */
     public static String textMerge(String text, Map<String, String> params) {
+        if (params == null || params.isEmpty()){
+            return text;
+        }
         String result = text;
         String regexSearch;
         for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -571,7 +575,7 @@ public class Strings {
         if (input == null){
             return null;
         }
-        return IOUtils.toString(input);
+        return IOUtils.toString(input, StandardCharsets.UTF_8);
     }    
 
     /**

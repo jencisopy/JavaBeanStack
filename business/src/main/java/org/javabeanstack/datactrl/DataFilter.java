@@ -65,11 +65,20 @@ public class DataFilter {
         addParam("tomorrow", tomorrow);
         addParam("firstDayWeek", getFirstDayOfWeek());
 
+        addParam("firstDayPreviousWeek", getFirstDayOfPreviousWeek());
+        addParam("lastDayPreviousWeek", getLastDayOfPreviousWeek());
+
         addParam("firstDayMonth", getFirstDayOfMonth());
         addParam("lastDayMonth", getLastTimeOfDay(getLastDayOfMonth()));
 
         addParam("firstDayYear", getFirstDayOfYear());
         addParam("lastDayYear", getLastTimeOfDay(getLastDayOfYear()));
+        
+        addParam("firstDayPreviousYear", getFirstDayOfPreviousYear());
+        addParam("lastDayPreviousYear", getLastTimeOfDay(getLastDayOfPreviousYear()));
+        
+        addParam("firstDayPreviousMonth", getFirstDayOfPreviousMonth());
+        addParam("lastDayPreviousMonth", getLastTimeOfDay(getLastDayOfPreviousMonth()));
     }
 
     public String getFilterExpression() {

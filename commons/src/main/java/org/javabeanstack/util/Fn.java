@@ -311,7 +311,7 @@ public class Fn {
         String result = "";
         try {
             if (value instanceof Number) {
-                if (format == null){
+                if (format == null) {
                     format = "##,###,###,##0.00";
                 }
                 result = Fn.numberToString(value, format);
@@ -347,34 +347,47 @@ public class Fn {
         } catch (Exception exp) {
             return "";
         }
-        return nvl(result,"").trim();
+        return nvl(result, "").trim();
     }
-    
-    public static boolean isEmailValid(String emailAdress){
-        return EmailValidator.getInstance().isValid(emailAdress);
+
+    public static boolean isEmailValid(String emailAdress) {
+        if (!emailAdress.contains(";")) {
+            return EmailValidator.getInstance().isValid(emailAdress);
+        }
+        boolean result = true;
+        String[] mails = emailAdress.split(";");
+        for (String email : mails) {
+            if (!EmailValidator.getInstance().isValid(email)) {
+                result = false;
+                break;
+            }
+        }
+        return result;
     }
-    
+
     /**
      * Devuelve verdadero si el valor que se pasa como parametro es nulo o vacio
+     *
      * @param lista lista de valor
      * @return verdadero si "string" es nulo o vacio.
      */
     public static Boolean isNullorEmpty(List lista) {
-        if (lista != null){
+        if (lista != null) {
             return lista.isEmpty();
         }
         return lista == null;
-    }    
-    
+    }
+
     /**
      * Devuelve verdadero si el valor que se pasa como parametro es nulo o vacio
+     *
      * @param map lista de valor
      * @return verdadero si "string" es nulo o vacio.
      */
     public static Boolean isNullorEmpty(Map map) {
-        if (map != null){
+        if (map != null) {
             return map.isEmpty();
         }
         return map == null;
-    }    
+    }
 }

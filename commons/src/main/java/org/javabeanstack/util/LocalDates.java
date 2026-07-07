@@ -212,6 +212,16 @@ public class LocalDates {
     public static LocalDateTime getFirstDayOfWeek(){
         return today().with(DayOfWeek.MONDAY);
     }
+
+    public static LocalDateTime getFirstDayOfPreviousWeek(){
+        return today().minusDays(7L).with(DayOfWeek.MONDAY);
+    }
+
+    public static LocalDateTime getLastDayOfPreviousWeek(){
+        LocalDateTime retornar = today().minusDays(7L).with(DayOfWeek.MONDAY);
+        retornar = retornar.plusDays(6L);
+        return retornar;
+    }
     
     public static LocalDateTime getFirstDayOfMonth(){
         return YearMonth.now().atDay(1).atStartOfDay();
@@ -219,6 +229,14 @@ public class LocalDates {
 
     public static LocalDateTime getLastDayOfMonth(){
         return YearMonth.now().atEndOfMonth().atStartOfDay();
+    }
+    
+    public static LocalDateTime getFirstDayOfPreviousMonth(){
+        return YearMonth.now().minusMonths(1L).atDay(1).atStartOfDay();
+    }
+
+    public static LocalDateTime getLastDayOfPreviousMonth(){
+        return YearMonth.now().minusMonths(1L).atEndOfMonth().atStartOfDay();
     }
     
     public static LocalDateTime getFirstDayOfMonth(LocalDateTime dateTime){
@@ -241,6 +259,16 @@ public class LocalDates {
         return toDateTime(fecha);
     }
 
+    public static LocalDateTime getFirstDayOfPreviousYear(){
+        String fecha = "01/01/"+(today().getYear() - 1);
+        return toDateTime(fecha);
+    }
+
+    public static LocalDateTime getLastDayOfPreviousYear(){
+        String fecha = "31/12/"+(today().getYear() - 1);
+        return toDateTime(fecha);
+    }
+    
     public static LocalDateTime getFirstDayOfYear(LocalDateTime dateTime){
         String fecha = "01/01/"+dateTime.getYear();
         return toDateTime(fecha);

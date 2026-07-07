@@ -276,6 +276,9 @@ public class JasperReportUtil {
      * @return el reporte con el path completo
      */
     public String getFullPathReport(String reportNameJasper) {
+        if (reportNameJasper == null){
+            return "";
+        }
         reportNameJasper = reportNameJasper.toLowerCase();
         if (reportNameJasper.endsWith(".jrxml")) {
             reportNameJasper = reportNameJasper.replaceAll(".jrxml", ".jasper");

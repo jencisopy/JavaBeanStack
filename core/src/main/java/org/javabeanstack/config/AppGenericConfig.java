@@ -25,11 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Lock;
-import jakarta.ejb.LockType;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
+import javax.ejb.EJB;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
@@ -157,10 +157,10 @@ public class AppGenericConfig implements IAppConfig {
     public IAppSystemParam getSystemParam(Long id) {
         IAppSystemParam appSystemParam;
         String queryString
-                = "select o from AppSystemParam o where idsystemparam = " + id;
+                = "select o from AppSystemParam o where idsystemparam = :id";
         try {
             appSystemParam
-                    = dao.findByQuery(null, queryString, null);
+                    = dao.findByQuery(null, queryString, Fn.queryParams("id", id));
             return appSystemParam;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER, logMngr, null);
@@ -179,11 +179,11 @@ public class AppGenericConfig implements IAppConfig {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)        
     public IAppSystemParam getSystemParam(String param) {
         String queryString
-                = "select o from AppSystemParam o where LOWER(param) = '" + param.toLowerCase() + "'";
+                = "select o from AppSystemParam o where LOWER(param) = :param";
         IAppSystemParam appSystemParam;
         try {
             appSystemParam
-                    = dao.findByQuery(null, queryString, null);
+                    = dao.findByQuery(null, queryString, Fn.queryParams("param", param.toLowerCase()));
             return appSystemParam;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER, logMngr, null);

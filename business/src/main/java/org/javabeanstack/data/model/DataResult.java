@@ -28,6 +28,7 @@ import java.util.Map;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
+import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
@@ -114,7 +115,6 @@ public class DataResult implements IDataResult {
         return (List<T>) entry.getValue();
     }
 
-    
     /**
      * Devuelve el primer ejb del conjunto que ha sido procesado.
      *
@@ -127,12 +127,12 @@ public class DataResult implements IDataResult {
         if (Fn.nvl(key, "").isEmpty()) {
             key = "1";
         }
-        if (mapResult.get(key) == null || mapResult.get(key).isEmpty()){
+        if (mapResult.get(key) == null || mapResult.get(key).isEmpty()) {
             return null;
         }
         return (T) mapResult.get(key).get(0);
     }
-    
+
     /**
      * Devuelve una lista ejb del conjunto que ha sido procesado.
      *
@@ -188,12 +188,28 @@ public class DataResult implements IDataResult {
         if (Strings.isNullorEmpty(errorMsg)
                 && errorsMap != null && !errorsMap.isEmpty()) {
             String retornar = "";
-            for (Map.Entry entry:errorsMap.entrySet()){
-                retornar += ((IErrorReg)entry.getValue()).getMessage()+"\n";
+            for (Map.Entry entry : errorsMap.entrySet()) {
+                IErrorReg error = (IErrorReg) entry.getValue();
+                if (!error.isWarning()) {
+                    retornar += error.getMessage() + " - " + error.getFieldName() + "\n";
+                }
             }
             return retornar;
         }
         return errorMsg;
+    }
+
+    @Override
+    public IErrorReg getFirstError() {
+        IErrorReg errorReturn = new ErrorReg();
+        if (errorsMap != null && !errorsMap.isEmpty()) {
+            return errorsMap.entrySet().iterator().next().getValue();
+        }
+        if (!Strings.isNullorEmpty(errorMsg)) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage(errorMsg);
+        }
+        return errorReturn;
     }
 
     /**

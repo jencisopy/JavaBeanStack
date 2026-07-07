@@ -25,6 +25,7 @@ public interface IAppCompany extends IDataRow, Serializable {
     String getPersistentUnit();
     String getAddress();
     String getCompanyActivity();    
+    String getInformation();
 
     String getAppuser();    
     @XmlTransient
@@ -51,6 +52,7 @@ public interface IAppCompany extends IDataRow, Serializable {
     void setAddress(String address);
     void setCompanyList(List<IAppCompany> companyList);
     void setCompanyActivity(String empresaActivity);
+    void setInformation(String information);
     
     void setAppuser(String appuser);
     void setPersistentUnit(String persistentUnit);

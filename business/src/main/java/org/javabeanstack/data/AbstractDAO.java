@@ -1044,8 +1044,8 @@ public abstract class AbstractDAO implements IGenericDAO {
         auditEjb.setValue("iprequest", device);
         auditEjb.setValue("sessionid", sessionId);
         auditEjb = ejb.copyTo(auditEjb);
-        if (DataInfo.isFieldExist(auditEjb.getClass(), "appuser")){
-            auditEjb.setValue("appuser", appUser);            
+        if (DataInfo.isFieldExist(auditEjb.getClass(), "appuser")) {
+            auditEjb.setValue("appuser", appUser);
         }
         em.persist(auditEjb);
         LOGGER.info(auditEjb);
@@ -1640,15 +1640,38 @@ public abstract class AbstractDAO implements IGenericDAO {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public IErrorReg getErrorMessage(int messageNumber, String alternativeMsg, String fieldName) {
-        IAppMessage appMessage = logMngr.getAppMessage(messageNumber);
-        ErrorReg errorReturn = new ErrorReg(alternativeMsg, messageNumber, fieldName);
-        if (appMessage != null) {
-            errorReturn.setMessage(appMessage.getText());
-        }
-        return errorReturn;
+    public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
+        return getErrorMessage(messageNumber, alternativeMsg, fieldName, null);
     }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {
+        IAppMessage appMessage = logMngr.getAppMessage(messageNumber);
+        ErrorReg errorReturn = new ErrorReg(alternativeMsg, messageNumber, fieldName);
+        if (appMessage == null && !Fn.nvl(alternativeMsg, "").isEmpty() && messageNumber != 50000){
+            try {
+                appMessage = (IAppMessage)logMngr.getAppMessage(50001).clone();
+                appMessage.setValue("idmessage",null);
+                appMessage.setValue("number", messageNumber.longValue());
+                appMessage.setValue("explanation", alternativeMsg);
+                appMessage.setValue("description", alternativeMsg);
+                persist(null, appMessage);
+                //
+                String messageText = Strings.textMerge(appMessage.getText(), params);
+                errorReturn.setMessage(messageText);
+            } catch (Exception e) {
+                ErrorManager.showError(e, LOGGER, logMngr, FALSE);
+            }
+        }
+        else if (appMessage != null) {
+            String messageText = Strings.textMerge(appMessage.getText(), params);
+            errorReturn.setMessage(messageText);
+        } 
+        return errorReturn;
+    }
+    
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Object[]> findListObjsByQuery(String sessionId,

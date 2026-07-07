@@ -21,15 +21,15 @@
 */
 package org.javabeanstack.xml;
 
-import java.util.HashMap;
 import java.util.Map;
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Lock;
-import jakarta.ejb.LockType;
-import jakarta.ejb.Startup;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Startup;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +53,9 @@ public class XmlManager implements IXmlManager {
     
     private final IXmlSearcher<Document> xmlSearcher = new XmlResourceSearcher();
     
-    private Map<String, IXmlCache> cache = new HashMap();
+    //ConcurrentHashMap: getCache() (@Lock READ) expone el map fuera del lock
+    //del contenedor mientras otros metodos lo mutan
+    private Map<String, IXmlCache> cache = new ConcurrentHashMap();
 
     @PostConstruct
     protected void init(){
@@ -75,7 +77,8 @@ public class XmlManager implements IXmlManager {
 
     @Override
     public void setCache(Map<String, IXmlCache> cache) {
-        this.cache = cache;
+        //Copiar a un ConcurrentHashMap para no perder la garantía de concurrencia
+        this.cache = new ConcurrentHashMap(cache);
     }
 
     @Override

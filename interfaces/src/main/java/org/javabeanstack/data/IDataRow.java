@@ -68,6 +68,7 @@ public interface IDataRow extends Serializable{
     public Object    getOldValue(String fieldname);
     public Object    getBeforeValue(String fieldname);    
     public Class     getFieldType(String fieldname);
+    public String    getErrorMsg();
     public void      setId(Object id);
     public void      setIdAlternative(Object id);
     public void      setValue(String fieldname, Object value) throws Exception;
@@ -95,6 +96,8 @@ public interface IDataRow extends Serializable{
     public void setOnSetterActivated(boolean onSetter);
     public <X extends IDataRow> X copyTo(X target) throws Exception;
     public <X extends IDataRow> X copyTo(X target, boolean onlyFieldsNotNulls) throws Exception;
+    public <X extends IDataRow> void copyFrom(X source);
+    public <X extends IDataRow> void copyFrom(X source, boolean onlyFieldsNotNulls) throws Exception;
     public String getAuditEntity();
     
     public Map<String, Object> getProperties();

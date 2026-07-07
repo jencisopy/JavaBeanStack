@@ -1431,10 +1431,15 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     @Override
-    public IErrorReg getErrorMessage(int messageNumber, String alternativeMsg, String fieldName) {
+    public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
         return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName);
     }
 
+    @Override
+    public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {
+        return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName, params);
+    }
+    
     @Override
     public Map<String, String> getQueryConstants(String persistUnit) {
         return dao.getQueryConstants(persistUnit);

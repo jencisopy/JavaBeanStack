@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class Network {
 
-    public static String getLocalIpAdress() {
+    public static String getLocalIpAddress() {
         String result = "";
         try {
             InetAddress address = InetAddress.getLocalHost();

@@ -51,6 +51,7 @@ public interface IDataObject <T extends IDataRow>{
     public List<T>      getDataRows();
     public Map<Integer, T> getDataRowsChanged();    
     public T            getRow();
+    public T            getLastRow();
     public String       getSelectCmd();
     public String       getLastQuery();    
     public int          getRecno();

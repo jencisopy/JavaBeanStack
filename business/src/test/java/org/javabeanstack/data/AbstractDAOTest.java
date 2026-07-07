@@ -25,7 +25,6 @@ package org.javabeanstack.data;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.naming.NamingException;
 import org.javabeanstack.model.appcatalog.AppResource;
 import org.javabeanstack.model.appcatalog.AppTablesRelation;
 import org.javabeanstack.model.appcatalog.AppUser;
@@ -56,7 +55,7 @@ public class AbstractDAOTest extends TestClass {
     public static void setUpClass2() {
         try {
             dao = (IGenericDAORemote) context.lookup(jndiProject + "GenericDAO!org.javabeanstack.data.IGenericDAORemote");
-        } catch (NamingException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }

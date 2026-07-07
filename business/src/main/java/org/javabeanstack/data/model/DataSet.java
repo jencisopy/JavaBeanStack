@@ -18,8 +18,7 @@
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 * MA 02110-1301  USA
-*/
-
+ */
 package org.javabeanstack.data.model;
 
 import org.javabeanstack.datactrl.IDataObject;
@@ -34,30 +33,31 @@ import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.events.IDAOEvents;
 
 /**
- * Esta clase se utiliza para enviar los set de datos para la actualización en 
+ * Esta clase se utiliza para enviar los set de datos para la actualización en
  * la base de datos.
- * 
+ *
  * @author Jorge Enciso
  */
 public class DataSet implements IDataSet {
+
     private Date lastProcess;
-    
+
     private final Map<String, IDataObject> listDataObject = new LinkedHashMap();
-    private List<List<? extends IDataRow>> listSet  = new LinkedList();
+    private List<List<? extends IDataRow>> listSet = new LinkedList();
     private final Map<String, List<? extends IDataRow>> mapSet = new LinkedHashMap();
     private final Map<String, IDAOEvents> mapSetEvents = new LinkedHashMap();
 
     /**
      * Devuelve de cada set de datos los registros que fuerón modificados y que
      * se deben grabar en la base de datos.
-     * 
+     *
      * @return set de datos que fuerón modificados.
      */
     @Override
     public IDataSet getChanged() {
         IDataSet dataSet = new DataSet();
-        mapSet.entrySet().forEach( entry -> {
-            dataSet.add(entry.getKey(), getRowsChanged((List<IDataRow>)entry.getValue()),getEvent(entry.getKey()));
+        mapSet.entrySet().forEach(entry -> {
+            dataSet.add(entry.getKey(), getRowsChanged((List<IDataRow>) entry.getValue()), getEvent(entry.getKey()));
         });
         return dataSet;
     }
@@ -65,7 +65,8 @@ public class DataSet implements IDataSet {
     /**
      * Devuelve una lista de elementos o registros que fuerón modificados y que
      * deben guardarse en la base de datos.
-     * @param rows  lista de registros a ser analizados.    
+     *
+     * @param rows lista de registros a ser analizados.
      * @return registros modificados.
      */
     private List<IDataRow> getRowsChanged(List<IDataRow> rows) {
@@ -78,8 +79,7 @@ public class DataSet implements IDataSet {
         }
         return rowsChanged;
     }
-    
-    
+
     @Override
     public Date getLastProcess() {
         return lastProcess;
@@ -89,9 +89,10 @@ public class DataSet implements IDataSet {
     public void setLastProcess(Date date) {
         lastProcess = date;
     }
-    
+
     /**
      * Devuelve un set de datos.
+     *
      * @param key clave del map conteniendo el set de datos.
      * @return set de datos solicitado.
      */
@@ -102,6 +103,7 @@ public class DataSet implements IDataSet {
 
     /**
      * Devuelve un set de eventos.
+     *
      * @param key clave del map conteniendo el set de eventos.
      * @return set de eventos solicitado.
      */
@@ -109,21 +111,21 @@ public class DataSet implements IDataSet {
     public IDAOEvents getEvent(String key) {
         return mapSetEvents.get(key.toLowerCase());
     }
-    
-    
+
     @Override
-    public void addEvents(String key, IDAOEvents events){
+    public void addEvents(String key, IDAOEvents events) {
         mapSetEvents.put(key.toLowerCase(), events);
     }
-    
+
     /**
      * Devuelve un set de datos.
+     *
      * @param setNumber nro de set de datos.
      * @return set de datos solicitado.
      */
     @Override
     public List<? extends IDataRow> get(int setNumber) {
-        if (setNumber >= 0 && listSet.size() > setNumber){
+        if (setNumber >= 0 && listSet.size() > setNumber) {
             return listSet.get(setNumber);
         }
         return null;
@@ -131,6 +133,7 @@ public class DataSet implements IDataSet {
 
     /**
      * Devuelve un map con los DataObjects
+     *
      * @return un map con los DataObjects
      */
     @Override
@@ -140,89 +143,90 @@ public class DataSet implements IDataSet {
 
     /**
      * Devuelve un map con todos los sets de datos.
+     *
      * @return map con los sets de datos
      */
     @Override
     public Map<String, List<? extends IDataRow>> getMapListSet() {
         return mapSet;
     }
-    
-    
+
     /**
      * Agrega un set de datos al map.
-     * @param key   clave recuperar luego el set de datos.
-     * @param set   lista con los registros
+     *
+     * @param key clave recuperar luego el set de datos.
+     * @param set lista con los registros
      */
     @Override
     public void add(String key, List<? extends IDataRow> set) {
         List old = mapSet.put(key, set);
-        if (old == null){
+        if (old == null) {
             listSet.add(set);
-        }
-        else{
+        } else {
             reCreateList();
         }
     }
 
     /**
      * Agrega una fila o registro a un set de datos.
-     * @param key   clave que será utilizada luego para recuperar el registro
-     * @param row   registro.
+     *
+     * @param key clave que será utilizada luego para recuperar el registro
+     * @param row registro.
      */
     @Override
     public void add(String key, IDataRow row) {
-        List<IDataRow> newValue = new ArrayList<>();
+        List<IDataRow> newValue = new ArrayList();
         newValue.add(row);
         List oldValue = mapSet.put(key, newValue);
-        if (oldValue == null){
+        if (oldValue == null) {
             listSet.add(newValue);
-        }
-        else{
+        } else {
             reCreateList();
         }
     }
 
     /**
      * Agrega un set de datos al map.
-     * @param key   clave recuperar luego el set de datos.
-     * @param set   lista con los registros
+     *
+     * @param key clave recuperar luego el set de datos.
+     * @param set lista con los registros
      * @param events eventos pre y post grabación
      */
     @Override
     public void add(String key, List<? extends IDataRow> set, IDAOEvents events) {
         List old = mapSet.put(key, set);
         mapSetEvents.put(key, events);
-        if (old == null){
+        if (old == null) {
             listSet.add(set);
-        }
-        else{
+        } else {
             reCreateList();
         }
     }
-    
+
     /**
      * Agrega un dataobject a la lista de DataObjects.
-     * @param key   clave que luego se utilizará para recuperar el dataObject
-     * @param dataObject 
+     *
+     * @param key clave que luego se utilizará para recuperar el dataObject
+     * @param dataObject
      */
     @Override
     public void addDataObject(String key, IDataObject dataObject) {
         listDataObject.put(key, dataObject);
-        add(key,dataObject.getDataRows());
+        add(key, dataObject.getDataRows());
     }
-    
+
     /**
-     * 
+     *
      * @return devuelve la cantidad de sets de datos.
      */
     @Override
     public int size() {
         return mapSet.size();
     }
-    
-    private void reCreateList(){
+
+    private void reCreateList() {
         listSet = new LinkedList();
-        mapSet.entrySet().forEach( entry -> {
+        mapSet.entrySet().forEach(entry -> {
             listSet.add(entry.getValue());
         });
     }

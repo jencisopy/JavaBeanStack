@@ -72,6 +72,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     private int recno;
     /**
+     * Puntero del nro anterior.
+     */
+    private int lastRecno = -1;
+    
+    /**
      * Lista donde se almacena los registros recuperados de la base
      */
     private List<T> dataRows;
@@ -344,6 +349,29 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     /**
+     * Registro anterior
+     *
+     * @return registro anterior
+     */
+    @Override
+    public T getLastRow() {
+        if (dataRows == null) {
+            LOGGER.error("El dataobject no esta abierto");
+            return null;
+        }
+        if (lastRecno == -1){
+            return null;
+        }
+        if (getRowCount() == 0) {
+            return null;
+        }
+        if (lastRecno < 0 || lastRecno >= dataRows.size()) {
+            return null;
+        }
+        return dataRows.get(lastRecno);
+    }
+    
+    /**
      * Sentencia que se ejecutara para recuperar los datos
      *
      * @return sentencia jpql
@@ -520,7 +548,6 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public void setFirstRow(int first) {
         firstRow = first;
-
     }
 
     @Override
@@ -915,6 +942,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
 
         if (dataRows.size() > rownumber) {
+            lastRecno = recno;
             recno = rownumber;
             row = dataRows.get(recno);
             // Si no esta en proceso de modificación o borrado
@@ -925,6 +953,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             this.afterRowMove(row);
             return true;
         } else {
+            lastRecno = recno;
             recno = dataRows.size();
             row = null;
             //After move
@@ -1550,6 +1579,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             //
             if (Fn.toLogical(getProperty("INSERT_FIRST"))) {
                 dataRows.add(0, newRow);
+                recno++;
                 this.moveFirst();
             } else {
                 dataRows.add(newRow);
