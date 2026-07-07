@@ -199,7 +199,7 @@ public class LogManager implements ILogManager {
         try {
             List<IAppMessage> messages
                     = dao.findListByQuery(null,
-                            "select o from AppMessage o order by nro",
+                            "select o from AppMessage o order by number",
                             null);
 
             return messages;

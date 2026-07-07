@@ -12,7 +12,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 
 
 /**
@@ -33,7 +32,7 @@ public class TestClass {
     public TestClass() {
     }
 
-    @BeforeEach
+    @BeforeAll
     public static void setUpClass() throws NamingException, Exception {
         try {
             String server = (System.getenv("SERVER_TEST") != null) ? System.getenv("SERVER_TEST") : "localhost";
@@ -75,9 +74,6 @@ public class TestClass {
     public static void tearDownClass() {
     }
 
-    @BeforeAll
-    public void setUp() {
-    }
 
     @AfterAll
     public void tearDown() {
