@@ -191,7 +191,7 @@ public class JasperReportUtil {
                 JRDocxExporter exporter = new JRDocxExporter();
                 exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
                 HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
-                httpServletResponse.setContentType("application/nd.openxmlformats-officedocument.wordprocessingml.document");
+                httpServletResponse.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
                 httpServletResponse.setHeader("Content-Disposition", "attachment;filename= " + reporte.replaceAll(".jasper", "") + ".docx");
                 try (OutputStream outputStream = httpServletResponse.getOutputStream()) {
                     exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
@@ -211,8 +211,9 @@ public class JasperReportUtil {
                 ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
                 JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
                 FacesContext.getCurrentInstance().responseComplete();
-            } else if ("xlsx".equals(parameters.get("device"))) { // Condición actualizada
-                // Usamos el exportador moderno para .xlsx
+            } else if ("xlsx".equals(parameters.get("device"))
+                    || "xls".equals(parameters.get("device"))) {
+                // "xls" se acepta por compatibilidad con la rama 1.5.x; se exporta siempre como .xlsx
                 JRXlsxExporter exporter = new JRXlsxExporter();
                 exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
 
