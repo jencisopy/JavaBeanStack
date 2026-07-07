@@ -112,6 +112,39 @@ No introducir imports que inviertan esta dirección. Ojo: `interfaces` expone ti
 - **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`).
 - **`ExcelUtil`** / **`ExcelImportSrv`** / **`ExcelUploadCtrl`** — importación de datos desde planillas Excel (Apache POI).
 
+## Header de copyright
+
+Todas las clases `.java` del proyecto llevan este header LGPL al inicio del archivo:
+
+```java
+/*
+* JavaBeanStack FrameWork
+*
+* Copyright (C) <año-inicio> - 2027 Jorge Enciso
+* Email: jorge.enciso.r@gmail.com
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 3 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+* MA 02110-1301  USA
+ */
+```
+
+- Para archivos **nuevos**, usar `2017 - 2027` como rango (el más común en el proyecto).
+- Para archivos **existentes**, conservar el año de inicio original y no tocarlo al hacer ediciones normales de código.
+- Ya no existen headers propietarios de "OyM System Group S.A." en el repo: se unificaron todos al header LGPL de arriba (commit `8985fd0`). Si aparece código nuevo con ese header propietario u otro distinto, marcarlo para revisión en vez de asumir cuál usar — es una decisión de licenciamiento, no técnica.
+- Al editar un archivo que tenga CRLF como salto de línea, preservar ese estilo (no normalizar a LF); mezclar ambos en un mismo archivo genera diffs espurios enormes.
+
 ## Estilo de código
 
 - Indentación: 4 espacios. Javadoc y comentarios en español.
