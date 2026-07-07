@@ -1,7 +1,7 @@
 /*
 * JavaBeanStack FrameWork
 *
-* Copyright (C) 2017 - 2018 Jorge Enciso
+* Copyright (C) 2017 - 2027 Jorge Enciso
 * Email: jorge.enciso.r@gmail.com
 *        jenciso@javabeanstack.org
 *
