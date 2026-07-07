@@ -16,8 +16,8 @@ package org.javabeanstack.web.uploads;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import javax.enterprise.context.Dependent;
-import javax.inject.Named;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -66,7 +66,7 @@ public class ExcelUploadCtrl implements IExcelUploadCtrl {
     @Override
     public void handleFileUpload(FileUploadEvent event) {
         try {
-            this.excelBytes = event.getFile().getContents();
+            this.excelBytes = event.getFile().getContent();
         } catch (Exception e) {
             LOGGER.error("Error al recibir el archivo Excel", e);
             this.excelBytes = null;
