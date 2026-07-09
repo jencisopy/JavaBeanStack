@@ -1,47 +1,162 @@
 # JavaBeanStack
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.javabeanstack/jbs-parent/badge.svg)](https://search.maven.org/search?q=org.javabeanstack)
 
-Framework para construcción de aplicaciones JAKARTA EE 11
+Framework Java multi-módulo (Maven) para la construcción de aplicaciones empresariales sobre **Jakarta EE 11**. Provee infraestructura reutilizable de acceso a datos, seguridad, manejo de errores/logging y capas web JSF/REST, pensada para reducir el código repetitivo (boilerplate) en aplicaciones de negocio tipo ERP/CRUD.
 
-Consta de varios paquetes agrupando funcionalidades con el fin de facilitar y estandarizar el desarrollo de aplicaciones empresariales. 
+Es una **librería/framework**, no una aplicación ejecutable por sí sola: se consume como dependencia Maven desde proyectos de aplicación.
 
-## Prerequisito ##
-JAVA JDK 17
+- **Grupo Maven:** `org.javabeanstack`
+- **Artefacto padre:** `jbs-parent`
+- **Versión actual (rama `master`):** `2.0.0-SNAPSHOT`
+- **Licencia:** GNU Lesser General Public License v3.0 (LGPL v3.0)
 
-## Módulos ##
-![ALL](https://github.com/jencisopy/JavaBeanStack/blob/master/miscellaneous/images/javabeanstack_all.png)
+## Prerrequisitos
 
+- **Java 17** como mínimo (requisito de `jakarta.jakartaee-api:11.0.0`). El proyecto también se verificó compilando y corriendo tests con **Java 25 LTS** (Temurin) sin diferencias de comportamiento.
+- **Maven 3.x**
+- Para los tests de integración del módulo `business`: un servidor **WildFly 40+** corriendo (primera versión con soporte completo de Jakarta EE 11) con el EAR de pruebas desplegado.
 
-**BUSINESS:** contiene componentes para acceso, validación y grabación del dato.
+## Estrategia de ramas
 
-![Business Stack](https://github.com/jencisopy/JavaBeanStack/blob/master/business/src/main/resources/images/javabeanstack_business.png)
+El proyecto mantiene dos líneas activas:
 
+| Rama | Versión | Stack | Estado |
+|---|---|---|---|
+| `master` | 2.0.0 | Jakarta EE 11 (`jakarta.*`), Java 17, PrimeFaces 15, JasperReports 7, JUnit 5 | Activa — desarrollo principal |
+| `1.5.x` | 1.5.x | Java EE 8 (`javax.*`), PrimeFaces y JasperReports 6 antiguos | Legacy — recibe fixes que luego se portan a `master` |
 
+Al comparar o portar cambios entre ramas, las diferencias `javax.*` ↔ `jakarta.*` son equivalencias de namespace, no diferencias de lógica. Los paquetes `javax.crypto`, `javax.xml.*`, `javax.naming` y `javax.swing` pertenecen al JDK y permanecen como `javax` en ambas ramas.
 
+> **Nota sobre `master`:** PrimeFaces se mantiene en `15.0.6`, que compila correctamente contra `jakartaee-api:11.0.0` pero solo confirma soporte de Jakarta Faces 4.0/EE10 de forma oficial. El soporte de Jakarta Faces 4.1 (parte de EE11) todavía no fue validado contra un despliegue real en WildFly.
 
+## Arquitectura de módulos
 
-**CORE:** agrupa las funciones de manejo de errores, log de eventos, configuración de la aplicación, gestión de recursos entre otros.
+Los módulos forman una cadena de dependencias en un único sentido — cada nivel depende únicamente de los niveles anteriores:
 
-![Core Stack](https://github.com/jencisopy/JavaBeanStack/blob/master/core/src/main/resources/images/javabeanstack_core.png)
+```
+interfaces   →   commons   →   core   →   business   →   web
 
+aws  (integración AWS S3, independiente de la cadena principal)
+```
 
+No se deben introducir imports que inviertan este orden (por ejemplo, que `core` dependa de `business`).
 
+### `interfaces`
+Solo contratos (interfaces Java), sin implementaciones. Es la base de la que dependen todos los demás módulos. Expone además algunos tipos de Apache POI en su API pública (`IExcelRowProcessor`, `IExcelImportSrv`), por eso declara `poi-ooxml` como dependencia.
 
+### `commons`
+Utilidades de propósito general sin dependencias de negocio: manejo de strings, archivos, criptografía y fechas. Es el módulo con tests unitarios puros, ejecutables sin infraestructura externa.
 
-**COMMONS:** contiene clases para simplificar el uso de cadenas, objeto tipo fecha entre otros.
+### `core`
+Manejo de errores, log de eventos, utilidades XML, configuración de la aplicación y gestión de recursos.
 
-![Commons Stack](https://github.com/jencisopy/JavaBeanStack/blob/master/commons/src/main/resources/images/javabeanstack_commons.png)
+Componentes clave:
+- **`IErrorReg` / `ErrorReg`** — representación unificada de errores entre capas.
+- **`ErrorManager`** — utilidad estática de log de errores (`ErrorManager.showError(ex, LOGGER)`).
+- **`LogManager`** — persiste mensajes/eventos en la tabla `AppMessage`.
 
+### `business`
+Acceso a datos (JPA/EJB), servicios de negocio y seguridad. Es el módulo con mayor complejidad y el único cuyos tests son de integración.
 
-## Licencia ##
-**GNU Lesser General Public License v3.0**
+Componentes clave:
+- **`DataRow`** — clase base de la que heredan las entidades de aplicación. Trackea el estado de la acción CRUD (`INSERT=1`, `UPDATE=2`, `DELETE=3`), los cambios de campos y los errores de validación.
+- **`AbstractDAO`** — DAO genérico sobre JPA: construcción de queries, validación de entidades y manejo de errores.
+- **`AbstractDataLink`** — envuelve al DAO y gestiona el contexto de la unidad de persistencia, la sesión del usuario y el contexto de empresa/schema. Implementa `IDataLink`.
+- **`AbstractDataService`** — extiende el DAO agregando validación de negocio (claves únicas, foreign keys, validación por campo).
+- **`DBManager`** — singleton EJB que administra los `EntityManager` por unidad de persistencia (lookup JNDI global).
+- **`IUserSession`** — contexto del usuario autenticado (login, empresa, roles, permisos).
+- **`ISecManager` / `Sessions`** — autenticación vía EJB, gestión de contraseñas, OAuth.
+- **`JwtManager` / `DigestAuth`** — soporte de autenticación JWT y HTTP Digest.
 
-https://github.com/jencisopy/JavaBeanStack/blob/master/LICENSE
+### `web`
+Controllers JSF, recursos REST, exportación a Excel/JasperReports y filtros web.
 
+Componentes clave:
+- **`AbstractDataController`** — managed bean JSF base para pantallas CRUD: maneja carga diferida (lazy loading), caché y despliegue de errores.
+- **`LazyDataRows`** — paginación lazy para DataTables de PrimeFaces.
+- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`).
+- **`ExcelUtil` / `ExcelImportSrv` / `ExcelUploadCtrl`** — importación de datos desde planillas Excel (Apache POI).
 
+### `aws`
+Integración con AWS S3. No forma parte de la cadena principal de dependencias — puede incorporarse de forma opcional según lo necesite la aplicación consumidora.
 
+## Compilación y build
 
+Todos los comandos se ejecutan desde la raíz del repositorio.
 
+```bash
+# Compilar todo el proyecto (incluye tests) sin ejecutarlos
+mvn test-compile -DskipTests
 
+# Build completo, generando los artefactos
+mvn clean package
 
+# Instalar los artefactos en el repositorio Maven local (~/.m2)
+mvn clean install
 
+# Compilar un módulo puntual junto con sus dependencias upstream
+mvn -pl web -am clean package
+```
+
+No hay lint ni formatter configurado en el proyecto; la validación del código se realiza compilando (`mvn test-compile` / `mvn test`).
+
+## Tests
+
+```bash
+# Todos los tests de un módulo
+mvn -pl commons test
+
+# Una clase de test puntual
+mvn -pl commons -Dtest=StringsTest test
+
+# Un método puntual dentro de una clase de test
+mvn -pl web -Dtest=ExcelUtilTest#testOpenWorkbook_File test
+
+# Cobertura de código (JaCoCo)
+mvn -Psonar-coverage test
+```
+
+Qué se puede ejecutar en un entorno local sin infraestructura adicional:
+
+- **`commons`** — tests unitarios puros, se pueden correr siempre.
+- **`business`** (y cualquier módulo cuyos tests extiendan `TestClass`) — son **tests de integración**: requieren un servidor WildFly/JBoss corriendo con el EAR de pruebas desplegado (lookup EJB remoto vía `http-remoting`). Se configuran mediante variables de entorno:
+
+  | Variable | Default | Descripción |
+  |---|---|---|
+  | `SERVER_TEST` | `localhost` | Host del servidor WildFly |
+  | `SERVER_TEST_PORT` | `8080` | Puerto del servidor |
+  | `SECURITY_PRINCIPAL` | — | Usuario para el lookup EJB remoto |
+  | `SECURITY_CREDENTIALS` | — | Contraseña para el lookup EJB remoto |
+  | `APP_USER_LOGIN` | `test1` | Usuario de aplicación para los tests |
+  | `APP_USER_PASS` | `test1` | Contraseña de aplicación para los tests |
+  | `APP_IDCOMPANY` | `2` | Id de empresa/contexto usado en los tests |
+
+  Sin ese servidor disponible, estos tests fallan directamente en el setup — no es un bug del código, es la infraestructura faltante.
+
+## Gestión de dependencias — notas relevantes
+
+- La versión de `poi-ooxml` está centralizada en el `dependencyManagement` del POM padre; `interfaces` y `web` la heredan sin declarar `<version>`. Debe mantenerse alineada con el `poi` base que arrastra JasperReports (POI exige que todos sus artefactos tengan la misma versión — verificar con `mvn dependency:tree -Dincludes=org.apache.poi -pl web`).
+- Los cuatro artefactos de JasperReports declarados en `web/pom.xml` (`jasperreports`, `jasperreports-servlets`, `jasperreports-excel-poi`, `jasperreports-groovy`) deben mantenerse siempre en la misma versión.
+- `jakarta.jakartaee-api` se declara con scope `provided`: la implementación la provee el servidor de aplicaciones (WildFly).
+- `log4j-core` / `log4j-api` y JUnit se declaran en el POM padre; al actualizar, subir ambos artefactos de cada par juntos.
+
+## Publicación de artefactos
+
+Los artefactos se publican a un repositorio Nexus interno propio, no a Maven Central. Para consumir JavaBeanStack desde otro proyecto Maven se puede:
+
+- Resolver los artefactos desde el repositorio Nexus interno, o
+- Compilar e instalar el proyecto localmente con `mvn clean install` para que quede disponible en el repositorio Maven local (`~/.m2`).
+
+Cada push a la rama `master` dispara automáticamente un `mvn deploy` (workflow `.github/workflows/maven_deploy.yml`) que publica los artefactos al Nexus interno. Antes de hacer push a `master` es importante verificar que el proyecto compila completo.
+
+## Estilo de código
+
+- Indentación de 4 espacios. Javadoc y comentarios en español.
+- Interfaces con prefijo `I` (`IDataRow`, `ILogManager`). Clases en PascalCase, métodos y campos en camelCase, constantes en `UPPER_SNAKE_CASE`.
+- Loggers declarados como `private static final Logger LOGGER = LogManager.getLogger(MiClase.class);` (log4j2).
+- No se usa `var`: se prefieren tipos explícitos, y tipos de interfaz en las firmas de métodos (`List`, `IDataRow`) en vez de tipos concretos.
+- Los métodos públicos de servicios y DAOs suelen declarar `throws Exception`; no se deben estrechar esas firmas al sobrescribir o extender.
+- Se prefiere extender las clases base abstractas existentes antes que reimplementar funcionalidad equivalente.
+
+## Licencia
+
+Este proyecto se distribuye bajo los términos de la **GNU Lesser General Public License v3.0 (LGPL v3.0)**. El texto completo de la licencia se encuentra en el archivo [`LICENSE`](LICENSE) de este repositorio.
