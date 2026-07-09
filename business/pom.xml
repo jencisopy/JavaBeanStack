@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb-client-bom</artifactId>
-            <version>36.0.1.Final</version>
+            <version>${wildfly.version}</version>
             <scope>test</scope>
             <type>pom</type>
         </dependency>

@@ -34,7 +34,6 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>15.0.6</version>
             <classifier>jakarta</classifier>
         </dependency>
 
@@ -42,22 +41,18 @@
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-            <version>7.0.4</version>
         </dependency>
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-servlets</artifactId>
-            <version>7.0.4</version>
         </dependency>        
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-excel-poi</artifactId>
-            <version>7.0.4</version>
         </dependency>                        
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-groovy</artifactId>
-            <version>7.0.4</version> 
         </dependency>
             
         <dependency>
@@ -68,7 +63,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>32.0.0-jre</version>
         </dependency>
     </dependencies>
 </project>
