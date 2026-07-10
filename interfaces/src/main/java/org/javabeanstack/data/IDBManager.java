@@ -56,7 +56,35 @@ public interface IDBManager extends Serializable{
      */
     public EntityManager createEntityManager(String key);
     /**
-     *  Ejecuta rollback de una transacción 
+     *  Ejecuta rollback de una transacción
      */
     public void rollBack();
+
+    /**
+     * Cierra un entityManager cuando fue creado por la aplicación (unidades de
+     * persistencia dinámicas). Los entityManager gestionados por el contenedor
+     * no requieren cierre explícito.
+     *
+     * @param em entity manager a cerrar.
+     */
+    public default void closeEntityManager(EntityManager em) {
+    }
+
+    /**
+     * Cierra los entityManager application-managed (de unidades de persistencia
+     * dinámicas, no declaradas en persistence.xml) creados sin transacción en
+     * el thread actual. Lo invoca el DAO al finalizar cada método de negocio.
+     */
+    public default void closeEntityManagers() {
+    }
+
+    /**
+     * Cierra y descarta el entity manager factory dinámico de una unidad de
+     * persistencia (ej. baja de una empresa en caliente). Un acceso posterior
+     * a la misma unidad vuelve a fabricarlo.
+     *
+     * @param persistentUnit unidad de persistencia.
+     */
+    public default void closeFactory(String persistentUnit) {
+    }
 }
