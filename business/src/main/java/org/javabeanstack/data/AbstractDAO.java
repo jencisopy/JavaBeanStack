@@ -44,6 +44,8 @@ import jakarta.persistence.Query;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 import jakarta.transaction.Status;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.apache.logging.log4j.LogManager;
@@ -100,6 +102,17 @@ public abstract class AbstractDAO implements IGenericDAO {
     private ILogManager logMngr;
 
     public AbstractDAO() {
+    }
+
+    @AroundInvoke
+    protected Object closeDynamicEntityManagers(InvocationContext ctx) throws Exception {
+        try {
+            return ctx.proceed();
+        } finally {
+            if (dbManager != null) {
+                dbManager.closeEntityManagers();
+            }
+        }
     }
 
     @Override
