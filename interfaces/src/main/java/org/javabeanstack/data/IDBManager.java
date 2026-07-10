@@ -57,21 +57,6 @@ public interface IDBManager extends Serializable{
     public EntityManager createEntityManager(String key);
 
     /**
-     * Cierra un entityManager cuando fue creado por la aplicación. Los
-     * entityManager gestionados por el contenedor no requieren cierre explícito.
-     *
-     * @param em entity manager a cerrar.
-     */
-    public default void closeEntityManager(EntityManager em) {
-    }
-
-    /**
-     * Cierra los entityManager application-managed asociados al hilo actual.
-     */
-    public default void closeEntityManagers() {
-    }
-
-    /**
      *  Ejecuta rollback de una transacción
      */
     public void rollBack();

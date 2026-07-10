@@ -68,16 +68,28 @@ import org.javabeanstack.util.Dates;
  * (Jakarta Persistence 3.2).
  *
  * La configuración se lee de una unidad de persistencia plantilla (por defecto
- * DINAMIC_PU) declarada en persistence.xml con wildfly.jpa.managed=false para
- * que el contenedor no arranque su SessionFactory. De ahí se toman:
- * jbs.dynamic.units (lista o *), jbs.dynamic.static.units,
- * jbs.dynamic.datasource.pattern, jbs.dynamic.metamodel.pu,
- * jbs.dynamic.classes.extra, jbs.dynamic.provider, jbs.dynamic.mapping.files y
- * las propiedades hibernate/jbs a aplicar a cada unidad dinámica. Si la
- * plantilla no existe se clonan las propiedades de la PU de respaldo (PU2).
+ * DINAMIC_PU) declarada dentro de un COMENTARIO XML en persistence.xml (se
+ * verificó empíricamente que wildfly.jpa.managed=false no evita que WildFly 40
+ * arranque la SessionFactory; el comentario es la única forma garantizada de
+ * que el contenedor la ignore). loadTemplate() la parsea del classpath, tanto
+ * si está declarada como persistence-unit normal como si está dentro de un
+ * comentario. De ahí se toman: jbs.dynamic.units (lista o *),
+ * jbs.dynamic.static.units, jbs.dynamic.datasource.pattern,
+ * jbs.dynamic.metamodel.pu, jbs.dynamic.classes.extra, jbs.dynamic.provider,
+ * jbs.dynamic.mapping.files y las propiedades hibernate/jbs a aplicar a cada
+ * unidad dinámica. Si la plantilla no existe se clonan las propiedades del
+ * EMF de la PU de respaldo (PU2, loadTemplateFallback).
  *
- * La implementación a utilizar (DBManager o DBManagerV21) se decide en el
- * ejb-jar.xml de la aplicación, en el ejb-class del session bean DBManager.
+ * Con jbs.dynamic.units=PU o * se resuelve dinámicamente aunque la unidad
+ * esté declarada en persistence.xml (el switch de ejb-jar.xml decide de
+ * verdad); además, cualquier unidad no listada que falle el lookup JNDI con
+ * NameNotFoundException se resuelve dinámicamente como último recurso
+ * (getEntityManager).
+ *
+ * La implementación a utilizar (DBManager, DBManagerV20 o DBManagerV21) se
+ * decide en el ejb-jar.xml de la aplicación, en el ejb-class del session bean
+ * DBManager. Documentación completa en
+ * Maker-miscellaneous/docs/ia/DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md.
  *
  * @author Jorge Enciso
  */
@@ -155,23 +167,46 @@ public class DBManagerV21 extends DBManager {
     private static final String DEFAULT_METAMODEL_PU = "PU2";
     private static final String DEFAULT_STATIC_UNITS = "PU1,PU2";
 
-    //Propiedades de la PU plantilla (se leen una sola vez)
+    /**
+     * Propiedades de la PU plantilla (DINAMIC_PU); se leen una sola vez con
+     * loadTemplate() y quedan cacheadas para el resto del ciclo de vida del
+     * singleton (un redeploy vuelve a leerlas).
+     */
     private volatile Map<String, String> templateProperties;
 
-    //Unidades no declaradas en persistence.xml detectadas en runtime (evita
-    //reintentar el lookup JNDI fallido en cada acceso)
+    /**
+     * Unidades detectadas en runtime como no declaradas en persistence.xml
+     * (fallback de último recurso de getEntityManager); evita reintentar el
+     * lookup JNDI fallido en cada acceso posterior a la misma unidad.
+     */
     private final Set<String> dynamicPus = ConcurrentHashMap.newKeySet();
 
-    //EntityManagerFactory fabricados en runtime, uno por unidad de persistencia dinámica
+    /**
+     * EntityManagerFactory fabricados en runtime, uno por unidad de
+     * persistencia dinámica (computeIfAbsent en buildFactory); se cierran con
+     * closeFactory(pu) o al bajar el deployment (shutdownDynamicFactories).
+     */
     private final Map<String, EntityManagerFactory> dynamicFactories = new ConcurrentHashMap<>();
 
-    //EntityManagers dinámicos creados fuera de una transacción (lecturas), uno
-    //por unidad de persistencia y thread; los cierra purgeDynamicEntityManagers()
-    //al quedar ociosos (mismo criterio que el cache del DBManager clásico)
+    /**
+     * EntityManagers dinámicos creados fuera de una transacción (lecturas),
+     * uno por unidad de persistencia y thread; los cierra
+     * purgeDynamicEntityManagers() al quedar ociosos (mismo criterio de 5
+     * minutos que el cache del DBManager clásico) o closeEntityManagers() de
+     * forma inmediata.
+     */
     private final Map<String, EmData> dynamicEntityManagers = new ConcurrentHashMap<>();
 
+    /**
+     * Fecha de la última purga de entity managers dinámicos ociosos.
+     */
     private Date lastDynamicPurge = new Date();
 
+    /**
+     * Registro de sincronización de la transacción JTA actual: permite
+     * asociar un entity manager dinámico a la transacción activa (un recurso
+     * por transacción y unidad) y registrar su cierre en afterCompletion.
+     */
     @Resource
     TransactionSynchronizationRegistry tsr;
 
@@ -253,6 +288,14 @@ public class DBManagerV21 extends DBManager {
         return inList(persistentUnit, units);
     }
 
+    /**
+     * Verifica si una unidad de persistencia figura en una lista separada por
+     * comas (comparación sin distinguir mayúsculas/minúsculas).
+     *
+     * @param persistentUnit unidad de persistencia.
+     * @param list lista de unidades separadas por coma.
+     * @return verdadero si la unidad está en la lista.
+     */
     private boolean inList(String persistentUnit, String list) {
         for (String item : list.split(",")) {
             if (persistentUnit.equalsIgnoreCase(item.trim())) {
@@ -333,6 +376,11 @@ public class DBManagerV21 extends DBManager {
         return dataNew.em;
     }
 
+    /**
+     * Verifica si hay una transacción JTA activa en el thread actual.
+     *
+     * @return verdadero si hay transacción activa.
+     */
     private boolean isTransactionActive() {
         return tsr != null && tsr.getTransactionStatus() == Status.STATUS_ACTIVE;
     }
@@ -637,6 +685,10 @@ public class DBManagerV21 extends DBManager {
         dynamicFactories.clear();
     }
 
+    /**
+     * Entrada del cache de entity managers dinámicos: el entity manager y la
+     * fecha de su última referencia (para la purga por ociosidad).
+     */
     private static class EmData {
 
         EntityManager em;

@@ -51,8 +51,23 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Contiene metodos para gestionar el acceso a los datos, es utilizado por
- * GenericDAO
+ * DBManager clásico: implementación tradicional de IDBManager. Gestiona el
+ * acceso a los datos (lo utiliza GenericDAO) resolviendo el EntityManager de
+ * cada unidad de persistencia por lookup JNDI (java:app/em/PUn), publicado por
+ * el contenedor a partir de las persistence-unit declaradas en
+ * persistence.xml. Los EntityManager son container-managed y transaction-
+ * scoped: no requieren cierre explícito, solo se descartan del cache.
+ *
+ * Es la clase base de DBManagerV21 (agrega unidades de persistencia dinámicas
+ * fabricadas en runtime con PersistenceConfiguration, manteniendo intacto este
+ * camino JNDI para las unidades declaradas). Existe además DBManagerV20, una
+ * tercera implementación independiente de IDBManager con el mismo objetivo
+ * dinámico pero configurada por system properties.
+ *
+ * La implementación a utilizar (DBManager, DBManagerV20 o DBManagerV21) se
+ * decide en el ejb-jar.xml de la aplicación, en el ejb-class del session bean
+ * DBManager. Documentación completa en
+ * Maker-miscellaneous/docs/ia/STATIC_MANAGMENT_DBMANAGER.md.
  *
  * @author Jorge Enciso
  */
@@ -71,13 +86,30 @@ public class DBManager implements IDBManager {
     private static final String JNDI_EM_PREFIX
             = System.getProperty("jbs.persistence.jndi.em.prefix", "java:app/em/");
 
-    private int entityIdStrategic = IDBManager.PERSESSION;
+    /**
+     * Estrategia de creación/acceso de los entityManager: por thread
+     * (IDBManager.PERTHREAD) o por sesión de usuario (IDBManager.PERSESSION,
+     * la usada en Maker).
+     */
+    private final int entityIdStrategic = IDBManager.PERSESSION;
+
+    /**
+     * Fecha de la última purga del cache de entityManagers.
+     */
     private Date lastPurge = new Date();
 
-    //ConcurrentHashMap: getEntityManager() y purgeEntityManager() acceden y mutan
-    //el map concurrentemente bajo @Lock(READ)
+    /**
+     * Cache de entityManagers container-managed por clave "PU:sessionId" (o
+     * "PU:threadId" según entityIdStrategic). ConcurrentHashMap porque
+     * getEntityManager() y purgeEntityManager() lo acceden y mutan
+     * concurrentemente bajo @Lock(READ).
+     */
     private final Map<String, Data> entityManagers = new ConcurrentHashMap<>();
 
+    /**
+     * Contexto de la sesión EJB actual; se usa en rollBack() para marcar la
+     * transacción como rollback-only.
+     */
     @Resource
     SessionContext context;
 
@@ -95,9 +127,11 @@ public class DBManager implements IDBManager {
 
     /**
      * Devuelve un entityManager, lo crea si no existe en la unidad de
-     * persistencia solicitada
+     * persistencia solicitada. Si ya está en el cache actualiza su fecha de
+     * última referencia; en cada acceso dispara además la purga por
+     * ociosidad (purgeEntityManager).
      *
-     * @param key id thread
+     * @param key clave con formato "PU:sessionId" o "PU:threadId".
      * @return Devuelve un entityManager
      */
     @Override
@@ -126,10 +160,14 @@ public class DBManager implements IDBManager {
 
     /**
      * Crea un entitymanager dentro de un Map utiliza la unidad de persistencia
-     * y el threadid o sessionid del usuario como clave
+     * y el threadid o sessionid del usuario como clave. La unidad de
+     * persistencia se extrae del prefijo de la clave (antes de ":") y se
+     * resuelve por lookup JNDI (java:app/em/PUn, publicado por el contenedor a
+     * partir de la persistence-unit declarada en persistence.xml).
      *
-     * @param key id thread o sessionid del usuario
-     * @return el entity manager creado.
+     * @param key clave con formato "PU:sessionId" o "PU:threadId".
+     * @return el entity manager creado, o null si el lookup JNDI falla (ej.
+     * unidad no declarada en persistence.xml).
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -187,6 +225,23 @@ public class DBManager implements IDBManager {
         }
     }
 
+    /**
+     * Ejecuta un script de actualización de base de datos (nodos SCRIPTS del
+     * XML de actualización de Maker) sentencia por sentencia, filtrando por el
+     * motor de base de datos de la unidad de persistencia del usuario y
+     * registrando el progreso/errores en dic_logupdate y en el log de la
+     * aplicación. Las sentencias con dataconex=CATALOGO corren contra el
+     * schema catalogo (sessionId null); el resto contra el schema datos de la
+     * unidad de persistencia del usuario.
+     *
+     * @param dao DAO genérico usado para ejecutar las sentencias SQL.
+     * @param sessionId identificador de la sesión del usuario que ejecuta el script.
+     * @param domScript documento XML con los nodos /ROOT/SCRIPTS a ejecutar.
+     * @param parameters parámetros del script (secuencia, filename, classLog,
+     * CONTINUE_WITH_ERROR, etc.); se completan/actualizan durante la ejecución.
+     * @param logMngr gestor de logs de aplicación donde registrar errores (opcional).
+     * @throws Exception si una sentencia falla y CONTINUE_WITH_ERROR no está activo.
+     */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public static void dbScriptUpdateExecute(IGenericDAO dao, String sessionId, Document domScript, Map<String, Object> parameters, ILogManager logMngr) throws Exception {
 
@@ -330,6 +385,10 @@ public class DBManager implements IDBManager {
         dao.sqlExec(sessionId, endCommand, parameters);
     }
 
+    /**
+     * Entrada del cache de entityManagers: el entity manager container-managed
+     * y la fecha de su última referencia (para la purga por ociosidad).
+     */
     class Data {
 
         EntityManager em;
