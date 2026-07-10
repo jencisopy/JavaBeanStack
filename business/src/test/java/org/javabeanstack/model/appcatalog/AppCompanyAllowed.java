@@ -41,6 +41,7 @@ import org.javabeanstack.util.LocalDateTimeAdapter;
 @Entity
 @Table(name = "appcompanyallowed")
 public class AppCompanyAllowed extends DataRow implements IAppCompanyAllowed {
+    private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @Column(name = "iduser")

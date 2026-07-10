@@ -56,6 +56,7 @@ import org.javabeanstack.util.Strings;
 @Table(name = "appcompany", uniqueConstraints = {@UniqueConstraint(columnNames = {"idcompany"})})
 @XmlRootElement
 public class AppCompany extends DataRow implements IAppCompany {
+    private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @NotNull

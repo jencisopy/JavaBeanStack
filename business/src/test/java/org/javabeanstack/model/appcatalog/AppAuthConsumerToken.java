@@ -58,6 +58,7 @@ import org.javabeanstack.util.LocalDateTimeAdapter;
 @XmlRootElement
 @SequenceGenerator(name = "APPAUTHCONSUMERTOKEN_SEQ", allocationSize = 1, sequenceName = "APPAUTHCONSUMERTOKEN_SEQ")
 public class AppAuthConsumerToken extends DataRow implements IAppAuthConsumerToken {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "APPAUTHCONSUMERTOKEN_SEQ")

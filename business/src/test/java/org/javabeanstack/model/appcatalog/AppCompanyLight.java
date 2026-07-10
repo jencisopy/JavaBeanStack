@@ -50,6 +50,7 @@ import org.javabeanstack.util.LocalDateTimeAdapter;
 @Table(name = "appcompany") 
 @XmlRootElement
 public class AppCompanyLight extends DataRow implements IAppCompany {
+    private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @NotNull

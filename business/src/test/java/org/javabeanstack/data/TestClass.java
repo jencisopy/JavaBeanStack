@@ -49,7 +49,7 @@ public class TestClass {
     static protected String sessionId;
     static protected String error;
     static protected String jndiProject = "/TestProjects-ear/TestProjects-ejb/";
-    //static protected String jndiProject = "/Maker-ear/Maker-ejb/";
+    //static protected String jndiProject = "/Maker-ear/Maker-services/";
     //static protected String jndiProject = "/Maker-web/";
 
     public TestClass() {
@@ -68,13 +68,12 @@ public class TestClass {
             Long app_idcompany = Long.valueOf((System.getenv("APP_IDCOMPANY") != null) ? System.getenv("APP_IDCOMPANY") : "2");
             
             Properties p = new Properties();
-            p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-            p.put(Context.PROVIDER_URL, "http-remoting://"+server+":"+port);
+            p.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
+            p.put(Context.PROVIDER_URL, "remote+http://"+server+":"+port);
             if (!user.isEmpty()){
                 p.put(Context.SECURITY_PRINCIPAL, user);
                 p.put(Context.SECURITY_CREDENTIALS, password);
             }
-            p.put("jboss.naming.client.ejb.context", true);
             context = new InitialContext(p);
 
             ISecManager secMngr = (ISecManager) context.lookup(jndiProject + "SecManager!org.javabeanstack.security.ISecManagerRemote");
