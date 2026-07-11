@@ -28,7 +28,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import jakarta.annotation.Resource;
@@ -51,15 +50,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.log.ILogManager;
-import org.javabeanstack.model.IAppLogRecord;
 import org.javabeanstack.util.Dates;
-import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
-import org.javabeanstack.xml.DomW3cParser;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * DBManager versión 2.0: gestiona el acceso a los datos (lo utiliza GenericDAO)
@@ -695,149 +687,6 @@ public class DBManagerV20 implements IDBManager {
         } catch (Exception exp) {
             //
         }
-    }
-
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public static void dbScriptUpdateExecute(IGenericDAO dao, String sessionId, Document domScript, Map<String, Object> parameters, ILogManager logMngr) throws Exception {
-
-        List<Element> sqlScriptNodes = DomW3cParser.getChildren(domScript, "/ROOT/SCRIPTS");
-        IErrorReg errorReturn;
-
-        String logTable = "dic_logupdate";
-        Class clazz = (Class) parameters.get("classLog");
-        if (clazz != null) {
-            logTable = DataInfo.getTableName(clazz);
-        }
-
-        //Inicio================================================
-        String initCommand = "INSERT INTO {schema}." + logTable + " "
-                + "(secuencia, filename, script, appuser) "
-                + "     values "
-                + "(:secuencia, :filename, :script, :appuser)";
-
-        dao.sqlExec(sessionId, initCommand, parameters);
-
-        String persistUnit = dao.getDBLinkInfo(sessionId).getPersistUnit();
-        String motorDatos = dao.getDataEngine(persistUnit);
-        String filename = (String)parameters.get("filename");
-        
-        for (Element sqlScriptNode : sqlScriptNodes) {
-            //Solo se ejecuta los scripts que corresponde a motor de la base 
-            if (!sqlScriptNode.getAttribute("motor").equals(motorDatos)) {
-                continue;
-            }
-            String stringEnd = "\nGO\n";
-            if (!Fn.inList(motorDatos, "SQLSERVER", "Microsoft SQL Server", "SYBASE")) {
-                stringEnd = "\n/\n";
-            }
-            String script = sqlScriptNode.getTextContent();
-            //Actualizar script a ejecutarse
-            parameters.put("script", DomW3cParser.getXmlText(sqlScriptNode));
-            String command = "UPDATE {schema}." + logTable
-                    + " SET script = :script "
-                    + " where secuencia = :secuencia";
-            dao.sqlExec(sessionId, command, parameters);
-            parameters.put("script", "");
-
-            while (!script.isEmpty()) {
-                String sentencia;
-                int posicion = script.toUpperCase().indexOf(stringEnd);
-                if (posicion < 0) {
-                    sentencia = Strings.substr(script, 0);
-                    script = "";
-                } else {
-                    sentencia = Strings.substr(script, 0, posicion);
-                    script = Strings.substr(script, posicion + stringEnd.length());
-                }
-                // Ejecución del Script
-                if (sqlScriptNode.getAttribute("dataconex").equals("CATALOGO")) {
-                    //En el schema catalogo.
-                    errorReturn = dao.sqlExec(null, sentencia, parameters);
-                    if (errorReturn.getErrorNumber() > 0) {
-                        //Se permite errores y se continua
-                        String message = "ERROR en PU1, SCRIPT " + filename + ", " + errorReturn.getMessage();
-                        Exception ex;
-                        if (errorReturn.getException() != null) {
-                            ex = errorReturn.getException();
-                        } else {
-                            ex = new Exception(message);
-                        }
-                        ErrorManager.showError(ex, LOGGER);
-                        if (logMngr != null) {
-                            IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
-                            String messageInfo = "";
-                            if (errorReturn.getException() != null) {
-                                messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
-                            }
-                            logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
-                            logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
-                            logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
-                            logRecord.setMessage(message);
-                            logRecord.setMessageInfo(messageInfo);
-                            logRecord.setMessageNumber(1);
-                            logMngr.dbWrite(logRecord, sessionId);
-                        }
-                    }
-                } else {
-                    //En el schema datos.
-                    errorReturn = dao.sqlExec(sessionId, sentencia, parameters);
-                    if (errorReturn.getErrorNumber() > 0) {
-                        String message = "ERROR en unidad de persistencia " + persistUnit + ", SCRIPT " + filename + ", " + errorReturn.getMessage();
-                        Exception ex;
-                        if (errorReturn.getException() != null) {
-                            ex = errorReturn.getException();
-                        } else {
-                            ex = new Exception(message);
-                        }
-                        if (!Fn.toLogical(parameters.get("CONTINUE_WITH_ERROR"))) {
-                            //Revertir proceso==================================
-                            String revertCommand = "delete from {schema}." + logTable + " where secuencia = :secuencia";
-                            dao.sqlExec(sessionId, revertCommand, parameters);
-                            //Registrar en el log de la base
-                            if (logMngr != null) {
-                                IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
-                                String messageInfo = "";
-                                if (errorReturn.getException() != null) {
-                                    messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
-                                }
-                                logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
-                                logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
-                                logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
-                                logRecord.setMessage(message);
-                                logRecord.setMessageInfo(messageInfo);
-                                logRecord.setMessageNumber(1);
-                                logMngr.dbWrite(logRecord, sessionId);
-                            }
-                            throw ex;
-                        } else {
-                            ErrorManager.showError(ex, LOGGER);                            
-                            //Registrar en el log de la base
-                            if (logMngr != null) {
-                                IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
-                                String messageInfo = "";
-                                if (errorReturn.getException() != null) {
-                                    messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
-                                }
-                                logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
-                                logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
-                                logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
-                                logRecord.setMessage(message);
-                                logRecord.setMessageInfo(messageInfo);
-                                logRecord.setMessageNumber(1);
-                                logMngr.dbWrite(logRecord, sessionId);
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
-        //Fin ============================================
-        String endCommand = "UPDATE {schema}." + logTable
-                + " SET concluido = {true} "
-                + " where secuencia = :secuencia";
-
-        dao.sqlExec(sessionId, endCommand, parameters);
     }
 
     /**
