@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Archivo de prueba SIN unidad plantilla DEFAULT: una unidad no definida
+    explícitamente debe producir un error claro (IllegalStateException).-->
+<persistence version="3.2"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd">
+    <persistence-unit name="PU3" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jta-data-source>jdbc/Maker950DS_3</jta-data-source>
+        <properties>
+            <property name="jbs.dbengine" value="SQLSERVER"/>
+        </properties>
+    </persistence-unit>
+</persistence>

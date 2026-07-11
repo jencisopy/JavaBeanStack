@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Archivo de configuración dinámica de PRUEBA para DBManagerV30Test
+    (adaptado del dynamic_persistence.xml de Maker). Ejercita:
+    - PU3: unidad completa estilo Maker (SQL Server) con propiedades que deben
+      filtrarse (jbs.dynamic.*, jboss.*, wildfly.*), clase extra y mapping-file.
+    - PU5: unidad con configuración PROPIA distinta (dialecto PostgreSQL) para
+      verificar que cada unidad puede diferir de las demás.
+    - pu6: nombre en minúscula (debe normalizarse a PU6) y sin <provider>
+      (debe asumir Hibernate).
+    - PU1: siempre estática, debe IGNORARSE aunque figure acá.
+    - BROKEN: sin jta-data-source, debe descartarse sin afectar a las demás.
+    - DEFAULT: plantilla con placeholder {n} en el datasource y en una
+      propiedad.-->
+<persistence version="3.2"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd">
+    <persistence-unit name="PU3" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jta-data-source>jdbc/Maker950DS_3</jta-data-source>
+        <class>org.javabeanstack.data.DBManager</class>
+        <mapping-file>META-INF/orm-extra.xml</mapping-file>
+        <properties>
+            <property name="jbs.dynamic.metamodel.pu" value="PU2"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MkSqlServer2008"/>
+            <property name="hibernate.max_fetch_depth" value="0"/>
+            <property name="hibernate.jpa.compliance.global_id_generators" value="false"/>
+            <property name="hibernate.generate_statistics" value="false"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.default_schema" value="datos"/>
+            <property name="jbs.dbengine" value="SQLSERVER"/>
+            <property name="jboss.entity.manager.jndi.name" value="java:app/em/PU3"/>
+            <property name="wildfly.jpa.managed" value="false"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="PU5" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jta-data-source>jdbc/MakerPostgresDS_5</jta-data-source>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.default_schema" value="public"/>
+            <property name="jbs.dbengine" value="POSTGRES"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="pu6" transaction-type="JTA">
+        <jta-data-source>jdbc/Maker950DS_6</jta-data-source>
+        <properties>
+            <property name="jbs.dbengine" value="SQLSERVER"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="PU1" transaction-type="JTA">
+        <jta-data-source>jdbc/Maker950DS_1</jta-data-source>
+        <properties>
+            <property name="hibernate.default_schema" value="catalogo"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="BROKEN" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <properties>
+            <property name="jbs.dbengine" value="SQLSERVER"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="DEFAULT" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jta-data-source>jdbc/Maker950DS_{n}</jta-data-source>
+        <class>org.javabeanstack.data.DBManager</class>
+        <properties>
+            <property name="jbs.dynamic.metamodel.pu" value="PU2"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MkSqlServer2008"/>
+            <property name="hibernate.default_schema" value="datos"/>
+            <property name="jbs.dbengine" value="SQLSERVER"/>
+            <property name="jbs.test.unit.number" value="{n}"/>
+        </properties>
+    </persistence-unit>
+</persistence>

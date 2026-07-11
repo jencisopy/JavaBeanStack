@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Archivo de prueba CORRUPTO (XML mal formado): DBManagerV30 debe degradar
+    al comportamiento del DBManager clásico sin lanzar excepciones.-->
+<persistence version="3.2">
+    <persistence-unit name="PU3" transaction-type="JTA">
+        <jta-data-source>jdbc/Maker950DS_3
+    </persistence-unit>
+</persistence
