@@ -1,28 +1,28 @@
 # Gestión dinámica de unidades de persistencia — DBManagerV30
 
-> Familia de documentos: [STATIC_MANAGMENT_DBMANAGER.md](STATIC_MANAGMENT_DBMANAGER.md) (esquema tradicional) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md) (variante por plantilla en persistence.xml) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md) (variante por system properties).
+> Familia de documentos: [STATIC_MANAGMENT_DBMANAGER.md](STATIC_MANAGMENT_DBMANAGER.md) (esquema tradicional) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md) (variante por system properties).
 > Implementado el 2026-07-11 sobre JavaBeanStack (rama `dbmanager-v30`), Maker y TestProject.
 > Stack: Jakarta EE 11, Hibernate 7.3.2.Final (Jakarta Persistence 3.2), WildFly 40.
 
 ## 1. Problema que resuelve
 
-`DBManagerV21` fabrica las unidades de persistencia dinámicas desde una plantilla **única** (`DINAMIC_PU` comentada en `persistence.xml`): todas las empresas comparten la misma configuración — mismo dialecto, mismo schema, mismas propiedades Hibernate. Esa uniformidad es una limitación real: cada empresa puede necesitar propiedades propias (el caso clave es un **dialecto distinto por empresa**, esencial para la migración gradual SQL Server → PostgreSQL).
+Las primeras variantes dinámicas fabricaban las unidades de persistencia desde una configuración **única** compartida: todas las empresas con el mismo dialecto, mismo schema, mismas propiedades Hibernate. Esa uniformidad era una limitación real: cada empresa puede necesitar propiedades propias (el caso clave es un **dialecto distinto por empresa**, esencial para la migración gradual SQL Server → PostgreSQL).
 
 `DBManagerV30` resuelve esto con un archivo de configuración dedicado, **`META-INF/dynamic_persistence.xml`**, con el mismo esquema que `persistence.xml` pero conteniendo **solo las unidades dinámicas, cada una con su spec completa e independiente**.
 
-Ventaja estructural adicional: como el archivo **no se llama `persistence.xml`**, el contenedor no lo escanea y nada bootea en el arranque — desaparece el "hack" del comentario XML que necesita V21 (recordar: `wildfly.jpa.managed=false` no funciona en WildFly 40).
+Ventaja estructural adicional: como el archivo **no se llama `persistence.xml`**, el contenedor no lo escanea y nada bootea en el arranque — sin necesidad de "hacks" de configuración comentada dentro de `persistence.xml` (recordar: `wildfly.jpa.managed=false` no funciona en WildFly 40).
 
 ## 2. Arquitectura
 
-Cuatro implementaciones del mismo contrato `IDBManager`, **conmutables por `ejb-jar.xml`** sin recompilar:
+Tres implementaciones del mismo contrato `IDBManager`, **conmutables por `ejb-jar.xml`** sin recompilar:
 
-| | `DBManager` | `DBManagerV20` | `DBManagerV21` | `DBManagerV30` |
-|---|---|---|---|---|
-| Estructura | base | independiente | extiende `DBManager` | **independiente (autocontenida)** |
-| PUs dinámicas | no | sí | sí | sí |
-| Configuración | persistence.xml | system properties JVM | plantilla `DINAMIC_PU` comentada | **`dynamic_persistence.xml`** |
-| Config por unidad | — | overrides parciales | única (compartida) | **completa e independiente** |
-| Dialecto por empresa | no | limitado | no | **sí** |
+| | `DBManager` | `DBManagerV20` | `DBManagerV30` |
+|---|---|---|---|
+| Estructura | base | independiente | **independiente (autocontenida)** |
+| PUs dinámicas | no | sí | sí |
+| Configuración | persistence.xml | system properties JVM | **`dynamic_persistence.xml`** |
+| Config por unidad | — | overrides parciales | **completa e independiente** |
+| Dialecto por empresa | no | limitado | **sí** |
 
 `DBManagerV30` **no hereda** de las otras clases: es autocontenida, implementa `IDBManager` directamente y todo su comportamiento se lee de arriba a abajo en un único archivo (`business/src/main/java/org/javabeanstack/data/DBManagerV30.java`, JavaBeanStack). Decisión deliberada: se aceptó duplicar ~100 líneas del camino clásico a cambio de claridad y de poder evolucionar V30 sin riesgo de romper las versiones ya validadas.
 
@@ -33,7 +33,6 @@ La selección se hace en el session bean `DBManager` de cada `ejb-jar.xml` (Make
     <ejb-name>DBManager</ejb-name>
     <ejb-class>org.javabeanstack.data.DBManager</ejb-class>
     <!--<ejb-class>org.javabeanstack.data.DBManagerV20</ejb-class>-->
-    <!--<ejb-class>org.javabeanstack.data.DBManagerV21</ejb-class>-->
     <!--<ejb-class>org.javabeanstack.data.DBManagerV30</ejb-class>-->
     <business-local>org.javabeanstack.data.IDBManager</business-local>
     <session-type>Singleton</session-type>
@@ -105,7 +104,7 @@ Para cada clave `"PU:sessionId"` que recibe `getEntityManager(key)`:
 
 ## 5. Ciclo de vida de los EntityManager
 
-Idéntico al esquema validado en V21, implementado localmente:
+Esquema ya validado en las variantes dinámicas previas, implementado localmente:
 
 - **Con transacción JTA activa**: un EM por transacción y unidad, asociado vía `TransactionSynchronizationRegistry` (`putResource`) y cerrado determinísticamente en `Synchronization.afterCompletion`.
 - **Sin transacción** (lecturas): un EM por unidad y thread en el cache, con `em.clear()` en cada reuso (contexto fresco, misma semántica que el EM transaction-scoped del camino estático). Lo cierra de inmediato `closeEntityManagers()` — invocado por el `@AroundInvoke` de `AbstractDAO` al finalizar cada método de negocio — y la purga de 5 minutos actúa como respaldo.
@@ -145,7 +144,7 @@ Idéntico al esquema validado en V21, implementado localmente:
 - La unidad de metamodelo (`jbs.dynamic.metamodel.pu`, default PU2) **debe seguir declarada** en `persistence.xml`: de su EMF se toman las clases del modelo.
 - El parser XML está endurecido (secure processing + `disallow-doctype-decl`, anti-XXE) y el archivo se lee **una sola vez** por ciclo de vida del singleton (un redeploy lo relee).
 - Cada WAR/EAR que embebe las PUs resuelve su propio archivo (namespace `java:app`), igual que con `persistence.xml`.
-- El `DBManager` clásico, V20 y V21 **ignoran por completo** `dynamic_persistence.xml`: el archivo es inerte salvo que V30 esté activo.
+- El `DBManager` clásico y V20 **ignoran por completo** `dynamic_persistence.xml`: el archivo es inerte salvo que V30 esté activo.
 
 ## 9. Propiedades Hibernate adicionales por unidad (tuning, segunda caché / Infinispan)
 

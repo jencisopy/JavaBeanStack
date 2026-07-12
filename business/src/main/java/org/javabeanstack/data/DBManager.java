@@ -58,13 +58,13 @@ import org.w3c.dom.Element;
  * persistence.xml. Los EntityManager son container-managed y transaction-
  * scoped: no requieren cierre explícito, solo se descartan del cache.
  *
- * Es la clase base de DBManagerV21 (agrega unidades de persistencia dinámicas
- * fabricadas en runtime con PersistenceConfiguration, manteniendo intacto este
- * camino JNDI para las unidades declaradas). Existe además DBManagerV20, una
- * tercera implementación independiente de IDBManager con el mismo objetivo
- * dinámico pero configurada por system properties.
+ * Existen además DBManagerV20 y DBManagerV30, implementaciones independientes
+ * de IDBManager que agregan unidades de persistencia dinámicas fabricadas en
+ * runtime con PersistenceConfiguration (por system properties y por
+ * META-INF/dynamic_persistence.xml respectivamente), manteniendo intacto este
+ * camino JNDI para las unidades declaradas.
  *
- * La implementación a utilizar (DBManager, DBManagerV20 o DBManagerV21) se
+ * La implementación a utilizar (DBManager, DBManagerV20 o DBManagerV30) se
  * decide en el ejb-jar.xml de la aplicación, en el ejb-class del session bean
  * DBManager. Documentación completa en
  * Maker-miscellaneous/docs/ia/STATIC_MANAGMENT_DBMANAGER.md.

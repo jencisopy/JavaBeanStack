@@ -12,7 +12,6 @@ copia, y los ejemplos usan a Maker como aplicación de referencia.
 |---|---|
 | [`STATIC_MANAGMENT_DBMANAGER.md`](STATIC_MANAGMENT_DBMANAGER.md) | Esquema tradicional: PUs declaradas en persistence.xml, bindings JNDI `java:app/em/PUn`, `DBManager` clásico. |
 | [`DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md`](DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md) | `DBManagerV20`: EMF dinámicos configurados por system properties de la JVM (`jbs.persistence.dynamic.*`). |
-| [`DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md`](DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md) | `DBManagerV21`: EMF dinámicos configurados por la plantilla `DINAMIC_PU` comentada en persistence.xml. |
 | [`DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md`](DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md) | `DBManagerV30` (autocontenida): unidades definidas en `META-INF/dynamic_persistence.xml`, una spec completa por unidad (dialecto propio por empresa), plantilla `DEFAULT` con `{n}` para alta de empresas sin redeploy. Test unitario offline: `DBManagerV30Test`. |
 
 ## Otros documentos

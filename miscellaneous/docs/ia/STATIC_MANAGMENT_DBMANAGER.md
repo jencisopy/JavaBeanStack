@@ -1,6 +1,6 @@
 # Gestión estática de unidades de persistencia — DBManager clásico
 
-> Familia de documentos: [DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md) (variante dinámica DBManagerV21, plantilla `DINAMIC_PU`) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md) (variante dinámica DBManagerV20, system properties) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md) (variante dinámica DBManagerV30, archivo dynamic_persistence.xml con una spec por unidad).
+> Familia de documentos: [DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md) (variante dinámica DBManagerV20, system properties) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md) (variante dinámica DBManagerV30, archivo dynamic_persistence.xml con una spec por unidad).
 > Este es el esquema **tradicional y actualmente activo** en producción de Maker.
 
 ## 1. Descripción general
@@ -110,8 +110,8 @@ Los EM son tx-scoped: dentro de una transacción JTA todas las operaciones compa
 
 ## 5. Cómo asegurarse de que este esquema está activo
 
-- En los tres `ejb-jar.xml` el bean `DBManager` debe apuntar a `org.javabeanstack.data.DBManager` (la alternativa `DBManagerV21` queda comentada al lado).
+- En los tres `ejb-jar.xml` el bean `DBManager` debe apuntar a `org.javabeanstack.data.DBManager` (las alternativas dinámicas quedan comentadas al lado).
 - En el log de boot de WildFly aparecen las 10 líneas `HHH008540: Processing PersistenceUnitInfo [name: PUn]`.
-- En `standalone/log/oymframe.log` los EM se crean con `[org.javabeanstack.data.DBManager] --------- Se ha creado un nuevo EntityManager --------- PUn:...` y no hay ninguna línea de `DBManagerV21` ni de "EntityManagerFactory dinámico".
+- En `standalone/log/oymframe.log` los EM se crean con `[org.javabeanstack.data.DBManager] --------- Se ha creado un nuevo EntityManager --------- PUn:...` y no hay ninguna línea de `DBManagerV30` ni de "EntityManagerFactory dinámico".
 
-> La plantilla `DINAMIC_PU` comentada al final del persistence.xml y los métodos `default` de `IDBManager` son **inertes** en este esquema: el DBManager clásico no los lee ni los usa.
+> El archivo `dynamic_persistence.xml` y los métodos `default` de `IDBManager` son **inertes** en este esquema: el DBManager clásico no los lee ni los usa.

@@ -1,10 +1,10 @@
 # Gestión dinámica de datos con DBManagerV20
 
-> Familia de documentos: [STATIC_MANAGMENT_DBMANAGER.md](STATIC_MANAGMENT_DBMANAGER.md) (esquema tradicional) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V21.md) (variante V21, configurada por plantilla `DINAMIC_PU` en persistence.xml) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md) (variante V30, archivo dynamic_persistence.xml con una spec por unidad).
+> Familia de documentos: [STATIC_MANAGMENT_DBMANAGER.md](STATIC_MANAGMENT_DBMANAGER.md) (esquema tradicional) · [DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md](DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md) (variante V30, archivo dynamic_persistence.xml con una spec por unidad).
 > Variante documentada: `org.javabeanstack.data.DBManagerV20`, prototipo basado en `jakarta.persistence.PersistenceConfiguration` y configuración por system properties.
 > Trabajo realizado el 2026-07-10 sobre JavaBeanStack y Maker, orientado a WildFly 40, Jakarta Persistence 3.2 y Hibernate 7.
 >
-> **V20 vs V21 en una línea**: V20 se configura **por servidor** (system properties de la JVM, requiere reinicio para cambiar; permite datasource arbitrario por PU) y necesita el archivo `jbs-managed-classes.txt`; V21 se configura **dentro del EAR** (plantilla `DINAMIC_PU` comentada en persistence.xml) y toma las clases del metamodelo de una PU declarada, sin archivo de clases.
+> **V20 vs V30 en una línea**: V20 se configura **por servidor** (system properties de la JVM, requiere reinicio para cambiar; permite datasource arbitrario por PU) y necesita el archivo `jbs-managed-classes.txt`; V30 se configura **dentro del EAR** (`META-INF/dynamic_persistence.xml`, una spec completa por unidad) y toma las clases del metamodelo de una PU declarada, sin archivo de clases.
 
 ## 1. Objetivo
 
@@ -48,7 +48,7 @@ Commits relacionados en JavaBeanStack:
 | `04dda34` | Agrega soporte experimental de EMF dinámico (rama `feature/persistence-configuration-emf`). |
 | `72a6a73` | Separa `DBManagerV20` experimental y restaura `DBManager`. |
 | `e395f97` | Merge de `feature/persistence-configuration-emf` a `master` (trajo el `@AroundInvoke` de `AbstractDAO`). |
-| _(pendiente)_ | Purga de respaldo por ociosidad en `DBManagerV20` (paridad con V21) + fix de métodos duplicados en `IDBManager` que dejó el merge. |
+| _(pendiente)_ | Purga de respaldo por ociosidad en `DBManagerV20` (paridad con las demás variantes dinámicas) + fix de métodos duplicados en `IDBManager` que dejó el merge. |
 
 Validación realizada durante el prototipo:
 
@@ -210,7 +210,7 @@ Sin transacción activa:
 El cierre sin transacción tiene **dos niveles**:
 
 1. **Principal (inmediato)**: el `@AroundInvoke` de `AbstractDAO` llama a `dbManager.closeEntityManagers()` al finalizar cada invocación DAO. Esta parte depende de los métodos default agregados a `IDBManager`.
-2. **Respaldo (purga por ociosidad)**: `purgeEntityManager()` cierra los EM dinámicos con más de 5 minutos sin uso — mismo criterio que el cache de EMs declarados y misma mecánica que `DBManagerV21`. Cubre cualquier EM que se cree por fuera del ciclo del interceptor. Se agregó el 2026-07-10 (el prototipo original usaba un `ThreadLocal` que no admitía purga desde otros threads).
+2. **Respaldo (purga por ociosidad)**: `purgeEntityManager()` cierra los EM dinámicos con más de 5 minutos sin uso — mismo criterio que el cache de EMs declarados y misma mecánica que `DBManagerV30`. Cubre cualquier EM que se cree por fuera del ciclo del interceptor. Se agregó el 2026-07-10 (el prototipo original usaba un `ThreadLocal` que no admitía purga desde otros threads).
 
 ## 5. Archivos involucrados
 

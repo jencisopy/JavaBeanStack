@@ -98,8 +98,8 @@ import org.javabeanstack.util.Dates;
  * closeEntityManagers() (lo invoca el interceptor de AbstractDAO) o por la
  * purga de ociosidad de 5 minutos como respaldo.
  *
- * La implementación a utilizar (DBManager, DBManagerV20, DBManagerV21 o
- * DBManagerV30) se decide en el ejb-jar.xml de la aplicación, en el ejb-class
+ * La implementación a utilizar (DBManager, DBManagerV20 o DBManagerV30) se
+ * decide en el ejb-jar.xml de la aplicación, en el ejb-class
  * del session bean DBManager. Documentación completa en
  * Maker-miscellaneous/docs/ia/DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md.
  *

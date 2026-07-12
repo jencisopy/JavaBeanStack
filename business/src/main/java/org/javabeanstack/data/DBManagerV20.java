@@ -59,8 +59,8 @@ import org.javabeanstack.util.Strings;
  * declaradas en persistence.xml con unidades de persistencia DINÁMICAS,
  * fabricadas en runtime con PersistenceConfiguration (Jakarta Persistence 3.2).
  *
- * A diferencia de DBManagerV21 (que lee su configuración de la plantilla
- * DINAMIC_PU comentada en persistence.xml), esta variante se configura por
+ * A diferencia de DBManagerV30 (que lee su configuración de
+ * META-INF/dynamic_persistence.xml), esta variante se configura por
  * SYSTEM PROPERTIES de la JVM (prefijo jbs.persistence.dynamic.*), definidas
  * típicamente en bin/maker-persistence.conf del WildFly:
  *
@@ -79,7 +79,7 @@ import org.javabeanstack.util.Strings;
  * que libera el DAO al finalizar cada método de negocio (closeEntityManagers)
  * y, como respaldo, la purga por ociosidad de purgeEntityManager().
  *
- * La implementación a utilizar (DBManager, DBManagerV20 o DBManagerV21) se
+ * La implementación a utilizar (DBManager, DBManagerV20 o DBManagerV30) se
  * elige en el ejb-jar.xml de la aplicación, en el ejb-class del session bean
  * DBManager. Documentación completa en
  * Maker-miscellaneous/docs/ia/DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md.
