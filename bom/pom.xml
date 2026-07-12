@@ -57,7 +57,7 @@
         <junit.jupiter.version>5.13.1</junit.jupiter.version>
         <poi.version>5.4.1</poi.version>
         <primefaces.version>15.0.6</primefaces.version>
-        <jasperreports.version>7.0.4</jasperreports.version>
+        <jasperreports.version>7.0.7</jasperreports.version>
     </properties>
 
     <dependencyManagement>
