@@ -33,18 +33,36 @@ Al comparar o portar cambios entre ramas, las diferencias `javax.*` ↔ `jakarta
 Los módulos forman una cadena de dependencias en un único sentido — cada nivel depende únicamente de los niveles anteriores:
 
 ```
-interfaces   →   commons   →   core   →   business   →   web
+bom         (Bill of Materials — solo dependencyManagement; es el parent de jbs-parent)
+    ↓
+interfaces  (solo contratos, sin implementaciones)
+    ↓
+commons     (utilidades de strings, archivos, crypto, fechas)
+    ↓
+core        (manejo de errores, log de eventos, XML, configuración, recursos)
+    ↓
+business    (acceso a datos JPA/EJB, servicios, seguridad, lógica de negocio)
+    ↓
+├── web     (controllers JSF, converters, filtros — solo JSF/PrimeFaces)
+└── excel   (importación/exportación Excel con Apache POI — sin PrimeFaces ni jbs-web)
 
-aws  (integración AWS S3, independiente de la cadena principal)
+rest        (recursos JAX-RS — depende solo de interfaces + commons)
+jasper      (integración JasperReports — depende solo de jbs-core)
+aws         (integración AWS S3 — independiente de la cadena principal)
 ```
 
 No se deben introducir imports que inviertan este orden (por ejemplo, que `core` dependa de `business`).
 
+Desde la versión 2.0, los módulos `excel`, `jasper` y `rest` se extrajeron de `web` para aislar sus dependencias pesadas (Apache POI, JasperReports+Groovy, JAX-RS). Los consumidores de `jbs-web` que usen importación Excel, reportes Jasper o recursos REST deben declarar `jbs-excel`, `jbs-jasper` o `jbs-rest` **explícitamente** (antes venían dentro de `jbs-web`).
+
+### `bom`
+Bill of Materials (`jbs-bom`, packaging `pom`). Centraliza en su `dependencyManagement` las versiones de los artefactos `jbs-*` y de las dependencias de terceros (jakartaee-api, Hibernate, PrimeFaces, JasperReports, POI, log4j, JUnit). Es el parent de `jbs-parent`, por lo que todos los módulos heredan las versiones sin declararlas; los proyectos consumidores lo importan con `<scope>import</scope>`.
+
 ### `interfaces`
-Solo contratos (interfaces Java), sin implementaciones. Es la base de la que dependen todos los demás módulos. Expone además algunos tipos de Apache POI en su API pública (`IExcelRowProcessor`, `IExcelImportSrv`), por eso declara `poi-ooxml` como dependencia.
+Solo contratos (interfaces Java), sin implementaciones. Es la base de la que dependen todos los demás módulos. No tiene dependencias de terceros (los contratos de Excel `IExcelImportSrv`/`IExcelRowProcessor`, que exponían tipos de POI, viven ahora en el módulo `excel`).
 
 ### `commons`
-Utilidades de propósito general sin dependencias de negocio: manejo de strings, archivos, criptografía y fechas. Es el módulo con tests unitarios puros, ejecutables sin infraestructura externa.
+Utilidades de propósito general sin dependencias de negocio: manejo de strings, archivos, criptografía y fechas. Sus tests son unitarios puros, ejecutables sin infraestructura externa.
 
 ### `core`
 Manejo de errores, log de eventos, utilidades XML, configuración de la aplicación y gestión de recursos.
@@ -68,13 +86,29 @@ Componentes clave:
 - **`JwtManager` / `DigestAuth`** — soporte de autenticación JWT y HTTP Digest.
 
 ### `web`
-Controllers JSF, recursos REST, exportación a Excel/JasperReports y filtros web.
+Controllers JSF, converters y filtros web. Es el único módulo con dependencia de PrimeFaces; quedó libre de POI, JasperReports y JAX-RS.
 
 Componentes clave:
 - **`AbstractDataController`** — managed bean JSF base para pantallas CRUD: maneja carga diferida (lazy loading), caché y despliegue de errores.
 - **`LazyDataRows`** — paginación lazy para DataTables de PrimeFaces.
-- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`).
-- **`ExcelUtil` / `ExcelImportSrv` / `ExcelUploadCtrl`** — importación de datos desde planillas Excel (Apache POI).
+- **`FacesContextUtil`** — utilidades sobre `FacesContext` (mensajes, request/response).
+
+### `excel`
+Importación/exportación de datos desde planillas Excel con Apache POI. Depende solo de `jbs-business` y `poi-ooxml`; usa `FacesContext`/`jakarta.servlet` directos (API provided), sin PrimeFaces ni `jbs-web`.
+
+Componentes clave:
+- **`ExcelUtil` / `ExcelImportSrv` / `ExcelRowProcessor`** — utilidades y flujo de importación de planillas.
+- Contratos **`IExcelImportSrv`** / **`IExcelRowProcessor`** (antes en `interfaces`).
+
+### `jasper`
+Integración con JasperReports. Depende solo de `jbs-core`, sin PrimeFaces ni `jbs-web`.
+
+- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]`; el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor.
+
+### `rest`
+Recursos JAX-RS. Depende solo de `interfaces` + `commons` (no arrastra JSF).
+
+- **`AbstractWebResource`** — base de recursos REST (validación de token, sesión); **`CORSFilter`**, exceptions y model.
 
 ### `aws`
 Integración con AWS S3. No forma parte de la cadena principal de dependencias — puede incorporarse de forma opcional según lo necesite la aplicación consumidora.
@@ -109,7 +143,7 @@ mvn -pl commons test
 mvn -pl commons -Dtest=StringsTest test
 
 # Un método puntual dentro de una clase de test
-mvn -pl web -Dtest=ExcelUtilTest#testOpenWorkbook_File test
+mvn -pl excel -Dtest=ExcelUtilTest#testOpenWorkbook_File test
 
 # Cobertura de código (JaCoCo)
 mvn -Psonar-coverage test
@@ -117,7 +151,7 @@ mvn -Psonar-coverage test
 
 Qué se puede ejecutar en un entorno local sin infraestructura adicional:
 
-- **`commons`** — tests unitarios puros, se pueden correr siempre.
+- **`commons`**, **`core`**, **`web`**, **`excel`** — tests unitarios puros, se pueden correr siempre (`mvn -pl commons,core,web,excel test`).
 - **`business`** (y cualquier módulo cuyos tests extiendan `TestClass`) — son **tests de integración**: requieren un servidor WildFly/JBoss corriendo con el EAR de pruebas desplegado (lookup EJB remoto vía `http-remoting`). Se configuran mediante variables de entorno:
 
   | Variable | Default | Descripción |
@@ -134,10 +168,11 @@ Qué se puede ejecutar en un entorno local sin infraestructura adicional:
 
 ## Gestión de dependencias — notas relevantes
 
-- La versión de `poi-ooxml` está centralizada en el `dependencyManagement` del POM padre; `interfaces` y `web` la heredan sin declarar `<version>`. Debe mantenerse alineada con el `poi` base que arrastra JasperReports (POI exige que todos sus artefactos tengan la misma versión — verificar con `mvn dependency:tree -Dincludes=org.apache.poi -pl web`).
-- Los cuatro artefactos de JasperReports declarados en `web/pom.xml` (`jasperreports`, `jasperreports-servlets`, `jasperreports-excel-poi`, `jasperreports-groovy`) deben mantenerse siempre en la misma versión.
+- **`jbs-bom` es la fuente única de versiones**: al subir la versión de una dependencia, editar solo `bom/pom.xml`. Los módulos heredan las versiones vía `jbs-parent`; los consumidores importan el BOM con `<scope>import</scope>`.
+- El BOM gestiona `poi`, `poi-ooxml` y `poi-scratchpad` a la misma versión (POI exige que todos sus artefactos coincidan — verificar con `mvn dependency:tree -Dincludes=org.apache.poi -pl excel`). Debe mantenerse alineada con el `poi` base que arrastra JasperReports.
+- Los artefactos de JasperReports declarados en `jasper/pom.xml` (`jasperreports`, `jasperreports-servlets`, `jasperreports-excel-poi`, `jasperreports-groovy`, `jasperreports-pdf`) comparten versión en el BOM. El repositorio `jasper-3rd-party` (jaspersoft.jfrog.io) se declara en `jasper/pom.xml` porque los `<repositories>` no viajan por import de BOM.
 - `jakarta.jakartaee-api` se declara con scope `provided`: la implementación la provee el servidor de aplicaciones (WildFly).
-- `log4j-core` / `log4j-api` y JUnit se declaran en el POM padre; al actualizar, subir ambos artefactos de cada par juntos.
+- `log4j-core` / `log4j-api` y JUnit se declaran en el POM padre sin `<version>` (gestionadas por el BOM); al actualizar, subir ambos artefactos de cada par juntos.
 
 ## Publicación de artefactos
 
