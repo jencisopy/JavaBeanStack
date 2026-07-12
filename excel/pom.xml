@@ -13,10 +13,10 @@
         <jbs.module.name>org.javabeanstack.excel</jbs.module.name>
     </properties>
     <dependencies>
-        <!-- Capa JSF del framework (arrastra business, core, commons, interfaces y primefaces) -->
+        <!-- Capa de negocio del framework (arrastra core, commons e interfaces) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jbs-web</artifactId>
+            <artifactId>jbs-business</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

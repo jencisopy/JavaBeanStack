@@ -80,12 +80,13 @@ core        (manejo de errores, log de eventos, XML, configuración, recursos)
     ↓
 business    (acceso a datos JPA/EJB, servicios, seguridad, lógica de negocio)
     ↓
-web         (controllers JSF, converters, filtros — solo JSF/PrimeFaces)
-    ↓
-├── rest       (recursos JAX-RS: AbstractWebResource, CORSFilter, exceptions, model)
-├── excel          (importación/exportación Excel con Apache POI; Excel*Srv, ExcelUploadCtrl)
-└── jasper  (integración JasperReports; JasperReportUtil)
+├── web     (controllers JSF, converters, filtros — solo JSF/PrimeFaces)
+└── excel   (importación/exportación Excel con Apache POI; Excel*Srv —
+             sin PrimeFaces y sin jbs-web, usa FacesContext directo)
 
+rest        (recursos JAX-RS: AbstractWebResource, CORSFilter, exceptions, model —
+             depende solo de interfaces + commons)
+jasper      (integración JasperReports; JasperReportUtil — depende solo de jbs-core)
 aws         (integración AWS S3 — independiente, fuera de la cadena principal)
 ```
 
@@ -93,7 +94,7 @@ No introducir imports que inviertan esta dirección. Desde 2.0, tres módulos se
 extrajeron de `web` para aislar sus dependencias pesadas (POI, JasperReports+Groovy,
 JAX-RS) y sacar Apache POI de `interfaces`:
 
-- **`excel`** se apoya **sobre** `web` (usa `FacesContextUtil`), no al revés. `jasper` se desacopló de `web` **y de PrimeFaces**: usa `FacesContext` directo (jakartaee-api provided) y depende solo de `jbs-core` (arrastra interfaces + commons; no usa nada de `jbs-business`). `web` quedó libre de POI y de JasperReports.
+- **`excel`** ya **no depende de `jbs-web` ni de PrimeFaces**: declara solo `jbs-business` (arrastra core, commons, interfaces) + `poi-ooxml`; usa `FacesContext`/`jakarta.servlet` directos (jakartaee-api provided). El bean de carga `ExcelUploadCtrl`/`IExcelUploadCtrl` (paquete `org.javabeanstack.web.uploads`) **se movió al proyecto Maker** (`net.makerapp.web.uploads`, Maker-controllers) por ser código específico de su vista (widget `wdlg_excel_upload`, `AppMkRootCtrl.MENSAJES`) — era el único uso de PrimeFaces del módulo. `jasper` se desacopló igual de `web` **y de PrimeFaces**: usa `FacesContext` directo y depende solo de `jbs-core` (arrastra interfaces + commons; no usa nada de `jbs-business`). `web` quedó libre de POI y de JasperReports.
 - **`rest`** depende solo de `interfaces` + `commons` (no arrastra JSF).
 - `interfaces` **ya no depende de POI**: `IExcelImportSrv`/`IExcelRowProcessor` viven ahora en `excel` (mismo paquete `org.javabeanstack.web.util`).
 - Consecuencia: los consumidores de `jbs-web` que usen Excel, reportes Jasper o recursos REST deben declarar `jbs-excel`, `jbs-jasper` o `jbs-rest` **explícitamente** (antes venían dentro de `jbs-web`).
@@ -135,7 +136,7 @@ Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (
 ### Capa web (`web`)
 - **`AbstractDataController`** — managed bean JSF base para pantallas CRUD; maneja lazy loading, cache y despliegue de errores.
 - **`LazyDataRows`** — paginación lazy para DataTables de PrimeFaces. Pendientes de la adaptación a PrimeFaces 15 (marcados con `TODO`): verificar el manejo de `FilterMeta.getFilterValue()` en `getParams` y la implementación de `count()`.
-- **`FacesContextUtil`** — utilidades sobre `FacesContext` (mensajes, request/response); usada también por `excel` (`jasper` usa `FacesContext` directo y ya no depende de `jbs-web`).
+- **`FacesContextUtil`** — utilidades sobre `FacesContext` (mensajes, request/response); solo la usa `web` (`excel` y `jasper` usan `FacesContext` directo y no dependen de `jbs-web`).
 
 ### Recursos REST (`rest`)
 - **`AbstractWebResource`** — base de recursos JAX-RS (validación de token, sesión); **`CORSFilter`**, exceptions y model.
@@ -144,7 +145,7 @@ Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (
 - **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]` (el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor) — por eso el módulo no depende de PrimeFaces.
 
 ### Excel (`excel`)
-- **`ExcelUtil`** / **`ExcelImportSrv`** / **`ExcelRowProcessor`** / **`ExcelUploadCtrl`** — importación/exportación de datos desde planillas Excel (Apache POI). Contratos **`IExcelImportSrv`** / **`IExcelRowProcessor`** (antes en `interfaces`).
+- **`ExcelUtil`** / **`ExcelImportSrv`** / **`ExcelRowProcessor`** — importación/exportación de datos desde planillas Excel (Apache POI). Contratos **`IExcelImportSrv`** / **`IExcelRowProcessor`** (antes en `interfaces`). El bean de carga (`ExcelUploadCtrl`) vive ahora en Maker (`net.makerapp.web.uploads`).
 
 ## Header de copyright
 
