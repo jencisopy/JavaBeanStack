@@ -14,7 +14,7 @@ Quedaron **descartados por decisión**: promover `appcatalog` a producción (el 
 
 | # | Título | Naturaleza | Riesgo | Estado |
 |---|---|---|---|---|
-| R1 | Validación runtime Faces 4.1 / PrimeFaces 15 + TODOs de `LazyDataRows` | Trabajo | **Medio** | Abierto — el único riesgo real de la 2.0 |
+| R1 | Validación runtime Faces 4.1 / PrimeFaces 15 + TODOs de `LazyDataRows` | Trabajo | ~~Medio~~ Bajo | ✅ **Cerrado provisional (2026-07-12)** — código corregido y verificado; queda la reverificación runtime al desplegar Maker-web (tarea PF6→15) |
 | R2 | Cobertura de tests en `jbs-web` / `jbs-rest` / `jbs-jasper` | Trabajo | Muy bajo | Parcial (falta solo la capa web) |
 | R7 | Convertir los overrides por classpath restantes en puntos de extensión | Trabajo | Bajo | En curso — **log y seguridad hechos (2026-07-12)**; queda solo dialectos |
 | R8 | Split packages: ¿ventana 3.0 o declararlos permanentes? | **Decisión** | — | Sin decidir |
@@ -24,6 +24,8 @@ Los dos primeros son deuda técnica interna del framework; los dos últimos invo
 ---
 
 ## R1 — Validación runtime de Faces 4.1 / PrimeFaces 15 (riesgo medio)
+
+> **Cierre provisional 2026-07-12: `LazyDataRows` fue analizada, corregida y documentada por completo** — ver [`analisis_lazydatarows_pf15.md`](analisis_lazydatarows_pf15.md). El defecto sospechado abajo se **confirmó por inspección y se corrigió** (junto con otros 7 defectos), los dos TODOs se resolvieron (en PF15 `count()` corre **antes** de `load()`; se adoptó el patrón single-call), y se verificaron dependencias y consumidores en todos los repos con compilación en verde (jbs-web → Oym-frame-web → Maker-controllers/web/rest). **Reverificación pendiente**: el smoke test runtime (checklist en §6 del informe) quedó diferido hasta que Maker-web sea desplegable, es decir, tras la conversión de formularios PF6→15 (proceso aparte). El texto que sigue se conserva como registro del diagnóstico original.
 
 **Qué es.** La migración a Jakarta EE 11 subió la capa JSF a **PrimeFaces 15.0.6** (classifier `jakarta`) corriendo sobre **Jakarta Faces 4.1**. Eso *compila* y el EAR de Maker *desplegó* en WildFly 40 (2026-07-09), pero un despliegue exitoso no ejercita las pantallas: la lógica de datatables lazy, filtros, ordenamiento y conversión de valores solo se prueba abriendo formularios reales y filtrando/paginando.
 
@@ -127,5 +129,5 @@ En ambas rutas desaparecen los split packages *del lado de Maker*, la extensión
 
 Encontradas al revisar el código para este documento; las dejo anotadas para que decidas si abrir tickets aparte:
 
-1. **`getParams` en `LazyDataRows`** (ver R1) contiene un defecto sospechado, no solo un TODO. Vale un ticket de bug propio, además del trabajo de validación de R1.
+1. ~~**`getParams` en `LazyDataRows`** (ver R1) contiene un defecto sospechado, no solo un TODO. Vale un ticket de bug propio, además del trabajo de validación de R1.~~ **Resuelto (2026-07-12)**: confirmado y corregido junto con el resto de R1 — ver [`analisis_lazydatarows_pf15.md`](analisis_lazydatarows_pf15.md).
 2. **`miscellaneous/docs/ia/README.md` quedó desactualizado**: dice "Las **cuatro** implementaciones de `IDBManager`" y hoy son **tres** (`DBManager`, `DBManagerV20`, `DBManagerV30`; `DBManagerV21` se eliminó el 2026-07-12). La nota sobre el análisis de modularización en ese README también cita "Actualizado 2026-07-11".

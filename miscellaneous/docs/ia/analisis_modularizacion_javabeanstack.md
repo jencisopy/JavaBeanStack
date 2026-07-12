@@ -25,7 +25,7 @@ Entre el análisis original y hoy ocurrió el evento mayor del roadmap: la **mig
 | §2.3 | Eliminar split packages en la ventana de ruptura 2.0 | ❌ **Ventana perdida** | La 2.0 (Jakarta) salió **sin** eliminar los 13 split packages ni rediseñar las firmas POI. La partición de `web` extendió el split `web.util` a 3 jars (`web`/`excel`/`jasper`). Ver §2.4 |
 | §3.2 | Plan de migración Jakarta | ✅ Ejecutado (con salvedades) | Ver §3 actualizado |
 
-**Lectura general (actualizada 2026-07-12)**: se ejecutaron los cuatro puntos compatibles de la propuesta (1, 3, 5, 8) dentro de `2.0.0-SNAPSHOT`, sin romper firmas ni paquetes (salvo el reemplazo interno de Guava). El punto 2 (`appcatalog` a producción) se **descartó por diseño** (ver fila 2). Quedan pendientes, por decisión de alcance, los que tocan a Maker o exigen ventana de ruptura: puntos de extensión para log/seguridad/dialectos (7) y la eliminación de split packages (2.3/2.4). **Nota de compatibilidad**: como `jbs-web` ya no arrastra POI, Jasper, JAX-RS ni Guava, los consumidores que los usen deben declarar `jbs-excel`/`jbs-jasper`/`jbs-rest`/`guava` explícitamente — ya aplicado en Oym-frame, Maker y TestProject.
+**Lectura general (actualizada 2026-07-12)**: se ejecutaron los cuatro puntos compatibles de la propuesta (1, 3, 5, 8) dentro de `2.0.0-SNAPSHOT`, sin romper firmas ni paquetes (salvo el reemplazo interno de Guava). El punto 2 (`appcatalog` a producción) se **descartó por diseño** (ver fila 2). Quedan pendientes: el cierre del punto 7 (solo dialectos Hibernate; log y seguridad ya resueltos) y la eliminación de split packages (2.3/2.4), que exige ventana de ruptura. **Nota de compatibilidad**: como `jbs-web` ya no arrastra POI, Jasper, JAX-RS ni Guava, los consumidores que los usen deben declarar `jbs-excel`/`jbs-jasper`/`jbs-rest`/`guava` explícitamente — ya aplicado en Oym-frame, Maker y TestProject.
 
 **Novedades posteriores al corte 2026-07-11** (reflejadas en el resto del documento):
 
@@ -33,6 +33,7 @@ Entre el análisis original y hoy ocurrió el evento mayor del roadmap: la **mig
 - `ff10abc` — `README.md` del repo actualizado a la arquitectura 2.0 (10 módulos).
 - `f2b7784` — JasperReports **7.0.4 → 7.0.7** en el BOM por **CVE-2026-6009** (deserialización Java → RCE).
 - `5a611dd` — **`DBManagerV21` eliminado**, superado por `DBManagerV30`; la familia queda en 3 implementaciones (ver §1.3). En Maker se retiró también la plantilla `DINAMIC_PU` de `persistence.xml` (Maker `cc654ed`).
+- 2026-07-12 — **`LazyDataRows` corregida y documentada** (R1 cerrado provisional): TODOs resueltos, ClassCastException al filtrar columnas no-String corregido, consumidores verificados en todos los repos. Ver [`analisis_lazydatarows_pf15.md`](analisis_lazydatarows_pf15.md).
 
 ---
 
@@ -76,8 +77,8 @@ Total: **185 clases** de producción (188 en el corte 2026-07-11: −1 `DBManage
 
 **Los problemas que siguen abiertos:**
 
-1. **Los 13 split packages sobrevivieron a la ventana 2.0**: la migración Jakarta era la ruptura donde eliminarlos "gratis" (los consumidores ya tocaban todos los imports por `javax→jakarta`) y no se aprovechó; la partición de `web` incluso extendió `web.util` a 3 jars. Siguen (a) bloqueando JPMS para siempre, (b) habilitando el override por orden de classpath que Maker explota (log/seguridad), y (c) desdibujando la frontera API/impl. La próxima ventana natural es una eventual 3.0 — o aceptarlos como decisión permanente (ver §2.4).
-2. **Cobertura de tests aún desigual en la capa web**: `core` ya se cubrió (51 tests) y `excel` conservó los suyos (4 clases), pero `jbs-web` tiene 1 solo test, y `rest`/`jasper` ninguno. La migración Jakarta se validó con compilación completa + tests de `commons`/`core` + despliegue real del EAR de Maker en WildFly 40 (2026-07-09), pero la validación runtime de la capa JSF (Faces 4.1 con PrimeFaces 15) sigue pendiente de un ciclo funcional serio.
+1. **Los 13 split packages sobrevivieron a la ventana 2.0**: la migración Jakarta era la ruptura donde eliminarlos "gratis" (los consumidores ya tocaban todos los imports por `javax→jakarta`) y no se aprovechó; la partición de `web` incluso extendió `web.util` a 3 jars. Siguen (a) bloqueando JPMS para siempre, (b) habilitando el override por orden de classpath que Maker **explotaba** (log/seguridad, ya resueltos el 2026-07-12 — hoy ningún consumidor lo usa), y (c) desdibujando la frontera API/impl. La próxima ventana natural es una eventual 3.0 — o aceptarlos como decisión permanente (ver §2.4).
+2. **Cobertura de tests aún desigual en la capa web**: `core` ya se cubrió (51 tests) y `excel` conservó los suyos (4 clases), pero `jbs-web` tiene 1 solo test, y `rest`/`jasper` ninguno. La migración Jakarta se validó con compilación completa + tests de `commons`/`core` + despliegue real del EAR de Maker en WildFly 40 (2026-07-09), pero la validación runtime de la capa JSF (Faces 4.1 con PrimeFaces 15) sigue pendiente de un ciclo funcional serio. Avance 2026-07-12: `LazyDataRows` (el punto más riesgoso de esa capa) ya fue corregida y verificada estáticamente — ver [`analisis_lazydatarows_pf15.md`](analisis_lazydatarows_pf15.md); el ciclo funcional quedó diferido a la conversión de formularios PF6→15.
 3. **El costo de la doble rama**: mientras `1.5.x` reciba fixes, cada movimiento de clases/módulos en master duplica el costo de mantenimiento (la partición de `web` ya lo encareció: un fix de `1.5.x` en Excel/Jasper/REST hoy aterriza en otro módulo). Los refactors estructurales restantes de §2.2 convienen agruparse y ejecutarse cuando el flujo de fixes hacia 1.5.x se apague, o asumiendo el porteo manual.
 
 ### 1.3 Novedad estructural: la familia `IDBManager`
@@ -92,7 +93,7 @@ Desde el análisis original, `business` incorporó implementaciones alternativas
 
 (`DBManagerV21` — EMF dinámicos por plantilla `DINAMIC_PU` comentada en `persistence.xml` — existió entre 2026-07-10 y 2026-07-12 y fue absorbido por V30.)
 
-Esto es relevante para la propuesta por dos motivos: (a) valida en la práctica el mecanismo "el consumidor elige la implementación vía `ejb-jar.xml`" como **punto de extensión explícito y documentado** — exactamente el patrón que el punto 7 de §2.2 pide generalizar a log/seguridad/dialectos; y (b) los DBManager dinámicos demuestran que se puede depender de Hibernate **sin compilarlo** (provider referenciado por string, API JPA pura), el mismo criterio a aplicar si `web` u otros módulos necesitan aislar vendors.
+Esto es relevante para la propuesta por dos motivos: (a) valida en la práctica el mecanismo "el consumidor elige la implementación vía `ejb-jar.xml`" como **punto de extensión explícito y documentado** — exactamente el patrón que el punto 7 de §2.2 pide generalizar (log y seguridad ya lo siguen desde 2026-07-12; falta dialectos); y (b) los DBManager dinámicos demuestran que se puede depender de Hibernate **sin compilarlo** (provider referenciado por string, API JPA pura), el mismo criterio a aplicar si `web` u otros módulos necesitan aislar vendors.
 
 ---
 
@@ -139,7 +140,7 @@ La ventana 2.0 (Jakarta) se usó sin ejecutar estas rupturas, de modo que hoy ex
 
 ### 2.4 Decisión pendiente: split packages, ¿3.0 o nunca?
 
-Vale dejarlo planteado como decisión y no como tarea: si no hay en el horizonte otra ruptura mayor que obligue a los consumidores a tocar todos los imports, el costo de una 3.0 "solo por higiene de paquetes" probablemente no se justifique. La alternativa honesta es **aceptar los split packages como rasgo permanente del framework**, documentarlo, y compensar sus dos costos reales por otra vía: JPMS se descarta formalmente (reservando nombres con `Automatic-Module-Name`) y el override por classpath se vuelve innecesario completando el punto 7 (log/seguridad/dialectos). Cualquiera de las dos decisiones es defendible; lo que no conviene es el estado actual (implícito, sin decidir).
+Vale dejarlo planteado como decisión y no como tarea: si no hay en el horizonte otra ruptura mayor que obligue a los consumidores a tocar todos los imports, el costo de una 3.0 "solo por higiene de paquetes" probablemente no se justifique. La alternativa honesta es **aceptar los split packages como rasgo permanente del framework**, documentarlo, y compensar sus dos costos reales por otra vía: JPMS se descarta formalmente (reservando nombres con `Automatic-Module-Name`) y el override por classpath se vuelve innecesario completando el punto 7 (log y seguridad ya están; falta solo dialectos). Cualquiera de las dos decisiones es defendible; lo que no conviene es el estado actual (implícito, sin decidir).
 
 ---
 
@@ -147,7 +148,7 @@ Vale dejarlo planteado como decisión y no como tarea: si no hay en el horizonte
 
 ### 3.1 JPMS
 
-Sin cambios de conclusión: con 13 split packages, JPMS sigue estructuralmente imposible, y aun tras una eventual reorganización no se recomienda (los consumidores corren en WildFly — jboss-modules ignora `module-info` — y el framework vive de reflection JPA/CDI). `Automatic-Module-Name` en cada MANIFEST sigue siendo el único paso con sentido y sigue sin darse.
+Sin cambios de conclusión: con 13 split packages, JPMS sigue estructuralmente imposible, y aun tras una eventual reorganización no se recomienda (los consumidores corren en WildFly — jboss-modules ignora `module-info` — y el framework vive de reflection JPA/CDI). `Automatic-Module-Name` en cada MANIFEST era el único paso con sentido y **ya se dio** (2026-07-11, vía `<jbs.module.name>` + `maven-jar-plugin` en el padre): los nombres de módulo quedaron reservados.
 
 ### 3.2 Jakarta: el primer dominó ya cayó
 
@@ -177,7 +178,7 @@ Las fases A1 (dependencyManagement/scopes) y B (Jakarta) del roadmap original ya
 
 | Fase | Trabajo | Esfuerzo | Riesgo | Estado / notas |
 |---|---|---|---|---|
-| R1 | Validación runtime Faces 4.1/PF15 (ciclo funcional JSF sobre WildFly 40) + resolver TODOs de `LazyDataRows` | 3–5 días | Medio | ❌ Pendiente. Es el riesgo abierto de la 2.0; bloquea confiar en `jbs-web` |
+| R1 | Validación runtime Faces 4.1/PF15 (ciclo funcional JSF sobre WildFly 40) + resolver TODOs de `LazyDataRows` | 3–5 días | ~~Medio~~ Bajo | ✅ **Cerrado provisional (2026-07-12)**: `LazyDataRows` corregida/documentada y TODOs resueltos (ver [`analisis_lazydatarows_pf15.md`](analisis_lazydatarows_pf15.md)); la reverificación runtime queda para el despliegue de Maker-web (conversión PF6→15) |
 | R2 | Tests en `core`/`web` + `Automatic-Module-Name` en todos los poms | 3–5 días | Muy bajo | 🟡 Parcial: `core` 51 tests y `Automatic-Module-Name` hechos (2026-07-11); faltan tests de `web`/`rest`/`jasper` |
 | R3 | Extraer `jbs-excel` (saca POI de interfaces, mismos paquetes) | — | — | ✅ Hecho (2026-07-11; desacoplado también de `web`/PrimeFaces el 2026-07-12) |
 | R4 | Extraer `jbs-rest` y `jbs-jasper` | — | — | ✅ Hecho (2026-07-11) |
@@ -186,4 +187,4 @@ Las fases A1 (dependencyManagement/scopes) y B (Jakarta) del roadmap original ya
 | R7 | Puntos de extensión para log/seguridad/dialectos (patrón `ejb-jar.xml` del DBManager) | 1–2 días | Bajo | 🟡 En curso. **Log y seguridad hechos** (2026-07-12); queda solo dialectos |
 | R8 | Decisión split packages: programar 3.0 o declararlos permanentes | — | — | ❌ Pendiente. Ver §2.4; es una decisión, no una tarea |
 
-**Recomendación final (actualizada 2026-07-12)**: con las extracciones compatibles ya ejecutadas (R3–R5) — POI fuera de `interfaces`, `jbs-web` reducido a JSF puro, versiones centralizadas en `jbs-bom`, Hibernate fuera del compile classpath — y con el catálogo confirmado como punto de extensión por interfaz (R6 descartado), la deuda estructural restante se concentra en tres frentes: **cerrar el riesgo runtime de la migración (R1–R2)**, que hoy es lo primero; después el único cambio que aún toca a Maker (**R7**: puntos de extensión para log/seguridad/dialectos); y la decisión pendiente sobre split packages (**R8**). La subida exprés de Jasper a 7.0.7 por CVE-2026-6009 sin tocar ningún otro módulo ya validó en la práctica el beneficio de la partición. La familia DBManager — ahora simplificada a 3 implementaciones tras retirar V21 — y el catálogo por interfaz `IApp*` son los dos modelos de punto de extensión que el framework ya tiene bien resueltos: el objetivo es que log, seguridad y dialectos funcionen igual, y que ningún consumidor deba redeclarar un paquete de **implementación** del framework (implementar sus interfaces sí es lo esperado).
+**Recomendación final (actualizada 2026-07-12)**: con las extracciones compatibles ya ejecutadas (R3–R5) — POI fuera de `interfaces`, `jbs-web` reducido a JSF puro, versiones centralizadas en `jbs-bom`, Hibernate fuera del compile classpath — y con el catálogo confirmado como punto de extensión por interfaz (R6 descartado), la deuda estructural restante se concentra en tres frentes: **cerrar el riesgo runtime de la migración (R1–R2)**, que hoy es lo primero; después el remanente de **R7** (solo los dialectos Hibernate — log y seguridad ya se resolvieron el 2026-07-12); y la decisión pendiente sobre split packages (**R8**). La subida exprés de Jasper a 7.0.7 por CVE-2026-6009 sin tocar ningún otro módulo ya validó en la práctica el beneficio de la partición. La familia DBManager — ahora simplificada a 3 implementaciones tras retirar V21 — y el catálogo por interfaz `IApp*` son los dos modelos de punto de extensión que el framework ya tiene bien resueltos, y log/seguridad ya funcionan así: falta que los dialectos hagan lo mismo, y con eso ningún consumidor volverá a redeclarar un paquete de **implementación** del framework (implementar sus interfaces sí es lo esperado).
