@@ -9,6 +9,9 @@
     <artifactId>jbs-aws</artifactId>
     <name>JavaBeanStack-AWS</name>
     <packaging>jar</packaging>
+    <properties>
+        <jbs.module.name>org.javabeanstack.aws</jbs.module.name>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>

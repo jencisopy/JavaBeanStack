@@ -6,31 +6,22 @@
         <artifactId>jbs-parent</artifactId>
         <version>2.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>jbs-web</artifactId>
+    <artifactId>jbs-excel</artifactId>
+    <name>JavaBeanStack-Excel</name>
     <packaging>jar</packaging>
-    <name>JavaBeanStack-Web</name>
-
     <properties>
-        <jbs.module.name>org.javabeanstack.web</jbs.module.name>
+        <jbs.module.name>org.javabeanstack.excel</jbs.module.name>
     </properties>
-
     <dependencies>
+        <!-- Capa JSF del framework (arrastra business, core, commons, interfaces y primefaces) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jbs-core</artifactId>
+            <artifactId>jbs-web</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>jbs-business</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!-- Libreria Primefaces -->
-        <dependency>
-            <groupId>org.primefaces</groupId>
-            <artifactId>primefaces</artifactId>
-            <classifier>jakarta</classifier>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
         </dependency>
     </dependencies>
 </project>

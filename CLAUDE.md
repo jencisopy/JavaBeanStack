@@ -45,20 +45,20 @@ mvn -pl commons test
 
 # Una clase de test / un método
 mvn -pl commons -Dtest=StringsTest test
-mvn -pl web -Dtest=ExcelUtilTest#testOpenWorkbook_File test
+mvn -pl excel -Dtest=ExcelUtilTest#testOpenWorkbook_File test
 
 # Cobertura (JaCoCo)
 mvn -Psonar-coverage test
 
 # Ver versiones resueltas de una dependencia
-mvn dependency:tree -Dincludes=org.apache.poi -pl web
+mvn dependency:tree -Dincludes=org.apache.poi -pl excel
 ```
 
 No hay lint ni formatter configurados; la validación es `mvn test-compile` / `mvn test`.
 
 ### Tests: qué se puede ejecutar localmente
 
-- **`commons`**: tests unitarios puros — se pueden correr siempre.
+- **`commons`**, **`core`**, **`web`**, **`excel`**: tests unitarios puros — se pueden correr siempre (`mvn -pl commons,core,web,excel test`).
 - **`business` (y los que extienden `TestClass`)**: son tests de integración que requieren un **servidor WildFly/JBoss corriendo** con el EAR `TestProjects-ear` desplegado (lookup EJB remoto vía `http-remoting`). Se configuran con variables de entorno: `SERVER_TEST` (default `localhost`), `SERVER_TEST_PORT` (default `8080`), `SECURITY_PRINCIPAL`, `SECURITY_CREDENTIALS`, `APP_USER_LOGIN`/`APP_USER_PASS` (default `test1`), `APP_IDCOMPANY` (default `2`). Sin ese servidor, fallan en el setup — no es un bug del código.
 
 ## CI/CD — CUIDADO con push a master
@@ -70,6 +70,8 @@ No hay lint ni formatter configurados; la validación es `mvn test-compile` / `m
 Flujo de dependencias (cada nivel depende de los de arriba):
 
 ```
+bom         (Bill of Materials — solo dependencyManagement; es el parent de jbs-parent)
+    ↓
 interfaces  (solo contratos, sin implementaciones)
     ↓
 commons     (utilidades de strings, archivos, crypto, fechas)
@@ -78,19 +80,38 @@ core        (manejo de errores, log de eventos, XML, configuración, recursos)
     ↓
 business    (acceso a datos JPA/EJB, servicios, seguridad, lógica de negocio)
     ↓
-web         (controllers JSF, recursos REST, Excel/JasperReports, filtros)
+web         (controllers JSF, converters, filtros — solo JSF/PrimeFaces)
+    ↓
+├── rest       (recursos JAX-RS: AbstractWebResource, CORSFilter, exceptions, model)
+├── excel          (importación/exportación Excel con Apache POI; Excel*Srv, ExcelUploadCtrl)
+└── jasper  (integración JasperReports; JasperReportUtil)
 
 aws         (integración AWS S3 — independiente, fuera de la cadena principal)
 ```
 
-No introducir imports que inviertan esta dirección. Ojo: `interfaces` expone tipos de Apache POI en su API (`IExcelRowProcessor`, `IExcelImportSrv`), por eso declara `poi-ooxml` como dependencia.
+No introducir imports que inviertan esta dirección. Desde 2.0, tres módulos se
+extrajeron de `web` para aislar sus dependencias pesadas (POI, JasperReports+Groovy,
+JAX-RS) y sacar Apache POI de `interfaces`:
+
+- **`excel`** se apoya **sobre** `web` (usa `FacesContextUtil`), no al revés. `jasper` se desacopló de `web` **y de PrimeFaces**: usa `FacesContext` directo (jakartaee-api provided) y depende solo de `jbs-core` (arrastra interfaces + commons; no usa nada de `jbs-business`). `web` quedó libre de POI y de JasperReports.
+- **`rest`** depende solo de `interfaces` + `commons` (no arrastra JSF).
+- `interfaces` **ya no depende de POI**: `IExcelImportSrv`/`IExcelRowProcessor` viven ahora en `excel` (mismo paquete `org.javabeanstack.web.util`).
+- Consecuencia: los consumidores de `jbs-web` que usen Excel, reportes Jasper o recursos REST deben declarar `jbs-excel`, `jbs-jasper` o `jbs-rest` **explícitamente** (antes venían dentro de `jbs-web`).
+- Guava se eliminó del framework (su único uso en `AbstractWebResource` se reemplazó por `org.javabeanstack.util.Strings`).
+- Nace un split package más, `org.javabeanstack.web.util`, repartido entre `web` (`FacesContextUtil`, `AppResourceSearcher`), `excel` (`Excel*`) y `jasper` (`JasperReportUtil`) — coherente con la decisión ya asumida de convivir con split packages; **nunca** agregar `module-info.java`.
+
+Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (plugin `maven-jar-plugin` en el `pluginManagement` del padre) — reserva de nombres JPMS sin adoptar `module-info.java`.
 
 ## Gestión de dependencias
 
-- La versión de `poi-ooxml` está centralizada en el `dependencyManagement` del pom padre; `interfaces` y `web` la heredan sin `<version>`. **Mantenerla alineada con el `poi` base que arrastra JasperReports** (POI exige que todos sus artefactos tengan la misma versión — verificar con `dependency:tree`).
-- Los cuatro artefactos de JasperReports en `web/pom.xml` (`jasperreports`, `-servlets`, `-excel-poi`, `-groovy`) deben tener siempre la misma versión.
+**`jbs-bom` es la fuente única de versiones.** El módulo `bom/` (artefacto `jbs-bom`, packaging pom) centraliza en su `dependencyManagement` las versiones de los 9 artefactos `jbs-*` y de las dependencias de terceros (jakartaee-api, hibernate, primefaces, los artefactos de JasperReports, POI, log4j, junit, wildfly-ejb-client-bom). `jbs-parent` **hereda** del BOM (`<parent>` con `relativePath` = `bom/pom.xml`), por lo que todos los módulos reciben las versiones sin declararlas. Los consumidores (Oym-frame, Maker, TestProject) **importan** el BOM (`<scope>import</scope>`) en su `dependencyManagement`.
+
+- Al subir la versión de una dependencia, editar **solo** `bom/pom.xml`.
+- POI: el BOM gestiona `poi`, `poi-ooxml` y `poi-scratchpad` a la misma versión (POI exige que todos sus artefactos coincidan — verificar con `dependency:tree`). Debe alinearse con el `poi` base que arrastra JasperReports.
+- Los cuatro artefactos de JasperReports (`jasperreports`, `-servlets`, `-excel-poi`, `-groovy`) más `jasperreports-pdf` comparten versión en el BOM.
+- El repositorio `jasper-3rd-party` (jaspersoft.jfrog.io) vive en `jasper/pom.xml` (los `<repositories>` no viajan por import de BOM).
 - `jakarta.jakartaee-api` va con scope `provided` (lo provee el servidor de aplicaciones).
-- log4j (`log4j-core`/`log4j-api`) y JUnit se declaran en el pom padre; subir ambos artefactos de cada par juntos.
+- log4j (`log4j-core`/`log4j-api`) y JUnit se declaran en el pom padre sin `<version>` (gestionadas por el BOM); subir ambos artefactos de cada par juntos.
 
 ## Abstracciones clave
 
@@ -114,8 +135,16 @@ No introducir imports que inviertan esta dirección. Ojo: `interfaces` expone ti
 ### Capa web (`web`)
 - **`AbstractDataController`** — managed bean JSF base para pantallas CRUD; maneja lazy loading, cache y despliegue de errores.
 - **`LazyDataRows`** — paginación lazy para DataTables de PrimeFaces. Pendientes de la adaptación a PrimeFaces 15 (marcados con `TODO`): verificar el manejo de `FilterMeta.getFilterValue()` en `getParams` y la implementación de `count()`.
-- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`).
-- **`ExcelUtil`** / **`ExcelImportSrv`** / **`ExcelUploadCtrl`** — importación de datos desde planillas Excel (Apache POI).
+- **`FacesContextUtil`** — utilidades sobre `FacesContext` (mensajes, request/response); usada también por `excel` (`jasper` usa `FacesContext` directo y ya no depende de `jbs-web`).
+
+### Recursos REST (`rest`)
+- **`AbstractWebResource`** — base de recursos JAX-RS (validación de token, sesión); **`CORSFilter`**, exceptions y model.
+
+### Reportes Jasper (`jasper`)
+- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]` (el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor) — por eso el módulo no depende de PrimeFaces.
+
+### Excel (`excel`)
+- **`ExcelUtil`** / **`ExcelImportSrv`** / **`ExcelRowProcessor`** / **`ExcelUploadCtrl`** — importación/exportación de datos desde planillas Excel (Apache POI). Contratos **`IExcelImportSrv`** / **`IExcelRowProcessor`** (antes en `interfaces`).
 
 ## Header de copyright
 

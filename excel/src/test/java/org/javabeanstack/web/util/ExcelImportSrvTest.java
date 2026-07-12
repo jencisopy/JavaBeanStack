@@ -136,19 +136,21 @@ public class ExcelImportSrvTest {
     }
 
     @Test
-    public void testImportDataRequiresProcessor() {
+    public void testCheckBeforeImportDataRequiresProcessor() {
+        // importData() captura las excepciones internamente (ver su javadoc);
+        // la validación de prerrequisitos vive en checkBeforeImportData().
         TestImportSrv srv = new TestImportSrv();
-        Exception ex = assertThrows(Exception.class, srv::importData);
+        Exception ex = assertThrows(Exception.class, srv::checkBeforeImportData);
         assertTrue(ex.getMessage().contains("processor"), ex.getMessage());
     }
 
     @Test
-    public void testImportDataRequiresWorkbook() throws Exception {
+    public void testCheckBeforeImportDataRequiresWorkbook() throws Exception {
         TestImportSrv srv = new TestImportSrv();
         try (Workbook wb = buildWorkbook()) {
             srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
-            // sin workbook asignado
-            Exception ex = assertThrows(Exception.class, srv::importData);
+            // processor definido, pero sin workbook asignado
+            Exception ex = assertThrows(Exception.class, srv::checkBeforeImportData);
             assertTrue(ex.getMessage().contains("planilla"), ex.getMessage());
         }
     }

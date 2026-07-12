@@ -10,15 +10,14 @@
     <artifactId>jbs-interfaces</artifactId>
     <name>JavaBeanStack-Interfaces</name>
     <packaging>jar</packaging>
+    <properties>
+        <jbs.module.name>org.javabeanstack.interfaces</jbs.module.name>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
         </dependency>
     </dependencies>
 </project>

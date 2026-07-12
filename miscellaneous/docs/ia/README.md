@@ -19,5 +19,5 @@ copia, y los ejemplos usan a Maker como aplicación de referencia.
 
 | Documento | Contenido |
 |---|---|
-| [`analisis_modularizacion_javabeanstack.md`](analisis_modularizacion_javabeanstack.md) | Análisis de la modularización del framework. |
+| [`analisis_modularizacion_javabeanstack.md`](analisis_modularizacion_javabeanstack.md) | Análisis y propuesta de optimización de la estructura modular. Actualizado 2026-07-11: ejecutados los puntos 1, 3, 5 y 8 de §2.2 — se extrajeron `jbs-excel`, `jbs-rest` y `jbs-jasper` de `jbs-web`, se publicó `jbs-bom` (fuente única de versiones, adoptado por Oym-frame/Maker/TestProject), se agregaron tests en `core`/`web`/`excel` y `Automatic-Module-Name` en todos los jars. |
 | [`instalar-jdk25.md`](instalar-jdk25.md) / [`instalar-jdk25.sh`](instalar-jdk25.sh) | Guía y script de instalación del JDK 25. |

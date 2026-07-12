@@ -9,6 +9,9 @@
     <artifactId>jbs-commons</artifactId>
     <name>JavaBeanStack-Commons</name>
     <packaging>jar</packaging>
+    <properties>
+        <jbs.module.name>org.javabeanstack.commons</jbs.module.name>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.commons</groupId>

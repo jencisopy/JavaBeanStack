@@ -9,6 +9,9 @@
     <artifactId>jbs-business</artifactId>
     <packaging>jar</packaging>
     <name>JavaBeanStack-Business</name>
+    <properties>
+        <jbs.module.name>org.javabeanstack.business</jbs.module.name>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>

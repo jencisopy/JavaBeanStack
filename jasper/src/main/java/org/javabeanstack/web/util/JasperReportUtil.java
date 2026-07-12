@@ -59,7 +59,6 @@ import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.resources.IAppResource;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
-import org.primefaces.model.DefaultStreamedContent;
 
 /**
  * Gestiona las tareas para mostrar un reporte ya sea en formato pdf, excel,
@@ -75,8 +74,6 @@ public class JasperReportUtil {
     private IUserSession userSession;
     private final String urlInDatabase = "file:///reports/";
     private String fileSystemPath = null;
-
-    private final FacesContextUtil facesCtx = new FacesContextUtil();
 
     public JasperReportUtil(IUserSession userSession) {
         this.userSession = userSession;
@@ -177,7 +174,7 @@ public class JasperReportUtil {
                 exporterHTML.setExporterInput(exporterInput);
                 SimpleHtmlReportConfiguration reportExportConfiguration = new SimpleHtmlReportConfiguration();
                 exporterHTML.setConfiguration(reportExportConfiguration);
-                HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
+                HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
                 httpServletResponse.setContentType("text/html;charset=UTF-8");
                 httpServletResponse.addHeader("Content-disposition", "attachment; filename=" + reporte.replaceAll(".jasper", "") + ".html");
                 try (ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream()) {
@@ -190,7 +187,7 @@ public class JasperReportUtil {
             } else if ("doc".equals(parameters.get("device"))) {
                 JRDocxExporter exporter = new JRDocxExporter();
                 exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-                HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
+                HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
                 httpServletResponse.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
                 httpServletResponse.setHeader("Content-Disposition", "attachment;filename= " + reporte.replaceAll(".jasper", "") + ".docx");
                 try (OutputStream outputStream = httpServletResponse.getOutputStream()) {
@@ -206,7 +203,7 @@ public class JasperReportUtil {
                 } else {
                     target = "inline";
                 }
-                HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
+                HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
                 httpServletResponse.addHeader("Content-disposition", target + "; filename=" + reporte.replaceAll(".jasper", "") + ".pdf");
                 ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
                 JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
@@ -217,7 +214,7 @@ public class JasperReportUtil {
                 JRXlsxExporter exporter = new JRXlsxExporter();
                 exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
 
-                HttpServletResponse httpServletResponse = (HttpServletResponse) facesCtx.getExternalContext().getResponse();
+                HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
                 // ContentType correcto para .xlsx
                 httpServletResponse.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
                 // Extensión de archivo actualizada a .xlsx
@@ -384,22 +381,22 @@ public class JasperReportUtil {
         return jasperReport;
     }
 
-    public DefaultStreamedContent getReportStreamedContent(String reportName, Map<String, Object> parameters,
+    /**
+     * Genera el reporte y devuelve el PDF como arreglo de bytes. El envoltorio
+     * para descarga (p. ej. un {@code StreamedContent} de PrimeFaces) queda a
+     * cargo de la capa JSF del consumidor, para que este módulo no dependa de
+     * PrimeFaces.
+     */
+    public byte[] getReportPdf(String reportName, Map<String, Object> parameters,
             List<IDataQueryModel> data,
             Class classRef) throws JRException, IOException, NamingException {
-        byte[] docPdf;
         Map[] dataRows = convertTo(data);
         if (!reportName.endsWith(".jasper")) {
             reportName += ".jasper";
         }
         JasperReport jasper = getJasperReportFrom(reportName, classRef);
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasper, parameters, new JRMapArrayDataSource(dataRows));
-        docPdf = JasperExportManager.exportReportToPdf(jasperPrint);
-        return DefaultStreamedContent.builder()
-                .stream(() -> new ByteArrayInputStream(docPdf))
-                .contentType("application/pdf")
-                .name(reportName.replaceAll(".jasper", "") + ".pdf")
-                .build();
+        return JasperExportManager.exportReportToPdf(jasperPrint);
     }
 }
 

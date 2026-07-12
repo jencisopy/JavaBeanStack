@@ -21,7 +21,6 @@
  */
 package org.javabeanstack.web.rest.resources;
 
-import com.google.common.base.Strings;
 import jakarta.ejb.EJB;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
@@ -34,6 +33,7 @@ import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.security.model.IUserSession;
+import org.javabeanstack.util.Strings;
 import org.javabeanstack.web.rest.exceptions.TokenError;
 import org.javabeanstack.ws.resources.IWebResource;
 
@@ -97,7 +97,7 @@ public abstract class AbstractWebResource implements IWebResource {
     protected void setToken(String tokenHeader) {
         String token = getTokenFromHeader(tokenHeader);
         //Si el token es null
-        if (Strings.isNullOrEmpty(token)) {
+        if (Strings.isNullorEmpty(token)) {
             throw new TokenError("Debe proporcionar el token de autorización");
         }
         //Si ya esta activo este token en la sesiones
@@ -123,7 +123,7 @@ public abstract class AbstractWebResource implements IWebResource {
     }
 
     protected String getTokenFromHeader(String tokenHeader) {
-        if (Strings.isNullOrEmpty(tokenHeader)) {
+        if (Strings.isNullorEmpty(tokenHeader)) {
             throw new TokenError("Debe proporcionar el token de autorización");
         }
         String[] tokens = tokenHeader.split("\\ ");

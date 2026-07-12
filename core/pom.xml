@@ -10,6 +10,9 @@
     <artifactId>jbs-core</artifactId>
     <name>JavaBeanStack-Core</name>
     <packaging>jar</packaging>
+    <properties>
+        <jbs.module.name>org.javabeanstack.core</jbs.module.name>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>

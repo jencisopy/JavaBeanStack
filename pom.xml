@@ -1,183 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.javabeanstack</groupId>
+    <parent>
+        <groupId>org.javabeanstack</groupId>
+        <artifactId>jbs-bom</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+        <relativePath>bom/pom.xml</relativePath>
+    </parent>
     <artifactId>jbs-parent</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>Framework para construcción de aplicaciones JAKARTA EE 11</description>
-    <url>http://javabeanstack.org</url>
     <name>JavaBeanStack</name>
 
-    <licenses>
-        <license>
-            <name>GNU Lesser General Public License, Version 3</name>
-            <url>http://www.gnu.org/licenses/lgpl-3.0.txt</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <name>Jorge Andrés Enciso</name>
-            <email>jorge.enciso.r@gmail.com</email>
-            <organization>JavaBeanStack</organization>
-            <organizationUrl>http://www.javabeanstack.org</organizationUrl>
-        </developer>
-        <developer>
-            <name>Jorge David Enciso</name>
-            <email>jorged.encyso@gmail.com</email>
-            <organization>JavaBeanStack</organization>
-            <organizationUrl>http://www.javabeanstack.org</organizationUrl>
-        </developer>
-    </developers>
-
-    <scm>
-        <connection>scm:git:https://github.com/jencisopy/JavaBeanStack.git</connection>
-        <developerConnection>scm:git:https://github.com/jencisopy/JavaBeanStack.git</developerConnection>
-        <url>https://github.com/jencisopy/JavaBeanStack/</url>
-    </scm>
-
     <modules>
+        <module>bom</module>
         <module>interfaces</module>
         <module>core</module>
         <module>business</module>
         <module>commons</module>
         <module>web</module>
+        <module>rest</module>
+        <module>excel</module>
+        <module>jasper</module>
         <module>aws</module>
     </modules>
-    
-    <distributionManagement>
-        <snapshotRepository>
-            <id>nexus</id>
-            <url>http://serverapps.oym.com.py:8081/repository/maven-snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>nexus</id>
-            <url>http://serverapps.oym.com.py:8081/repository/maven-releases/</url>
-        </repository>
-    </distributionManagement>
-    
+
+    <!--
+        distributionManagement, las propiedades de versión y el
+        dependencyManagement de terceros se heredan de jbs-bom (parent).
+        Aquí solo quedan las propiedades propias del build y las dependencias
+        comunes a todos los módulos (sin <version>: la gestiona el BOM).
+    -->
     <properties>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>${java.version}</maven.compiler.release>
-        <jakartaee.version>11.0.0</jakartaee.version>
-        <hibernate.version>7.3.2.Final</hibernate.version>
-        <wildfly.version>40.0.1.Final</wildfly.version>
-        <log4j.version>2.25.4</log4j.version>
-        <poi.version>5.4.1</poi.version>
-        <primefaces.version>15.0.6</primefaces.version>
-        <jasperreports.version>7.0.4</jasperreports.version>
-        <guava.version>32.0.0-jre</guava.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.poi</groupId>
-                <artifactId>poi-ooxml</artifactId>
-                <version>${poi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.platform</groupId>
-                <artifactId>jakarta.jakartaee-api</artifactId>
-                <version>${jakartaee.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <!--
-                Jakarta EE 11 dejó de incluir XML Binding (JAXB) y JSON-P como
-                dependencias transitivas de jakarta.jakartaee-api (el jar quedó
-                vacío, es solo un agregador de especificaciones). Se fuerzan aquí
-                versión y scope "provided" (las implementa el servidor de
-                aplicaciones) porque hibernate-core (dependencia de test en
-                business) las trae con scope "test", lo que dejaba esas clases
-                fuera del classpath de compilación principal. Además se declaran
-                en <dependencies> de este pom para que todos los módulos las
-                tengan disponibles al compilar.
-            -->
-            <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>4.0.2</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.json</groupId>
-                <artifactId>jakarta.json-api</artifactId>
-                <version>2.1.3</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.orm</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${hibernate.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.primefaces</groupId>
-                <artifactId>primefaces</artifactId>
-                <version>${primefaces.version}</version>
-                <classifier>jakarta</classifier>
-            </dependency>
-            <dependency>
-                <groupId>net.sf.jasperreports</groupId>
-                <artifactId>jasperreports</artifactId>
-                <version>${jasperreports.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sf.jasperreports</groupId>
-                <artifactId>jasperreports-servlets</artifactId>
-                <version>${jasperreports.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sf.jasperreports</groupId>
-                <artifactId>jasperreports-excel-poi</artifactId>
-                <version>${jasperreports.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sf.jasperreports</groupId>
-                <artifactId>jasperreports-groovy</artifactId>
-                <version>${jasperreports.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.13.1</version>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.13.1</version>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- APIs que Jakarta EE 11 ya no arrastra vía jakartaee-api; ver nota en dependencyManagement -->
+        <!-- APIs que Jakarta EE 11 ya no arrastra vía jakartaee-api; ver nota en el BOM -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
@@ -349,6 +235,23 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.3</version>
+                </plugin>
+                <!--
+                    Reserva el nombre de módulo JPMS de cada jar sin adoptar
+                    module-info.java (inviable por los split packages del
+                    framework). Cada módulo define la propiedad jbs.module.name.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.4.2</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Automatic-Module-Name>${jbs.module.name}</Automatic-Module-Name>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
