@@ -2,7 +2,9 @@
 
 ## Gestión de unidades de persistencia (DBManager)
 
-Las cuatro implementaciones de `IDBManager` viven en este framework
+Las tres implementaciones de `IDBManager` (`DBManager`, `DBManagerV20`,
+`DBManagerV30`; `DBManagerV21` se eliminó el 2026-07-12 por quedar superada
+por la V30) viven en este framework
 (`business/src/main/java/org/javabeanstack/data/`) y se conmutan por el
 `ejb-jar.xml` de la aplicación. Estos documentos son el **origen canónico**;
 en el repositorio de Maker (`Maker-miscellaneous/docs/ia/`) se mantiene una
@@ -18,5 +20,7 @@ copia, y los ejemplos usan a Maker como aplicación de referencia.
 
 | Documento | Contenido |
 |---|---|
-| [`analisis_modularizacion_javabeanstack.md`](analisis_modularizacion_javabeanstack.md) | Análisis y propuesta de optimización de la estructura modular. Actualizado 2026-07-11: ejecutados los puntos 1, 3, 5 y 8 de §2.2 — se extrajeron `jbs-excel`, `jbs-rest` y `jbs-jasper` de `jbs-web`, se publicó `jbs-bom` (fuente única de versiones, adoptado por Oym-frame/Maker/TestProject), se agregaron tests en `core`/`web`/`excel` y `Automatic-Module-Name` en todos los jars. |
+| [`analisis_modularizacion_javabeanstack.md`](analisis_modularizacion_javabeanstack.md) | Análisis y propuesta de optimización de la estructura modular. Actualizado 2026-07-12 al estado 2.0 post-partición: extraídos `jbs-excel`, `jbs-rest` y `jbs-jasper` de `jbs-web`, publicado `jbs-bom` (fuente única de versiones, adoptado por Oym-frame/Maker/TestProject), tests en `core`/`web`/`excel` y `Automatic-Module-Name` en todos los jars. |
+| [`pendientes_modularizacion_javabeanstack.md`](pendientes_modularizacion_javabeanstack.md) | Anexo con el detalle de los pendientes de la modularización (R1, R2, R7, R8): qué queda, por qué importa y qué se sugiere. |
+| [`analisis_lazydatarows_pf15.md`](analisis_lazydatarows_pf15.md) | Análisis y corrección de `LazyDataRows` para PrimeFaces 15 (cierre provisional de R1); incluye el checklist del smoke test runtime pendiente. |
 | [`instalar-jdk25.md`](instalar-jdk25.md) / [`instalar-jdk25.sh`](instalar-jdk25.sh) | Guía y script de instalación del JDK 25. |
