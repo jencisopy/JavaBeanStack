@@ -134,7 +134,7 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
     
     protected Map<String, Object> getValuesFrom(String value) {
         int ini = value.indexOf("{") + 1;
-        int fin = value.lastIndexOf("}") - 1;
+        int fin = value.lastIndexOf("}");
         Map<String, Object> retornar = new HashMap();
         String[] proceso = value.substring(ini, fin).split(",");
         for (String proceso1 : proceso) {
@@ -146,7 +146,7 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
                 elementos[1] = elementos[1].trim().replace("\"", "");
                 retornar.put(elementos[0].trim(), elementos[1]);
             } else {
-                retornar.put(elementos[0].trim(), Long.valueOf(elementos[1]));
+                retornar.put(elementos[0].trim(), Long.valueOf(elementos[1].trim()));
             }
         }
         return retornar;
