@@ -15,9 +15,9 @@ Quedaron **descartados por decisión**: promover `appcatalog` a producción (el 
 | # | Título | Naturaleza | Riesgo | Estado |
 |---|---|---|---|---|
 | R1 | Validación runtime Faces 4.1 / PrimeFaces 15 + TODOs de `LazyDataRows` | Trabajo | ~~Medio~~ Bajo | ✅ **Cerrado provisional (2026-07-12)** — código corregido y verificado; queda la reverificación runtime al desplegar Maker-web (tarea PF6→15) |
-| R2 | Cobertura de tests en `jbs-web` / `jbs-rest` / `jbs-jasper` | Trabajo | Muy bajo | Parcial (falta solo la capa web) |
-| R7 | Convertir los overrides por classpath restantes en puntos de extensión | Trabajo | Bajo | En curso — **log y seguridad hechos (2026-07-12)**; queda solo dialectos |
-| R8 | Split packages: ¿ventana 3.0 o declararlos permanentes? | **Decisión** | — | Sin decidir |
+| R2 | Cobertura de tests en `jbs-web` / `jbs-rest` / `jbs-jasper` | Trabajo | Muy bajo | ✅ **Cerrado (2026-07-13)** — 33 tests unitarios offline nuevos en los tres módulos |
+| R7 | Convertir los overrides por classpath restantes en puntos de extensión | Trabajo | Bajo | ✅ **Cerrado (2026-07-13)** — log y seguridad el 2026-07-12; dialectos el 2026-07-13 vía `FunctionContributor` |
+| R8 | Split packages: ¿ventana 3.0 o declararlos permanentes? | **Decisión** | — | ✅ **Decidido (2026-07-13): opción B** — permanentes, documentados en el README |
 
 Los dos primeros son deuda técnica interna del framework; los dos últimos involucran a los consumidores (Maker) y conviene tratarlos como decisiones, no como tareas a agendar sin más.
 
@@ -50,6 +50,16 @@ Como ahora `e.getValue()` es un `FilterMeta` y no el valor, filtrar por una colu
 
 ## R2 — Cobertura de tests en la capa web (riesgo muy bajo)
 
+> **Cierre 2026-07-13: se agregaron 33 tests unitarios offline** (sin servidor ni FacesContext), todos en verde:
+>
+> | Módulo | Tests | Clases de test nuevas |
+> |---|---|---|
+> | jbs-web | 1 → **23** | `LazyDataRowsTest` (18: `getParams`/`getFilterExpression` por cada tipo de dato con `FilterMeta` real de PF15, filterMode/filterMask, rowKey, `count()`), `AbstractDataConverterTest` (4) |
+> | jbs-rest | 0 → **8** | `AbstractWebResourceTest` (5: extracción de token, cache de autenticación, `TokenError`), `CORSFilterTest`, `MessageResponseTest`, `ErrorMessageTest` |
+> | jbs-jasper | 0 → **3** | `JasperReportUtilTest` (`convertTo`, `getFullPathReport`) |
+>
+> Los colaboradores se simulan con stubs y `java.lang.reflect.Proxy` (no se agregó Mockito). Dos defectos menores detectados al escribir los tests, anotados en "Observaciones sueltas" (puntos 3 y 4). El texto que sigue se conserva como registro del diagnóstico original.
+
 **Qué es.** La 2.0 ya subió cobertura donde había cero: `jbs-core` pasó de 0 a **51 tests** (error/xml) y todos los jars declaran `Automatic-Module-Name`. Lo que **resta** es solo la capa web:
 
 | Módulo | Tests actuales |
@@ -69,6 +79,13 @@ Como ahora `e.getValue()` es un `FilterMeta` y no el valor, filtrar por una colu
 ## R7 — Convertir los overrides por classpath restantes en puntos de extensión (riesgo bajo–medio)
 
 > **Avance 2026-07-12: log y seguridad de objetos ya se resolvieron** (ver "Casos ya ejecutados" al final de esta sección). Queda solo la familia de dialectos.
+>
+> **Cierre 2026-07-13: dialectos resueltos con una ruta mejor que la B planificada.** En vez de repaquetar los dialectos custom, se **eliminaron**: su único contenido era registrar la función SQL `datos.fn_getitemmovstatus`, y Hibernate 6+ ofrece un SPI específico para eso, **`FunctionContributor`**, que se descubre por `META-INF/services` y aplica a todas las PU sin importar el motor. Lo ejecutado:
+>
+> - **Maker**: nueva clase `net.makerapp.hibernate.MakerFunctionContributor` + services file en Maker-model; se borraron `org.hibernate.dialect.MkSqlServer2008`/`MkPostgreSql95` y las 19 referencias `hibernate.dialect` (10 en `persistence.xml`, 9 en `dynamic_persistence.xml`) pasaron al `SQLServerDialect` estándar. `MkPostgreSql95` no estaba referenciado en ninguna config.
+> - **TestProject**: ya usaba `FunctionContributor` pero con la clase en `org.hibernate.dialect` (`MkSqlServer`); se repaquetó a `net.makerapp.hibernate.MakerFunctionContributor` (git mv) y se actualizó el services file. De paso se corrigió un `persistence.xml` que referenciaba `PostgreSQL94Dialect`, dialecto que **no existe en Hibernate 7** (habría fallado el deploy de esa PU) → `PostgreSQLDialect`.
+> - **Registración unificada**: los dialectos de Maker declaraban el retorno de `fn_getitemmovstatus` como el tipo del primer argumento (`useArgType(1)`); TestProject lo declaraba `INTEGER` fijo. Confirmado que la función devuelve un entero (status), ambos repos quedaron con la misma declaración: `StandardSQLFunction("datos.fn_getitemmovstatus", StandardBasicTypes.INTEGER)`.
+> - Ambos proyectos compilan completos (`mvn test-compile` en verde). Ya no queda ninguna clase de consumidor en un paquete de framework; pendiente de verificación runtime junto con el smoke test de R1 (la función se usa en HQL de pantallas).
 
 **Qué es.** Maker todavía provee familias de clases cuyo **paquete pertenece a un framework** (JavaBeanStack, Oym-frame o Hibernate) pero cuyo fuente vive en el repo de Maker. En el classpath plano de WildFly, la copia local "pisa" a la del framework por orden de carga — un mecanismo frágil e invisible (un cambio de versión del framework puede romperlo en silencio). Tras la decisión sobre `appcatalog` (que **no** es un override, sino implementación de interfaz por diseño), el inventario:
 
@@ -76,7 +93,7 @@ Como ahora `e.getValue()` es un `FilterMeta` y no el valor, filtrar por una colu
 |---|---|---|---|---|
 | Managers de log | `org.javabeanstack.log.LogMngrData`, `LogMngrSecurity` | ~~Maker-services~~ → **jbs-core** | `<ejb-class>` en `ejb-jar.xml` | ✅ **Resuelto (2026-07-12)** — promovidas al framework (ruta A) |
 | Seguridad de objetos | `AppObjectAuthSrv` | ~~`py.com.oym.frame.security`~~ → **`net.makerapp.security`** (Maker-services) | `<ejb-class>` en `ejb-jar.xml` | ✅ **Resuelto (2026-07-12)** — repaquetada en Maker (ruta B) |
-| Dialectos Hibernate | `org.hibernate.dialect.MkSqlServer2008`, `MkPostgreSql95` | Maker-model | string `hibernate.dialect` en `persistence.xml` (~10 PUs) | ❌ Pendiente |
+| Dialectos Hibernate | ~~`org.hibernate.dialect.MkSqlServer2008`, `MkPostgreSql95`~~ → eliminados; `net.makerapp.hibernate.MakerFunctionContributor` | Maker-model | ~~string `hibernate.dialect`~~ → `META-INF/services` (SPI `FunctionContributor`); las PU usan dialectos estándar | ✅ **Resuelto (2026-07-13)** — ver nota de cierre arriba |
 
 **El hallazgo clave.** Estas tres familias **ya se seleccionan por configuración**, no por el nombre del paquete:
 
@@ -108,6 +125,8 @@ En ambas rutas desaparecen los split packages *del lado de Maker*, la extensión
 
 ## R8 — Split packages: ¿ventana 3.0 o declararlos permanentes? (decisión, no tarea)
 
+> **Decidido 2026-07-13: opción B.** Los 13 split packages interfaces↔implementación quedan como **rasgo permanente del diseño**; JPMS se descarta formalmente (nunca agregar `module-info.java`). La decisión quedó documentada en el README del framework (sección "Split packages y JPMS — decisión de diseño"), junto con la norma de extensión que cierra el costo residual: extender el framework siempre desde un paquete propio del consumidor (norma que R7 dejó operativa al eliminar el último override por classpath). Fundamento: los consumidores corren en WildFly (`jboss-modules` ignora `module-info`), el framework vive de reflection (JPA/CDI/EJB), y la ventana natural para la ruptura de imports (la migración `javax→jakarta`) ya se consumió. El texto que sigue se conserva como registro del análisis.
+
 **Qué es.** El framework tiene **13 split packages internos**: paquetes que existen a la vez en `jbs-interfaces` (el contrato) y en `jbs-core`/`jbs-business`/`jbs-web` (la implementación) — `config`, `data`, `data.services`, `datactrl`, `error`, `log`, `resources`, `security`, `security.model`, `web.model`, `web.util`, `xml`, y `util` (commons vs business). Es un patrón **deliberado**: "contrato e implementación en el mismo paquete, distinto jar". La partición de `web` no agregó paquetes nominalmente nuevos pero extendió `web.util` a 3 jars (`web`/`excel`/`jasper`).
 
 > Ojo: estos son distintos de los split packages **del lado de Maker** que ataca R7. R7 elimina los que aporta el consumidor; R8 es sobre los internos del framework, que R7 no toca.
@@ -130,4 +149,6 @@ En ambas rutas desaparecen los split packages *del lado de Maker*, la extensión
 Encontradas al revisar el código para este documento; las dejo anotadas para que decidas si abrir tickets aparte:
 
 1. ~~**`getParams` en `LazyDataRows`** (ver R1) contiene un defecto sospechado, no solo un TODO. Vale un ticket de bug propio, además del trabajo de validación de R1.~~ **Resuelto (2026-07-12)**: confirmado y corregido junto con el resto de R1 — ver [`analisis_lazydatarows_pf15.md`](analisis_lazydatarows_pf15.md).
-2. **`miscellaneous/docs/ia/README.md` quedó desactualizado**: dice "Las **cuatro** implementaciones de `IDBManager`" y hoy son **tres** (`DBManager`, `DBManagerV20`, `DBManagerV30`; `DBManagerV21` se eliminó el 2026-07-12). La nota sobre el análisis de modularización en ese README también cita "Actualizado 2026-07-11".
+2. ~~**`miscellaneous/docs/ia/README.md` quedó desactualizado**: dice "Las **cuatro** implementaciones de `IDBManager`" y hoy son **tres** (`DBManager`, `DBManagerV20`, `DBManagerV30`; `DBManagerV21` se eliminó el 2026-07-12). La nota sobre el análisis de modularización en ese README también cita "Actualizado 2026-07-11".~~ **Resuelto (2026-07-13)**: README corregido (tres implementaciones, índice actualizado con los documentos nuevos).
+3. **`AbstractWebResource.getTokenFromHeader` (jbs-rest)**: la validación `tokens.length < 1` nunca se cumple (un `split` devuelve al menos un elemento); un encabezado sin espacio (ej. `"Bearer"` o el token pelado sin esquema) produce `ArrayIndexOutOfBoundsException` en `tokens[1]` en vez del `TokenError` esperado. La condición debería ser `< 2`. Detectado al escribir `AbstractWebResourceTest`; no se corrigió para no mezclar cambios de producción con R2.
+4. **`AbstractDataConverter.getValuesFrom` (jbs-web)**: el parser recorta el carácter anterior al `}` final (`fin = lastIndexOf("}") - 1`), lo que muerde el último dígito cuando el último valor es numérico (ej. `{"a":10}` devuelve `1`), y `Long.valueOf` falla si hay espacio después de los dos puntos. Funciona solo cuando el último valor es string. Detectado al escribir `AbstractDataConverterTest` (el test documenta el formato que sí funciona).

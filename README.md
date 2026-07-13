@@ -55,6 +55,10 @@ No se deben introducir imports que inviertan este orden (por ejemplo, que `core`
 
 Desde la versión 2.0, los módulos `excel`, `jasper` y `rest` se extrajeron de `web` para aislar sus dependencias pesadas (Apache POI, JasperReports+Groovy, JAX-RS). Los consumidores de `jbs-web` que usen importación Excel, reportes Jasper o recursos REST deben declarar `jbs-excel`, `jbs-jasper` o `jbs-rest` **explícitamente** (antes venían dentro de `jbs-web`).
 
+### Split packages y JPMS — decisión de diseño
+
+Los *split packages* entre `jbs-interfaces` y los jars de implementación (contrato e implementación comparten el nombre de paquete, en jars distintos — por ejemplo `org.javabeanstack.log` vive en `jbs-interfaces` y en `jbs-core`) son **intencionales y permanentes**. En consecuencia, **JPMS no se soporta**: nunca agregar `module-info.java` a ningún módulo (dos módulos JPMS no pueden exportar el mismo paquete). Los consumidores corren en WildFly, cuyo classloader (`jboss-modules`) ignora `module-info`; los nombres de módulo quedan reservados vía `Automatic-Module-Name` en el manifest de cada jar. La extensión del framework se hace implementando/extendiendo sus clases **desde un paquete propio** del consumidor — no agregando clases dentro de un paquete del framework.
+
 ### `bom`
 Bill of Materials (`jbs-bom`, packaging `pom`). Centraliza en su `dependencyManagement` las versiones de los artefactos `jbs-*` y de las dependencias de terceros (jakartaee-api, Hibernate, PrimeFaces, JasperReports, POI, log4j, JUnit). Es el parent de `jbs-parent`, por lo que todos los módulos heredan las versiones sin declararlas; los proyectos consumidores lo importan con `<scope>import</scope>`.
 
