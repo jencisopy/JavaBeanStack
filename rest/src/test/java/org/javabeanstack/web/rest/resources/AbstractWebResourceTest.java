@@ -104,14 +104,18 @@ public class AbstractWebResourceTest {
     }
 
     /**
-     * Test of getTokenFromHeader: sin encabezado debe lanzar TokenError.
+     * Test of getTokenFromHeader: sin encabezado o con encabezado mal formado
+     * (sin esquema, ej. "Bearer" solo o el token pelado) debe lanzar
+     * TokenError, nunca otra excepción.
      */
     @Test
-    public void testGetTokenFromHeaderVacio() {
-        System.out.println("abstractWebResource getTokenFromHeaderVacio");
+    public void testGetTokenFromHeaderInvalido() {
+        System.out.println("abstractWebResource getTokenFromHeaderInvalido");
         WebResourceStub resource = new WebResourceStub();
         assertThrows(TokenError.class, () -> resource.getTokenFromHeader(null));
         assertThrows(TokenError.class, () -> resource.getTokenFromHeader(""));
+        assertThrows(TokenError.class, () -> resource.getTokenFromHeader("Bearer"));
+        assertThrows(TokenError.class, () -> resource.getTokenFromHeader(TOKEN_VALIDO));
     }
 
     /**

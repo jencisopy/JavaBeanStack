@@ -124,16 +124,21 @@ public class AbstractDataConverterTest {
 
     /**
      * Test of getValuesFrom: parsea un json simple a un map, los valores con
-     * comillas como texto y los numéricos como Long. Ojo: el parser no admite
-     * espacio entre los dos puntos y un valor numérico.
+     * comillas como texto y los numéricos como Long, sin importar el orden de
+     * los pares ni los espacios después de los dos puntos.
      */
     @Test
     public void testGetValuesFrom() {
         System.out.println("abstractDataConverter getValuesFrom");
         ClienteConverter converter = new ClienteConverter();
         Map<String, Object> values
-                = converter.getValuesFrom("{\"idcliente\":5, \"nombre\": \"Juan\"}");
+                = converter.getValuesFrom("{\"idcliente\": 5, \"nombre\": \"Juan\"}");
         assertEquals(5L, values.get("idcliente"));
+        assertEquals("Juan", values.get("nombre"));
+
+        //Valor numérico en la última posición (antes perdía el último dígito)
+        values = converter.getValuesFrom("{\"nombre\": \"Juan\", \"idcliente\": 10}");
+        assertEquals(10L, values.get("idcliente"));
         assertEquals("Juan", values.get("nombre"));
     }
 }

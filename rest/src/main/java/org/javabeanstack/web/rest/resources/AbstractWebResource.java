@@ -126,8 +126,9 @@ public abstract class AbstractWebResource implements IWebResource {
         if (Strings.isNullorEmpty(tokenHeader)) {
             throw new TokenError("Debe proporcionar el token de autorización");
         }
+        //Formato esperado "esquema token" (ej. "Bearer xxxx"); sin esquema no es válido
         String[] tokens = tokenHeader.split("\\ ");
-        if (tokens == null || tokens.length < 1) {
+        if (tokens.length < 2) {
             throw new TokenError("Debe proporcionar el token de autorización");
         }
         return tokens[1];
