@@ -139,6 +139,26 @@ WildFly 40, ejecutar este smoke test** contra la BD real:
 5. Grilla con `noCount=true` (paginador con "siguiente" habilitado).
 6. Alta/edición con `update()` (camino `"nolazyload"`, la grilla no debe recargar).
 
+Casos agregados el 2026-07-13 (cambios posteriores al cierre de R1, misma sesión
+de smoke test):
+
+7. **REST — token mal formado** (fix `b51612e` de `getTokenFromHeader`): invocar
+   un recurso de Maker-rest con encabezado `Authorization` inválido — sin
+   encabezado, `"Bearer"` solo, y el token pelado sin esquema — y verificar que
+   los tres devuelven el error de `TokenError` ("Debe proporcionar el token de
+   autorización"), no un 500 por `ArrayIndexOutOfBoundsException`. Con un token
+   válido el recurso debe seguir respondiendo normal.
+8. **Función `fn_getitemmovstatus` vía `FunctionContributor`** (cierre de R7,
+   commit `1e83ffef7` de Maker): abrir una pantalla de Itemmovimiento con
+   documentos VR/VP/VPR/NPR/CR/COR/CPR y verificar que la columna/semáforo de
+   status carga (null/0/1/2/3) — eso confirma que Hibernate descubrió
+   `MakerFunctionContributor` por ServiceLoader y resuelve
+   `function('fn_getitemmovstatus',...)` en HQL con las PU en `SQLServerDialect`
+   estándar. Probar también el filtro por status (`ItemmovimientoFilter`) y el
+   listado del `AppItemmovimientoRootCtrl` (SQL nativo, no depende del registry,
+   sirve de control cruzado). Si fallara, el error esperable es
+   `UnknownFunctionException` al parsear el HQL.
+
 Ayudas para esa sesión: pantallas de Maker que ya configuran `countrows=false`
 vía XML (punto 5): `gi_lote_precio`, `documentoctrl`, `gi_dptovta_recupero`,
 `gi_lote`. Activar `DEBUG` de `org.javabeanstack` en WildFly: `AbstractDAO.getCount`
