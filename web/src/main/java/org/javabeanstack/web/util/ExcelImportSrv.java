@@ -329,6 +329,17 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     }
 
     /**
+     * Nombre del archivo origen de los datos (la planilla Excel migrada),
+     * registrado como primera línea del log del proceso. Debe implementarse
+     * en cada subclase (típicamente obteniéndolo del controlador de carga);
+     * si el nombre no está disponible debe retornar cadena vacía, en cuyo
+     * caso la línea no se registra.
+     *
+     * @return nombre de la planilla origen, o cadena vacía si no se conoce.
+     */
+    protected abstract String getSourceFileName();
+
+    /**
      * Identificador del registro usado en el log de errores de migración. La
      * implementación base retorna el id del registro si lo tiene; las subclases
      * pueden sobrescribirlo para usar un dato de negocio más descriptivo (p.ej.
@@ -699,6 +710,9 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         rowsMigratedCount = 0;
         rowsExistCount = 0;
         resultLog.setLength(0);
+        if (!getSourceFileName().isEmpty()) {
+            logResult("Planilla: " + getSourceFileName());
+        }
         logResult("Inicio del proceso: " + LocalDateTime.now().format(LOG_TS));
         try {
             //BeforeImportData
@@ -798,7 +812,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * {@code APPLOGPATH} (mismo parámetro que usa
      * {@code AbstractDataService.importFrom}); si el parámetro no está
      * definido se usa {@code jboss.server.config.dir}. El nombre del archivo
-     * es {@code import_<Entidad>_<idempresa>_<yyyyMMddHHmmss>.log}. Cualquier
+     * es {@code import_from_excel_<Entidad>_<idempresa>_<yyyyMMddHHmmss>.log}. Cualquier
      * error (carpeta inexistente, permisos, sesión no disponible) se registra
      * en el propio log sin interrumpir el proceso.
      */
@@ -809,7 +823,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                 filePath = appConfig.getSystemParam("APPLOGPATH").getValueChar();
             }
             filePath = IOUtil.addbs(filePath)
-                    + "import_" + getTargetType().getSimpleName()
+                    + "import_from_excel_" + getTargetType().getSimpleName()
                     + "_" + getUserSession().getIdCompany()
                     + "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                     + ".log";
