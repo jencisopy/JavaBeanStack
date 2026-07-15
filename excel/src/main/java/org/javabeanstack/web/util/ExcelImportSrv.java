@@ -364,12 +364,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         for (T row : dataRowsError) {
             StringBuilder msgs = new StringBuilder();
             if (row.getErrors() != null) {
-                for (IErrorReg err : row.getErrors().values()) {
-                    if (msgs.length() > 0) {
-                        msgs.append("; ");
-                    }
-                    msgs.append(err.getMessage());
-                }
+                msgs.append(row.getErrorMsg());
             }
             String id = getRowLogIdentifier(row);
             logResult("  " + nro++ + ") " + (id.isEmpty() ? "" : id + ": ") + msgs);
