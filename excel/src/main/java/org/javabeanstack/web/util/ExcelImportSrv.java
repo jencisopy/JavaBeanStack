@@ -284,7 +284,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         if (getErrorMessage() != null && !getErrorMessage().isEmpty()) {
             return getErrorMessage();
         }
-        if (dataRowsError.size() > 0){
+        if (!dataRowsError.isEmpty()){
             return "El proceso tuvo errores en la migración";
         }
         return "Importación sin errores";
