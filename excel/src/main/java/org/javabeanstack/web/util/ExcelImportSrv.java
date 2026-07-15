@@ -21,6 +21,10 @@
  */
 package org.javabeanstack.web.util;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -37,6 +41,7 @@ import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 
@@ -705,6 +710,8 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             checkBeforeImportData();
 
             String sessionId = getUserSession().getSessionId();
+            logResult("Empresa: " + getUserSession().getCompany().getName());
+            logResult("Usuario: " + getUserSession().getUser().getLogin());
 
             //Procesa planilla y convierte a una lista tipo T (entidad de la vista)
             List<T> data = getDataFromExcelSheet(null);
@@ -783,6 +790,37 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     + ", ya existentes: " + rowsExistCount
                     + ", con errores: " + getRowsErrorCount() + ")");
             logResult("Fin del proceso: " + LocalDateTime.now().format(LOG_TS));
+            saveResultLogToFile();
+        }
+    }
+
+    /**
+     * Persiste el log del proceso ({@link #getResultLog()}) como archivo en la
+     * carpeta del servidor definida por el parámetro del sistema
+     * {@code APPLOGPATH} (mismo parámetro que usa
+     * {@code AbstractDataService.importFrom}); si el parámetro no está
+     * definido se usa {@code jboss.server.config.dir}. El nombre del archivo
+     * es {@code import_<Entidad>_<idempresa>_<yyyyMMddHHmmss>.log}. Cualquier
+     * error (carpeta inexistente, permisos, sesión no disponible) se registra
+     * en el propio log sin interrumpir el proceso.
+     */
+    protected void saveResultLogToFile() {
+        try {
+            String filePath = System.getProperty("jboss.server.config.dir");
+            if (appConfig != null && appConfig.getSystemParam("APPLOGPATH") != null) {
+                filePath = appConfig.getSystemParam("APPLOGPATH").getValueChar();
+            }
+            filePath = IOUtil.addbs(filePath)
+                    + "import_" + getTargetType().getSimpleName()
+                    + "_" + getUserSession().getIdCompany()
+                    + "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                    + ".log";
+            Path file = Paths.get(filePath);
+            Files.writeString(file, getResultLog(),
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            logResult("Log guardado en: " + filePath);
+        } catch (Exception e) {
+            logResult("No se pudo guardar el log en disco: " + e.getMessage());
         }
     }
 
