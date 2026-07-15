@@ -21,6 +21,8 @@
  */
 package org.javabeanstack.web.util;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +57,9 @@ import org.javabeanstack.util.Fn;
  * {@link #onAfterRowConvert(IDataRow)}, {@link #cancelError(Exception)},
  * {@link #finishWithError()} y {@link #finish()}.</li>
  * </ul>
+ * Ofrece además {@link #checkValidation(Sheet)} (pasada de solo-validación que
+ * alimenta las listas de válidos/errores sin persistir) y los
+ * contadores/mensajes de resultado que consumen las vistas.
  *
  * @author jenciso
  * @param <T> tipo de la vista destino (debe implementar {@link IDataRow}).
@@ -76,6 +81,34 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     private Workbook excelWorkbook;
 
     /**
+     * Indica si los errores deben revisarse antes de importar (ver la guarda
+     * de revisión previa en {@link #importData()}).
+     */
+    private Boolean checkBeforeErrors = true;
+
+    /** Registros grabados con éxito en la última importación. */
+    private int rowsMigratedCount = 0;
+
+    /** Registros omitidos por ya existir (sin sobrescritura) en la última importación. */
+    private int rowsExistCount = 0;
+
+    /** Filas efectivamente leídas de la planilla en la última pasada de lectura. */
+    private int rowsReadedCount = 0;
+
+    /**
+     * Indica si el último proceso de importación se ejecutó completo (aunque
+     * haya filas con errores). Es falso si abortó por excepción o sin datos.
+     */
+    private Boolean importOk = false;
+
+    /**
+     * Indica si la última pasada de validación ({@link #checkValidation})
+     * finalizó correctamente, es decir el usuario ya tuvo oportunidad de
+     * revisar los errores. Se consume (resetea) en cada {@link #importData()}.
+     */
+    private boolean errorsReviewed = false;
+
+    /**
      * Indica si la importación debe sobrescribir los registros ya existentes.
      */
     private Boolean overWriteData = false;
@@ -86,12 +119,246 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     private String errorMessage;
 
     /**
+     * Log del último proceso de importación (inicio, errores por registro,
+     * totales y fin). Puede crecer mucho: la vista no debe volcarlo completo
+     * sin límite.
+     */
+    private final StringBuilder resultLog = new StringBuilder();
+
+    /**
+     * Formato de fecha/hora usado en el log del proceso.
+     */
+    private static final DateTimeFormatter LOG_TS = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+    /**
      * Provee el servicio de datos que las subclases utilizan para persistir los
      * registros importados. Debe implementarse en cada subclase.
      *
      * @return el {@link IDataService} asociado a la entidad destino.
      */
     protected abstract IDataService getDataService();
+
+    /**
+     * Indica si los errores deben revisarse antes de importar (ver
+     * {@link #importData()}: con la opción activa el proceso se detiene si hay
+     * registros con errores sin pasar antes por {@link #checkValidation}).
+     *
+     * @return {@code true} si se exige la revisión previa (valor por defecto);
+     * {@code false} para importar directo.
+     */
+    @Override
+    public Boolean getCheckBeforeErrors() {
+        return checkBeforeErrors;
+    }
+
+    /**
+     * Establece si los errores deben revisarse antes de importar. El valor
+     * recibido se normaliza con {@link Fn#toLogical(Object)} (nulo se
+     * interpreta como {@code false}).
+     *
+     * @param checkBeforeErrors {@code true} para exigir la revisión previa;
+     * {@code false} para importar directo omitiendo los registros con error.
+     */
+    @Override
+    public void setCheckBeforeErrors(Boolean checkBeforeErrors) {
+        this.checkBeforeErrors = Fn.toLogical(checkBeforeErrors);
+    }
+
+    /**
+     * Retorna la cantidad de filas efectivamente leídas de la planilla en la
+     * última pasada de {@link #getDataFromExcelSheet(Sheet)}, tengan o no
+     * errores. Puede diferir de {@link #getRowsCount()} cuando el procesador
+     * descarta filas (devuelve {@code null} al procesarlas).
+     *
+     * @return cantidad de filas leídas de la planilla.
+     */
+    @Override
+    public int getRowsReadedCount() {
+        return rowsReadedCount;
+    }
+
+    /**
+     * Retorna el total de registros producidos por la última pasada de lectura:
+     * válidos ({@link #getDataRows()}) más con errores
+     * ({@link #getDataRowsError()}).
+     *
+     * @return total de registros a importar (válidos + con errores).
+     */
+    @Override
+    public int getRowsCount() {
+        int retornar = 0;
+        if (getDataRows() != null) {
+            retornar = getDataRows().size();
+        }
+        if (getDataRowsError() != null) {
+            retornar += getDataRowsError().size();
+        }
+        return retornar;
+    }
+
+    /**
+     * Retorna la cantidad de registros con errores de validación o conversión
+     * acumulados en {@link #getDataRowsError()}.
+     *
+     * @return cantidad de registros con errores.
+     */
+    @Override
+    public int getRowsErrorCount() {
+        int retornar = 0;
+        if (getDataRowsError() != null) {
+            retornar = getDataRowsError().size();
+        }
+        return retornar;
+    }
+
+    /**
+     * Retorna la cantidad de registros válidos listos para importar según la
+     * última pasada de lectura.
+     *
+     * @return cantidad de registros válidos.
+     */
+    @Override
+    public int getRowsValidCount() {
+        return getRowsCount() - getRowsErrorCount();
+    }
+
+    /**
+     * Retorna la cantidad de registros grabados con éxito en la base por la
+     * última ejecución de {@link #importData()}.
+     *
+     * @return cantidad de registros migrados.
+     */
+    @Override
+    public int getRowsMigratedCount() {
+        return rowsMigratedCount;
+    }
+
+    /**
+     * Retorna la cantidad de registros omitidos en la última importación por
+     * existir ya en la base cuando {@link #getOverWriteData()} está
+     * desactivado.
+     *
+     * @return cantidad de registros omitidos por ya existir.
+     */
+    @Override
+    public int getRowsExistCount() {
+        return rowsExistCount;
+    }
+
+    /**
+     * Retorna el total de registros procesados por la última importación:
+     * migrados + omitidos por existir + con errores.
+     *
+     * @return total de registros procesados.
+     */
+    @Override
+    public int getRowsProcessedCount() {
+        return rowsMigratedCount + rowsExistCount + getRowsErrorCount();
+    }
+
+    /**
+     * Indica si el último proceso de importación se ejecutó completo (recorrió
+     * todos los registros, aunque algunos hayan quedado con errores). Es falso
+     * si el proceso abortó por una excepción o porque no hubo datos que
+     * procesar.
+     */
+    @Override
+    public Boolean getImportOk() {
+        return importOk;
+    }
+
+    /**
+     * Retorna el mensaje descriptivo del resultado del proceso: el mensaje de
+     * error si lo hubo, un aviso si quedaron registros con errores, o la
+     * confirmación de importación limpia.
+     *
+     * @return mensaje del resultado de la importación.
+     */
+    @Override
+    public String getResultMessage() {
+        if (getErrorMessage() != null && !getErrorMessage().isEmpty()) {
+            return getErrorMessage();
+        }
+        if (dataRowsError.size() > 0){
+            return "El proceso tuvo errores en la migración";
+        }
+        return "Importación sin errores";
+    }
+
+    /**
+     * Retorna el detalle del error cuando el proceso abortó (ver
+     * {@link #getImportOk()}).
+     *
+     * @return detalle del error, o cadena vacía si no hubo aborto.
+     */
+    @Override
+    public String getResultErrorMessage() {
+        if (getErrorMessage() != null && !getErrorMessage().isEmpty()) {
+            return getErrorMessage();
+        }
+        return "";
+    }
+
+    /**
+     * Retorna el log del último proceso de importación: inicio, errores de
+     * migración por registro (identificador + mensajes), totales y fin.
+     * Puede contener mucho texto; si se muestra en pantalla debe acotarse.
+     *
+     * @return log de la importación; cadena vacía si aún no se ejecutó.
+     */
+    @Override
+    public String getResultLog() {
+        return resultLog.toString();
+    }
+
+    /**
+     * Agrega una línea al log del proceso de importación.
+     *
+     * @param texto línea a registrar.
+     */
+    protected void logResult(String texto) {
+        resultLog.append(texto).append("\n");
+    }
+
+    /**
+     * Identificador del registro usado en el log de errores de migración. La
+     * implementación base retorna el id del registro si lo tiene; las
+     * subclases pueden sobrescribirlo para usar un dato de negocio más
+     * descriptivo (p.ej. el RUC o el número de documento).
+     *
+     * @param row registro leído de la planilla.
+     * @return identificador del registro para el log; cadena vacía si no hay.
+     */
+    protected String getRowLogIdentifier(T row) {
+        Object id = row.getId();
+        return id != null ? id.toString() : "";
+    }
+
+    /**
+     * Vuelca al log los registros con errores acumulados en
+     * {@link #getDataRowsError()}: número secuencial, identificador
+     * ({@link #getRowLogIdentifier}) y mensajes de error del registro.
+     */
+    private void appendErrorsToLog() {
+        if (dataRowsError == null || dataRowsError.isEmpty()) {
+            return;
+        }
+        logResult("Errores de migración (" + dataRowsError.size() + "):");
+        int nro = 1;
+        for (T row : dataRowsError) {
+            StringBuilder msgs = new StringBuilder();
+            if (row.getErrors() != null) {
+                for (IErrorReg err : row.getErrors().values()) {
+                    if (msgs.length() > 0) {
+                        msgs.append("; ");
+                    }
+                    msgs.append(err.getMessage());
+                }
+            }
+            String id = getRowLogIdentifier(row);
+            logResult("  " + nro++ + ") " + (id.isEmpty() ? "" : id + ": ") + msgs);
+        }
+    }
 
     /**
      * Provee la sesión del usuario asociada al proceso de importación, de la que
@@ -121,16 +388,6 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     @Override
     public String getErrorMessage() {
         return errorMessage;
-    }
-
-    /**
-     * Asigna el mensaje de error del proceso de importación.
-     *
-     * @param errorMessage mensaje de error a registrar.
-     */
-    @Override
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
     }
 
     /**
@@ -263,6 +520,31 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     }
 
     /**
+     * Ejecuta una pasada sobre todos los registros de una hoja del excel En ese
+     * proceso alimenta dataRows (registros válidos a migrar) dataRowsError
+     * (registros con errores en la planilla). Prepara antes el proceso vía
+     * {@link #beforeImportData()} (asigna el libro y el procesador de filas) y
+     * valida los prerrequisitos, por lo que puede invocarse en forma
+     * independiente de {@link #importData()}.
+     *
+     * @param sheet hoja a procesar; si es {@code null} se utiliza la primera
+     * hoja del libro asignado.
+     */
+    @Override
+    public void checkValidation(Sheet sheet) {
+        errorsReviewed = false;
+        try {
+            beforeImportData();
+            checkBeforeImportData();
+            getDataFromExcelSheet(sheet);
+            errorsReviewed = true;
+        } catch (Exception e) {
+            errorMessage = e.getMessage();
+            cancelError(e);
+        }
+    }
+
+    /**
      * Devuelve una lista conteniendo los datos leídos de la planilla Excel,
      * utilizando el procesador de filas configurado. Cada fila se transforma
      * con {@link IExcelRowProcessor#process()}; los registros válidos se
@@ -311,6 +593,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         T dataRow;
         int firstRow = 0;
         int lastRow = (rowCount <= 0) ? sheet.getLastRowNum() : firstRow + rowCount - 1;
+        rowsReadedCount = 0;
         for (int r = firstRow; r <= lastRow; r++) {
             // No se procesa la fila de encabezados
             if (r == processor.getHeaderRowIndex()) {
@@ -322,6 +605,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             }
             processor.setRow(row);
             dataRow = processor.process();
+            rowsReadedCount++;
             if (dataRow != null) {
                 if (dataRow.getErrors() == null || dataRow.getErrors().isEmpty()) {
                     dataRows.add(dataRow);
@@ -369,22 +653,29 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * <li>{@link #checkBeforeImportData()}: validación de prerrequisitos
      * (procesador, planilla y {@code targetType} del procesador).</li>
      * <li>{@link #getDataFromExcelSheet(Sheet)}: lectura y conversión de la
-     * planilla a una lista de objetos {@code T}. Si no hay registros, se invoca
+     * planilla a una lista de objetos {@code T}.</li>
+     * <li>Guarda de revisión previa: si {@link #getCheckBeforeErrors()} está
+     * activo, hay registros con errores y no hubo una pasada previa de
+     * {@link #checkValidation(Sheet)}, el proceso se detiene sin grabar nada
+     * (queda {@link #getImportOk()} en {@code false} y el detalle en
+     * {@link #getErrorMessage()}). Si no hay registros válidos, se invoca
      * {@link #cancelError(Exception)} con {@code null} y termina.</li>
      * <li>Por cada registro válido: {@link #onBeforeRowConvert(IDataRow)},
      * conversión a la entidad {@link #getTargetType()} con
      * {@link IDataService#copyTo}, asignación de la acción
      * ({@code INSERT}/{@code UPDATE}; los {@code UPDATE} se omiten salvo que
-     * {@link #getOverWriteData()} sea {@code true}),
-     * {@link #onAfterRowConvert(IDataRow)}, validación con
-     * {@link IDataService#checkDataRow} y persistencia con
-     * {@link IDataService#update}. Los registros con error se acumulan en
+     * {@link #getOverWriteData()} sea {@code true}, contabilizados en
+     * {@link #getRowsExistCount()}), {@link #onAfterRowConvert(IDataRow)},
+     * validación con {@link IDataService#checkDataRow} y persistencia con
+     * {@link IDataService#update} (los grabados se contabilizan en
+     * {@link #getRowsMigratedCount()}). Los registros con error se acumulan en
      * {@link #getDataRowsError()}.</li>
-     * <li>{@link #finishWithError()} si algún registro falló, o
-     * {@link #finish()} si todos se procesaron correctamente.</li>
+     * <li>Completado el recorrido se marca {@link #getImportOk()} en
+     * {@code true} y se invoca {@link #finishWithError()} si algún registro
+     * falló, o {@link #finish()} si todos se procesaron correctamente.</li>
      * </ol>
-     * Cualquier excepción se captura: se registra su mensaje con
-     * {@link #setErrorMessage(String)} y se invoca
+     * Cualquier excepción se captura: su mensaje queda disponible en
+     * {@link #getErrorMessage()} y se invoca
      * {@link #cancelError(Exception)} con la excepción.
      * <p>
      * Antes de la etapa de validación deben haberse asignado el procesador de
@@ -401,6 +692,11 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      */
     @Override
     public void importData() throws Exception {
+        importOk = false;
+        rowsMigratedCount = 0;
+        rowsExistCount = 0;
+        resultLog.setLength(0);
+        logResult("Inicio del proceso: " + LocalDateTime.now().format(LOG_TS));
         try {
             //BeforeImportData
             beforeImportData();
@@ -409,15 +705,25 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             checkBeforeImportData();
 
             String sessionId = getUserSession().getSessionId();
-            
+
             //Procesa planilla y convierte a una lista tipo T (entidad de la vista)
             List<T> data = getDataFromExcelSheet(null);
+            //Si se pidió revisar los errores antes de importar y aún no fueron
+            //revisados (no pasó por checkValidation), se detiene la importación.
+            boolean reviewed = errorsReviewed;
+            errorsReviewed = false;
+            if (getCheckBeforeErrors() && !reviewed && !getDataRowsError().isEmpty()) {
+                errorMessage = "Se encontraron " + getDataRowsError().size()
+                        + " registro(s) con errores. Revise la validación antes de importar.";
+                logResult("Proceso detenido: " + errorMessage);
+                return;
+            }
             if (data == null || data.isEmpty()) {
+                errorMessage = "No se encontraron registros para procesar";
+                logResult("Proceso detenido: " + errorMessage);
                 cancelError(null);
                 return;
             }
-            //Aqui el proceso para mostrar registros con errores.
-
             //Proceso de grabación
             IDataRow target;
             boolean error = false;
@@ -435,6 +741,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                 }
                 //Si existe el registro y no se permite sobreescribir.
                 if (target.getAction() == IDataRow.UPDATE && !getOverWriteData()) {
+                    rowsExistCount++;
                     continue;
                 }
                 //Despues de convertir
@@ -454,17 +761,28 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                 if (!result.isSuccessFul()) {
                     source.setErrors(result.getErrorsMap());
                     getDataRowsError().add(source);
+                } else {
+                    rowsMigratedCount++;
                 }
             }
-            //Fin proceso
+            //Fin proceso: el recorrido se completó (haya o no filas con errores)
+            importOk = true;
             if (error) {
                 finishWithError();
                 return;
             }
             finish();
         } catch (Exception e) {
-            setErrorMessage(e.getMessage());
+            errorMessage = e.getMessage();
+            logResult("El proceso abortó por un error: " + e.getMessage());
             cancelError(e);
+        } finally {
+            appendErrorsToLog();
+            logResult("Registros procesados: " + getRowsProcessedCount()
+                    + " (migrados: " + rowsMigratedCount
+                    + ", ya existentes: " + rowsExistCount
+                    + ", con errores: " + getRowsErrorCount() + ")");
+            logResult("Fin del proceso: " + LocalDateTime.now().format(LOG_TS));
         }
     }
 

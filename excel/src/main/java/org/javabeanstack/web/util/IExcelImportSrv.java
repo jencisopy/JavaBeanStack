@@ -24,18 +24,133 @@ package org.javabeanstack.web.util;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.javabeanstack.data.IDataRow;
 
 /**
  * Contrato para servicios de importación de datos desde planillas Excel.
- * Define las operaciones de acceso al controlador de carga, validación previa
- * y conversión de datos hacia objetos del modelo.
+ * Define las operaciones de configuración del proceso (libro, procesador de
+ * filas, opciones), la pasada de validación previa
+ * ({@link #checkValidation(Sheet)}), la importación propiamente dicha
+ * ({@link #importData()}) y los contadores/mensajes de resultado que consumen
+ * las vistas (p.ej. el wizard de importación).
  *
- * @author jenciso 
+ * @author jenciso
  * @param <T> tipo de la vista destino (debe implementar {@link IDataRow}).
  */
 public interface IExcelImportSrv<T extends IDataRow> extends Serializable {
+
+    /**
+     * Retorna la cantidad de filas efectivamente leídas de la planilla en la
+     * última pasada de lectura (tengan o no errores). Puede diferir de
+     * {@link #getRowsCount()} si el procesador descarta filas.
+     *
+     * @return cantidad de filas leídas de la planilla.
+     */
+    int getRowsReadedCount();
+
+    /**
+     * Retorna el total de registros producidos por la última pasada de
+     * lectura: válidos ({@link #getDataRows()}) más con errores
+     * ({@link #getDataRowsError()}).
+     *
+     * @return total de registros a importar (válidos + con errores).
+     */
+    int getRowsCount();
+
+    /**
+     * Retorna la cantidad de registros grabados con éxito en la base por la
+     * última importación.
+     *
+     * @return cantidad de registros migrados.
+     */
+    int getRowsMigratedCount();
+
+    /**
+     * Retorna la cantidad de registros omitidos en la última importación por
+     * existir ya en la base cuando la opción de sobrescritura
+     * ({@link #getOverWriteData()}) está desactivada.
+     *
+     * @return cantidad de registros omitidos por ya existir.
+     */
+    int getRowsExistCount();
+
+    /**
+     * Retorna la cantidad de registros válidos listos para importar según la
+     * última pasada de lectura.
+     *
+     * @return cantidad de registros válidos.
+     */
+    int getRowsValidCount();
+
+    /**
+     * Retorna la cantidad de registros con errores de validación o conversión
+     * acumulados en {@link #getDataRowsError()}.
+     *
+     * @return cantidad de registros con errores.
+     */
+    int getRowsErrorCount();
+
+    /**
+     * Retorna el total de registros procesados por la última importación:
+     * migrados + omitidos por existir + con errores.
+     *
+     * @return total de registros procesados.
+     */
+    int getRowsProcessedCount();
+
+    /**
+     * Indica si el último proceso de importación se ejecutó completo, es decir
+     * recorrió todos los registros aunque algunos hayan quedado con errores.
+     *
+     * @return {@code true} si el proceso se completó; {@code false} si abortó
+     * por una excepción, por falta de datos o aún no se ejecutó.
+     */
+    Boolean getImportOk();
+
+    /**
+     * Retorna el mensaje descriptivo del resultado cuando el proceso se
+     * completó (ver {@link #getImportOk()}).
+     *
+     * @return mensaje del resultado de la importación.
+     */
+    String getResultMessage();
+
+    /**
+     * Retorna el detalle del error cuando el proceso abortó (ver
+     * {@link #getImportOk()}).
+     *
+     * @return detalle del error, o cadena vacía si no hubo aborto.
+     */
+    String getResultErrorMessage();
+
+    /**
+     * Retorna el log del último proceso de importación.
+     *
+     * @return log de la importación; cadena vacía si no hay detalle.
+     */
+    String getResultLog();
+
+    /**
+     * Indica si los errores deben revisarse antes de importar: en ese caso
+     * {@link #importData()} se detiene sin grabar cuando encuentra registros
+     * con errores que no pasaron previamente por
+     * {@link #checkValidation(Sheet)}.
+     *
+     * @return {@code true} si se exige revisar los errores antes de importar
+     * (valor por defecto); {@code false} para importar directo.
+     */
+    Boolean getCheckBeforeErrors();
+
+    /**
+     * Establece si los errores deben revisarse antes de importar. El valor
+     * nulo se normaliza a {@code false}.
+     *
+     * @param revisarErrores {@code true} para exigir la revisión previa;
+     * {@code false} para importar directo omitiendo los registros con error.
+     */
+    public void setCheckBeforeErrors(Boolean revisarErrores);
 
     /**
      * Retorna el mensaje de error del último proceso de importación.
@@ -43,13 +158,6 @@ public interface IExcelImportSrv<T extends IDataRow> extends Serializable {
      * @return mensaje de error, o {@code null} si no se registró ninguno.
      */
     String getErrorMessage();
-
-    /**
-     * Asigna el mensaje de error del proceso de importación.
-     *
-     * @param errorMessage mensaje de error a registrar.
-     */
-    void setErrorMessage(String errorMessage);
 
     /**
      * Indica si durante la importación deben sobrescribirse los registros ya
@@ -137,11 +245,24 @@ public interface IExcelImportSrv<T extends IDataRow> extends Serializable {
      */
     void addProperty(String key, Object value);
 
-    
+    /**
+     * Ejecuta una pasada de solo-validación sobre la planilla: lee y convierte
+     * todos los registros alimentando {@link #getDataRows()} (válidos) y
+     * {@link #getDataRowsError()} (con errores), sin persistir nada. Deja
+     * registrada la revisión para que {@link #importData()} pueda continuar
+     * cuando {@link #getCheckBeforeErrors()} está activo.
+     *
+     * @param sheet hoja a procesar; si es {@code null} se utiliza la primera
+     * hoja del libro asignado.
+     */
+    void checkValidation(Sheet sheet);
+
     /**
      * Ejecuta el proceso de importación del archivo Excel cargado.
      * Cada implementación define la lógica específica de validación,
      * conversión y persistencia de los datos.
+     *
+     * @throws Exception si ocurre un error no controlado durante el proceso.
      */
     void importData() throws Exception;
 }
