@@ -174,6 +174,11 @@ public class ExcelImportSrvTest {
         }
 
         @Override
+        protected String getSourceFileName() {
+            return "";
+        }
+
+        @Override
         protected Class<? extends IDataRow> getTargetType() {
             throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
