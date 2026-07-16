@@ -628,8 +628,11 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         int firstRow = 0;
         int lastRow = (rowCount <= 0) ? sheet.getLastRowNum() : firstRow + rowCount - 1;
         rowsReadedCount = 0;
+        //Validación de la lógica de negocios solo si se pidió revisar los
+        //errores antes de importar y aún no se hizo la revisión.
+        boolean checkBusinessLogic = !errorsReviewed && getCheckBeforeErrors();
         IDataRow target;
-        String sessionId = getUserSession().getSessionId();
+        String sessionId = checkBusinessLogic ? getUserSession().getSessionId() : null;
         for (int r = firstRow; r <= lastRow; r++) {
             // No se procesa la fila de encabezados
             if (r == processor.getHeaderRowIndex()) {
@@ -648,7 +651,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     continue;
                 }
                 // Verificación de la logica de negocios si es que asi esta seteado en la importacion
-                if (!errorsReviewed && getCheckBeforeErrors()) {
+                if (checkBusinessLogic) {
                     //Antes de la conversion a la instancia targetType
                     if (!onBeforeRowConvert(dataRow)) {
                         continue;
