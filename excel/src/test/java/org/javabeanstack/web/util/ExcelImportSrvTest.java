@@ -91,6 +91,9 @@ public class ExcelImportSrvTest {
             Sheet sheet = wb.getSheetAt(0);
             srv.setExcelWorkbook(wb);
             srv.setExcelRowProcessor(processor(sheet.getRow(0)));
+            // Solo se ejercita la conversión: sin revisión previa la lectura
+            // no valida la lógica de negocios (no requiere sesión ni servicio).
+            srv.setCheckBeforeErrors(false);
 
             List<AppUser> data = srv.readSheet(null);
 
