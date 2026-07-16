@@ -35,7 +35,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
 import jakarta.faces.convert.FacesConverter;
 import org.javabeanstack.util.LocalDates;
-import org.primefaces.component.calendar.Calendar;
+import org.primefaces.component.api.UICalendar;
 
 @ApplicationScoped
 @FacesConverter("localDateTimeConverter")
@@ -67,9 +67,9 @@ public class LocalDateTimeConverter implements Converter {
     }
 
     private String extractPattern(UIComponent component) {
-        // try to get infos from calendar component
-        if (component instanceof Calendar) {
-            Calendar calendarComponent = (Calendar) component;
+        // UICalendar es la base común de p:calendar y p:datePicker (PF15)
+        if (component instanceof UICalendar) {
+            UICalendar calendarComponent = (UICalendar) component;
             return calendarComponent.getPattern();
         }
         return null;
