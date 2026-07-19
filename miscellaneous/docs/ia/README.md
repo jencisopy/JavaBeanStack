@@ -6,9 +6,10 @@ Las tres implementaciones de `IDBManager` (`DBManager`, `DBManagerV20`,
 `DBManagerV30`; `DBManagerV21` se eliminó el 2026-07-12 por quedar superada
 por la V30) viven en este framework
 (`business/src/main/java/org/javabeanstack/data/`) y se conmutan por el
-`ejb-jar.xml` de la aplicación. Estos documentos son el **origen canónico**;
-en el repositorio de Maker (`Maker-miscellaneous/docs/ia/`) se mantiene una
-copia, y los ejemplos usan a Maker como aplicación de referencia.
+`ejb-jar.xml` de la aplicación. Estos documentos son el **origen canónico y
+única copia** (la copia que existía en `Maker-miscellaneous/docs/ia/` se retiró
+el 2026-07-19 para evitar divergencias; su README apunta acá). Los ejemplos
+usan a Maker como aplicación de referencia.
 
 | Documento | Contenido |
 |---|---|

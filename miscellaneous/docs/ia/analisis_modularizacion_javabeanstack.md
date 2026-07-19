@@ -2,7 +2,7 @@
 
 > Fecha original: 2026-07-06 (sobre jbs-parent **1.5.11-SNAPSHOT**, Java EE 8)
 > **Última actualización: 2026-07-12** — sobre `master` **2.0.0-SNAPSHOT** (Jakarta EE 11, Java 25), con la partición de `jbs-web` ya ejecutada, `jbs-excel` desacoplado de `jbs-web`/PrimeFaces y `DBManagerV21` eliminado
-> Documento hermano: análisis de Maker (`Maker-services/src/main/resources/docs/IA/logs/analisis_modularizacion.md`).
+> Documento hermano: análisis de Maker (`maker/Maker-miscellaneous/docs/ia/logs/analisis_modularizacion.md`).
 > Copia única: este documento vive solo en JavaBeanStack (`miscellaneous/docs/ia/`); no se mantiene copia en Maker.
 > Alcance: solo sugerencias — ningún cambio de código acompaña este documento.
 
