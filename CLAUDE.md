@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Descripción del proyecto
 
-JavaBeanStack es un framework Java multi-módulo Maven (LGPL v3.0) que provee infraestructura reutilizable para acceso a datos, seguridad, manejo de errores y capas web JSF/REST. Es una **librería/framework**, no una aplicación ejecutable. Grupo Maven: `org.javabeanstack`, parent `jbs-parent`, versión actual `2.0.0-SNAPSHOT`. `maven.compiler.release` fija Java 17 como mínimo — requisito de Jakarta EE 11 (`jakarta.jakartaee-api:11.0.0`). También se verificó la compilación y los tests de `commons` con **Java 25 LTS** (Temurin), sin diferencias de comportamiento frente a 17.
+JavaBeanStack es un framework Java multi-módulo Maven (LGPL v3.0) que provee infraestructura reutilizable para acceso a datos, seguridad, manejo de errores y capas web JSF/REST. Es una **librería/framework**, no una aplicación ejecutable. Grupo Maven: `org.javabeanstack`, parent `jbs-parent`, versión actual `2.0.0-SNAPSHOT`. `maven.compiler.release` fija **Java 25** (`java.version` en el pom raíz, alineado al runtime de WildFly 40; Jakarta EE 11 exige 17 como mínimo).
 
 ## Estrategia de ramas — IMPORTANTE
 
-- **`master`**: versión 2.0.0, **Jakarta EE 11** (`jakarta.jakartaee-api:11.0.0`, namespace `jakarta.*`), Java 17, PrimeFaces 15 (classifier `jakarta`, aún no verificado contra Jakarta Faces 4.1 — ver nota abajo), JasperReports 7, JUnit 5. Los tests de integración de `business` requieren un servidor **WildFly 40+** (primera versión con soporte completo de EE11).
+- **`master`**: versión 2.0.0, **Jakarta EE 11** (`jakarta.jakartaee-api:11.0.0`, namespace `jakarta.*`), Java 25, PrimeFaces 15 (classifier `jakarta`), JasperReports 7, JUnit 5. Los tests de integración de `business` requieren un servidor **WildFly 40+** (primera versión con soporte completo de EE11).
 - **`1.5.x`**: rama legacy 1.5.x, **Java EE 8** (namespace `javax.*`), PrimeFaces antiguo, JasperReports 6. Recibe fixes de lógica que luego se portan a master.
 
 Al comparar o portar cambios entre ramas:
@@ -18,10 +18,10 @@ Al comparar o portar cambios entre ramas:
   - PrimeFaces 15: `DefaultStreamedContent.builder()` en vez del constructor; `UploadedFile.getContent()` en vez de `getContents()`; `LazyDataModel.load(first, pageSize, Map<String,SortMeta>, Map<String,FilterMeta>)` y `count(...)` en vez de las sobrecargas viejas; `getRowKey()`/`getRowkey()` devuelve `String` en vez de `Object`.
   - JasperReports 7: `JRXlsxExporter` (el device `"xls"` se acepta como alias de `"xlsx"` en `JasperReportUtil` por compatibilidad).
 
-### Migración a Jakarta EE 11 — pendiente de verificar
+### Migración a Jakarta EE 11 — verificada en runtime
 
-- **PrimeFaces** se dejó deliberadamente en `15.0.6` (compila sin errores contra `jakartaee-api:11.0.0` con Java 17, pero esa versión de PrimeFaces solo confirma soporte de Jakarta Faces 4.0/EE10). Jakarta Faces 4.1 (parte de EE11) no fue verificado en runtime — validar con un deploy real en WildFly antes de asumir compatibilidad total; si aparecen fallos de JSF/Faces, la primera sospecha debe ser una posible necesidad de subir PrimeFaces a una versión con soporte explícito de Faces 4.1.
-- El bump de Java 11→17 y `jakartaee-api` 10.0.0→11.0.0 se validó con `mvn test-compile` (compilación completa) y con los tests unitarios de `commons`, tanto en JDK 17 como en **JDK 25 LTS** (Temurin) — mismo resultado en ambos (el único fallo, `CipherUtilTest.testRSA`, es preexistente y no relacionado a la migración). No se ejecutaron los tests de integración de `business` contra un WildFly real en esta migración.
+- **PrimeFaces** está en `15.0.7` (gestionada en el BOM) y **verificado contra Jakarta Faces 4.1 en runtime**: el WAR de Maker con jbs-web se despliega y funciona en WildFly 40 (Mojarra 4.1.7), julio 2026.
+- El bump de Java y `jakartaee-api` 10.0.0→11.0.0 se validó en su momento con `mvn test-compile` (compilación completa) y con los tests unitarios de `commons` en JDK 17 y **JDK 25 LTS** (Temurin) — mismo resultado en ambos (el único fallo, `CipherUtilTest.testRSA`, es preexistente y no relacionado a la migración); hoy el proyecto compila y publica directamente con JDK 25.
 
 ## Comandos
 
@@ -63,7 +63,7 @@ No hay lint ni formatter configurados; la validación es `mvn test-compile` / `m
 
 ## CI/CD — CUIDADO con push a master
 
-`.github/workflows/maven_deploy.yml`: **cada push a `master` dispara `mvn deploy`** (JDK 17, `-DskipTests -P javadoc`) que publica los artefactos al Nexus de OYM (`serverapps.oym.com.py`, credenciales vía secrets). Antes de pushear a master, verificar que el proyecto compila completo.
+`.github/workflows/maven_deploy.yml`: **cada push a `master` dispara `mvn deploy`** (JDK 25, `-DskipTests -P javadoc`) que publica los artefactos al Nexus de OYM (`serverapps.oym.com.py`, credenciales vía secrets). Antes de pushear a master, verificar que el proyecto compila completo.
 
 ## Arquitectura de módulos
 
