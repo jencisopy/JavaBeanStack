@@ -142,12 +142,30 @@ public abstract class AbstractDAO implements IGenericDAO {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
+        queryString = replaceBooleanParams(queryString);
         parameters = addQueryParams(queryString, parameters);
         Query query = em.createQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
             populateQueryParameters(query, parameters, queryString);
         }
         return query;
+    }
+
+    /**
+     * Reemplaza la convención :true/:false por los literales del lenguaje.
+     * Hibernate 6+ no admite 'true' y 'false' como nombres de parámetros
+     * en sentencias JPQL (son palabras reservadas); en las sentencias
+     * nativas la convención sigue vigente.
+     *
+     * @param queryString sentencia jpql
+     * @return sentencia con los literales reemplazados.
+     */
+    protected final String replaceBooleanParams(String queryString) {
+        if (queryString == null) {
+            return null;
+        }
+        return queryString.replaceAll("(?i):true\\b", "true")
+                .replaceAll("(?i):false\\b", "false");
     }
 
     /**
@@ -404,6 +422,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
 
+        queryString = replaceBooleanParams(queryString);
         Query query = em.createQuery(queryString);
         if (parameters != null && !parameters.isEmpty()) {
             populateQueryParameters(query, parameters, queryString);
@@ -1434,7 +1453,10 @@ public abstract class AbstractDAO implements IGenericDAO {
                     query.setParameter(entry.getKey(), entry.getValue());
                 }
             } catch (Exception ex) {
-                // nada
+                // Dejar rastro: si el bindeo falla el error real aparece recién
+                // al ejecutar el query como "No argument for named parameter"
+                LOGGER.error("Error asignando el parámetro '" + entry.getKey()
+                        + "' del query: " + ex.getMessage());
             }
         });
     }
