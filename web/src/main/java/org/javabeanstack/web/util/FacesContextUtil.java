@@ -129,7 +129,12 @@ public class FacesContextUtil {
 
     public void showError(Exception exception, Logger logger) {
         ErrorManager.showError(exception, logger);
-        showError("Error", exception.getMessage());
+        //Mostrar la causa raíz (ej. el error SQL) y no el wrapper EJB/JPA
+        String mensaje = ErrorManager.getRootCauseMessage(exception);
+        if (mensaje.isEmpty()) {
+            mensaje = exception.getMessage();
+        }
+        showError("Error", mensaje);
     }
     
     public void showError(String message) {
