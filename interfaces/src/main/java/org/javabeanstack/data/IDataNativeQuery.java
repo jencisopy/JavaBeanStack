@@ -224,14 +224,14 @@ public interface IDataNativeQuery {
      * @return devuelve una lista de registros
      * @throws java.lang.Exception (SessionError)
      */
-    public List<IDataQueryModel> execQuery(int first, int maxResult) throws Exception;    
+    public List<IDataQueryModel> execQuery(int first, int maxResult) throws Exception;
 
     /**
      * Ejecuta la sentencia y devuelve un registro
      * @return devuelve un registro.
      * @throws java.lang.Exception (SessionError)
      */
-    public IDataQueryModel execQuerySingle() throws Exception;        
+    public IDataQueryModel execQuerySingle() throws Exception;
     /**
      * Devuelve la sentencia SELECT resultante de los parámetros recibidos.
      * @return la sentencia resultante de los parámetros recibidos.

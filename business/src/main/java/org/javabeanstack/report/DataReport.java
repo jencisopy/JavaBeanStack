@@ -522,7 +522,7 @@ public class DataReport {
      * @throws Exception
      */
     public List<IDataQueryModel> executeSqlSentence() throws Exception {
-        beforeExecuteSqlSentence(); 
+        beforeExecuteSqlSentence();
         List<IDataQueryModel> result = query.execQuery();
         result = afterExecuteSqlSentence(result);
         return result;

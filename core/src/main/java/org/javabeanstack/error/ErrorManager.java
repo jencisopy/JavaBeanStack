@@ -171,6 +171,21 @@ public class ErrorManager {
     }
 
     /**
+     * Devuelve el mensaje de la causa raíz del error (la excepción más
+     * interna), que normalmente es el más útil para mostrar al usuario.
+     *
+     * @param err
+     * @return mensaje de la causa raíz o cadena vacía si no tiene mensaje.
+     */
+    public static String getRootCauseMessage(final Throwable err) {
+        Throwable causa = err;
+        while (causa.getCause() != null) {
+            causa = causa.getCause();
+        }
+        return Fn.nvl(causa.getMessage(), "");
+    }
+
+    /**
      * Devuelve el error producido.
      *
      * @param err

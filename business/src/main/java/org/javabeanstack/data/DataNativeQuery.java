@@ -684,7 +684,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public List<IDataQueryModel> execQuery() throws SessionError {
+    public List<IDataQueryModel> execQuery() throws Exception {
         return execQuery(this.dataLink);
     }
 
@@ -697,7 +697,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public List<IDataQueryModel> execQuery(int first, int maxResult) throws SessionError {
+    public List<IDataQueryModel> execQuery(int first, int maxResult) throws Exception {
         this.first = first;
         this.maxResult = maxResult;
         return execQuery(this.dataLink);
@@ -710,7 +710,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public IDataQueryModel execQuerySingle() throws SessionError {
+    public IDataQueryModel execQuerySingle() throws Exception {
         this.first = 0;
         this.maxResult = 1;
         List<IDataQueryModel> result = execQuery(this.dataLink);
@@ -731,7 +731,7 @@ public class DataNativeQuery implements IDataNativeQuery {
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public List<IDataQueryModel> execQuery(IDataLink dataLink) throws SessionError {
+    public List<IDataQueryModel> execQuery(IDataLink dataLink) throws Exception {
         List<IDataQueryModel> result = new ArrayList<>();
         try {
             if (!queryCreated) {
@@ -749,12 +749,10 @@ public class DataNativeQuery implements IDataNativeQuery {
             this.maxResult = 0;
         } catch (SessionError ex) {
             throw new SessionError("La sesión expiró o es inválida");
-        } catch (Exception ex) {
-            ErrorManager.showError(ex, LOGGER);
-        }
-        if (result == null) {
-            result = new ArrayList<>();
-        }
+        } catch (Exception e) {
+            ErrorManager.showError(e, LOGGER);
+            throw e;
+        }        
         return result;
     }
 
