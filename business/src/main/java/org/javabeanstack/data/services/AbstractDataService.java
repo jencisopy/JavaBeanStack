@@ -586,6 +586,13 @@ public abstract class AbstractDataService implements IDataService {
     /**
      * Válida que los campos definidos como clave foranea existan en la tabla
      * relacionada o sea nulo si así lo permite el campo.
+     * <p>
+     * Caso especial: si el id de la relación es numérico y vale {@code -1} el
+     * control se omite (se da por válido). Es un valor centinela que usan los
+     * procesos de importación para validar registros cuyo registro relacionado
+     * recién se creará en la fase de grabación (p. ej. el receptor en la
+     * importación de planillas Marangatú); el proceso debe reemplazarlo por el
+     * id real antes de persistir.
      *
      * @param <T>
      * @param row registro de datos.
@@ -618,9 +625,14 @@ public abstract class AbstractDataService implements IDataService {
                 else if (row.getValue(fieldName) != null) {
                     Class fieldType = row.getFieldType(fieldName);
                     Object id = ((IDataRow) row.getValue(fieldName)).getId();
-                    IDataRow fieldValue = findById(fieldType, sessionId, id);
-                    if (fieldValue == null) {
-                        result = false;
+                    //Si el tipo de dato del id es numerico y el valor es -1 no se controla el foreignkey.
+                    if (id instanceof Number && id.toString().equals("-1")) {
+                        result = true;
+                    } else {
+                        IDataRow fieldValue = findById(fieldType, sessionId, id);
+                        if (fieldValue == null) {
+                            result = false;
+                        }
                     }
                 }
             }
@@ -1212,7 +1224,15 @@ public abstract class AbstractDataService implements IDataService {
                     }
                     if (id != null) {
                         Class clazz = Class.forName(annotation.classMapped());
-                        fieldValue = dao.findById(clazz, sessionId, id);
+                        //Centinela -1: el registro relacionado aún no existe, se
+                        //representa con una instancia vacía que solo lleva el id.
+                        if (id instanceof Number && id.toString().equals("-1")) {
+                            IDataRow sentinel = (IDataRow) clazz.getConstructor().newInstance();
+                            sentinel.setId(id);
+                            fieldValue = sentinel;
+                        } else {
+                            fieldValue = dao.findById(clazz, sessionId, id);
+                        }
                     }
                     //Determinar el nombre del campo en el target
                     if (!annotation.fieldMapped().isEmpty()) {
@@ -1333,12 +1353,12 @@ public abstract class AbstractDataService implements IDataService {
                         String key = entry.getKey();
                         String message = entry.getValue().getMessage();
                         if (!key.equals("UNIQUEKEY")) {
-                            log += "       Field: " + key + ", " + message+"\n";
+                            log += "       Field: " + key + ", " + message + "\n";
                         } else {
-                            log = message+"\n";
+                            log = message + "\n";
                         }
                     }
-                    if (!log.contains(data.toString())){
+                    if (!log.contains(data.toString())) {
                         log = data.toString() + log;
                     }
                     Files.writeString(file, log, StandardOpenOption.APPEND);
@@ -1439,7 +1459,7 @@ public abstract class AbstractDataService implements IDataService {
     public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {
         return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName, params);
     }
-    
+
     @Override
     public Map<String, String> getQueryConstants(String persistUnit) {
         return dao.getQueryConstants(persistUnit);

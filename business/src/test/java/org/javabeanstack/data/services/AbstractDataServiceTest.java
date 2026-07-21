@@ -167,6 +167,11 @@ public class AbstractDataServiceTest extends TestClass{
         assertTrue(dataService.checkForeignKey("",userMember,"usergroup"));
         userMember.setUserGroup(null);
         assertFalse(dataService.checkForeignKey("",userMember,"usergroup"));
+        //Centinela de importación: con id -1 el control se omite y se da por válido
+        AppUser userGroup = new AppUser();
+        userGroup.setIduser(-1L);
+        userMember.setUserGroup(userGroup);
+        assertTrue(dataService.checkForeignKey("",userMember,"usergroup"));
     }
 
     /** Chequeo de los foreignkeys

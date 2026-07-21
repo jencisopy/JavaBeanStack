@@ -59,7 +59,7 @@ import org.javabeanstack.util.Fn;
  * <li>opcionalmente sobrescriben los métodos «gancho» (<em>hooks</em>) para
  * insertar lógica específica en cada etapa del flujo:
  * {@link #beforeImportData()}, {@link #onBeforeRowConvert(IDataRow)},
- * {@link #onAfterRowConvert(IDataRow)}, {@link #cancelError(Exception)},
+ * {@link #onAfterRowConvert(IDataRow, IDataRow)}, {@link #cancelError(Exception)},
  * {@link #finishWithError()} y {@link #finish()}.</li>
  * </ul>
  * Ofrece además {@link #checkValidation(Sheet)} (pasada de solo-validación que
@@ -169,6 +169,11 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         this.checkBeforeErrors = Fn.toLogical(checkBeforeErrors);
     }
 
+    @Override
+    public Boolean getErrorsReviewed() {
+        return errorsReviewed;
+    }
+    
     /**
      * Retorna la cantidad de filas efectivamente leídas de la planilla en la
      * última pasada de {@link #getDataFromExcelSheet(Sheet)}, tengan o no
@@ -573,14 +578,18 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * {@link #getDataRowsError()}.
      * <p>
      * Si {@link #getCheckBeforeErrors()} está activo y aún no se revisaron los
-     * errores, cada registro sin errores de conversión se somete además a la
-     * validación de la lógica de negocios: se invoca
-     * {@link #onBeforeRowConvert(IDataRow)}, se convierte a la entidad destino
-     * ({@link #getTargetType()}) con {@link IDataService#copyTo}, se invoca
-     * {@link #onAfterRowConvert(IDataRow)} y se valida con
+     * errores (pasada de {@link #checkValidation(Sheet)}), cada registro sin
+     * errores de conversión se somete además a la validación de la lógica de
+     * negocios: se invoca {@link #onBeforeRowConvert(IDataRow)}, se convierte a
+     * la entidad destino ({@link #getTargetType()}) con
+     * {@link IDataService#copyTo}, se invoca
+     * {@link #onAfterRowConvert(IDataRow, IDataRow)} y se valida con
      * {@link IDataService#checkDataRow}; los registros rechazados por la
      * validación se acumulan en {@link #getDataRowsError()} y los omitidos por
-     * los hooks se descartan.
+     * los hooks se descartan. Cuando la lectura se realiza dentro de
+     * {@link #importData()} ({@code errorsReviewed} en {@code true}) este método
+     * solo convierte las filas: los hooks y la validación corren después, en el
+     * bucle de grabación.
      *
      * @param sheet hoja a procesar; si es {@code null} se utiliza la primera
      * hoja del libro asignado con {@link #setExcelWorkbook(Workbook)}.
@@ -621,7 +630,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         if (appConfig != null && appConfig.getSystemParam("EXCEL_IMPORT_ROWS_LIMIT") != null) {
             rowCount = Fn.nvl(appConfig.getSystemParam("EXCEL_IMPORT_ROWS_LIMIT").getValueNumber().intValue(), 5000);
         }
-        T dataRow;
+        T source;
         int firstRow = 0;
         int lastRow = (rowCount <= 0) ? sheet.getLastRowNum() : firstRow + rowCount - 1;
         rowsReadedCount = 0;
@@ -640,39 +649,39 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                 continue;
             }
             processor.setRow(row);
-            dataRow = processor.process();
+            source = processor.process();
             rowsReadedCount++;
-            if (dataRow != null) {
-                if (dataRow.getErrors() != null && !dataRow.getErrors().isEmpty()) {
-                    dataRowsError.add(dataRow);
+            if (source != null) {
+                if (source.getErrors() != null && !source.getErrors().isEmpty()) {
+                    dataRowsError.add(source);
                     continue;
                 }
                 // Verificación de la logica de negocios si es que asi esta seteado en la importacion
                 if (checkBusinessLogic) {
                     //Antes de la conversion a la instancia targetType
-                    if (!onBeforeRowConvert(dataRow)) {
+                    if (!onBeforeRowConvert(source)) {
                         continue;
                     }
                     //Convertir a una objeto targetType
-                    target = getDataService().copyTo(sessionId, dataRow, getTargetType().getConstructor().newInstance());
+                    target = getDataService().copyTo(sessionId, source, getTargetType().getConstructor().newInstance());
                     //Definir tipo de persitencia en la base
                     target.setAction(IDataRow.INSERT);
                     if (target.getId() != null) {
                         target.setAction(IDataRow.UPDATE);
                     }
                     //Despues de convertir
-                    if (!onAfterRowConvert(target)) {
+                    if (!onAfterRowConvert(source, target)) {
                         continue;
                     }
                     //Validar
                     Map<String, IErrorReg> errorInfo = getDataService().checkDataRow(sessionId, target);
                     if (!errorInfo.isEmpty()) {
-                        dataRow.setErrors(errorInfo);
-                        dataRowsError.add(dataRow);
+                        source.setErrors(errorInfo);
+                        dataRowsError.add(source);
                         continue;
                     }
                 }
-                dataRows.add(dataRow);
+                dataRows.add(source);
             }
         }
         return dataRows;
@@ -715,9 +724,15 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * {@link #checkBeforeImportData()} (validación de prerrequisitos:
      * procesador, planilla y {@code targetType} del procesador) y
      * {@link #getDataFromExcelSheet(Sheet)} (lectura y conversión de la
-     * planilla a una lista de objetos {@code T}). Si la revisión ya se hizo se
-     * reutilizan {@link #getDataRows()} y {@link #getDataRowsError()} de esa
-     * pasada.</li>
+     * planilla a una lista de objetos {@code T}; en esta pasada no se ejecutan
+     * los hooks ni la validación de negocio, que corren recién en el bucle de
+     * grabación). Si la revisión ya se hizo se reutilizan
+     * {@link #getDataRows()} y {@link #getDataRowsError()} de esa pasada.
+     * Desde este punto y durante toda la grabación el proceso queda en fase de
+     * importación: {@link #getErrorsReviewed()} retorna {@code true} en los
+     * hooks (a diferencia de la pasada de revisión, donde retorna
+     * {@code false}); el indicador se resetea al finalizar el proceso, con lo
+     * cual una próxima corrida vuelve a leer y validar la planilla.</li>
      * <li>Guarda de revisión previa: si {@link #getCheckBeforeErrors()} está
      * activo, hay registros con errores y no hubo una pasada previa de
      * {@link #checkValidation(Sheet)}, el proceso se detiene sin grabar nada
@@ -729,7 +744,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * {@link IDataService#copyTo}, asignación de la acción
      * ({@code INSERT}/{@code UPDATE}; los {@code UPDATE} se omiten salvo que
      * {@link #getOverWriteData()} sea {@code true}, contabilizados en
-     * {@link #getRowsExistCount()}), {@link #onAfterRowConvert(IDataRow)},
+     * {@link #getRowsExistCount()}), {@link #onAfterRowConvert(IDataRow, IDataRow)},
      * validación con {@link IDataService#checkDataRow} y persistencia con
      * {@link IDataService#update} (los grabados se contabilizan en
      * {@link #getRowsMigratedCount()}). Los registros con error se acumulan en
@@ -774,6 +789,10 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             logResult("Usuario: " + getUserSession().getUser().getLogin());
             logResult("----------------------------------------------------------------------------------------");
 
+            //Si se pidió revisar los errores antes de importar y aún no fueron
+            //revisados (no pasó por checkValidation), se detiene la importación.
+            boolean reviewed = errorsReviewed;
+            
             //Procesa planilla y convierte a una lista tipo T (entidad de la vista)
             //si es que no se proceso aun.
             if (!errorsReviewed) {
@@ -782,13 +801,12 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
 
                 //Chequear si todos los objetos que dependen de este proceso estan asignados
                 checkBeforeImportData();
-
+                //Queda en fase de importación (getErrorsReviewed() true en los
+                //hooks) y evita repetir la validación de negocio en la lectura.
+                errorsReviewed = true;
                 getDataFromExcelSheet(null);
             }
-            //Si se pidió revisar los errores antes de importar y aún no fueron
-            //revisados (no pasó por checkValidation), se detiene la importación.
-            boolean reviewed = errorsReviewed;
-            errorsReviewed = false;
+
             if (getCheckBeforeErrors() && !reviewed && !getDataRowsError().isEmpty()) {
                 errorMessage = "Se encontraron " + getDataRowsError().size()
                         + " registro(s) con errores. Revise la validación antes de importar.";
@@ -822,7 +840,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     continue;
                 }
                 //Despues de convertir
-                if (!onAfterRowConvert(target)) {
+                if (!onAfterRowConvert(source, target)) {
                     continue;
                 }
                 //Validar
@@ -858,6 +876,8 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             logResult("El proceso abortó por un error: " + e.getMessage());
             cancelError(e);
         } finally {
+            //Revisión consumida: una próxima corrida debe releer y revalidar la planilla.
+            errorsReviewed = false;
             appendErrorsToLog();
             logResult("Registros procesados: " + getRowsProcessedCount()
                     + " (migrados: " + rowsMigratedCount
@@ -930,13 +950,16 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * Gancho invocado por cada registro después de convertirlo a la entidad
      * destino ({@link #getTargetType()}) y antes de validarlo y persistirlo. La
      * implementación base acepta todos los registros; las subclases pueden
-     * sobrescribirlo para ajustar la entidad antes de grabarla.
+     * sobrescribirlo para ajustar la entidad destino antes de grabarla o
+     * derivar de la fila origen información adicional.
      *
-     * @param rowTable entidad destino resultante de la conversión.
+     * @param rowSource registro origen leído de la planilla (entidad de la
+     * vista) a partir del cual se generó la entidad destino.
+     * @param rowTarget entidad destino resultante de la conversión.
      * @return {@code true} para continuar con la persistencia; {@code false}
      * para omitir el registro.
      */
-    protected boolean onAfterRowConvert(IDataRow rowTable) {
+    protected boolean onAfterRowConvert(T rowSource, IDataRow rowTarget) {
         return true;
     }
 

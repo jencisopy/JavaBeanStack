@@ -150,7 +150,22 @@ public interface IExcelImportSrv<T extends IDataRow> extends Serializable {
      * @param revisarErrores {@code true} para exigir la revisión previa;
      * {@code false} para importar directo omitiendo los registros con error.
      */
-    public void setCheckBeforeErrors(Boolean revisarErrores);
+    void setCheckBeforeErrors(Boolean revisarErrores);
+
+    /**
+     * Indica en qué fase del proceso se encuentra la importación, útil para que
+     * los hooks distingan la pasada de revisión de la importación real: retorna
+     * {@code false} durante la pasada de solo-validación de
+     * {@link #checkValidation(Sheet)} y {@code true} durante {@link #importData()}
+     * (desde la lectura hasta el fin de la grabación; al terminar el proceso se
+     * resetea a {@code false}). También queda en {@code true} entre una
+     * revisión finalizada con éxito y la importación que la consume.
+     *
+     * @return {@code true} si la planilla ya fue revisada o se está en la fase
+     * de importación; {@code false} durante la pasada de revisión.
+     */
+    Boolean getErrorsReviewed();
+
 
     /**
      * Retorna el mensaje de error del último proceso de importación.
@@ -228,7 +243,7 @@ public interface IExcelImportSrv<T extends IDataRow> extends Serializable {
      *
      * @param excelRowProcessor procesador de filas a asociar.
      */
-    public void setExcelRowProcessor(IExcelRowProcessor<T> excelRowProcessor);
+    void setExcelRowProcessor(IExcelRowProcessor<T> excelRowProcessor);
 
     /**
      * Reemplaza el mapa de propiedades de configuración del proceso.
