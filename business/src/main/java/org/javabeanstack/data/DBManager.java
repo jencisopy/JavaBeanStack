@@ -67,7 +67,7 @@ import org.w3c.dom.Element;
  * La implementación a utilizar (DBManager, DBManagerV20 o DBManagerV30) se
  * decide en el ejb-jar.xml de la aplicación, en el ejb-class del session bean
  * DBManager. Documentación completa en
- * Maker-miscellaneous/docs/ia/STATIC_MANAGMENT_DBMANAGER.md.
+ * miscellaneous/docs/STATIC_MANAGMENT_DBMANAGER.md (en este repositorio).
  *
  * @author Jorge Enciso
  */

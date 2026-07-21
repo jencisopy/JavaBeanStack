@@ -1,4 +1,4 @@
-# Documentación de JavaBeanStack (`miscellaneous/docs/ia/`)
+# Documentación de JavaBeanStack (`miscellaneous/docs/`)
 
 ## Gestión de unidades de persistencia (DBManager)
 
@@ -17,11 +17,18 @@ usan a Maker como aplicación de referencia.
 | [`DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md`](DINAMIC_DATA_MANAGMENT_DBMANAGER_V20.md) | `DBManagerV20`: EMF dinámicos configurados por system properties de la JVM (`jbs.persistence.dynamic.*`). |
 | [`DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md`](DINAMIC_DATA_MANAGMENT_DBMANAGER_V30.md) | `DBManagerV30` (autocontenida): unidades definidas en `META-INF/dynamic_persistence.xml`, una spec completa por unidad (dialecto propio por empresa), plantilla `DEFAULT` con `{n}` para alta de empresas sin redeploy. Test unitario offline: `DBManagerV30Test`. |
 
-## Otros documentos
+## Informes de análisis y planes de trabajo
 
-| Documento | Contenido |
+Desde el **2026-07-20** ya no se versionan en este repositorio: la antigua carpeta
+`miscellaneous/docs/ia/` se eliminó y su contenido pasó a un directorio local, fuera del
+repo, para que los informes internos no viajen en un proyecto open source.
+
+| Destino | Qué va ahí |
 |---|---|
-| [`analisis_modularizacion_javabeanstack.md`](analisis_modularizacion_javabeanstack.md) | Análisis y propuesta de optimización de la estructura modular. Actualizado 2026-07-12 al estado 2.0 post-partición: extraídos `jbs-excel`, `jbs-rest` y `jbs-jasper` de `jbs-web`, publicado `jbs-bom` (fuente única de versiones, adoptado por Oym-frame/Maker/TestProject), tests en `core`/`web`/`excel` y `Automatic-Module-Name` en todos los jars. |
-| [`pendientes_modularizacion_javabeanstack.md`](pendientes_modularizacion_javabeanstack.md) | Anexo con el detalle de los pendientes de la modularización (R1, R2, R7, R8): qué queda, por qué importa y qué se sugiere. |
-| [`analisis_lazydatarows_pf15.md`](analisis_lazydatarows_pf15.md) | Análisis y corrección de `LazyDataRows` para PrimeFaces 15 (cierre provisional de R1); incluye el checklist del smoke test runtime pendiente. |
-| [`instalar-jdk25.md`](instalar-jdk25.md) / [`instalar-jdk25.sh`](instalar-jdk25.sh) | Guía y script de instalación del JDK 25. |
+| `<proyectos>/IA/JavaBeanStack/outputs/` | Informes de análisis generados (`analisis_modularizacion_javabeanstack.md`, `analisis_lazydatarows_pf15.md`, `instalar-jdk25.md`). |
+| `<proyectos>/IA/JavaBeanStack/inputs/` | Planes de trabajo y listas de pendientes (`pendientes_modularizacion_javabeanstack.md`). |
+| `.claude/tools/` del workspace | Scripts reutilizables (`instalar-jdk25.sh`). |
+
+En la instalación de referencia `<proyectos>` es `/home/jenciso/oym/proyectos`. Si esas
+carpetas no existen (por ejemplo tras migrar de máquina), hay que preguntar dónde guardar
+en vez de asumir una ruta.
