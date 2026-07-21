@@ -21,6 +21,11 @@
  */
 package org.javabeanstack.web.util;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Row;
@@ -91,6 +96,9 @@ public class ExcelImportSrvTest {
             Sheet sheet = wb.getSheetAt(0);
             srv.setExcelWorkbook(wb);
             srv.setExcelRowProcessor(processor(sheet.getRow(0)));
+            //Solo se ejercita la conversión: la validación de negocio requiere
+            //sesión y servicio de datos, que este stub no provee.
+            srv.setCheckBeforeErrors(false);
 
             List<AppUser> data = srv.readSheet(null);
 
@@ -154,7 +162,117 @@ public class ExcelImportSrvTest {
             assertTrue(ex.getMessage().contains("planilla"), ex.getMessage());
         }
     }
-    
+
+    /**
+     * Verifica el indicador de fase {@link ExcelImportSrv#getErrorsReviewed()}
+     * que consumen los hooks: durante la pasada de revisión
+     * ({@link ExcelImportSrv#checkValidation(Sheet)}) debe verse en
+     * {@code false}; durante la grabación de
+     * {@link ExcelImportSrv#importData()} en {@code true}; y al finalizar el
+     * proceso debe quedar reseteado (una próxima corrida relee la planilla).
+     */
+    @Test
+    public void testPhaseFlagInHooksOnValidationAndImport() throws Exception {
+        PhaseRecordingSrv srv = new PhaseRecordingSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+
+            //Pasada de revisión: los hooks ven la fase en false
+            srv.checkValidation(null);
+            assertEquals("", srv.getErrorMessage());
+            assertEquals(List.of(false, false), srv.hookPhases);
+            assertTrue(srv.getErrorsReviewed());
+
+            //Importación: los hooks ven la fase en true y se graban las filas
+            srv.hookPhases.clear();
+            srv.importData();
+            assertEquals(List.of(true, true), srv.hookPhases);
+            assertTrue(srv.getImportOk());
+            assertEquals(2, srv.getRowsMigratedCount());
+            //Proceso terminado: el indicador queda consumido
+            assertFalse(srv.getErrorsReviewed());
+        }
+    }
+
+    /**
+     * Subclase que registra el valor de {@code getErrorsReviewed()} visto por
+     * {@code onBeforeRowConvert} en cada fila, con servicio de datos y sesión
+     * simulados vía {@link Proxy} (lo mínimo que exige el flujo de
+     * {@code importData()}).
+     */
+    static class PhaseRecordingSrv extends ExcelImportSrvTest01 {
+
+        final List<Boolean> hookPhases = new ArrayList<>();
+
+        @Override
+        protected IDataService getDataService() {
+            return stub(IDataService.class);
+        }
+
+        @Override
+        protected IUserSession getUserSession() {
+            return stub(IUserSession.class);
+        }
+
+        @Override
+        protected Class<? extends IDataRow> getTargetType() {
+            return AppUser.class;
+        }
+
+        @Override
+        protected boolean onBeforeRowConvert(AppUser rowView) {
+            hookPhases.add(getErrorsReviewed());
+            return true;
+        }
+    }
+
+    /**
+     * Crea un stub dinámico de la interfaz indicada: {@code copyTo} retorna la
+     * entidad destino, {@code checkDataRow} no reporta errores,
+     * {@code isSuccessFul} da éxito y el resto responde valores por defecto
+     * (otro stub si retorna una interfaz, vacío/cero en tipos simples).
+     */
+    @SuppressWarnings("unchecked")
+    private static <X> X stub(Class<X> intf) {
+        InvocationHandler handler = new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) {
+                switch (method.getName()) {
+                    case "getSessionId":
+                        return "test-session";
+                    case "copyTo":
+                        return args[2];
+                    case "checkDataRow":
+                        return new HashMap<>();
+                    case "isSuccessFul":
+                        return true;
+                    default:
+                        break;
+                }
+                Class<?> type = method.getReturnType();
+                if (type.isInterface()) {
+                    return stub(type);
+                }
+                if (type == boolean.class || type == Boolean.class) {
+                    return false;
+                }
+                if (type == long.class || type == Long.class) {
+                    return 0L;
+                }
+                if (type == int.class || type == Integer.class) {
+                    return 0;
+                }
+                if (type == String.class) {
+                    return "";
+                }
+                return null;
+            }
+        };
+        return (X) Proxy.newProxyInstance(intf.getClassLoader(),
+                new Class[]{intf}, handler);
+    }
+
     /**
      * Subclase concreta mínima de {@link ExcelImportSrv} para las pruebas.
      * Debe ser {@code static} para poder ser extendida por la clase anidada
