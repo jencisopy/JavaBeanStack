@@ -69,6 +69,7 @@ import org.javabeanstack.util.Fn;
 public class JasperReportUtil {
 
     private static final Logger LOGGER = LogManager.getLogger(JasperReportUtil.class);
+    private static final String JASPER_VERSION = "7";
 
     private IAppResource appResource;
     private IUserSession userSession;
@@ -222,7 +223,7 @@ public class JasperReportUtil {
 
                 try (OutputStream outputStream = httpServletResponse.getOutputStream()) {
                     exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
-                    
+
                     // Usamos la configuración específica para XLSX
                     SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
                     configuration.setOnePagePerSheet(false);
@@ -230,14 +231,14 @@ public class JasperReportUtil {
                     configuration.setCollapseRowSpan(false);
                     configuration.setWhitePageBackground(false);
                     configuration.setRemoveEmptySpaceBetweenRows(true);
-                    
+
                     exporter.setConfiguration(configuration);
                     exporter.exportReport();
-                    
+
                     outputStream.flush();
                 }
                 FacesContext.getCurrentInstance().responseComplete();
-            } 
+            }
         } else {
             JasperPrintManager.printReport(jasperPrint, false);
         }
@@ -274,7 +275,7 @@ public class JasperReportUtil {
      * @return el reporte con el path completo
      */
     public String getFullPathReport(String reportNameJasper) {
-        if (reportNameJasper == null){
+        if (reportNameJasper == null) {
             return "";
         }
         reportNameJasper = reportNameJasper.toLowerCase();
@@ -295,6 +296,12 @@ public class JasperReportUtil {
                 url = IOUtil.addbs(url);
                 if (IOUtil.isFileExist(url + reportNameJasper)) {
                     return url + reportNameJasper;
+                } else {
+                    url += "v" + JASPER_VERSION;
+                    url = IOUtil.addbs(url);
+                    if (IOUtil.isFileExist(url + reportNameJasper)) {
+                        return url + reportNameJasper;
+                    }
                 }
             } catch (Exception ex) {
                 //Nada
@@ -347,6 +354,13 @@ public class JasperReportUtil {
                 if (IOUtil.isFileExist(url + reportNameJasper)) {
                     jasperReport = (JasperReport) JRLoader.loadObjectFromFile(url + reportNameJasper);
                     return jasperReport;
+                } else {
+                    url += "v" + JASPER_VERSION;
+                    url = IOUtil.addbs(url);
+                    if (IOUtil.isFileExist(url + reportNameJasper)) {
+                        jasperReport = (JasperReport) JRLoader.loadObjectFromFile(url + reportNameJasper);
+                        return jasperReport;
+                    }
                 }
             } catch (Exception ex) {
                 //Nada
