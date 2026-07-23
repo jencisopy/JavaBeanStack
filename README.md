@@ -11,7 +11,7 @@ Es una **librería/framework**, no una aplicación ejecutable por sí sola: se c
 
 ## Prerrequisitos
 
-- **Java 17** como mínimo (requisito de `jakarta.jakartaee-api:11.0.0`). El proyecto también se verificó compilando y corriendo tests con **Java 25 LTS** (Temurin) sin diferencias de comportamiento.
+- **Java 25** — el POM raíz fija `maven.compiler.release=25`, así que compilar requiere JDK 25 (un JDK anterior falla con `release version 25 not supported`) y el bytecode resultante exige Java 25 en runtime. (Jakarta EE 11 en sí pide 17 como mínimo; el proyecto adoptó 25, alineado al runtime de WildFly 40.)
 - **Maven 3.x**
 - Para los tests de integración del módulo `business`: un servidor **WildFly 40+** corriendo (primera versión con soporte completo de Jakarta EE 11) con el EAR de pruebas desplegado.
 
@@ -21,12 +21,12 @@ El proyecto mantiene dos líneas activas:
 
 | Rama | Versión | Stack | Estado |
 |---|---|---|---|
-| `master` | 2.0.0 | Jakarta EE 11 (`jakarta.*`), Java 17, PrimeFaces 15, JasperReports 7, JUnit 5 | Activa — desarrollo principal |
+| `master` | 2.0.0 | Jakarta EE 11 (`jakarta.*`), Java 25, PrimeFaces 15, JasperReports 7, JUnit 5 | Activa — desarrollo principal |
 | `1.5.x` | 1.5.x | Java EE 8 (`javax.*`), PrimeFaces y JasperReports 6 antiguos | Legacy — recibe fixes que luego se portan a `master` |
 
 Al comparar o portar cambios entre ramas, las diferencias `javax.*` ↔ `jakarta.*` son equivalencias de namespace, no diferencias de lógica. Los paquetes `javax.crypto`, `javax.xml.*`, `javax.naming` y `javax.swing` pertenecen al JDK y permanecen como `javax` en ambas ramas.
 
-> **Nota sobre `master`:** PrimeFaces se mantiene en `15.0.6`, que compila correctamente contra `jakartaee-api:11.0.0` pero solo confirma soporte de Jakarta Faces 4.0/EE10 de forma oficial. El soporte de Jakarta Faces 4.1 (parte de EE11) todavía no fue validado contra un despliegue real en WildFly.
+> **Nota sobre `master`:** PrimeFaces está en `15.0.7` (classifier `jakarta`, versión gestionada en el BOM) y su funcionamiento contra Jakarta Faces 4.1 (parte de EE11) está **verificado en runtime**: las aplicaciones consumidoras que usan `jbs-web` se despliegan y funcionan en WildFly 40 (Mojarra 4.1.7) desde julio de 2026.
 
 ## Arquitectura de módulos
 
@@ -107,7 +107,7 @@ Componentes clave:
 ### `jasper`
 Integración con JasperReports. Depende solo de `jbs-core`, sin PrimeFaces ni `jbs-web`.
 
-- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]`; el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor.
+- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]`; el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor. Al resolver un reporte busca primero en la subcarpeta de versión `reports/v7/` y recién después en `reports/` — así los `.jasper` ya convertidos a JasperReports 7 tienen prioridad sobre los legados sin exigir una migración big-bang.
 
 ### `rest`
 Recursos JAX-RS. Depende solo de `interfaces` + `commons` (no arrastra JSF).

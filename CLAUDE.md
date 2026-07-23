@@ -135,14 +135,14 @@ Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (
 
 ### Capa web (`web`)
 - **`AbstractDataController`** — managed bean JSF base para pantallas CRUD; maneja lazy loading, cache y despliegue de errores.
-- **`LazyDataRows`** — paginación lazy para DataTables de PrimeFaces. Pendientes de la adaptación a PrimeFaces 15 (marcados con `TODO`): verificar el manejo de `FilterMeta.getFilterValue()` en `getParams` y la implementación de `count()`.
+- **`LazyDataRows`** — paginación lazy para DataTables de PrimeFaces (adaptada a la API de PrimeFaces 15: `load`/`count` con `Map<String,SortMeta>`/`Map<String,FilterMeta>`; los TODO de la migración ya se resolvieron).
 - **`FacesContextUtil`** — utilidades sobre `FacesContext` (mensajes, request/response); solo la usa `web` (`excel` y `jasper` usan `FacesContext` directo y no dependen de `jbs-web`).
 
 ### Recursos REST (`rest`)
 - **`AbstractWebResource`** — base de recursos JAX-RS (validación de token, sesión); **`CORSFilter`**, exceptions y model.
 
 ### Reportes Jasper (`jasper`)
-- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]` (el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor) — por eso el módulo no depende de PrimeFaces.
+- **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]` (el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor) — por eso el módulo no depende de PrimeFaces. Resolución de archivos (2026-07-22): `getFullPathReport()` y `getJasperReportFrom()` buscan primero en `reports/v7/` (constante `JASPER_VERSION`) y luego en `reports/` — los `.jasper` convertidos a JR7 tienen precedencia sobre los legados.
 
 ### Excel (`excel`)
 - **`ExcelUtil`** / **`ExcelImportSrv`** / **`ExcelRowProcessor`** — importación/exportación de datos desde planillas Excel (Apache POI). Contratos **`IExcelImportSrv`** / **`IExcelRowProcessor`** (antes en `interfaces`). El bean de carga (`ExcelUploadCtrl`) vive ahora en Maker (`net.makerapp.web.uploads`).
