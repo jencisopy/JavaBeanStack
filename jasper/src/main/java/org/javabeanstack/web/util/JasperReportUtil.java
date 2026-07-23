@@ -294,14 +294,13 @@ public class JasperReportUtil {
                 }
                 url = IOUtil.addbs(url.trim()) + "reports";
                 url = IOUtil.addbs(url);
+                //Buscar primero en la carpeta de la version y luego en la carpeta base
+                String urlVersion = IOUtil.addbs(url + "v" + JASPER_VERSION);
+                if (IOUtil.isFileExist(urlVersion + reportNameJasper)) {
+                    return urlVersion + reportNameJasper;
+                }
                 if (IOUtil.isFileExist(url + reportNameJasper)) {
                     return url + reportNameJasper;
-                } else {
-                    url += "v" + JASPER_VERSION;
-                    url = IOUtil.addbs(url);
-                    if (IOUtil.isFileExist(url + reportNameJasper)) {
-                        return url + reportNameJasper;
-                    }
                 }
             } catch (Exception ex) {
                 //Nada
@@ -351,16 +350,15 @@ public class JasperReportUtil {
                 }
                 url = IOUtil.addbs(url.trim()) + "reports";
                 url = IOUtil.addbs(url);
+                //Buscar primero en la carpeta de la version y luego en la carpeta base
+                String urlVersion = IOUtil.addbs(url + "v" + JASPER_VERSION);
+                if (IOUtil.isFileExist(urlVersion + reportNameJasper)) {
+                    jasperReport = (JasperReport) JRLoader.loadObjectFromFile(urlVersion + reportNameJasper);
+                    return jasperReport;
+                }
                 if (IOUtil.isFileExist(url + reportNameJasper)) {
                     jasperReport = (JasperReport) JRLoader.loadObjectFromFile(url + reportNameJasper);
                     return jasperReport;
-                } else {
-                    url += "v" + JASPER_VERSION;
-                    url = IOUtil.addbs(url);
-                    if (IOUtil.isFileExist(url + reportNameJasper)) {
-                        jasperReport = (JasperReport) JRLoader.loadObjectFromFile(url + reportNameJasper);
-                        return jasperReport;
-                    }
                 }
             } catch (Exception ex) {
                 //Nada
