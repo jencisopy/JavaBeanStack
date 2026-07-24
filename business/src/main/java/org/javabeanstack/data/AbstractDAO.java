@@ -197,8 +197,9 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return parametros con los valores adicionales.
      */
     protected final Map<String, Object> addQueryParams(String queryString, Map<String, Object> parameters) {
+        queryString = Fn.nvl(queryString, "");
         if (parameters == null) {
-            parameters = new HashMap<>();
+            parameters = new HashMap();
         }
         if (Strings.findString(":true", queryString.toLowerCase()) >= 0) {
             parameters.put("true", true);
