@@ -61,10 +61,10 @@ public abstract class DataController<T extends IDataRow> extends AbstractDataCon
         this.setType(type);
     }
 
-    @PostConstruct
     /**
      * Inicializa el controlador.
      */
+    @PostConstruct
     public void init() {
         IUserSession userSession = (IUserSession)getFacesCtx().getSession().getAttribute("userSession"); 
         try {

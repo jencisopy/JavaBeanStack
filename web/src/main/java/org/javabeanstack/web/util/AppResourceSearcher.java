@@ -54,10 +54,10 @@ public class AppResourceSearcher implements Serializable {
 
     private String fileSystemPath;
 
-    @PostConstruct
     /**
      * Inicialización posterior a la construcción.
      */
+    @PostConstruct
     public void init() {
         fileSystemPath = appConfig.getFileSystemPath(this.getUserSession().getSessionId());
     }

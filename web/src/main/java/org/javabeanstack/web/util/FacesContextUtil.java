@@ -176,10 +176,10 @@ public class FacesContextUtil {
     }
 
     /**
-     * Devuelve los atributos asociados a la clave indicada.
+     * Devuelve el mapa de atributos del {@link FacesContext} actual.
      *
-     * @param key clave.
-     * @return mapa de atributos.
+     * @param key parámetro no utilizado (se conserva por compatibilidad de firma).
+     * @return mapa de atributos del contexto.
      */
     public Map<Object, Object> getAttributes(String key) {
         return FacesContext.getCurrentInstance().getAttributes();

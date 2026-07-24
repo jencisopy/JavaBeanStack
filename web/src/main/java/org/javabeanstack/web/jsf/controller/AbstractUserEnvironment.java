@@ -58,10 +58,10 @@ public abstract class AbstractUserEnvironment extends AbstractController {
 
     public abstract IAppResource getAppResource();
 
-    @PostConstruct
     /**
      * Inicializa el entorno del usuario.
      */
+    @PostConstruct
     public void init() {
         //TODO analizar este código
         modelPackagePath = getAppConfig().getProperty("packagepathmodel",

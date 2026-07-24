@@ -62,10 +62,10 @@ public class AuthFilter implements Filter {
         this.ipRequestAllowed = new String[]{"0.0.0.0"};
     }
 
-    @PostConstruct
     /**
      * Inicializa el filtro de autenticación.
      */
+    @PostConstruct
     public void init() {
         //Lista de IPs permitidos (si el valor es 0.0.0.0 todos estan permitidos)
         if (appConfig.getSystemParam("IP_REQUEST_ALLOWED") != null) {

@@ -763,7 +763,8 @@ public class DataReport {
      * excluyendo las que contienen funciones de agregación.
      *
      * @param columns columnas separadas por coma.
-     * @return cláusula GROUP BY.
+     * @return lista de campos (separados por coma) apta para la cláusula GROUP BY,
+     * excluyendo las columnas con funciones de agregación.
      */
     public final String createGroupBy(String columns) {
         List<String> campos = stringToList(columns);

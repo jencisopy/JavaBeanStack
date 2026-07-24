@@ -37,14 +37,14 @@ import jakarta.faces.convert.FacesConverter;
 import org.javabeanstack.util.LocalDates;
 import org.primefaces.component.api.UICalendar;
 
-@ApplicationScoped
-@FacesConverter("localDateTimeConverter")
 /**
  * Converter JSF entre la representación textual de la vista y
  * {@link java.time.LocalDateTime}.
  *
  * @author Jorge Enciso
  */
+@ApplicationScoped
+@FacesConverter("localDateTimeConverter")
 public class LocalDateTimeConverter implements Converter {
 
     @Override

@@ -107,7 +107,6 @@ public abstract class AbstractDAO implements IGenericDAO {
     public AbstractDAO() {
     }
 
-    @AroundInvoke
     /**
      * Interceptor que cierra los EntityManager dinámicos al finalizar la
      * invocación del método de negocio.
@@ -116,6 +115,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return el resultado de la invocación.
      * @throws Exception si la invocación o el cierre fallan.
      */
+    @AroundInvoke
     protected Object closeDynamicEntityManagers(InvocationContext ctx) throws Exception {
         try {
             return ctx.proceed();
@@ -1471,7 +1471,6 @@ public abstract class AbstractDAO implements IGenericDAO {
         return result;
     }
 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     /**
      * Asigna a la consulta los valores de los parámetros según la sentencia.
      *
@@ -1479,6 +1478,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @param parameters parámetros nombrados.
      * @param queryString sentencia de la consulta.
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     protected final void populateQueryParameters(Query query, Map<String, Object> parameters, String queryString) {
         parameters.entrySet().forEach(entry -> {
             try {

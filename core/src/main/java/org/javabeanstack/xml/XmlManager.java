@@ -62,11 +62,11 @@ public class XmlManager implements IXmlManager {
     //del contenedor mientras otros metodos lo mutan
     private Map<String, IXmlCache> cache = new ConcurrentHashMap();
 
-    @PostConstruct
     /**
      * Inicialización posterior a la construcción ({@code @PostConstruct}): inyecta
      * el DAO en el buscador de recursos XML.
      */
+    @PostConstruct
     protected void init(){
         ((XmlResourceSearcher)xmlSearcher).setDao(dao);
     }
