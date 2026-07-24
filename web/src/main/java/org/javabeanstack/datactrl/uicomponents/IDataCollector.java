@@ -23,15 +23,25 @@ package org.javabeanstack.datactrl.uicomponents;
 import java.io.Serializable;
 import java.util.Map;
 /**
+ * Contrato del recolector de valores para componentes de UI (principalmente
+ * {@code DataTable}): obtiene valores de campos desde tablas externas o
+ * mediante cálculos especiales.
  *
  * @author Jorge Enciso
- * 
- * Para ser utilizado principalmente en DataTable. Busca valores de campos en
- * tablas externas o calculos expeciales.
- * 
- * 
  */
 public interface IDataCollector extends Serializable {
+    /**
+     * Asigna la fuente de datos del recolector.
+     *
+     * @param params parámetros de la fuente de datos.
+     */
     void setDataSource(Map<String, Object> params);
+
+    /**
+     * Obtiene el valor (externo o calculado) según los parámetros indicados.
+     *
+     * @param params parámetros para resolver el valor.
+     * @return valor obtenido.
+     */
     Object getDataValue(Map<String, Object> params);
 }

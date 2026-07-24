@@ -434,7 +434,7 @@ public class Sessions implements ISessions {
      * Verifica si el iduser proporcionado es válido
      *
      * @param iduser id del usuario
-     * @return una variable ErrorReg si es nulo es válido si no hubo algún error
+     * @return verdadero si el usuario es válido, falso si no
      * @throws java.lang.Exception
      */
     @Override
@@ -487,8 +487,8 @@ public class Sessions implements ISessions {
     }
 
     /**
-     * Devuelve verdadero si sus credenciales para el logeo son válidas o falso
-     * si no
+     * Autentica al usuario con sus credenciales y devuelve la sesión
+     * resultante
      *
      * @param userLogin usuario
      * @param password contraseña.
@@ -799,6 +799,10 @@ public class Sessions implements ISessions {
         return info;
     }
 
+    /**
+     * Clave interna de la información de sesión: combina el identificador de
+     * sesión y la clave del dato almacenado.
+     */
     public class SessionInfo {
 
         String sessionId;

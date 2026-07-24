@@ -86,6 +86,10 @@ public class DataExpression implements IDataExpression{
     }
 
 
+    /**
+     * Elemento individual de una expresión: la expresión, sus parámetros, el
+     * operador de unión y el grupo al que pertenece.
+     */
     public final class ElementExpr {
 
         String operador = "and";

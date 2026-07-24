@@ -328,7 +328,19 @@ public interface IDataNativeQuery {
      */
     public Long getCount() throws Exception; 
    
+    /**
+     * Indica si a la consulta se le aplica el filtro de datos por defecto
+     * (por empresa/permisos).
+     *
+     * @return verdadero si se aplica el filtro por defecto, falso si no.
+     */
     public boolean getApplyDBFilter();
     
+    /**
+     * Define si a la consulta se le aplica el filtro de datos por defecto
+     * (por empresa/permisos).
+     *
+     * @param apply verdadero para aplicar el filtro por defecto.
+     */
     public void setApplyDBFilter(boolean apply);
 }

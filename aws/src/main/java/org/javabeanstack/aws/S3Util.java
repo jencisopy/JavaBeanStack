@@ -39,10 +39,10 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 /**
+ * Utilidad para la gestión de recursos de Amazon S3: creación del cliente y
+ * operaciones sobre buckets y objetos.
  *
  * @author Jorge Enciso
- * 
- * Metodos para la gestión de recursos amazon S3.
  */
 public class S3Util {
     /**

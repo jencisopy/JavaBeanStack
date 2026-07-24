@@ -194,8 +194,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
-     * Agrega valores de parametros constantes (ej. :true=true, :false=false
-     * etc, :idempresa)
+     * Agrega a los parámetros los valores de las constantes que aparezcan en la
+     * sentencia (:true, :false, :today, :now).
      *
      * @param queryString sentencia
      * @param parameters objeto parametros

@@ -475,9 +475,10 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     /**
-     * Es el identificador del componente, si el valor es nulo devuelve 0
+     * Devuelve la clave de fila (rowkey) que combina el tipo y el identificador
+     * del componente; si no tiene identificador devuelve una cadena vacía.
      *
-     * @return identificador del componente.
+     * @return clave de fila del componente.
      */
     @XmlTransient
     @Override
