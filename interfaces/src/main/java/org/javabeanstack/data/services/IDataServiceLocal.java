@@ -23,9 +23,11 @@
 package org.javabeanstack.data.services;
 
 /**
+ * Vista local (EJB local) del servicio de datos {@link IDataService}, para
+ * inyección dentro del mismo contenedor. No agrega operaciones al contrato.
  *
  * @author Jorge Enciso
  */
 public interface IDataServiceLocal extends IDataService{
-    
+
 }

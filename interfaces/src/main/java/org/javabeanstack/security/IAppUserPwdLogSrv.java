@@ -25,13 +25,49 @@ import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.model.IAppUser;
 
 /**
+ * Contrato del servicio de bitácora de contraseñas: registra el historial de
+ * contraseñas de un usuario y permite consultarlo (para impedir la reutilización
+ * de contraseñas anteriores). Extiende el servicio de datos {@link IDataService}.
  *
  * @author Jorge Enciso
  */
 public interface IAppUserPwdLogSrv extends IDataService {
+    /**
+     * Indica si existe bitácora de contraseñas para el usuario de la sesión.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @return verdadero si existe bitácora, falso si no.
+     */
     boolean isExistUserPwdLog(String sessionId);
+
+    /**
+     * Indica si existe bitácora de contraseñas para el usuario indicado.
+     *
+     * @param appUser usuario a consultar.
+     * @return verdadero si existe bitácora, falso si no.
+     */
     boolean isExistUserPwdLog(IAppUser appUser);
+
+    /**
+     * Registra la contraseña actual del usuario de la sesión en la bitácora.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     */
     void insertUserPwdLog(String sessionId);
+
+    /**
+     * Registra la contraseña actual del usuario indicado en la bitácora.
+     *
+     * @param appUser usuario cuya contraseña se registra.
+     */
     void insertUserPwdLog(IAppUser appUser);
+
+    /**
+     * Devuelve el identificador del usuario cuya bitácora contiene la contraseña
+     * indicada.
+     *
+     * @param pwd contraseña a buscar.
+     * @return identificador del usuario, o {@code null} si no se encuentra.
+     */
     Long getIdUserFromPwdLog(String pwd);
 }

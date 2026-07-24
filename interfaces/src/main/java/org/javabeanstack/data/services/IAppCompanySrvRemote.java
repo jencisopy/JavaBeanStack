@@ -22,9 +22,11 @@
 package org.javabeanstack.data.services;
 
 /**
+ * Vista remota (EJB remoto) del servicio de empresas {@link IAppCompanySrv},
+ * para el acceso desde otro contenedor o cliente. No agrega operaciones.
  *
  * @author Jorge Enciso
  */
 public interface IAppCompanySrvRemote extends IAppCompanySrv {
-    
+
 }

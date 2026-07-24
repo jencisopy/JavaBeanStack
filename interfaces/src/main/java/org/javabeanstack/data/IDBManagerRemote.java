@@ -24,6 +24,8 @@ package org.javabeanstack.data;
 
 
 /**
+ * Vista remota (EJB remoto) del administrador de {@code EntityManager}
+ * {@link IDBManager}, para el acceso desde otro contenedor o cliente.
  *
  * @author Jorge Enciso
  */

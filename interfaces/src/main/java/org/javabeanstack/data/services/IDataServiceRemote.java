@@ -23,9 +23,11 @@
 package org.javabeanstack.data.services;
 
 /**
+ * Vista remota (EJB remoto) del servicio de datos {@link IDataService}, para el
+ * acceso desde otro contenedor o cliente. No agrega operaciones al contrato.
  *
  * @author Jorge Enciso
  */
 public interface IDataServiceRemote extends IDataService{
-    
+
 }

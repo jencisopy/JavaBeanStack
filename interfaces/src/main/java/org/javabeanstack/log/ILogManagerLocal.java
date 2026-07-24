@@ -23,9 +23,11 @@
 package org.javabeanstack.log;
 
 /**
+ * Vista local (EJB local) del administrador de log {@link ILogManager}, para
+ * inyección dentro del mismo contenedor. No agrega operaciones al contrato.
  *
  * @author Jorge Enciso
  */
 public interface ILogManagerLocal extends ILogManager{
-    
+
 }

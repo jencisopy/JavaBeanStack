@@ -87,6 +87,9 @@ public interface IGenericDAO extends Serializable {
     public IDataResult update(String sessionId, IDataSet dataSet);
     
     //
+    /**
+     * Deshace (rollback) la transacción activa de la unidad de persistencia.
+     */
     public void dbRollBack();    
 
     /**
@@ -531,18 +534,95 @@ public interface IGenericDAO extends Serializable {
      */
     public boolean isCredentialValid(Long iduser, Long idcompany);
     
+    /**
+     * Devuelve un dato almacenado en el contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     * @return valor almacenado, o {@code null} si no existe.
+     */
     public Object getSessionInfo(String sessionId, String key);
+    /**
+     * Almacena un dato en el contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     * @param info valor a almacenar.
+     */
     public void addSessionInfo(String sessionId, String key, Object info);
+    /**
+     * Elimina un dato del contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     */
     public void removeSessionInfo(String sessionId, String key);  
+    /**
+     * Construye un registro de error a partir del catálogo de mensajes
+     * (tabla {@code AppMessage}), usando el mensaje alternativo si el número no existe.
+     *
+     * @param messageNumber número de mensaje en el catálogo.
+     * @param alternativeMsg mensaje a usar si el número no se encuentra.
+     * @param fieldName campo asociado al error.
+     * @return registro de error.
+     */
     public IErrorReg getErrorMessage(Integer messageNumber,String alternativeMsg, String fieldName);
+    /**
+     * Construye un registro de error del catálogo de mensajes sustituyendo los
+     * parámetros indicados en el texto del mensaje.
+     *
+     * @param messageNumber número de mensaje en el catálogo.
+     * @param alternativeMsg mensaje a usar si el número no se encuentra.
+     * @param fieldName campo asociado al error.
+     * @param params parámetros de sustitución del mensaje.
+     * @return registro de error.
+     */
     public IErrorReg getErrorMessage(Integer messageNumber,String alternativeMsg, String fieldName, Map<String, String> params);
     
+    /**
+     * Devuelve las constantes de consulta definidas para la unidad de persistencia.
+     *
+     * @param persistUnit nombre de la unidad de persistencia.
+     * @return mapa nombre → valor de las constantes de consulta.
+     */
     public Map<String, String> getQueryConstants(String persistUnit);     
     
+    /**
+     * Indica si la entidad es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param ejb entidad a evaluar.
+     * @return verdadero si es auditable, falso si no.
+     */
     public <T extends IDataRow> boolean isAuditAble(T ejb);
+    /**
+     * Indica si la entidad (por nombre) es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param entityName nombre de la entidad.
+     * @return verdadero si es auditable, falso si no.
+     */
     public <T extends IDataRow> boolean isAuditAble(String entityName);    
+    /**
+     * Indica si la entidad (por su clase) es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param clazz clase de la entidad.
+     * @return verdadero si es auditable, falso si no.
+     */
     public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz);
     
+    /**
+     * Ejecuta una consulta JPQL con proyección y devuelve las filas como arreglos.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param queryString sentencia JPQL.
+     * @param parameters parámetros nombrados de la consulta.
+     * @param first índice del primer resultado.
+     * @param max cantidad máxima de resultados.
+     * @return lista de arreglos de columnas.
+     * @throws Exception si ocurre un error de acceso a datos.
+     */
     public List<Object[]> findListObjsByQuery(String sessionId,
             String queryString,
             Map<String, Object> parameters,

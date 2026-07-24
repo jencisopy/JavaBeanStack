@@ -27,21 +27,64 @@ import org.javabeanstack.data.IDataRow;
 
 
 /**
+ * Contrato de la entidad de bitácora de contraseñas: registra las contraseñas
+ * anteriores de un usuario para impedir su reutilización. Extiende
+ * {@link IDataRow}.
  *
  * @author Jorge Enciso
  */
 public interface IAppUserPwdLog extends IDataRow{
-    Long getIdAppUserPwdLog();        
-    void setIdAppUserPwdLog(Long IdAppUserPwdLog);        
-    
-    Long getIduser();    
-    void setIduser(Long iduser);    
+    /**
+     * Devuelve el identificador del registro de bitácora.
+     * @return identificador del registro.
+     */
+    Long getIdAppUserPwdLog();
 
-    String getPwd();        
-    void setPwd(String pwd);   
+    /**
+     * Asigna el identificador del registro de bitácora.
+     * @param IdAppUserPwdLog identificador del registro.
+     */
+    void setIdAppUserPwdLog(Long IdAppUserPwdLog);
 
-    String getRol();        
-    void setRol(String rol);   
-    
-    LocalDateTime getDateTimeLog();    
+    /**
+     * Devuelve el identificador del usuario.
+     * @return identificador del usuario.
+     */
+    Long getIduser();
+
+    /**
+     * Asigna el identificador del usuario.
+     * @param iduser identificador del usuario.
+     */
+    void setIduser(Long iduser);
+
+    /**
+     * Devuelve la contraseña (hash) registrada.
+     * @return contraseña registrada.
+     */
+    String getPwd();
+
+    /**
+     * Asigna la contraseña (hash) a registrar.
+     * @param pwd contraseña a registrar.
+     */
+    void setPwd(String pwd);
+
+    /**
+     * Devuelve el rol del usuario al momento del registro.
+     * @return rol del usuario.
+     */
+    String getRol();
+
+    /**
+     * Asigna el rol del usuario al momento del registro.
+     * @param rol rol del usuario.
+     */
+    void setRol(String rol);
+
+    /**
+     * Devuelve la fecha y hora del registro de bitácora.
+     * @return fecha y hora del registro.
+     */
+    LocalDateTime getDateTimeLog();
 }

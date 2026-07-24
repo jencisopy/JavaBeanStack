@@ -27,13 +27,55 @@ import javax.naming.NamingException;
 import org.javabeanstack.security.ISecManager;
 
 /**
+ * Contrato de acceso a los EJB remotos del framework mediante lookup JNDI.
+ *
+ * <p>Provee el contexto de nombres y métodos de conveniencia para localizar los
+ * componentes remotos principales: el DAO genérico ({@link IGenericDAO}), la
+ * conexión de datos ({@link IDataLink}) y el gestor de seguridad
+ * ({@link ISecManager}).</p>
  *
  * @author Jorge Enciso
  */
 public interface IEjbApiRemote extends Serializable {
+    /**
+     * Devuelve el contexto de nombres (JNDI) hacia el servidor de EJB.
+     *
+     * @return contexto de nombres.
+     * @throws NamingException si no se puede crear el contexto.
+     */
     public Context getContext()       throws NamingException;
+
+    /**
+     * Localiza un componente remoto por su ruta JNDI.
+     *
+     * @param <T> tipo del componente esperado.
+     * @param path ruta JNDI del componente.
+     * @return referencia al componente remoto.
+     * @throws NamingException si la ruta no se puede resolver.
+     */
     public <T> T lookup(String path) throws NamingException;
+
+    /**
+     * Localiza el DAO genérico remoto.
+     *
+     * @return DAO genérico remoto.
+     * @throws NamingException si no se puede resolver.
+     */
     public IGenericDAO lookupDAO()    throws NamingException;
+
+    /**
+     * Localiza la conexión de datos remota.
+     *
+     * @return conexión de datos remota.
+     * @throws NamingException si no se puede resolver.
+     */
     public IDataLink lookupDataLink() throws NamingException;
+
+    /**
+     * Localiza el gestor de seguridad remoto.
+     *
+     * @return gestor de seguridad remoto.
+     * @throws NamingException si no se puede resolver.
+     */
     public ISecManager lookupSecManager() throws NamingException;
 }

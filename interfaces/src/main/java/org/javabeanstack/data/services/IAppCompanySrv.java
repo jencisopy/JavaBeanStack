@@ -26,10 +26,26 @@ import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.security.model.IUserSession;
 
 /**
+ * Contrato del servicio de empresas: expone las empresas ({@link IAppCompany})
+ * visibles para una sesión de usuario, tanto en versión reducida (light) como
+ * completa.
  *
  * @author Jorge Enciso
  */
 public interface IAppCompanySrv extends IDataService {
+    /**
+     * Devuelve la lista reducida (light) de empresas visibles para la sesión.
+     *
+     * @param userSession sesión del usuario.
+     * @return lista reducida de empresas.
+     */
     List<IAppCompany> getAppCompanyLight(IUserSession userSession);
+
+    /**
+     * Devuelve la lista completa de empresas visibles para la sesión.
+     *
+     * @param userSession sesión del usuario.
+     * @return lista de empresas.
+     */
     List<IAppCompany> getAppCompany(IUserSession userSession);
 }

@@ -22,6 +22,8 @@
 package org.javabeanstack.log;
 
 /**
+ * Variante del administrador de log {@link ILogManager} orientada al registro
+ * de eventos de datos/operación. No agrega operaciones al contrato.
  *
  * @author Jorge Enciso
  */

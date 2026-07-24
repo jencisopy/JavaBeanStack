@@ -23,19 +23,78 @@ package org.javabeanstack.xml;
 import java.util.Date;
 
 /**
+ * Contrato de la clave de la caché de documentos XML ({@link IXmlCache}):
+ * identifica un documento cacheado por su tipo de origen, ruta de documento y
+ * ruta de elemento, y lleva la cuenta de referencias.
  *
  * @author Jorge Enciso
  */
 public interface IXmlCacheKey {
+    /**
+     * Devuelve el tipo de origen del documento (archivo, objeto, http).
+     *
+     * @return tipo de origen.
+     */
     String getPathType();
+
+    /**
+     * Devuelve la ruta del documento.
+     *
+     * @return ruta del documento.
+     */
     String getDocumentPath();
+
+    /**
+     * Devuelve la ruta del elemento dentro del documento.
+     *
+     * @return ruta del elemento.
+     */
     String getElementPath();
+
+    /**
+     * Devuelve la fecha y hora de la última referencia.
+     *
+     * @return fecha de la última referencia.
+     */
     Date getLastReference();
+
+    /**
+     * Devuelve la cantidad de referencias hechas a la clave.
+     *
+     * @return cantidad de referencias.
+     */
     Integer getReferenceTime();
+
+    /**
+     * Asigna la ruta del documento.
+     *
+     * @param documentPath ruta del documento.
+     */
     void setDocumentPath(String documentPath);
+
+    /**
+     * Asigna la ruta del elemento dentro del documento.
+     *
+     * @param elementPath ruta del elemento.
+     */
     void setElementPath(String elementPath);
+
+    /**
+     * Asigna el tipo de origen del documento.
+     *
+     * @param pathType tipo de origen.
+     */
     void setPathType(String pathType);
+
+    /**
+     * Asigna la fecha y hora de la última referencia.
+     *
+     * @param date fecha de la última referencia.
+     */
     void setLastReference(Date date);
+
+    /**
+     * Incrementa el contador de referencias a la clave.
+     */
     void addReferenceTime();
 }
-

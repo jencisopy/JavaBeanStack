@@ -24,9 +24,12 @@ package org.javabeanstack.data;
 
 
 /**
+ * Vista local (EJB local) del DAO genérico {@link IGenericDAO}. No agrega
+ * operaciones: expone el mismo contrato para inyección dentro del mismo
+ * contenedor.
  *
  * @author Jorge Enciso
  */
 public interface IGenericDAOLocal extends IGenericDAO {
-    
+
 }

@@ -24,9 +24,11 @@ package org.javabeanstack.security;
 
 
 /**
+ * Vista remota (EJB remoto) del gestor de seguridad {@link ISecManager}, para
+ * el acceso desde otro contenedor o cliente. No agrega operaciones al contrato.
  *
  * @author Jorge Enciso
  */
 public interface ISecManagerRemote extends ISecManager{
-    
+
 }

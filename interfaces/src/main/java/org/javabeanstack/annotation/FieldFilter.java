@@ -27,6 +27,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Define un filtro dinámico asociado a un método (getter) de una entidad, usado
+ * por la capa de datos para construir la condición de selección según el valor
+ * del campo.
  *
  * @author Jorge Enciso
  */
@@ -34,32 +37,48 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface FieldFilter {
     /**
-     * nombre del campo
-     * @return
+     * Nombre del campo sobre el que se aplica el filtro.
+     *
+     * @return nombre del campo.
      */
     String field() default "";
     /**
-     * Expresion del filtro
-     * @return
+     * Expresión del filtro.
+     *
+     * @return expresión del filtro.
      */
     String expression() default "";
     /**
-     * Parametro adicional en caso de ser string y el operador like
-     * @return
+     * Modo de comparación cuando el valor es texto y el operador es {@code like}.
+     *
+     * @return modo de comparación ({@code equal}, {@code contain},
+     * {@code contain_trim}, {@code contain_ltrim}, {@code contain_rtrim}).
      */
     String mode() default ""; //Valores equal, contain, contain_trim, contain_ltrim, contain_rtrim
     /**
-     * Expresión si el valor es nulo
-     * @return
+     * Expresión a aplicar cuando el valor del campo es nulo o vacío.
+     *
+     * @return expresión para valor nulo o vacío.
      */
     String nullOrEmptyExpression() default "";
     /**
-     * Orden de procesamiento
-     * @return
+     * Orden de procesamiento del filtro.
+     *
+     * @return orden de procesamiento.
      */
     String order() default "";
-    
+
+    /**
+     * Expresión a aplicar cuando el filtro no debe activarse.
+     *
+     * @return expresión "falsa" del filtro.
+     */
     String falseExpression() default "false";
-    
+
+    /**
+     * Indica si el valor cero se incluye en el filtro.
+     *
+     * @return {@code "true"} para incluir el cero, {@code "false"} para excluirlo.
+     */
     String ceroInclude() default "false";
 }

@@ -28,12 +28,25 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Marca un campo de clave foránea para que la capa de datos valide que el
+ * registro referenciado exista al grabar la entidad.
  *
  * @author Jorge Enciso
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface CheckForeignkey {
+    /**
+     * Mensaje de error a mostrar si la referencia no existe.
+     *
+     * @return mensaje de error.
+     */
     String message() default "";
+
+    /**
+     * Indica si debe realizarse la validación de la clave foránea.
+     *
+     * @return verdadero para validar, falso para omitir.
+     */
     boolean check() default true;
 }

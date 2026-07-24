@@ -27,13 +27,33 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Define un campo calculado a partir de una fórmula (y, opcionalmente, de un
+ * campo de otra entidad relacionada) en lugar de mapearse directamente a una
+ * columna.
  *
- * @author Jorge Enciso
+ * @author jenciso
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface ColumnFunction {
+    /**
+     * Fórmula que calcula el valor del campo.
+     *
+     * @return fórmula del campo calculado.
+     */
     String formula();
+
+    /**
+     * Clase de la entidad relacionada de la que se toma el valor, si corresponde.
+     *
+     * @return nombre de la clase mapeada.
+     */
     String classMapped() default "";
+
+    /**
+     * Campo de la entidad relacionada del que se toma el valor, si corresponde.
+     *
+     * @return nombre del campo mapeado.
+     */
     String fieldMapped() default "";
 }

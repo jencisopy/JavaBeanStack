@@ -24,6 +24,8 @@ package org.javabeanstack.data;
 
 
 /**
+ * Vista local (EJB local) del administrador de {@code EntityManager}
+ * {@link IDBManager}, para inyección dentro del mismo contenedor.
  *
  * @author Jorge Enciso
  */

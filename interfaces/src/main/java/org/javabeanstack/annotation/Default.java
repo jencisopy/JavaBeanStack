@@ -32,6 +32,9 @@ import java.lang.annotation.Target;
 import jakarta.inject.Qualifier;
 
 /**
+ * Calificador CDI ({@link jakarta.inject.Qualifier}) que identifica la
+ * implementación por defecto de un tipo cuando existe más de una candidata para
+ * la inyección.
  *
  * @author Jorge Enciso
  */

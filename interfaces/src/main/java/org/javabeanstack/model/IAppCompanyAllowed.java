@@ -26,19 +26,69 @@ import java.io.Serializable;
 import org.javabeanstack.data.IDataRow;
 
 /**
+ * Contrato de la entidad de habilitación empresa-usuario: define si un usuario
+ * tiene permitido o denegado el acceso a una empresa. Extiende {@link IDataRow}.
  *
  * @author Jorge Enciso
  */
 public interface IAppCompanyAllowed extends IDataRow, Serializable {
+    /**
+     * Devuelve el identificador de la empresa.
+     * @return identificador de la empresa.
+     */
     Long getIdcompany();
+
+    /**
+     * Devuelve el identificador del usuario.
+     * @return identificador del usuario.
+     */
     Long getIduser();
+
+    /**
+     * Indica si el acceso está denegado.
+     * @return verdadero si está denegado.
+     */
     boolean getDeny();
+
+    /**
+     * Indica si el acceso está permitido.
+     * @return verdadero si está permitido.
+     */
     boolean getAllow();
+
+    /**
+     * Devuelve el usuario de aplicación asociado.
+     * @return usuario de aplicación.
+     */
     String getAppuser();
-    
+
+    /**
+     * Asigna el identificador de la empresa.
+     * @param idempresa identificador de la empresa.
+     */
     void setIdcompany(Long idempresa);
+
+    /**
+     * Asigna el identificador del usuario.
+     * @param idusuario identificador del usuario.
+     */
     void setIduser(Long idusuario);
+
+    /**
+     * Asigna si el acceso está denegado.
+     * @param negar verdadero para denegar el acceso.
+     */
     void setDeny(boolean negar);
+
+    /**
+     * Asigna si el acceso está permitido.
+     * @param permitir verdadero para permitir el acceso.
+     */
     void setAllow(boolean permitir);
+
+    /**
+     * Asigna el usuario de aplicación asociado.
+     * @param appuser usuario de aplicación.
+     */
     void setAppuser(String appuser);
 }

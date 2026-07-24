@@ -27,6 +27,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Marca un campo como parte del texto a firmar digitalmente: los campos así
+ * anotados se concatenan en {@code DataRow.getTextToSign()} para calcular la
+ * firma del registro.
  *
  * @author Jorge Enciso
  */

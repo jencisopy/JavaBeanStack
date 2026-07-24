@@ -27,13 +27,32 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Marca un método como validador de negocio de un campo: la capa de datos lo
+ * invoca al verificar la entidad, para las acciones y el nivel indicados.
  *
  * @author jenciso
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface CheckMethod {
+    /**
+     * Nombre del campo que valida el método.
+     *
+     * @return nombre del campo.
+     */
     String fieldName();
+
+    /**
+     * Acciones CRUD en las que se ejecuta la validación (agregar, modificar...).
+     *
+     * @return códigos de acción sobre los que aplica.
+     */
     int[] action();
-    String level() default "ALL"; //Valores ALL, ENTITY, ROW, FIELD, 
+
+    /**
+     * Nivel de validación: {@code ALL}, {@code ENTITY}, {@code ROW} o {@code FIELD}.
+     *
+     * @return nivel de validación.
+     */
+    String level() default "ALL"; //Valores ALL, ENTITY, ROW, FIELD,
 }

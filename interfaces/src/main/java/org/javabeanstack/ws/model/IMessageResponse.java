@@ -22,17 +22,35 @@
 package org.javabeanstack.ws.model;
 
 /**
+ * Contrato del mensaje de respuesta de un servicio web: identifica el recurso
+ * creado/afectado y su enlace (link), para devolverlo en la respuesta REST.
  *
  * @author Jorge Enciso
  */
 public interface IMessageResponse {
 
+    /**
+     * Devuelve el identificador del recurso.
+     * @return identificador del recurso.
+     */
     String getId();
 
+    /**
+     * Devuelve el enlace al recurso.
+     * @return enlace al recurso.
+     */
     String getLink();
 
+    /**
+     * Asigna el identificador del recurso.
+     * @param id identificador del recurso.
+     */
     void setId(String id);
 
+    /**
+     * Asigna el enlace al recurso.
+     * @param link enlace al recurso.
+     */
     void setLink(String link);
-    
+
 }

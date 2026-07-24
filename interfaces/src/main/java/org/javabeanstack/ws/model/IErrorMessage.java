@@ -23,21 +23,47 @@
 package org.javabeanstack.ws.model;
 
 /**
+ * Contrato del mensaje de error de un servicio web: código, mensaje y enlace a
+ * la documentación del error, para devolverlo en la respuesta REST.
  *
  * @author Jorge Enciso
  */
 public interface IErrorMessage {
 
+    /**
+     * Devuelve el enlace a la documentación del error.
+     * @return enlace a la documentación.
+     */
     String getDocumentation();
 
+    /**
+     * Devuelve el código del error.
+     * @return código del error.
+     */
     int getErrorCode();
 
+    /**
+     * Devuelve el mensaje del error.
+     * @return mensaje del error.
+     */
     String getErrorMessage();
 
+    /**
+     * Asigna el enlace a la documentación del error.
+     * @param documentation enlace a la documentación.
+     */
     void setDocumentation(String documentation);
 
+    /**
+     * Asigna el código del error.
+     * @param errorCode código del error.
+     */
     void setErrorCode(int errorCode);
 
+    /**
+     * Asigna el mensaje del error.
+     * @param errorMessage mensaje del error.
+     */
     void setErrorMessage(String errorMessage);
-    
+
 }

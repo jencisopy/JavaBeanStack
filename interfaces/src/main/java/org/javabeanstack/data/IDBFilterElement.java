@@ -24,16 +24,51 @@ package org.javabeanstack.data;
 import java.io.Serializable;
 
 /**
+ * Contrato de un elemento de filtro individual usado por {@link IDBFilter}:
+ * asocia un campo, su valor a comparar y el grupo al que pertenece.
  *
  * @author Jorge Enciso
  */
 public interface IDBFilterElement extends Serializable{
+    /**
+     * Devuelve el nombre del campo del elemento de filtro.
+     *
+     * @return nombre del campo.
+     */
     String getFieldName();
+
+    /**
+     * Asigna el nombre del campo del elemento de filtro.
+     *
+     * @param key nombre del campo.
+     */
     void setFieldName(String key);
-    
+
+    /**
+     * Devuelve el valor a comparar del elemento de filtro.
+     *
+     * @return valor del campo.
+     */
     Object getFieldValue();
+
+    /**
+     * Asigna el valor a comparar del elemento de filtro.
+     *
+     * @param keyValue valor del campo.
+     */
     void setFieldValue(Object keyValue);
 
+    /**
+     * Devuelve el grupo al que pertenece el elemento de filtro.
+     *
+     * @return número de grupo.
+     */
     Integer getFieldGroup();
+
+    /**
+     * Asigna el grupo al que pertenece el elemento de filtro.
+     *
+     * @param group número de grupo.
+     */
     void setFieldGroup(Integer group);
 }

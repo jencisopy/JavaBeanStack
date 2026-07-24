@@ -25,9 +25,20 @@ import java.sql.Connection;
 import jakarta.persistence.EntityManager;
 
 /**
+ * Contrato de una fábrica que obtiene la conexión JDBC ({@link Connection})
+ * subyacente a un {@link EntityManager} de JPA.
+ *
+ * <p>Permite ejecutar SQL nativo o utilidades que requieren la conexión directa
+ * sin abandonar la unidad de persistencia gestionada por el proveedor.</p>
  *
  * @author Jorge Enciso
  */
 public interface IDBConnectFactory {
+    /**
+     * Devuelve la conexión JDBC subyacente al {@link EntityManager} indicado.
+     *
+     * @param em entity manager del que obtener la conexión.
+     * @return conexión JDBC.
+     */
     public Connection getConnection(EntityManager em);
 }

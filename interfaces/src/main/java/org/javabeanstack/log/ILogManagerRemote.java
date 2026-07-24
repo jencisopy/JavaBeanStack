@@ -23,9 +23,11 @@
 package org.javabeanstack.log;
 
 /**
+ * Vista remota (EJB remoto) del administrador de log {@link ILogManager}, para
+ * el acceso desde otro contenedor o cliente. No agrega operaciones al contrato.
  *
  * @author Jorge Enciso
  */
 public interface ILogManagerRemote extends ILogManager {
-    
+
 }

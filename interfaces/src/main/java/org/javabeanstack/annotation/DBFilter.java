@@ -27,12 +27,25 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Marca una entidad para que la capa de datos le aplique el filtro por defecto
+ * (típicamente por empresa) usando los campos indicados.
  *
  * @author Jorge Enciso
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface DBFilter {
+    /**
+     * Nombre del campo clave del filtro (p. ej. el identificador de empresa).
+     *
+     * @return nombre del campo clave.
+     */
     String fieldKey() default "";
+
+    /**
+     * Nombre del campo de la entidad sobre el que se aplica el filtro.
+     *
+     * @return nombre del campo.
+     */
     String fieldName() default "";
 }

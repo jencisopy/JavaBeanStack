@@ -24,9 +24,11 @@ package org.javabeanstack.security;
 
 
 /**
+ * Vista local (EJB local) del gestor de seguridad {@link ISecManager}, para
+ * inyección dentro del mismo contenedor. No agrega operaciones al contrato.
  *
  * @author Jorge Enciso
  */
 public interface ISecManagerLocal extends ISecManager {
-    
+
 }

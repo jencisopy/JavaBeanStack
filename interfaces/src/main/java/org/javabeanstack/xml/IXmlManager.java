@@ -24,18 +24,62 @@ package org.javabeanstack.xml;
 import java.util.Map;
 
 /**
+ * Contrato del administrador de documentos XML: coordina el buscador de textos
+ * XML ({@link IXmlSearcher}) y la caché de documentos ya procesados
+ * ({@link IXmlCache}) para reutilizarlos y purgarlos.
  *
  * @author Jorge Enciso
- * 
  */
 public interface IXmlManager {
+    /**
+     * Devuelve el buscador de textos XML asociado al administrador.
+     *
+     * @param <V> tipo del objeto DOM.
+     * @return buscador de textos XML.
+     */
     <V> IXmlSearcher<V> getXmlSearcher();
-    
+
+    /**
+     * Devuelve la caché de documentos XML procesados.
+     *
+     * @return mapa clave → documento cacheado.
+     */
     Map<String, IXmlCache> getCache();
+
+    /**
+     * Asigna la caché de documentos XML procesados.
+     *
+     * @param cache mapa clave → documento cacheado.
+     */
     void setCache(Map<String, IXmlCache> cache);
+
+    /**
+     * Agrega un documento a la caché.
+     *
+     * @param key clave del documento.
+     * @param value documento cacheado.
+     */
     void addToCache(String key, IXmlCache value);
+
+    /**
+     * Elimina un documento de la caché.
+     *
+     * @param key clave del documento.
+     */
     void removeFromCache(String key);
+
+    /**
+     * Vacía la caché de documentos.
+     */
     void clearCache();
+
+    /**
+     * Procesa los documentos pendientes del administrador.
+     */
     void processObjects();
+
+    /**
+     * Purga los documentos obsoletos o sin uso de la caché.
+     */
     void purgeObjects();
 }

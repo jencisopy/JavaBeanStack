@@ -27,17 +27,65 @@ import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.model.IAppLogRecord;
 
 /**
+ * Contrato del administrador de log: persiste mensajes y eventos
+ * ({@link IAppLogRecord}) en la base de datos y da acceso al catálogo de
+ * mensajes ({@link IAppMessage}).
+ *
+ * <p>La implementación de referencia es {@code org.javabeanstack.log.LogManager}.</p>
  *
  * @author Jorge Enciso
  */
 public interface ILogManager {
+    /**
+     * Devuelve un mensaje del catálogo por su número.
+     *
+     * @param msgNumber número del mensaje.
+     * @return mensaje del catálogo.
+     */
     IAppMessage getAppMessage(Integer msgNumber);
-    List<IAppMessage> getAppMessages();    
-    
+
+    /**
+     * Devuelve todos los mensajes del catálogo.
+     *
+     * @return lista de mensajes.
+     */
+    List<IAppMessage> getAppMessages();
+
+    /**
+     * Persiste un error en el log.
+     *
+     * @param errorReg registro de error.
+     * @return verdadero si se persistió, falso si no.
+     */
     boolean dbWrite(IErrorReg errorReg);
-    
+
+    /**
+     * Persiste un error en un tipo de log específico.
+     *
+     * @param <T> tipo del registro de log.
+     * @param logType clase del registro de log.
+     * @param sessionId identificador de la sesión del usuario.
+     * @param errorReg registro de error.
+     * @return verdadero si se persistió, falso si no.
+     */
     <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg errorReg);
+
+    /**
+     * Persiste un registro de log ya construido.
+     *
+     * @param <T> tipo del registro de log.
+     * @param logRecord registro de log a persistir.
+     * @param sessionId identificador de la sesión del usuario.
+     * @return verdadero si se persistió, falso si no.
+     */
     <T extends IAppLogRecord> boolean dbWrite(T logRecord, String sessionId);
 
+    /**
+     * Crea una nueva instancia de registro de log del tipo indicado.
+     *
+     * @param <T> tipo del registro de log.
+     * @param logType clase del registro de log.
+     * @return nueva instancia de registro de log.
+     */
     <T extends IAppLogRecord> IAppLogRecord getNewAppLogRecord(Class<T> logType);
 }

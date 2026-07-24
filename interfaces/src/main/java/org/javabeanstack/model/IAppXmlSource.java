@@ -26,26 +26,113 @@ import java.time.LocalDateTime;
 import org.javabeanstack.data.IDataRow;
 
 /**
+ * Contrato de la entidad fuente XML: almacena el texto XML original y compilado
+ * de un recurso, con su fecha de procesamiento y contador de referencias, para
+ * el motor de documentos XML ({@link org.javabeanstack.xml.IXmlManager}).
+ * Extiende {@link IDataRow}.
  *
  * @author Jorge Enciso
  */
 public interface IAppXmlSource extends IDataRow {
+    /**
+     * Devuelve el identificador de la fuente XML.
+     * @return identificador de la fuente XML.
+     */
     Long getIdXmlSource();
+
+    /**
+     * Devuelve el identificador del objeto asociado.
+     * @return identificador del objeto.
+     */
     Long getIdObject();
+
+    /**
+     * Devuelve el nombre del XML.
+     * @return nombre del XML.
+     */
     String getXmlName();
+
+    /**
+     * Devuelve el texto XML original.
+     * @return texto XML original.
+     */
     String getXmlSource();
+
+    /**
+     * Devuelve el texto XML compilado (procesado con sus clases derivadas).
+     * @return texto XML compilado.
+     */
     String getXmlCompiled();
+
+    /**
+     * Devuelve la fecha y hora de procesamiento del XML.
+     * @return fecha de procesamiento.
+     */
     LocalDateTime getProcessTime();
+
+    /**
+     * Devuelve el contador de referencias al XML.
+     * @return cantidad de referencias.
+     */
     BigInteger getReferencetime();
+
+    /**
+     * Devuelve la ruta del XML.
+     * @return ruta del XML.
+     */
     String getXmlPath();
+
+    /**
+     * Indica si la fuente XML es válida.
+     * @return verdadero si es válida, falso si no.
+     */
     boolean isValid();
 
-    void setIdXmlSource(Long idxmlsource);    
-    void setIdObject(Long idobject);  
+    /**
+     * Asigna el identificador de la fuente XML.
+     * @param idxmlsource identificador de la fuente XML.
+     */
+    void setIdXmlSource(Long idxmlsource);
+
+    /**
+     * Asigna el identificador del objeto asociado.
+     * @param idobject identificador del objeto.
+     */
+    void setIdObject(Long idobject);
+
+    /**
+     * Asigna el nombre del XML.
+     * @param xmlname nombre del XML.
+     */
     void setXmlName(String xmlname);
-    void setXmlSource(String xmlsource);    
-    void setXmlCompiled(String xmlcompile);    
-    void setProcessTime(LocalDateTime processtime);    
+
+    /**
+     * Asigna el texto XML original.
+     * @param xmlsource texto XML original.
+     */
+    void setXmlSource(String xmlsource);
+
+    /**
+     * Asigna el texto XML compilado.
+     * @param xmlcompile texto XML compilado.
+     */
+    void setXmlCompiled(String xmlcompile);
+
+    /**
+     * Asigna la fecha y hora de procesamiento del XML.
+     * @param processtime fecha de procesamiento.
+     */
+    void setProcessTime(LocalDateTime processtime);
+
+    /**
+     * Asigna el contador de referencias al XML.
+     * @param referencetime cantidad de referencias.
+     */
     void setReferencetime(BigInteger referencetime);
+
+    /**
+     * Asigna la ruta del XML.
+     * @param xmlpath ruta del XML.
+     */
     void setXmlPath(String xmlpath);
 }

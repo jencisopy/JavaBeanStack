@@ -100,8 +100,25 @@ public interface IXmlSearcher<V> extends Serializable{
      */
     void setCache(Map<IXmlCacheKey, IXmlCache<V>> cache); 
     
+    /**
+     * Agrega un parámetro al buscador.
+     *
+     * @param key clave del parámetro.
+     * @param value valor del parámetro.
+     */
     void addParam(String key, Object value);
+    /**
+     * Devuelve un parámetro del buscador por su clave.
+     *
+     * @param key clave del parámetro.
+     * @return valor del parámetro.
+     */
     Object getParam(String key);
+    /**
+     * Devuelve todos los parámetros del buscador.
+     *
+     * @return mapa clave → valor de parámetros.
+     */
     Map<String, Object> getParams();
 
     /**

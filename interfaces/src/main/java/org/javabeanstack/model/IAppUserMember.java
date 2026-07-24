@@ -26,14 +26,45 @@ import java.io.Serializable;
 import org.javabeanstack.data.IDataRow;
 
 /**
+ * Contrato de la entidad de membresía: relaciona un usuario ({@link IAppUser})
+ * con el grupo de usuarios al que pertenece. Extiende {@link IDataRow}.
  *
  * @author Jorge Enciso
  */
 public interface IAppUserMember extends IDataRow, Serializable {
+    /**
+     * Devuelve el identificador de la membresía.
+     * @return identificador de la membresía.
+     */
     Long getIdusermember();
-    void setIdusermember(Long idUserMember);    
+
+    /**
+     * Asigna el identificador de la membresía.
+     * @param idUserMember identificador de la membresía.
+     */
+    void setIdusermember(Long idUserMember);
+
+    /**
+     * Devuelve el usuario miembro.
+     * @return usuario miembro.
+     */
     IAppUser getUserMember();
+
+    /**
+     * Asigna el usuario miembro.
+     * @param user usuario miembro.
+     */
     void setUserMember(IAppUser user);
+
+    /**
+     * Devuelve el grupo de usuarios.
+     * @return grupo de usuarios.
+     */
     IAppUser getUserGroup();
+
+    /**
+     * Asigna el grupo de usuarios.
+     * @param user grupo de usuarios.
+     */
     void setUserGroup(IAppUser user);
 }

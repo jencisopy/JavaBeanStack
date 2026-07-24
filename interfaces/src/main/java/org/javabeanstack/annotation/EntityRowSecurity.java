@@ -27,13 +27,33 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Declara la seguridad a nivel de fila de una entidad: restringe qué registros
+ * son visibles/accesibles según una entidad de control y un parámetro de la
+ * sesión.
  *
  * @author jenciso
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface EntityRowSecurity {
+    /**
+     * Campo identificador de la entidad sobre el que se aplica la restricción.
+     *
+     * @return nombre del campo identificador.
+     */
     String idField();
+
+    /**
+     * Entidad de control que define los registros permitidos.
+     *
+     * @return nombre de la entidad de control.
+     */
     String entity();
+
+    /**
+     * Parámetro (de la sesión/contexto) que acota los registros permitidos.
+     *
+     * @return nombre del parámetro.
+     */
     String paramField();
 }

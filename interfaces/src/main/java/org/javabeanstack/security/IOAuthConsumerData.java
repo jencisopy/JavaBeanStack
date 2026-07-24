@@ -26,22 +26,109 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
+ * Contrato de los datos de autenticación que se incluyen al emitir un token
+ * OAuth ({@link IOAuthConsumer}): usuario, empresa, condición de administrador,
+ * credenciales y datos adicionales libres.
  *
  * @author Jorge Enciso
  */
 public interface IOAuthConsumerData extends Serializable {
+    /**
+     * Devuelve el identificador del usuario.
+     *
+     * @return identificador del usuario.
+     */
     Long getIdAppUser();
+
+    /**
+     * Asigna el identificador del usuario.
+     *
+     * @param iduser identificador del usuario.
+     */
     void setIdAppUser(Long iduser);
+
+    /**
+     * Devuelve el identificador de la empresa.
+     *
+     * @return identificador de la empresa.
+     */
     Long getIdCompany();
+
+    /**
+     * Asigna el identificador de la empresa.
+     *
+     * @param idcompany identificador de la empresa.
+     */
     void setIdCompany(Long idcompany);
+
+    /**
+     * Indica si el usuario es administrador.
+     *
+     * @return verdadero si es administrador, falso si no.
+     */
     boolean isAdministrator();
+
+    /**
+     * Asigna la condición de administrador del usuario.
+     *
+     * @param value verdadero si es administrador.
+     */
     void setAdministrator(boolean value);
+
+    /**
+     * Devuelve los datos adicionales asociados.
+     *
+     * @return mapa clave → valor de datos adicionales.
+     */
     Map<String, String> getOtherData();
+
+    /**
+     * Asigna los datos adicionales.
+     *
+     * @param otherData mapa clave → valor de datos adicionales.
+     */
     void setOtherData(Map<String, String> otherData);
+
+    /**
+     * Agrega un valor a los datos adicionales.
+     *
+     * @param key clave del dato.
+     * @param value valor del dato.
+     */
     void addOtherDataValue(String key, String value);
+
+    /**
+     * Elimina un valor de los datos adicionales.
+     *
+     * @param key clave del dato.
+     */
     void removeOtherDataValue(String key);
+
+    /**
+     * Devuelve el login del usuario.
+     *
+     * @return login del usuario.
+     */
     String getUserLogin();
+
+    /**
+     * Asigna el login del usuario.
+     *
+     * @param userLogin login del usuario.
+     */
     void setUserLogin(String userLogin);
+
+    /**
+     * Devuelve la contraseña del usuario.
+     *
+     * @return contraseña del usuario.
+     */
     String getUserPass();
+
+    /**
+     * Asigna la contraseña del usuario.
+     *
+     * @param userPass contraseña del usuario.
+     */
     void setUserPass(String userPass);
 }

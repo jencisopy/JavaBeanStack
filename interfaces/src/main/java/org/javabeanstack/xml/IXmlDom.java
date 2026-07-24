@@ -39,6 +39,11 @@ import java.util.Map;
  * @param <E> tipo nodo o elemento del DOM.
  */
 public interface IXmlDom<V, E> extends Serializable {
+    /**
+     * Devuelve el texto XML original, antes de cualquier procesamiento.
+     *
+     * @return texto XML original.
+     */
     String getOriginalXmlText();
     
     /**
@@ -99,10 +104,35 @@ public interface IXmlDom<V, E> extends Serializable {
      */
     boolean config(File file, String element, boolean notInherit, Map<String, String> params);
     
+    /**
+     * Crea el objeto XMLDOM a partir de un archivo XML.
+     *
+     * @param file archivo con el texto XML.
+     * @param element nombre del tag del texto XML.
+     * @param notInherit para no considerar las clases derivadas.
+     * @return verdadero si tuvo éxito, falso si no.
+     */
     boolean config(File file, String element, boolean notInherit);    
 
+    /**
+     * Crea el objeto XMLDOM a partir de un flujo de entrada, reemplazando parámetros.
+     *
+     * @param input flujo de entrada con el texto XML.
+     * @param element nombre del tag del texto XML.
+     * @param notInherit para no considerar las clases derivadas.
+     * @param params valores a reemplazar.
+     * @return verdadero si tuvo éxito, falso si no.
+     */
     boolean config(InputStream input, String element, boolean notInherit, Map<String, String> params);
     
+    /**
+     * Crea el objeto XMLDOM a partir de un flujo de entrada.
+     *
+     * @param input flujo de entrada con el texto XML.
+     * @param element nombre del tag del texto XML.
+     * @param notInherit para no considerar las clases derivadas.
+     * @return verdadero si tuvo éxito, falso si no.
+     */
     boolean config(InputStream input, String element, boolean notInherit);    
     
 
@@ -123,6 +153,15 @@ public interface IXmlDom<V, E> extends Serializable {
      */
     boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit, Map<String, String> params);
 
+    /**
+     * Crea el objeto XMLDOM a partir de un texto XML.
+     *
+     * @param documentPath ruta del documento (opcional).
+     * @param xmlText texto XML a convertir en objeto DOM.
+     * @param elementPath nombre del tag del texto XML.
+     * @param notInherit para no considerar las clases derivadas.
+     * @return verdadero si tuvo éxito, falso si no.
+     */
     boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit);    
 
     /**

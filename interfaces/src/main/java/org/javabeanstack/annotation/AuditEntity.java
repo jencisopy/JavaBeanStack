@@ -27,11 +27,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Marca una entidad como auditable: sus cambios se registran en la tabla de
+ * auditoría indicada. La leen {@code DataRow.getAuditEntity()} y la capa de
+ * datos para decidir si debe auditar.
  *
  * @author jenciso
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface AuditEntity {
+    /**
+     * Nombre lógico de la entidad de auditoría asociada.
+     *
+     * @return nombre de la entidad de auditoría.
+     */
     String name();
 }
