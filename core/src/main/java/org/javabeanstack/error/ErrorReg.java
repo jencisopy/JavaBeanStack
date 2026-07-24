@@ -42,15 +42,32 @@ public class ErrorReg implements IErrorReg{
     private String level = "E";
     private Object info;
     
+    /**
+     * Constructor por defecto.
+     */
     public ErrorReg(){
     }
     
+    /**
+     * Crea el registro de error con mensaje, número y campo afectado.
+     *
+     * @param message mensaje de error.
+     * @param errorNumber número de error.
+     * @param fieldName campo afectado.
+     */
     public ErrorReg(String message, int errorNumber, String fieldName){
         this.message = message;
         this.errorNumber = errorNumber;
         this.fieldName = fieldName;
     }
 
+    /**
+     * Crea el registro de error con mensaje, número y campos afectados.
+     *
+     * @param message mensaje de error.
+     * @param errorNumber número de error.
+     * @param fieldNames campos afectados.
+     */
     public ErrorReg(String message, int errorNumber, String[] fieldNames){
         this.message = message;
         this.errorNumber = errorNumber;

@@ -43,10 +43,20 @@ public class XmlResourceSearcher<V> extends XmlSearcher<V> {
 
     private IGenericDAO dao;
 
+    /**
+     * Devuelve el DAO utilizado para buscar recursos XML en la base de datos.
+     *
+     * @return DAO genérico.
+     */
     public IGenericDAO getDao() {
         return dao;
     }
 
+    /**
+     * Asigna el DAO utilizado para buscar recursos XML en la base de datos.
+     *
+     * @param dao DAO genérico.
+     */
     public void setDao(IGenericDAO dao) {
         this.dao = dao;
     }

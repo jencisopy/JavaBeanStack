@@ -27,6 +27,10 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
 
 /**
  *
+ * Implementación de {@link IXmlCacheKey}: clave de la caché de documentos XML
+ * compuesta por el tipo de origen, la ruta del documento y la ruta del
+ * elemento, con el contador de referencias.
+ *
  * @author Jorge Enciso
  */
 public class XmlCacheKey implements IXmlCacheKey {
@@ -36,9 +40,19 @@ public class XmlCacheKey implements IXmlCacheKey {
     private Date lastReference;
     private Integer referenceTime=0;
     
+    /**
+     * Constructor por defecto.
+     */
     public XmlCacheKey(){
     }
 
+    /**
+     * Crea la clave a partir de la ruta del documento y del elemento; deduce el
+     * tipo de origen de la ruta.
+     *
+     * @param documentPath ruta del documento.
+     * @param elementPath ruta del elemento.
+     */
     public XmlCacheKey(String documentPath, String elementPath){
         this.pathType = XmlSearcher.getPathType(documentPath);
         this.documentPath = XmlSearcher.getJustPath(documentPath).toLowerCase();
@@ -48,6 +62,13 @@ public class XmlCacheKey implements IXmlCacheKey {
         }
     }   
     
+    /**
+     * Crea la clave con el tipo de origen, la ruta del documento y del elemento.
+     *
+     * @param pathType tipo de origen (archivo, objeto, http).
+     * @param documentPath ruta del documento.
+     * @param elementPath ruta del elemento.
+     */
     public XmlCacheKey(String pathType, String documentPath, String elementPath){
         this.pathType = pathType.trim().toLowerCase();
         if (isNullorEmpty(pathType)){

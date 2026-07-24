@@ -47,24 +47,49 @@ public class XmlCache<T> implements IXmlCache<T> {
     private Date lastReference;
     private boolean compiled=false;
 
+    /**
+     * Constructor por defecto.
+     */
     public XmlCache() {
     }
 
+    /**
+     * Crea el elemento de caché con el objeto DOM indicado.
+     *
+     * @param dom objeto DOM a cachear.
+     */
     public XmlCache(T dom) {
         domObject = dom;
         processTime = new Date();
     }
 
+    /**
+     * Crea el elemento de caché con el texto XML indicado.
+     *
+     * @param xmlText texto XML a cachear.
+     */
     public XmlCache(String xmlText) {
         this.xmlText = xmlText;
         processTime = new Date();
     }
 
+    /**
+     * Crea el elemento de caché con el objeto DOM y su fecha de procesamiento.
+     *
+     * @param dom objeto DOM a cachear.
+     * @param processTime fecha de procesamiento del DOM.
+     */
     public XmlCache(T dom, Date processTime) {
         this.domObject = dom;
         this.processTime = processTime;
     }
 
+    /**
+     * Crea el elemento de caché con el texto XML y su fecha de procesamiento.
+     *
+     * @param xmlText texto XML a cachear.
+     * @param processTime fecha de procesamiento.
+     */
     public XmlCache(String xmlText, Date processTime) {
         this.xmlText = xmlText;
         this.processTime = processTime;

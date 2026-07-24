@@ -38,6 +38,11 @@ import org.javabeanstack.data.IGenericDAO;
 
 /**
  *
+ * Implementación EJB (singleton de arranque) del administrador de documentos
+ * XML {@link IXmlManager}: coordina el buscador de recursos XML
+ * ({@link XmlResourceSearcher}) y la caché de documentos ya procesados
+ * ({@link IXmlCache}).
+ *
  * @author Jorge Enciso
  * 
  */
@@ -58,6 +63,10 @@ public class XmlManager implements IXmlManager {
     private Map<String, IXmlCache> cache = new ConcurrentHashMap();
 
     @PostConstruct
+    /**
+     * Inicialización posterior a la construcción ({@code @PostConstruct}): inyecta
+     * el DAO en el buscador de recursos XML.
+     */
     protected void init(){
         ((XmlResourceSearcher)xmlSearcher).setDao(dao);
     }

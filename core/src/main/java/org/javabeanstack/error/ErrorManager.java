@@ -97,6 +97,13 @@ public class ErrorManager {
         logger.error(msg + getStackTraceText(getAppPackage()));
     }
     
+    /**
+     * Compone el mensaje a mostrar para una excepción: la causa raíz y, si
+     * corresponde, el rastro de pila filtrado al paquete de la aplicación.
+     *
+     * @param ex excepción.
+     * @return mensaje a mostrar.
+     */
     public static String getMessageToShow(Exception ex){
         String msg = getStackCause(ex);
         if (msg == null || msg.isEmpty() || msg.length() < 5) {

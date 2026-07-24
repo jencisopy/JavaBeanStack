@@ -57,6 +57,12 @@ public class LogManager implements ILogManager {
     @EJB
     private ISessions sessions;
 
+    /**
+     * Devuelve el nombre completo de la clase del tipo de registro de log por
+     * defecto.
+     *
+     * @return path de la clase del tipo de log por defecto.
+     */
     protected String getLogTypePath(){
         return LOG_TYPE_PATH;
     }
