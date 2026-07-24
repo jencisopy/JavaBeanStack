@@ -41,11 +41,21 @@ public class UserEnvironment extends AbstractUserEnvironment{
     @EJB private IAppResource appResource;
     @EJB private IAppConfig appConfig;
 
+    /**
+     * Devuelve el servicio de recursos de aplicación inyectado.
+     *
+     * @return servicio de recursos.
+     */
     @Override
     public IAppResource getAppResource() {
         return appResource;
     }
 
+    /**
+     * Devuelve la configuración de aplicación inyectada.
+     *
+     * @return configuración de aplicación.
+     */
     @Override
     public IAppConfig getAppConfig() {
         return appConfig;

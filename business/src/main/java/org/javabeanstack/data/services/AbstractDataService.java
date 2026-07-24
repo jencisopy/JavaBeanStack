@@ -1697,6 +1697,17 @@ public abstract class AbstractDataService implements IDataService {
         dao.dbRollBack();
     }
 
+    /**
+     * Ejecuta una consulta JPQL con proyección y devuelve las filas como arreglos.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param queryString sentencia JPQL.
+     * @param parameters parámetros nombrados de la consulta.
+     * @param first índice del primer resultado.
+     * @param max cantidad máxima de resultados.
+     * @return lista de arreglos de columnas.
+     * @throws Exception si ocurre un error de acceso a datos.
+     */
     @Override
     public List<Object[]> findListObjsByQuery(String sessionId, String queryString, Map<String, Object> parameters, int first, int max) throws Exception {
         return dao.findListObjsByQuery(sessionId, queryString, parameters, first, max);

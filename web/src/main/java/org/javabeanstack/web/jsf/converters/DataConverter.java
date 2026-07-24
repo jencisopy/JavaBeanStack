@@ -54,6 +54,11 @@ public class DataConverter<T extends IDataRow> extends AbstractDataConverter<T> 
         super(clase);
     }
 
+    /**
+     * Devuelve la conexión de datos utilizada por el converter.
+     *
+     * @return conexión de datos.
+     */
     @Override
     public IDataLink getDAO() {
         return dao;

@@ -37,16 +37,31 @@ public class SecManager extends AbstractSecManager implements ISecManager, ISecM
     @EJB private IGenericDAO dao;
     @EJB private ISessions sesiones;
 
+    /**
+     * Devuelve el DAO genérico inyectado por EJB.
+     *
+     * @return DAO genérico.
+     */
     @Override
     protected IGenericDAO getDAO() {
         return dao;
     }
 
+    /**
+     * Devuelve el administrador de sesiones inyectado por EJB.
+     *
+     * @return administrador de sesiones.
+     */
     @Override
     protected ISessions getSessions() {
         return sesiones;
     }
 
+    /**
+     * Devuelve el servicio de bitácora de contraseñas ({@code null} si no se utiliza).
+     *
+     * @return servicio de bitácora de contraseñas.
+     */
     @Override
     protected IAppUserPwdLogSrv getAppUserPwdLogSrv() {
         return null;

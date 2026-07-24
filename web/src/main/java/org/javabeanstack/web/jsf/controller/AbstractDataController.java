@@ -881,11 +881,21 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             this.context = context;
         }
 
+        /**
+         * Asigna el objeto de datos (contexto) del controlador.
+         *
+         * @param context objeto de datos.
+         */
         @Override
         public void setContext(IDataObject context) {
             this.context = context;
         }
 
+        /**
+         * Devuelve el objeto de datos (contexto) del controlador.
+         *
+         * @return objeto de datos.
+         */
         @Override
         public IDataObject getContext() {
             return this.context;
@@ -914,16 +924,31 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        /**
+         * Se ejecuta al perder el foco un componente (evento Ajax).
+         *
+         * @param event evento Ajax de pérdida de foco.
+         */
         @Override
         public void onBlur(AjaxBehaviorEvent event) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        /**
+         * Se ejecuta al perder el foco un campo indicado por nombre.
+         *
+         * @param fieldName nombre del campo.
+         */
         @Override
         public void onBlur(String fieldName) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        /**
+         * Se ejecuta al seleccionar una fila en la vista.
+         *
+         * @param event evento de selección.
+         */
         @Override
         public void onRowSelect(Object event) {
             int recno = getDataRows()
@@ -933,6 +958,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             }
         }
 
+        /**
+         * Se ejecuta al aplicar un filtro sobre la vista.
+         */
         @Override
         public void onRowFilter() {
             String tableTextFooter = (String) getProperty("tableTextFooter");
@@ -950,10 +978,21 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             FacesContext.getCurrentInstance().getPartialViewContext().getRenderIds().add(tableTextFooter);
         }
 
+        /**
+         * Se ejecuta al cambiar el valor de un campo en la vista.
+         *
+         * @param fieldname nombre del campo.
+         */
         @Override
         public void onChange(String fieldname) {
         }
 
+        /**
+         * Provee las sugerencias de autocompletado para un texto.
+         *
+         * @param text texto ingresado.
+         * @return lista de registros que coinciden con el texto.
+         */
         @Override
         public List<T> onCompleteText(String text) {
             if (text.isEmpty()) {

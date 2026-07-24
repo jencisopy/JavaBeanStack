@@ -33,12 +33,13 @@ import org.javabeanstack.data.services.IDataService;
  * @author Jorge Enciso
  */
 public class WebResource extends AbstractWebResource {
+    @EJB private ISecManager secManager;
+
     /**
      * Devuelve el servicio de datos del recurso.
      * @param <T> tipo del servicio de datos.
      * @return servicio de datos.
      */
-    @EJB private ISecManager secManager;
     
     @Override
     public <T extends IDataService> T getDataService() {
