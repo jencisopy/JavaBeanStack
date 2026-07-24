@@ -67,6 +67,7 @@ public class ColumnModel implements IColumnModel {
      * @param width ancho.
      * @param link enlace.
      * @param filterFunction función de filtro.
+     * @param mask máscara de formato.
      */
     public ColumnModel(String header, Integer property, String column, String style, int width,String link, String filterFunction, String mask) {
         this.header = header;        
