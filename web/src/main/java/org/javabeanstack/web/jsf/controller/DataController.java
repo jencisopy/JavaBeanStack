@@ -33,6 +33,9 @@ import org.javabeanstack.security.model.IUserSession;
 
 /**
  *
+ * Controlador de datos concreto-base para pantallas CRUD; especializa
+ * {@link AbstractDataController} para su uso directo por los beans de la aplicación.
+ *
  * @author Jorge Enciso
  * @param <T>
  */
@@ -43,14 +46,25 @@ public abstract class DataController<T extends IDataRow> extends AbstractDataCon
     @Inject
     private DataLink daoCatalog;
     
+    /**
+     * Constructor por defecto.
+     */
     public DataController(){
     }  
     
+    /**
+     * Crea el controlador para la entidad indicada.
+     *
+     * @param type clase de la entidad.
+     */
     public DataController(Class<T> type){
         this.setType(type);
     }
 
     @PostConstruct
+    /**
+     * Inicializa el controlador.
+     */
     public void init() {
         IUserSession userSession = (IUserSession)getFacesCtx().getSession().getAttribute("userSession"); 
         try {

@@ -37,6 +37,9 @@ import org.w3c.dom.Element;
 
 /**
  *
+ * Localiza recursos de aplicación ({@link org.javabeanstack.model.IAppResource})
+ * y expone la ruta del sistema de archivos y el contexto JSF asociado.
+ *
  * @author Jorge Enciso
  */
 public class AppResourceSearcher implements Serializable {
@@ -52,14 +55,27 @@ public class AppResourceSearcher implements Serializable {
     private String fileSystemPath;
 
     @PostConstruct
+    /**
+     * Inicialización posterior a la construcción.
+     */
     public void init() {
         fileSystemPath = appConfig.getFileSystemPath(this.getUserSession().getSessionId());
     }
 
+    /**
+     * Devuelve el servicio de recursos de aplicación.
+     *
+     * @return servicio de recursos.
+     */
     public IAppResource getAppResource() {
         return appResource;
     }
 
+    /**
+     * Devuelve la ruta del sistema de archivos configurada.
+     *
+     * @return ruta del sistema de archivos.
+     */
     public String getFileSystemPath() {
         return fileSystemPath;
     }
@@ -122,10 +138,20 @@ public class AppResourceSearcher implements Serializable {
         return xmlResource;
     }
 
+    /**
+     * Devuelve la utilidad de contexto JSF.
+     *
+     * @return utilidad de contexto JSF.
+     */
     public FacesContextUtil getFacesCtx() {
         return facesCtx;
     }
 
+    /**
+     * Devuelve la sesión de usuario actual.
+     *
+     * @return sesión de usuario.
+     */
     protected IUserSession getUserSession() {
         return facesCtx.getUserSession();
     }

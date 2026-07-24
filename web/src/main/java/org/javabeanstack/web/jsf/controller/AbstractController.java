@@ -33,6 +33,9 @@ import org.javabeanstack.security.model.IUserSession;
 public abstract class AbstractController implements Serializable{
     private FacesContextUtil facesCtx;
             
+    /**
+     * Constructor por defecto.
+     */
     public AbstractController(){
         facesCtx = new FacesContextUtil();
     }

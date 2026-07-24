@@ -39,6 +39,9 @@ import org.javabeanstack.model.IAppCompany;
 
 /**
  *
+ * Controlador base del entorno del usuario: expone a la vista la empresa activa
+ * y los datos de la sesión. Extiende {@link AbstractController}.
+ *
  * @author Jorge Enciso
  */
 public abstract class AbstractUserEnvironment extends AbstractController {
@@ -56,6 +59,9 @@ public abstract class AbstractUserEnvironment extends AbstractController {
     public abstract IAppResource getAppResource();
 
     @PostConstruct
+    /**
+     * Inicializa el entorno del usuario.
+     */
     public void init() {
         //TODO analizar este código
         modelPackagePath = getAppConfig().getProperty("packagepathmodel",
@@ -92,6 +98,11 @@ public abstract class AbstractUserEnvironment extends AbstractController {
         return null;
     }
 
+    /**
+     * Devuelve el logo de la empresa activa.
+     *
+     * @return logo en bytes.
+     */
     public byte[] getCompanyLogo() {
         IUserSession userSession = getUserSession();
         if (userSession == null || userSession.getCompany() == null) {
@@ -194,6 +205,11 @@ public abstract class AbstractUserEnvironment extends AbstractController {
         return getFacesCtx().getRequestContextPath();
     }
     
+    /**
+     * Devuelve la empresa activa de la sesión.
+     *
+     * @return empresa activa.
+     */
     public IAppCompany getCompanyLogged(){
         IUserSession userSession = getUserSession();
         // Si no esta logueado

@@ -112,9 +112,17 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      */
     private final Map<String, String> completeTextSearchFields = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
+    /**
+     * Constructor por defecto.
+     */
     public AbstractDataController() {
     }
 
+    /**
+     * Crea el controlador para la entidad indicada.
+     *
+     * @param type clase de la entidad.
+     */
     public AbstractDataController(Class<T> type) {
         this.setType(type);
     }
@@ -129,18 +137,39 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     
     protected abstract IAppSystemEvents getAppSysEvents();
 
+    /**
+     * Devuelve la ruta del recurso XML de configuración de la pantalla.
+     *
+     * @return ruta del recurso XML.
+     */
     public String getXmlResourcePath() {
         return xmlResourcePath;
     }
 
+    /**
+     * Asigna la ruta del recurso XML de configuración de la pantalla.
+     *
+     * @param xmlResourcePath ruta del recurso XML.
+     */
     public void setXmlResourcePath(String xmlResourcePath) {
         this.xmlResourcePath = xmlResourcePath;
     }
 
+    /**
+     * Devuelve el nivel de autorización del usuario para la acción indicada.
+     *
+     * @param action acción a evaluar.
+     * @return nivel de autorización.
+     */
     public Integer checkAuthorization(String action) {
         return IAppObjectAuth.ALLOWED;
     }
 
+    /**
+     * Devuelve el recurso XML de configuración de la pantalla ya procesado.
+     *
+     * @return documento XML de la pantalla.
+     */
     public IXmlDom<Document, Element> getXmlResource() {
         if (xmlResource == null) {
             xmlResource = getAppResource().getXmlDom(xmlResourcePath, "XML", null);
@@ -148,19 +177,39 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return xmlResource;
     }
 
+    /**
+     * Asigna el contexto para resolver el recurso XML de la pantalla.
+     *
+     * @param context contexto (entidad) de la pantalla.
+     */
     public void setXmlResource(T context) {
         //Leer de la tabla AppResourceSearcher o de un xml
         xmlResource = getAppResource().getXmlDom(xmlResourcePath, "XML", null);
     }
 
+    /**
+     * Devuelve el manejador de eventos del controlador.
+     *
+     * @return manejador de eventos.
+     */
     public ICtrlEvents getEvents() {
         return ctrlEvents;
     }
 
+    /**
+     * Devuelve el manejador de eventos del controlador.
+     *
+     * @return manejador de eventos.
+     */
     public ICtrlEvents getCtrlEvents() {
         return ctrlEvents;
     }
 
+    /**
+     * Asigna el manejador de eventos del controlador.
+     *
+     * @param ctrlEvents manejador de eventos.
+     */
     public void setCtrlEvents(ICtrlEvents ctrlEvents) {
         this.ctrlEvents = ctrlEvents;
     }
@@ -219,10 +268,20 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return facesCtx;
     }
 
+    /**
+     * Indica si se desactiva la carga lazy de filas.
+     *
+     * @return verdadero si la carga lazy está desactivada.
+     */
     public Boolean getNoLazyRowsLoad() {
         return noLazyRowsLoad;
     }
 
+    /**
+     * Define si se desactiva la carga lazy de filas.
+     *
+     * @param noLazyRowsLoad verdadero para desactivar la carga lazy.
+     */
     public void setNoLazyRowsLoad(Boolean noLazyRowsLoad) {
         this.noLazyRowsLoad = noLazyRowsLoad;
     }
@@ -327,10 +386,20 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return rowsFiltered.size();
     }
 
+    /**
+     * Devuelve la sesión de usuario actual.
+     *
+     * @return sesión de usuario.
+     */
     public IUserSession getUserSession() {
         return facesCtx.getUserSession();
     }
 
+    /**
+     * Devuelve el identificador del usuario actual.
+     *
+     * @return identificador del usuario.
+     */
     public Long getUserId() {
         return facesCtx.getUserId();
     }
@@ -347,6 +416,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         return uri;
     }
 
+    /**
+     * Devuelve los campos utilizados en la búsqueda de autocompletado.
+     *
+     * @return mapa de campos de búsqueda.
+     */
     public Map<String, String> getCompleteTextSearchFields() {
         return completeTextSearchFields;
     }
@@ -606,6 +680,12 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     public void onBlur(String fieldname) {
     }
 
+    /**
+     * Valida el valor del campo indicado del registro actual.
+     *
+     * @param fieldname nombre del campo.
+     * @return verdadero si el valor es válido, falso si no.
+     */
     public boolean checkFieldValue(String fieldname) {
         return true;
     }
@@ -741,6 +821,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         noLazyRowsLoad = false;
     }
 
+    /**
+     * Cierra la sesión y devuelve la navegación resultante.
+     *
+     * @return destino de navegación tras el logout.
+     */
     public String logout() {
         getAppSysEvents().onLogout();
         return facesCtx.logout();
@@ -781,9 +866,17 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     class CtrlEventLocal implements ICtrlEvents<IDataObject> {
         private IDataObject context;
 
+        /**
+         * Constructor por defecto.
+         */
         public CtrlEventLocal() {
         }
 
+        /**
+         * Crea el manejador de eventos local para el objeto de datos indicado.
+         *
+         * @param context objeto de datos.
+         */
         public CtrlEventLocal(IDataObject context) {
             this.context = context;
         }
@@ -865,14 +958,28 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         }
     }
 
+    /**
+     * Punto de extensión ejecutado antes de la carga lazy de filas.
+     *
+     * @return verdadero para continuar con la carga, falso para cancelarla.
+     */
     protected boolean beforeLazyRowsLoad() {
         return true;
     }
 
+    /**
+     * Punto de extensión ejecutado después de la carga lazy de filas.
+     */
     protected void afterLazyRowsLoad() {
         //Implentar en clases derivadas
     }
     
+    /**
+     * Aplica un filtro a la tabla indicada.
+     *
+     * @param table identificador de la tabla.
+     * @param filterTag etiqueta del filtro a aplicar.
+     */
     public void doFilter(String table, String filterTag) {
         //Implementar en clases derivadas.
     }

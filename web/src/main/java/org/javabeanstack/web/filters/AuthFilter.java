@@ -55,11 +55,17 @@ public class AuthFilter implements Filter {
     private String[] ipRequestAllowed;
     private String[] ipRequestNotAllowed;
 
+    /**
+     * Constructor por defecto.
+     */
     public AuthFilter() {
         this.ipRequestAllowed = new String[]{"0.0.0.0"};
     }
 
     @PostConstruct
+    /**
+     * Inicializa el filtro de autenticación.
+     */
     public void init() {
         //Lista de IPs permitidos (si el valor es 0.0.0.0 todos estan permitidos)
         if (appConfig.getSystemParam("IP_REQUEST_ALLOWED") != null) {
@@ -214,6 +220,11 @@ public class AuthFilter implements Filter {
     }
 
     //Implementar en las clases derivadas.
+    /**
+     * Registra en el log un intento de acceso no autorizado.
+     *
+     * @param remoteIP dirección IP del cliente.
+     */
     protected void logAccessNoAllowed(String remoteIP){
     }
     

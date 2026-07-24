@@ -33,6 +33,9 @@ import org.primefaces.model.StreamedContent;
 
 /**
  *
+ * Utilidad para el manejo de archivos en la capa web (lectura, escritura y
+ * descarga de contenido).
+ *
  * @author mtrinidad
  */
 public class FileHandle {

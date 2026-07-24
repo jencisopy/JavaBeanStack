@@ -30,6 +30,8 @@ import org.javabeanstack.data.IDataRow;
 
 /**
  *
+ * Converter JSF concreto basado en {@link AbstractDataConverter}.
+ *
  * @author Jorge Enciso
  * @param <T>
  */
@@ -37,9 +39,17 @@ public class DataConverter<T extends IDataRow> extends AbstractDataConverter<T> 
     @Inject
     private DataLink dao;
 
+    /**
+     * Constructor por defecto.
+     */
     public DataConverter(){
     }
     
+    /**
+     * Crea el converter para la entidad indicada.
+     *
+     * @param clase clase de la entidad.
+     */
     public DataConverter(Class<T> clase){
         super(clase);
     }

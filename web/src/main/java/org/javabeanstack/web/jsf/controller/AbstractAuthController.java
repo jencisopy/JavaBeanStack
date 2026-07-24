@@ -116,6 +116,9 @@ public abstract class AbstractAuthController extends AbstractController {
     protected abstract IAppSystemEvents getAppSysEvents();
 
     @PostConstruct
+    /**
+     * Inicializa el controlador de autenticación.
+     */
     public void init() {
         logged = false;
         userCompanyAllowedList = new ArrayList<>();

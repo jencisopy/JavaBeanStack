@@ -39,6 +39,9 @@ import org.javabeanstack.error.ErrorManager;
 
 /**
  *
+ * Converter JSF base que traduce entre la representación textual de la vista y
+ * la entidad ({@link org.javabeanstack.data.IDataRow}) correspondiente.
+ *
  * @author Jorge Enciso
  * @param <T>
  */
@@ -47,15 +50,28 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
     private static final Logger LOGGER = LogManager.getLogger(AbstractDataConverter.class);
     Class<T> clase;
 
+    /**
+     * Constructor por defecto.
+     */
     public AbstractDataConverter() {
     }
 
+    /**
+     * Crea el converter para la entidad indicada.
+     *
+     * @param clase clase de la entidad.
+     */
     public AbstractDataConverter(Class<T> clase) {
         this.clase = clase;
     }
 
     public abstract IDataLink getDAO();
 
+    /**
+     * Devuelve la clase de la entidad convertida.
+     *
+     * @return clase de la entidad.
+     */
     public Class<T> getClase() {
         if (clase != null) {
             return clase;
@@ -132,6 +148,12 @@ public abstract class AbstractDataConverter<T extends IDataRow> implements Conve
         return userSession;
     }
     
+    /**
+     * Descompone la representación textual en los valores de clave de la entidad.
+     *
+     * @param value representación textual.
+     * @return mapa de valores de clave.
+     */
     protected Map<String, Object> getValuesFrom(String value) {
         int ini = value.indexOf("{") + 1;
         int fin = value.lastIndexOf("}");

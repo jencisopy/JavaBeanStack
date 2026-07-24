@@ -28,6 +28,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
+/**
+ * Listener del ciclo de vida de JSF ({@code PhaseListener}) del framework.
+ *
+ * @author Jorge Enciso
+ */
 public class LifeCycleListener implements PhaseListener {
     private static final Logger LOGGER = LogManager.getLogger(LifeCycleListener.class);
 

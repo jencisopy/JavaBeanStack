@@ -95,6 +95,11 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
     private boolean noCount = false;
     private int timesLoaded = 0;
 
+    /**
+     * Crea el modelo lazy asociado al controlador indicado.
+     *
+     * @param context controlador de datos propietario.
+     */
     public LazyDataRows(AbstractDataController context) {
         this.context = context;
     }
@@ -109,6 +114,11 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
         return noCount;
     }
 
+    /**
+     * Define si se omite el conteo total de registros (para grillas sin paginación exacta).
+     *
+     * @param noCount verdadero para omitir el conteo.
+     */
     public void setNoCount(boolean noCount) {
         this.noCount = noCount;
     }

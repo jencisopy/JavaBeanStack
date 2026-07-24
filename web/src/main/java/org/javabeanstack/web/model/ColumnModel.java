@@ -51,9 +51,23 @@ public class ColumnModel implements IColumnModel {
     private String title;
     private String dataSourceParams;
 
+    /**
+     * Constructor por defecto.
+     */
     public ColumnModel() {
     }
 
+    /**
+     * Crea el modelo de columna con estilo, ancho y función de filtro.
+     *
+     * @param header encabezado.
+     * @param property índice del elemento.
+     * @param column nombre de la columna.
+     * @param style estilo CSS.
+     * @param width ancho.
+     * @param link enlace.
+     * @param filterFunction función de filtro.
+     */
     public ColumnModel(String header, Integer property, String column, String style, int width,String link, String filterFunction, String mask) {
         this.header = header;        
         this.property = property;        
@@ -67,6 +81,16 @@ public class ColumnModel implements IColumnModel {
         this.mask=mask;
     }
 
+    /**
+     * Crea el modelo de columna con visibilidad, enlace e identificador.
+     *
+     * @param header encabezado.
+     * @param property índice del elemento.
+     * @param column nombre de la columna.
+     * @param visible visibilidad.
+     * @param link enlace.
+     * @param id identificador.
+     */
     public ColumnModel(String header, Integer property, String column, Boolean visible,String link, String id) {
         this.header = header;
         this.property = property;
@@ -78,6 +102,17 @@ public class ColumnModel implements IColumnModel {
         this.id=id;
     }    
     
+    /**
+     * Crea el modelo de columna con visibilidad, enlace, identificador y máscara.
+     *
+     * @param header encabezado.
+     * @param property índice del elemento.
+     * @param column nombre de la columna.
+     * @param visible visibilidad.
+     * @param link enlace.
+     * @param id identificador.
+     * @param mask máscara de formato.
+     */
     public ColumnModel(String header, Integer property, String column, Boolean visible,String link, String id,String mask) {
         this.header = header;
         this.property = property;

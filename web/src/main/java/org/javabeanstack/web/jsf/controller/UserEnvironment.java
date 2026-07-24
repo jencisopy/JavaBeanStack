@@ -29,6 +29,9 @@ import org.javabeanstack.resources.IAppResource;
 
 /**
  *
+ * Controlador del entorno del usuario listo para usar; implementación concreta
+ * de {@link AbstractUserEnvironment}.
+ *
  * @author Jorge Enciso
  */
 
