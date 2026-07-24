@@ -49,16 +49,33 @@ public class XmlSearcher<V> implements IXmlSearcher<V> {
     private Map<IXmlCacheKey, IXmlCache<V>> cache = new HashMap();
     private boolean useCache=true;
 
+    /**
+     * Agrega un parámetro al buscador.
+     *
+     * @param key clave del parámetro.
+     * @param value valor del parámetro.
+     */
     @Override
     public void addParam(String key, Object value) {
         params.put(key, value);
     }
 
+    /**
+     * Devuelve un parámetro del buscador por su clave.
+     *
+     * @param key clave del parámetro.
+     * @return valor del parámetro.
+     */
     @Override
     public Object getParam(String key) {
         return params.get(key);
     }
 
+    /**
+     * Devuelve todos los parámetros del buscador.
+     *
+     * @return mapa clave → valor de parámetros.
+     */
     @Override
     public Map<String, Object> getParams() {
         return params;

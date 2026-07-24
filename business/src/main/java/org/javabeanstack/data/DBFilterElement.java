@@ -31,31 +31,61 @@ public class DBFilterElement implements IDBFilterElement{
     private Object keyValue;
     private Integer group;
     
+    /**
+     * Devuelve el nombre del campo del elemento de filtro.
+     *
+     * @return nombre del campo.
+     */
     @Override
     public String getFieldName() {
         return key;
     }
 
+    /**
+     * Asigna el nombre del campo del elemento de filtro.
+     *
+     * @param key nombre del campo.
+     */
     @Override
     public void setFieldName(String key) {
         this.key = key;
     }
 
+    /**
+     * Devuelve el valor a comparar del elemento de filtro.
+     *
+     * @return valor del campo.
+     */
     @Override
     public Object getFieldValue() {
         return keyValue;
     }
 
+    /**
+     * Asigna el valor a comparar del elemento de filtro.
+     *
+     * @param keyValue valor del campo.
+     */
     @Override
     public void setFieldValue(Object keyValue) {
         this.keyValue = keyValue;
     }
 
+    /**
+     * Devuelve el grupo al que pertenece el elemento de filtro.
+     *
+     * @return número de grupo.
+     */
     @Override
     public Integer getFieldGroup() {
         return group;
     }
 
+    /**
+     * Asigna el grupo al que pertenece el elemento de filtro.
+     *
+     * @param group número de grupo.
+     */
     @Override
     public void setFieldGroup(Integer group) {
         this.group = group;

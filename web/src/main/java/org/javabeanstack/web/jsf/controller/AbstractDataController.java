@@ -891,6 +891,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             return this.context;
         }
 
+        /**
+         * Registro actual
+         *
+         * @return registro actual
+         */
         @Override
         public <X extends IDataRow> X getRow() {
             if (context == null) {
@@ -899,6 +904,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             return (X) context.getRow();
         }
 
+        /**
+         * Se ejecuta al seleccionar un ítem de una lista/autocompletado.
+         *
+         * @param fieldName nombre del campo.
+         */
         @Override
         public void onItemSelect(String fieldName) {
             throw new UnsupportedOperationException("Not supported yet.");

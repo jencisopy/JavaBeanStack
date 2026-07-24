@@ -67,6 +67,13 @@ public class LogManager implements ILogManager {
         return LOG_TYPE_PATH;
     }
 
+    /**
+     * Crea una nueva instancia de registro de log del tipo indicado.
+     *
+     * @param <T> tipo del registro de log.
+     * @param logType clase del registro de log.
+     * @return nueva instancia de registro de log.
+     */
     @Override
     public <T extends IAppLogRecord> IAppLogRecord getNewAppLogRecord(Class<T> logType) {
         try {

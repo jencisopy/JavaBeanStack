@@ -88,11 +88,21 @@ public class DataObject <T extends IDataRow> extends AbstractDataObject{
         }
     }
     
+    /**
+     * Devuelve el manejador de datos del schema de datos
+     *
+     * @return manejador de datos
+     */
     @Override
     public IDataLink getDAO() {
         return dao; 
     }
     
+    /**
+     * Devuelve el manejador de datos del schema catalogo
+     *
+     * @return manejador de datos
+     */
     @Override
     public IDataLink getDAOCatalog() {
         return daoCatalog; 

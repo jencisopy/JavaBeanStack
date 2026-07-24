@@ -126,6 +126,11 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
     }
 
+    /**
+     * Devuelve el objeto DBLinkInfo(info de la conexión) a partir del sessionid o token
+     * @param sessionId identificador de la sesión o token
+     * @return objeto DBLinkInfo(info de la conexión) a partir del sessionid o token
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
@@ -1046,6 +1051,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         return dataResult;
     }
 
+    /**
+     * Deshace (rollback) la transacción activa de la unidad de persistencia.
+     */
     @Override
     public void dbRollBack() {
         try {
@@ -1114,6 +1122,13 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.info(auditEjb);
     }
 
+    /**
+     * Indica si la entidad (por su clase) es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param ejb clase de la entidad.
+     * @return verdadero si es auditable, falso si no.
+     */
     @Override
     public <T extends IDataRow> boolean isAuditAble(T ejb) {
         if (ejb == null || ejb.getAuditClass() == null) {
@@ -1154,6 +1169,13 @@ public abstract class AbstractDAO implements IGenericDAO {
         return false;
     }
 
+    /**
+     * Indica si la entidad (por su clase) es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param clazz clase de la entidad.
+     * @return verdadero si es auditable, falso si no.
+     */
     @Override
     public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz) {
         if (clazz == null) {
@@ -1168,6 +1190,13 @@ public abstract class AbstractDAO implements IGenericDAO {
         return false;
     }
 
+    /**
+     * Indica si la entidad (por su clase) es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param entityName clase de la entidad.
+     * @return verdadero si es auditable, falso si no.
+     */
     @Override
     public <T extends IDataRow> boolean isAuditAble(String entityName) {
         try {
@@ -1250,6 +1279,16 @@ public abstract class AbstractDAO implements IGenericDAO {
         return (List<T>) q.getResultList();
     }
 
+    /**
+     * Selecciona datos de la base de datos y los convierte en una lista de
+     * objetos.
+     *
+     * @param <T>
+     * @param query objeto query conteniendo lo necesario para recuperar los
+     * datos.
+     * @return lista de registros según parámetros enviados.
+     * @throws Exception
+     */
     @Override
     public <T extends IDataRow> List<T> getData(Query query) throws Exception {
         return query.getResultList();
@@ -1693,30 +1732,69 @@ public abstract class AbstractDAO implements IGenericDAO {
         return false;
     }
 
+    /**
+     * Devuelve un dato almacenado en el contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     * @return valor almacenado, o {@code null} si no existe.
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Object getSessionInfo(String sessionId, String key) {
         return sessions.getSessionInfo(sessionId, key);
     }
 
+    /**
+     * Almacena un dato en el contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     * @param info valor a almacenar.
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void addSessionInfo(String sessionId, String key, Object info) {
         sessions.addSessionInfo(sessionId, key, info);
     }
 
+    /**
+     * Elimina un dato del contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void removeSessionInfo(String sessionId, String key) {
         sessions.removeSessionInfo(sessionId, key);
     }
 
+    /**
+     * Construye un registro de error a partir del catálogo de mensajes
+     * (tabla {@code AppMessage}), usando el mensaje alternativo si el número no existe.
+     *
+     * @param messageNumber número de mensaje en el catálogo.
+     * @param alternativeMsg mensaje a usar si el número no se encuentra.
+     * @param fieldName campo asociado al error.
+     * @return registro de error.
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
         return getErrorMessage(messageNumber, alternativeMsg, fieldName, null);
     }
 
+    /**
+     * Construye un registro de error del catálogo de mensajes sustituyendo los
+     * parámetros indicados en el texto del mensaje.
+     *
+     * @param messageNumber número de mensaje en el catálogo.
+     * @param alternativeMsg mensaje a usar si el número no se encuentra.
+     * @param fieldName campo asociado al error.
+     * @param params parámetros de sustitución del mensaje.
+     * @return registro de error.
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {

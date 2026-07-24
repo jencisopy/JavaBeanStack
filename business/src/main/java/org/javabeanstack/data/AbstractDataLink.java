@@ -882,6 +882,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         return userSession.getIdCompany();
     }
 
+    /**
+     * Devuelve el identificador del período activo.
+     *
+     * @return identificador del período.
+     */
     @Override
     public Long getIdperiodo() {
         if (!Strings.isNullorEmpty(token)) {
@@ -893,6 +898,11 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         return userSession.getCompany().getIdperiod();
     }
     
+    /**
+     * Devuelve el esquema de base de datos activo.
+     *
+     * @return nombre del esquema.
+     */
     @Override
     public String getSchema() {
         IDBLinkInfo dbInfo = getDBLinkInfo();

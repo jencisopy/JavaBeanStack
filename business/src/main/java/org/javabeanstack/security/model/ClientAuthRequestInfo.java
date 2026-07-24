@@ -56,6 +56,11 @@ public class ClientAuthRequestInfo implements IClientAuthRequestInfo{
         logDate = LocalDates.now();
     }
     
+    /**
+     * Devuelve el token de la solicitud.
+     *
+     * @return token de acceso.
+     */
     @Override
     public String getToken() {
         if (appAuthToken == null){
@@ -65,31 +70,62 @@ public class ClientAuthRequestInfo implements IClientAuthRequestInfo{
         return appAuthToken.getToken();
     }
 
+    /**
+     * Devuelve el identificador de la empresa de la solicitud.
+     *
+     * @return identificador de la empresa.
+     */
     @Override
     public Long getIdcompany() {
         return idcompany;
     }
 
+    /**
+     * Asigna el identificador de la empresa de la solicitud.
+     *
+     * @param idcompany identificador de la empresa.
+     */
     @Override
     public void setIdcompany(Long idcompany) {
         this.idcompany = idcompany;
     }
 
+    /**
+     * Asigna la entidad token de la solicitud.
+     *
+     * @param appAuthToken entidad token del consumidor.
+     */
     @Override
     public void setAppAuthToken(IAppAuthConsumerToken appAuthToken) {
         this.appAuthToken = appAuthToken;
     }
 
+    /**
+     * Devuelve la fecha y hora de registro de la solicitud.
+     *
+     * @return fecha y hora de registro.
+     */
     @Override
     public LocalDateTime getLogDate() {
         return logDate;
     }
 
+    /**
+     * Devuelve la cantidad de veces que se usó la solicitud cacheada.
+     *
+     * @return cantidad de usos.
+     */
     @Override
     public int getTimes() {
         return times;
     }
 
+    /**
+     * Devuelve el valor de una propiedad de los datos del token.
+     *
+     * @param property nombre de la propiedad.
+     * @return valor de la propiedad.
+     */
     @Override
     public String getPropertyValue(String property) {
         try {

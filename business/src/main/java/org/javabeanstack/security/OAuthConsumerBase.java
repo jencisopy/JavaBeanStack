@@ -1153,6 +1153,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         return false;
     }
 
+    /**
+     * Devuelve el filtro de datos aplicable según el token.
+     *
+     * @param token entidad token.
+     * @return filtro de datos.
+     */
     @Override
     public IDBFilter getDBFilter(IAppAuthConsumerToken token) {
         // Implementar

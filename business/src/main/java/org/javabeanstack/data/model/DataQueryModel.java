@@ -71,11 +71,23 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         return Fn.toLogical(getProperty("noReturnNulls"));
     }
 
+    /**
+     * Devuelve el valor de una columna por su índice.
+     *
+     * @param index índice de la columna.
+     * @return valor de la columna.
+     */
     @Override
     public Object getValue(int index) {
         return getColumn(index);
     }
 
+    /**
+     * Devuelve el valor de una columna por su índice.
+     *
+     * @param columnName índice de la columna.
+     * @return valor de la columna.
+     */
     @Override
     public Object getValue(String columnName) {
         return getColumn(columnName);
@@ -525,6 +537,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         return columnList.length != 0;
     }
 
+    /**
+     * Indica si existe una columna con el nombre indicado.
+     *
+     * @param columnName nombre de la columna.
+     * @return verdadero si existe, falso si no.
+     */
     @Override
     public boolean isColumnExist(String columnName) {
         if (!isColumnMetaDataExist()){
@@ -537,6 +555,11 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
 
     
     
+    /**
+     * Identificador del objeto
+     *
+     * @return identificador del objeto
+     */
     @Override
     public int hashCode() {
         int hash = 5;
@@ -544,6 +567,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         return hash;
     }
 
+    /**
+     * Determina si este objeto es igual a uno que se recibe como parámetro
+     *
+     * @param obj objeto a comparar.
+     * @return verdadero si es igual y falso si no
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -678,16 +707,32 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         return exprList;
     }
 
+    /**
+     * Devuelve las propiedades libres asociadas a la fila.
+     *
+     * @return mapa de propiedades.
+     */
     @Override
     public Map<String, Object> getProperties() {
         return properties;
     }
 
+    /**
+     * Asigna las propiedades libres asociadas a la fila.
+     *
+     * @param properties mapa de propiedades.
+     */
     @Override
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
     
+    /**
+     * Devuelve el valor de una propiedad libre por su clave.
+     *
+     * @param key clave de la propiedad.
+     * @return valor de la propiedad, o {@code null} si no existe.
+     */
     @Override
     public Object getProperty(String key) {
         if (properties == null){
@@ -696,6 +741,12 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
         return properties.get(key);
     }
 
+    /**
+     * Agrega o reemplaza una propiedad libre.
+     *
+     * @param key clave de la propiedad.
+     * @param value valor de la propiedad.
+     */
     @Override
     public void setProperty(String key, Object value) {
         if (properties == null){

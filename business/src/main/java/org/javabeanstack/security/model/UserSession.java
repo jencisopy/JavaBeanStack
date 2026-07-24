@@ -132,11 +132,21 @@ public class UserSession implements IUserSession{
         return getCompany();
     }
     
+    /**
+     * Asigna la empresa activa de la sesión.
+     *
+     * @param company empresa activa.
+     */
     @Override
     public void setCompany(IAppCompany company) {
         this.company = company;
     }
 
+    /**
+     * Asigna la empresa activa de la sesión (alias {@code empresa}).
+     *
+     * @param empresa empresa activa.
+     */
     @Override
     public void setEmpresa(IAppCompany empresa) {
         this.company = empresa;
@@ -189,6 +199,11 @@ public class UserSession implements IUserSession{
         return persistenceUnit;
     }
 
+    /**
+     * Asigna la unidad de persistencia de la sesión.
+     *
+     * @param persistenceUnit nombre de la unidad de persistencia.
+     */
     @Override
     public void setPersistenceUnit(String persistenceUnit) {
         this.persistenceUnit = persistenceUnit;
@@ -203,6 +218,11 @@ public class UserSession implements IUserSession{
         return sessionId;
     }
 
+    /**
+     * Asigna el identificador de la sesión.
+     *
+     * @param sessionId identificador de la sesión.
+     */
     @Override
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
@@ -217,12 +237,22 @@ public class UserSession implements IUserSession{
         return error;
     }
 
+    /**
+     * Asigna el error de creación de la sesión.
+     *
+     * @param error registro de error.
+     */
     @Override
     public void setError(IErrorReg error) {
         this.error = error;
     }
 
 
+    /**
+     * Devuelve el identificador de la empresa activa.
+     *
+     * @return identificador de la empresa.
+     */
     @Override
     public Long getIdCompany() {
         if (getCompany() != null){
@@ -236,16 +266,31 @@ public class UserSession implements IUserSession{
         return idcompany;
     }
 
+    /**
+     * Devuelve el identificador de la empresa activa (alias {@code idempresa}).
+     *
+     * @return identificador de la empresa.
+     */
     @Override
     public Long getIdEmpresa() {
         return getIdCompany();
     }
 
+    /**
+     * Asigna el identificador de la empresa activa.
+     *
+     * @param idcompany identificador de la empresa.
+     */
     @Override
     public void setIdCompany(Long idcompany) {
         this.idcompany = idcompany;
     }
 
+    /**
+     * Asigna el identificador de la empresa activa (alias {@code idempresa}).
+     *
+     * @param idempresa identificador de la empresa.
+     */
     @Override
     public void setIdEmpresa(Long idempresa) {
         this.idcompany = idempresa;
@@ -269,36 +314,73 @@ public class UserSession implements IUserSession{
         this.idleSessionExpireInMinutes = minutes;
     }
     
+    /**
+     * Devuelve el filtro de datos aplicable a la sesión.
+     *
+     * @return filtro de datos.
+     */
     @Override
     public IDBFilter getDBFilter() {
         return dbFilter;
     }
 
+    /**
+     * Asigna el filtro de datos aplicable a la sesión.
+     *
+     * @param dbFilter filtro de datos.
+     */
     @Override
     public void setDBFilter(IDBFilter dbFilter) {
         this.dbFilter = dbFilter;
     }
 
+    /**
+     * Devuelve el mapa de datos libres asociados a la sesión.
+     *
+     * @return mapa de datos de la sesión.
+     */
     @Override
     public Map<String, Object> getInfo() {
         return info;
     }
 
+    /**
+     * Devuelve un dato libre de la sesión por su clave.
+     *
+     * @param key clave del dato.
+     * @return valor del dato, o {@code null} si no existe.
+     */
     @Override
     public  Object getInfo(String key) {
         return info.get(key);
     }
     
+    /**
+     * Agrega o reemplaza un dato libre de la sesión.
+     *
+     * @param key clave del dato.
+     * @param info valor del dato.
+     */
     @Override
     public void addInfo(String key, Object info) {
         this.info.put(key, info);
     }
 
+    /**
+     * Devuelve la información de la solicitud de autenticación asociada a la sesión.
+     *
+     * @return información de la solicitud de autenticación.
+     */
     @Override
     public IClientAuthRequestInfo getClientAuthRequestInfo() {
         return this.clientAuthRequestInfo;
     }
 
+    /**
+     * Asigna la información de la solicitud de autenticación de la sesión.
+     *
+     * @param requestInfo información de la solicitud de autenticación.
+     */
     @Override
     public void setClientAuthRequestInfo(IClientAuthRequestInfo requestInfo) {
         this.clientAuthRequestInfo = requestInfo;

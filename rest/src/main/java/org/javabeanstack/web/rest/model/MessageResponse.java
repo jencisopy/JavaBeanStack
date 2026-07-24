@@ -37,21 +37,37 @@ public class MessageResponse implements IMessageResponse {
     private String link;    
     private String message;
 
+    /**
+     * Devuelve el identificador del recurso.
+     * @return identificador del recurso.
+     */
     @Override
     public String getId() {
         return id;
     }
 
+    /**
+     * Asigna el identificador del recurso.
+     * @param id identificador del recurso.
+     */
     @Override
     public void setId(String id) {
         this.id = id;
     }
 
+    /**
+     * Devuelve el enlace al recurso.
+     * @return enlace al recurso.
+     */
     @Override
     public String getLink() {
         return link;
     }
 
+    /**
+     * Asigna el enlace al recurso.
+     * @param link enlace al recurso.
+     */
     @Override
     public void setLink(String link) {
         this.link = link;

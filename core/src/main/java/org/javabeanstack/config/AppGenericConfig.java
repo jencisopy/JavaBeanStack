@@ -209,6 +209,12 @@ public class AppGenericConfig implements IAppConfig {
         return new ArrayList();
     }
 
+    /**
+     * Devuelve la ruta del sistema de archivos configurada para la sesión.
+     *
+     * @param sessionId identificador de la sesión.
+     * @return ruta del sistema de archivos.
+     */
     @Override
     public String getFileSystemPath(String sessionId) {
         String path = "";
@@ -234,6 +240,13 @@ public class AppGenericConfig implements IAppConfig {
         return Fn.nvl(path, "");
     }
 
+    /**
+     * Persiste un parámetro de sistema.
+     *
+     * @param param parámetro a guardar.
+     * @return resultado de la operación.
+     * @throws Exception si la persistencia falla.
+     */
     @Override
     public IDataResult setSystemParam(IAppSystemParam param) throws Exception {
         IDataResult result;
@@ -259,6 +272,12 @@ public class AppGenericConfig implements IAppConfig {
         return result;
     }
 
+    /**
+     * Persiste una lista de parámetros de sistema.
+     *
+     * @param params lista de parámetros a guardar.
+     * @throws Exception si la persistencia falla.
+     */
     @Override
     public void setSystemParams(List<IAppSystemParam> params) throws Exception {
         //Implementar en clases derivadas
@@ -267,21 +286,46 @@ public class AppGenericConfig implements IAppConfig {
         }
     }
 
+    /**
+     * Verifica que el esquema de la base de datos sea compatible con la aplicación.
+     *
+     * @param sessionId identificador de la sesión.
+     * @return registro de error si no es compatible, o {@code null} si lo es.
+     * @throws Exception si ocurre un error durante la verificación.
+     */
     @Override
     public IErrorReg checkDatabase(String sessionId) throws Exception {
         return null;
     }
 
+    /**
+     * Actualiza el esquema de la base de datos a la versión de la aplicación.
+     *
+     * @param sessionId identificador de la sesión.
+     * @return registro de error si la actualización falla, o {@code null} si tuvo éxito.
+     * @throws Exception si ocurre un error durante la actualización.
+     */
     @Override
     public IErrorReg updateDatabase(String sessionId) throws Exception {
         return null;
     }
     
+    /**
+     * Devuelve la versión de base de datos esperada por esta aplicación.
+     *
+     * @return versión de base de datos de la aplicación.
+     */
     @Override
     public Integer getDBVersionForThisApp(){
         return 999999;
     }
             
+    /**
+     * Devuelve la versión de base de datos actualmente instalada.
+     *
+     * @param sessionId identificador de la sesión.
+     * @return versión de base de datos instalada.
+     */
     @Override
     public Integer getDBVersion(String sessionId){
         return null;

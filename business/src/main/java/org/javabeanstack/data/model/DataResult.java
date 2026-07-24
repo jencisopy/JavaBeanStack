@@ -159,6 +159,11 @@ public class DataResult implements IDataResult {
         return removeDeleted;
     }
 
+    /**
+     * Asigna si los registros borrados deben removerse de las listas de resultado.
+     *
+     * @param removeDeleted verdadero para removerlos.
+     */
     @Override
     public void setRemoveDeleted(Boolean removeDeleted) {
         this.removeDeleted = removeDeleted;
@@ -174,6 +179,11 @@ public class DataResult implements IDataResult {
         return success;
     }
 
+    /**
+     * Asigna el estado de éxito de la operación.
+     *
+     * @param success verdadero si fue exitosa.
+     */
     @Override
     public void setSuccess(Boolean success) {
         this.success = success;
@@ -199,6 +209,11 @@ public class DataResult implements IDataResult {
         return errorMsg;
     }
 
+    /**
+     * Devuelve el primer error registrado en la operación.
+     *
+     * @return primer error, o {@code null} si no hubo.
+     */
     @Override
     public IErrorReg getFirstError() {
         IErrorReg errorReturn = new ErrorReg();

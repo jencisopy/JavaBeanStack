@@ -92,6 +92,11 @@ public class DataRow implements IDataRow, Cloneable {
         this.action = 0;
     }
 
+    /**
+     * Devuelve una copia superficial del registro.
+     *
+     * @return copia del registro.
+     */
     @Override
     public Object clone() {
         Object obj = null;
@@ -103,11 +108,21 @@ public class DataRow implements IDataRow, Cloneable {
         return obj;
     }
 
+    /**
+     * Devuelve el modo de persistencia del registro.
+     *
+     * @return {@link #PERSIST} o {@link #MERGE}.
+     */
     @Override
     public final int getPersistMode() {
         return persistMode;
     }
 
+    /**
+     * Asigna el modo de persistencia del registro.
+     *
+     * @param persistMode {@link #PERSIST} o {@link #MERGE}.
+     */
     @Override
     public final void setPersistMode(int persistMode) {
         this.persistMode = persistMode;
@@ -216,6 +231,11 @@ public class DataRow implements IDataRow, Cloneable {
         return queryUK;
     }
 
+    /**
+     * Devuelve el identificador de la función de búsqueda asociada al registro.
+     *
+     * @return identificador de la función de búsqueda.
+     */
     @Override
     public String getIdFunctionFind() {
         return idFunctionFind;
@@ -397,6 +417,12 @@ public class DataRow implements IDataRow, Cloneable {
         this.setErrors(error, fieldname);
     }
     
+    /**
+     * Devuelve el texto concatenado de todos los mensajes de error (no
+     * advertencias) registrados en el registro.
+     *
+     * @return mensajes de error, separados por salto de línea.
+     */
     @Override
     public String getErrorMsg(){
         if (this.errors == null) {
@@ -496,6 +522,11 @@ public class DataRow implements IDataRow, Cloneable {
         return result;
     }
 
+    /**
+     * Asigna el valor identificador (clave primaria) del registro.
+     *
+     * @param id valor identificador.
+     */
     @Override
     public void setId(Object id) {
         DataInfo.setIdvalue(this, id);
@@ -525,6 +556,12 @@ public class DataRow implements IDataRow, Cloneable {
         }
     }
 
+    /**
+     * Devuelve el identificador alternativo del registro (usado cuando aún no
+     * tiene identidad persistente, p. ej. el hash de identidad del objeto).
+     *
+     * @return identificador alternativo.
+     */
     @Override
     public Object getIdAlternative() {
         if (idAlternative == null){
@@ -533,26 +570,52 @@ public class DataRow implements IDataRow, Cloneable {
         return idAlternative;
     }
 
+    /**
+     * Asigna el identificador alternativo del registro.
+     *
+     * @param idAlternative identificador alternativo.
+     */
     @Override
     public void setIdAlternative(Object idAlternative) {
         this.idAlternative = idAlternative;
     }
 
+    /**
+     * Indica si el registro es auditable (si sus cambios deben registrarse en
+     * la tabla de auditoría).
+     *
+     * @return verdadero si es auditable, falso si no.
+     */
     @Override
     public boolean isAuditAble() {
         return auditable;
     }
 
+    /**
+     * Asigna si el registro es auditable.
+     *
+     * @param auditable verdadero si el registro debe auditarse.
+     */
     @Override
     public final void setAuditAble(boolean auditable) {
         this.auditable = auditable;
     }
 
+    /**
+     * Devuelve la clase de la entidad de auditoría asociada al registro.
+     *
+     * @return clase de auditoría, o {@code null} si no aplica.
+     */
     @Override
     public final Class<? extends IDataRow> getAuditClass() {
         return auditTable;
     }
 
+    /**
+     * Asigna la clase de la entidad de auditoría asociada al registro.
+     *
+     * @param auditTable clase de auditoría.
+     */
     @Override
     public final void setAuditClass(Class<? extends IDataRow> auditTable) {
         this.auditTable = auditTable;
@@ -704,28 +767,60 @@ public class DataRow implements IDataRow, Cloneable {
         }
     }
 
+    /**
+     * Indica si el punto de extensión {@link #onGetter(String)} está activo.
+     *
+     * @return verdadero si está activo.
+     */
     @XmlTransient
     @Override
     public Boolean getOnGetterActivated() {
         return onGetterActivated;
     }
 
+    /**
+     * Indica si el punto de extensión {@link #onSetter(String, Object, Object)}
+     * está activo.
+     *
+     * @return verdadero si está activo.
+     */
     @XmlTransient
     @Override
     public Boolean getOnSetterActivated() {
         return onSetterActivated;
     }
 
+    /**
+     * Activa o desactiva el punto de extensión {@link #onGetter(String)}.
+     *
+     * @param onGetter verdadero para activarlo.
+     */
     @Override
     public void setOnGetterActivated(boolean onGetter) {
         this.onGetterActivated = onGetter;
     }
 
+    /**
+     * Activa o desactiva el punto de extensión
+     * {@link #onSetter(String, Object, Object)}.
+     *
+     * @param onSetter verdadero para activarlo.
+     */
     @Override
     public void setOnSetterActivated(boolean onSetter) {
         this.onSetterActivated = onSetter;
     }
 
+    /**
+     * Copia los valores de los campos de este registro al registro destino,
+     * opcionalmente solo los campos no nulos.
+     *
+     * @param <X> tipo del registro destino.
+     * @param target registro destino.
+     * @param onlyFieldsNotNulls verdadero para copiar solo los campos no nulos.
+     * @return el registro destino con los valores copiados.
+     * @throws Exception si falla la asignación de algún campo.
+     */
     @Override
     public <X extends IDataRow> X copyTo(X target, boolean onlyFieldsNotNulls) throws Exception {
         IDataRow source = this;
@@ -753,6 +848,15 @@ public class DataRow implements IDataRow, Cloneable {
         return target;
     }
 
+    /**
+     * Copia los valores de los campos del registro origen a este registro,
+     * opcionalmente solo los campos no nulos.
+     *
+     * @param <X> tipo del registro origen.
+     * @param source registro origen.
+     * @param onlyFieldsNotNulls verdadero para copiar solo los campos no nulos.
+     * @throws Exception si falla la asignación de algún campo.
+     */
     @Override
     public <X extends IDataRow> void copyFrom(X source, boolean onlyFieldsNotNulls) throws Exception {
         IDataRow target = this;
@@ -779,11 +883,25 @@ public class DataRow implements IDataRow, Cloneable {
         }
     }
     
+    /**
+     * Copia los valores de los campos de este registro al registro destino.
+     *
+     * @param <X> tipo del registro destino.
+     * @param target registro destino.
+     * @return el registro destino con los valores copiados.
+     * @throws Exception si falla la asignación de algún campo.
+     */
     @Override
     public <X extends IDataRow> X copyTo(X target) throws Exception {
         return copyTo(target, false);
     }
 
+    /**
+     * Copia los valores de los campos del registro origen a este registro.
+     *
+     * @param <X> tipo del registro origen.
+     * @param source registro origen.
+     */
     @Override
     public <X extends IDataRow> void copyFrom(X source){
         try {
@@ -793,6 +911,12 @@ public class DataRow implements IDataRow, Cloneable {
         }
     }
     
+    /**
+     * Devuelve el nombre de la entidad de auditoría declarado en la anotación
+     * {@code @AuditEntity} de la clase.
+     *
+     * @return nombre de la entidad de auditoría, o {@code null} si no está anotada.
+     */
     @XmlTransient
     @Override
     public String getAuditEntity() {
@@ -803,6 +927,12 @@ public class DataRow implements IDataRow, Cloneable {
         return null;
     }
 
+    /**
+     * Devuelve el valor de una propiedad libre por su clave.
+     *
+     * @param key clave de la propiedad.
+     * @return valor de la propiedad, o {@code null} si no existe.
+     */
     @XmlTransient
     @Override
     public Object getProperty(String key) {
@@ -812,6 +942,11 @@ public class DataRow implements IDataRow, Cloneable {
         return properties.get(key);
     }
     
+    /**
+     * Devuelve el mapa de propiedades libres asociadas al registro.
+     *
+     * @return mapa de propiedades.
+     */
     @XmlTransient
     @Override
     public Map<String, Object> getProperties() {
@@ -821,11 +956,22 @@ public class DataRow implements IDataRow, Cloneable {
         return properties;
     }
 
+    /**
+     * Reemplaza el mapa de propiedades libres del registro.
+     *
+     * @param properties mapa de propiedades.
+     */
     @Override
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
 
+    /**
+     * Agrega o reemplaza una propiedad libre.
+     *
+     * @param key clave de la propiedad.
+     * @param value valor de la propiedad.
+     */
     @Override
     public void addProperty(String key, Object value) {
         if (this.properties == null) {
@@ -834,6 +980,11 @@ public class DataRow implements IDataRow, Cloneable {
         this.properties.put(key, value);
     }
     
+    /**
+     * Agrega en bloque un conjunto de propiedades libres.
+     *
+     * @param properties mapa de propiedades a agregar.
+     */
     @Override
     public void addProperties(Map<String, Object> properties) {
         if (properties == null) {
@@ -845,17 +996,33 @@ public class DataRow implements IDataRow, Cloneable {
         this.properties.putAll(properties);
     }
 
+    /**
+     * Devuelve la firma digital actual del registro.
+     *
+     * @return firma del registro ({@code "SINFIRMA"} si no fue firmado).
+     */
     @XmlTransient
     @Override
     public String getSignature() {
         return signature;
     }
 
+    /**
+     * Asigna la firma digital del registro.
+     *
+     * @param signature firma a asignar.
+     */
     @Override
     public void setSignature(String signature) {
         this.signature = signature;
     }
 
+    /**
+     * Devuelve el texto a firmar, compuesto por los campos anotados con
+     * {@code @SignatureField} y la firma actual.
+     *
+     * @return texto a firmar.
+     */
     @XmlTransient
     @Override
     public String getTextToSign() {

@@ -79,6 +79,11 @@ public class XmlCacheKey implements IXmlCacheKey {
     }
 
 
+    /**
+     * Devuelve el tipo de origen del documento (archivo, objeto, http).
+     *
+     * @return tipo de origen.
+     */
     @Override
     public String getPathType() {
         fixPathType();
@@ -86,16 +91,31 @@ public class XmlCacheKey implements IXmlCacheKey {
     } 
 
     
+    /**
+     * Devuelve la ruta del documento.
+     *
+     * @return ruta del documento.
+     */
     @Override
     public String getDocumentPath() {
         return documentPath;
     }
 
+    /**
+     * Devuelve la ruta del elemento dentro del documento.
+     *
+     * @return ruta del elemento.
+     */
     @Override
     public String getElementPath() {
         return elementPath;
     }
 
+    /**
+     * Asigna el tipo de origen del documento.
+     *
+     * @param pathType tipo de origen.
+     */
     @Override
     public void setPathType(String pathType) {
         this.pathType = pathType.trim().toLowerCase();
@@ -108,16 +128,31 @@ public class XmlCacheKey implements IXmlCacheKey {
         }
     }
             
+    /**
+     * Asigna la ruta del documento.
+     *
+     * @param documentPath ruta del documento.
+     */
     @Override
     public void setDocumentPath(String documentPath) {
         this.documentPath = XmlSearcher.getJustPath(documentPath).toLowerCase().trim();
     }
 
+    /**
+     * Asigna la ruta del elemento dentro del documento.
+     *
+     * @param elementPath ruta del elemento.
+     */
     @Override
     public void setElementPath(String elementPath) {
         this.elementPath = elementPath;
     }
 
+    /**
+     * Identificador del objeto
+     *
+     * @return identificador del objeto
+     */
     @Override
     public int hashCode() {
         int hash = 3;
@@ -127,6 +162,12 @@ public class XmlCacheKey implements IXmlCacheKey {
         return hash;
     }
 
+    /**
+     * Determina si este objeto es igual a uno que se recibe como parámetro
+     *
+     * @param obj objeto a comparar.
+     * @return verdadero si es igual y falso si no
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -148,21 +189,39 @@ public class XmlCacheKey implements IXmlCacheKey {
         return Objects.equals(this.elementPath, other.elementPath);
     }
 
+    /**
+     * Devuelve la fecha y hora de la última referencia.
+     *
+     * @return fecha de la última referencia.
+     */
     @Override
     public Date getLastReference() {
         return lastReference;
     }
 
+    /**
+     * Devuelve la cantidad de referencias hechas a la clave.
+     *
+     * @return cantidad de referencias.
+     */
     @Override
     public Integer getReferenceTime() {
         return referenceTime;
     }
 
+    /**
+     * Asigna la fecha y hora de la última referencia.
+     *
+     * @param date fecha de la última referencia.
+     */
     @Override
     public void setLastReference(Date date) {
         this.lastReference = date;
     }
 
+    /**
+     * Incrementa el contador de referencias a la clave.
+     */
     @Override
     public void addReferenceTime() {
         referenceTime++;

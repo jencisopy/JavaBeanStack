@@ -120,6 +120,11 @@ public class OAuthConsumerData implements IOAuthConsumerData{
         this.otherData.remove(key);
     }
 
+    /**
+     * Devuelve un objeto XMLDOM en formato texto.
+     *
+     * @return objeto XMLDOM en formato texto formateada.
+     */
     @Override
     public String toString() {
         String result = "idappuser="+nvl(idAppUser,"0").toString().trim()+"\n";

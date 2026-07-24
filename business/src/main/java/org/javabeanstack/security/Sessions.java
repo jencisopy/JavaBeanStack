@@ -112,11 +112,25 @@ public class Sessions implements ISessions {
         }
     }
 
+    /**
+     * Devuelve un dato almacenado en el contexto de la sesión.
+     *
+     * @param sessionId identificador de la sesión.
+     * @param key clave del dato.
+     * @return valor almacenado, o {@code null} si no existe.
+     */
     @Override
     public Object getSessionInfo(String sessionId, String key) {
         return sessionsInfo.get(new SessionInfo(sessionId, key));
     }
 
+    /**
+     * Almacena un dato en el contexto de la sesión.
+     *
+     * @param sessionId identificador de la sesión.
+     * @param key clave del dato.
+     * @param info valor a almacenar.
+     */
     @Override
     public void addSessionInfo(String sessionId, String key, Object info) {
         IUserSession userSession = getUserSession(sessionId);
@@ -132,6 +146,12 @@ public class Sessions implements ISessions {
         sessionsInfo.put(new SessionInfo(sessionId, key), info);
     }
 
+    /**
+     * Elimina un dato del contexto de la sesión.
+     *
+     * @param sessionId identificador de la sesión.
+     * @param key clave del dato.
+     */
     @Override
     public void removeSessionInfo(String sessionId, String key) {
         this.sessionsInfo.remove(new SessionInfo(sessionId, key));
@@ -754,6 +774,12 @@ public class Sessions implements ISessions {
         return null;
     }
 
+    /**
+     * Devuelve la información de solicitud de autenticación cacheada para un token.
+     *
+     * @param token token o encabezado de autorización.
+     * @return información de la solicitud de autenticación.
+     */
     @Override
     public IClientAuthRequestInfo getClientAuthRequestCache(String token) {
         IUserSession session = getUserSession(token);
@@ -795,11 +821,22 @@ public class Sessions implements ISessions {
             this.key = key;
         }
 
+        /**
+         * Identificador del objeto
+         *
+         * @return identificador del objeto
+         */
         @Override
         public int hashCode() {
             return Objects.hash(sessionId, key);
         }
 
+        /**
+         * Determina si este objeto es igual a uno que se recibe como parámetro
+         *
+         * @param obj objeto a comparar.
+         * @return verdadero si es igual y falso si no
+         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {

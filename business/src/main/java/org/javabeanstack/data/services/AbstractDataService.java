@@ -97,6 +97,11 @@ public abstract class AbstractDataService implements IDataService {
 
     protected boolean inheritCheckMethod = false;
 
+    /**
+     * Devuelve el objeto DBLinkInfo(info de la conexión) a partir del sessionid o token
+     * @param sessionId identificador de la sesión o token
+     * @return objeto DBLinkInfo(info de la conexión) a partir del sessionid o token
+     */
     @Override
     public IDBLinkInfo getDBLinkInfo(String sessionId) {
         return dao.getDBLinkInfo(sessionId);
@@ -642,6 +647,15 @@ public abstract class AbstractDataService implements IDataService {
         return result;
     }
 
+    /**
+     * Valida un único campo del registro.
+     *
+     * @param <T> tipo del registro.
+     * @param sessionId identificador de la sesión del usuario.
+     * @param row registro a validar.
+     * @param fieldName campo a validar.
+     * @return error del campo, o {@code null} si es válido.
+     */
     @Override
     public <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName) {
         IErrorReg result = new ErrorReg();
@@ -1103,52 +1117,137 @@ public abstract class AbstractDataService implements IDataService {
         return dao.isCredentialValid(iduser, idcompany);
     }
 
+    /**
+     * Devuelve una conexión a la base solo funciona en un ambiente @local no
+     * funciona en @Remote
+     *
+     * @param sessionId identificador de la sesión del usuario
+     * @return una conexión a la base solo funciona en un ambiente @local no
+     * funciona en @Remote
+     */
     @Deprecated
     @Override
     public Connection getConnection(String sessionId) {
         throw new UnsupportedOperationException("Not supported");
     }
 
+    /**
+     * Devuelve una conexión del entity manager, solo funciona en un ambiente
+     * local no funciona en @Remote
+     *
+     * @param sessionId identificador de la sesión del usuario
+     * @param conn objeto factory cuya función es devolver una conexión del
+     * entity manager
+     * @return devuelve una conexión del entity manager
+     */
     @Deprecated
     @Override
     public Connection getConnection(String sessionId, IDBConnectFactory conn) {
         throw new UnsupportedOperationException("Not supportedt");
     }
 
+    /**
+     * Recupera todos los registros de una tabla
+     *
+     * @param <T>
+     * @param entityClass clase mapeada a la tabla
+     * @param sessionId identificador de la sesión del usuario
+     * @return una list con los registros de una tabla
+     * @throws Exception
+     */
     @Deprecated
     @Override
     public <T> List<T> findAll(Class<T> entityClass, String sessionId) throws Exception {
         throw new UnsupportedOperationException("Not supported.");
     }
 
+    /**
+     * Ejecuta una sentencia (select, insert, update, remove) sobre la base de
+     * datos
+     *
+     * @param sessionId identificador de la sesión del usuario
+     * @param queryString sentencia sql
+     * @param parameters parámetros de la sentencia.
+     * @return un objeto error si no se ejecuto la sentencia con exito
+     * @throws java.lang.Exception
+     */
     @Deprecated
     @Override
     public IErrorReg sqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
 
+    /**
+     * Ejecuta un procedimiento almacenado
+     *
+     * @param sessionId identificador de la sesión del usuario
+     * @param procedureName procedimiento almacenado
+     * @param parameters parámetros de la sentencia.
+     * @throws java.lang.Exception
+     */
     @Override
     public void execSqlProcedure(String sessionId, String procedureName, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
 
+    /**
+     * Ejecuta una sentencia (select, insert, update, remove) sobre la base de
+     * datos
+     *
+     * @param sessionId identificador de la sesión del usuario
+     * @param queryString sentencia jpa
+     * @param parameters parámetros de la sentencia.
+     * @return un objeto error si no se ejecuto la sentencia con exito
+     * @throws java.lang.Exception
+     */
     @Override
     public IErrorReg jpqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
 
+    /**
+     * Selecciona datos de la base de datos y los convierte en una lista de
+     * objetos.
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión del usuario
+     * @param queryString sentencia jpql para seleccionar datos
+     * @param maxRows maxima cantidad de registros que debe devolver
+     * @param noCache
+     * @return lista de objetos con los datos solicitados de la base de datos
+     * @throws Exception
+     */
     @Deprecated
     @Override
     public <T extends IDataRow> List<T> getData(String sessionId, String queryString, int maxRows, boolean noCache) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
 
+    /**
+     * Selecciona datos de la base de datos y los convierte en una lista de
+     * objetos.
+     *
+     * @param <T>
+     * @param query objeto query conteniendo lo necesario para recuperar los
+     * datos.
+     * @return lista de registros según parámetros enviados.
+     * @throws Exception
+     */
     @Deprecated
     @Override
     public <T extends IDataRow> List<T> getData(Query query) throws Exception {
         throw new UnsupportedOperationException("Not supported.");
     }
 
+    /**
+     * Refresca desde la base de datos una lista de objetos.
+     *
+     * @param <T>
+     * @param sessionId identificador de la sesión del usuario
+     * @param rows objetos a refrescar
+     * @return lista de objetos con los datos refrescados de la base de datos
+     * @throws Exception
+     */
     @Deprecated
     @Override
     public <T extends IDataRow> List<T> refreshAll(String sessionId, List<T> rows) throws Exception {
@@ -1455,51 +1554,120 @@ public abstract class AbstractDataService implements IDataService {
         return id;
     }
 
+    /**
+     * Devuelve un dato almacenado en el contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     * @return valor almacenado, o {@code null} si no existe.
+     */
     @Override
     public Object getSessionInfo(String sessionId, String key) {
         return dao.getSessionInfo(sessionId, key);
     }
 
+    /**
+     * Almacena un dato en el contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     * @param info valor a almacenar.
+     */
     @Override
     public void addSessionInfo(String sessionId, String key, Object info) {
         dao.addSessionInfo(sessionId, key, info);
     }
 
+    /**
+     * Elimina un dato del contexto de la sesión del usuario.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param key clave del dato.
+     */
     @Override
     public void removeSessionInfo(String sessionId, String key) {
         dao.removeSessionInfo(sessionId, key);
     }
 
+    /**
+     * Construye un registro de error a partir del catálogo de mensajes
+     * (tabla {@code AppMessage}), usando el mensaje alternativo si el número no existe.
+     *
+     * @param messageNumber número de mensaje en el catálogo.
+     * @param alternativeMsg mensaje a usar si el número no se encuentra.
+     * @param fieldName campo asociado al error.
+     * @return registro de error.
+     */
     @Override
     public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
         return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName);
     }
 
+    /**
+     * Construye un registro de error del catálogo de mensajes sustituyendo los
+     * parámetros indicados en el texto del mensaje.
+     *
+     * @param messageNumber número de mensaje en el catálogo.
+     * @param alternativeMsg mensaje a usar si el número no se encuentra.
+     * @param fieldName campo asociado al error.
+     * @param params parámetros de sustitución del mensaje.
+     * @return registro de error.
+     */
     @Override
     public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {
         return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName, params);
     }
 
+    /**
+     * Devuelve las constantes de consulta definidas para la unidad de persistencia.
+     *
+     * @param persistUnit nombre de la unidad de persistencia.
+     * @return mapa nombre → valor de las constantes de consulta.
+     */
     @Override
     public Map<String, String> getQueryConstants(String persistUnit) {
         return dao.getQueryConstants(persistUnit);
     }
 
+    /**
+     * Indica si la entidad (por su clase) es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param ejb clase de la entidad.
+     * @return verdadero si es auditable, falso si no.
+     */
     @Override
     public <T extends IDataRow> boolean isAuditAble(T ejb) {
         return dao.isAuditAble(ejb);
     }
 
+    /**
+     * Indica si la entidad (por su clase) es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param entityName clase de la entidad.
+     * @return verdadero si es auditable, falso si no.
+     */
     @Override
     public <T extends IDataRow> boolean isAuditAble(String entityName) {
         return dao.isAuditAble(entityName);
     }
 
+    /**
+     * Indica si la entidad (por su clase) es auditable.
+     *
+     * @param <T> tipo de la entidad.
+     * @param clazz clase de la entidad.
+     * @return verdadero si es auditable, falso si no.
+     */
     @Override
     public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz) {
         return dao.isAuditAble(clazz);
     }
 
+    /**
+     * Deshace (rollback) la transacción activa de la unidad de persistencia.
+     */
     @Override
     public void dbRollBack() {
         dao.dbRollBack();
@@ -1510,6 +1678,11 @@ public abstract class AbstractDataService implements IDataService {
         return dao.findListObjsByQuery(sessionId, queryString, parameters, first, max);
     }
 
+    /**
+     * Devuelve el manejador de eventos del DAO asociado al servicio.
+     *
+     * @return manejador de eventos.
+     */
     @Override
     public IDAOEvents getEvents() {
         return null;

@@ -183,6 +183,11 @@ public class DBLinkInfo implements IDBLinkInfo {
         return result;
     }
 
+    /**
+     * Devuelve el identificador de sesión o de token vigente en el contexto.
+     *
+     * @return identificador de sesión o token.
+     */
     @Override
     public String getSessionOrTokenId() {
         LOGGER.debug("getSessionOrTokenId in");
@@ -195,6 +200,11 @@ public class DBLinkInfo implements IDBLinkInfo {
         return "";
     }
 
+    /**
+     * Devuelve el identificador del dispositivo (uuid) asociado al contexto.
+     *
+     * @return uuid del dispositivo.
+     */
     @Override
     public String getUuidDevice() {
         LOGGER.debug("getUuidDevice in");

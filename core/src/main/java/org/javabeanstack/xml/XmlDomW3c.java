@@ -246,6 +246,11 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         return configParam;
     }
 
+    /**
+     * Asigna un map con todos los parámetros a reemplazar en el texto Xml
+     *
+     * @param params
+     */
     @Override
     public void setConfigParam(Map<String, String> params) {
         configParam.clear();
@@ -403,6 +408,20 @@ public class XmlDomW3c implements IXmlDom<Document, Element> {
         return false;
     }
 
+    /**
+     * Se ejecuta por intrucción explicita del sistema. <br>
+     * Su función es crear el objeto XMLDOM a partir de un objeto DOM dado.
+     *
+     * @param documentPath path del documento (opcional)
+     * @param xmlText texto xml que se convertira en objeto DOM
+     * @param elementPath nombre del tag del texto xml
+     * @param notInherit Para que no considere las clases derivadas
+     * @param params Valores para reemplazar en el texto xml.
+     * @return Verdadero si tuvo exito en la creación y configuración del objeto
+     * XMLDOM
+     * <br>Falso si no.
+     *
+     */
     @Override
     public boolean config(String documentPath, String xmlText, String elementPath, boolean notInherit, Map<String, String> params) {
         setConfigParam(params);

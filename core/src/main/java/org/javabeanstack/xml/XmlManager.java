@@ -71,6 +71,11 @@ public class XmlManager implements IXmlManager {
         ((XmlResourceSearcher)xmlSearcher).setDao(dao);
     }
             
+    /**
+     * Devuelve el buscador de textos XML asociado al administrador.
+     *
+     * @return buscador de textos XML.
+     */
     @Override
     @Lock(LockType.READ)
     public IXmlSearcher<Document> getXmlSearcher() {
@@ -78,38 +83,68 @@ public class XmlManager implements IXmlManager {
         return xmlSearcher;
     }
 
+    /**
+     * Devuelve la caché de documentos XML procesados.
+     *
+     * @return mapa clave → documento cacheado.
+     */
     @Override
     @Lock(LockType.READ)    
     public Map<String, IXmlCache> getCache() {
         return cache;
     }
 
+    /**
+     * Asigna la caché de documentos XML procesados.
+     *
+     * @param cache mapa clave → documento cacheado.
+     */
     @Override
     public void setCache(Map<String, IXmlCache> cache) {
         //Copiar a un ConcurrentHashMap para no perder la garantía de concurrencia
         this.cache = new ConcurrentHashMap(cache);
     }
 
+    /**
+     * Agrega un documento a la caché.
+     *
+     * @param key clave del documento.
+     * @param value documento cacheado.
+     */
     @Override
     public void addToCache(String key, IXmlCache value) {
         this.cache.put(key, value);
     }
 
+    /**
+     * Elimina un documento de la caché.
+     *
+     * @param key clave del documento.
+     */
     @Override
     public void removeFromCache(String key) {
         this.cache.remove(key);
     }
 
+    /**
+     * Vacía la caché de documentos.
+     */
     @Override
     public void clearCache() {
         this.cache.clear();
     }
 
+    /**
+     * Procesa los documentos pendientes del administrador.
+     */
     @Override
     public void processObjects() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     * Purga los documentos obsoletos o sin uso de la caché.
+     */
     @Override
     public void purgeObjects() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

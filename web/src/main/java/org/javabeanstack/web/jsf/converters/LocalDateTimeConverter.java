@@ -47,6 +47,14 @@ import org.primefaces.component.api.UICalendar;
 @FacesConverter("localDateTimeConverter")
 public class LocalDateTimeConverter implements Converter {
 
+    /**
+     * Convierte de un valor string a objeto
+     *
+     * @param context facecontext
+     * @param component
+     * @param value valor a convertir
+     * @return string a objeto
+     */
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(extractPattern(component));
@@ -62,6 +70,14 @@ public class LocalDateTimeConverter implements Converter {
         }
     }
 
+    /**
+     * Convierte de un objeto a una variable string
+     *
+     * @param context facecontext
+     * @param component
+     * @param value instancia del objeto
+     * @return un objeto a una variable string
+     */
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object value) {
         if (value == null || (value instanceof String && ((String) value).trim().isEmpty())) {

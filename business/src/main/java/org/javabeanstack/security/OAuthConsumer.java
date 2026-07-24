@@ -62,6 +62,12 @@ public class OAuthConsumer extends OAuthConsumerBase {
         return null;
     }
     
+    /**
+     * Devuelve el filtro de datos aplicable según el token.
+     *
+     * @param token entidad token.
+     * @return filtro de datos.
+     */
     @Override
     public IDBFilter getDBFilter(IAppAuthConsumerToken token){
         //Implementar en otras instancias

@@ -33,6 +33,11 @@ import org.javabeanstack.data.services.IDataService;
  * @author Jorge Enciso
  */
 public class WebResource extends AbstractWebResource {
+    /**
+     * Devuelve el servicio de datos del recurso.
+     * @param <T> tipo del servicio de datos.
+     * @return servicio de datos.
+     */
     @EJB private ISecManager secManager;
     
     @Override
@@ -40,11 +45,20 @@ public class WebResource extends AbstractWebResource {
         throw new UnsupportedOperationException("Debe implementar este metodo"); 
     }
 
+    /**
+     * Devuelve el gestor de seguridad por defecto.
+     * @return gestor de seguridad.
+     */
     @Override
     public ISecManager getSecManager() {
         return secManager;
     }
     
+    /**
+     * Devuelve el gestor de seguridad ubicado en la ruta JNDI indicada.
+     * @param jndi ruta JNDI del gestor de seguridad.
+     * @return gestor de seguridad.
+     */
     @Override
     public ISecManager getSecManager(String jndi) {
         return secManager;

@@ -41,11 +41,21 @@ public abstract class AbstractDataEvents<O extends IDataObject, T extends IDataR
     
     private O context;
 
+    /**
+     * Devuelve el objeto de datos (contexto) al que pertenecen los eventos.
+     *
+     * @return objeto de datos.
+     */
     @Override
     public O getContext() {
         return context;
     }
 
+    /**
+     * Asigna el objeto de datos (contexto) de los eventos.
+     *
+     * @param context objeto de datos.
+     */
     @Override
     public void setContext(O context) {
         this.context = context;

@@ -61,6 +61,12 @@ public abstract class AbstractWebResource implements IWebResource {
     @Override
     public abstract ISecManager getSecManager();
 
+    /**
+     * Devuelve el identificador de la empresa a partir del encabezado de
+     * autorización.
+     * @param authHeader encabezado de autorización.
+     * @return identificador de la empresa.
+     */
     @Override
     public Long getIdCompany(String authHeader) {
         String token = getTokenFromHeader(authHeader);
@@ -71,11 +77,19 @@ public abstract class AbstractWebResource implements IWebResource {
         return null;
     }
 
+    /**
+     * Devuelve la ip del cliente que realiza la solicitud.
+     * @return ip del cliente.
+     */
     @Override
     public final String getIpClient() {
         return requestContext.getRemoteAddr();
     }
 
+    /**
+     * Devuelve el host remoto que realiza la solicitud.
+     * @return host remoto.
+     */
     @Override
     public final String getRemoteHost() {
         return requestContext.getRemoteHost();

@@ -241,6 +241,12 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return msgErrores;
     }
 
+    /**
+     * Devuelve el mensaje de error asociado a un campo del registro actual.
+     *
+     * @param ejb nombre del campo.
+     * @return mensaje de error del campo.
+     */
     @Override
     public String getErrorMsg(IDataRow ejb) {
         String msgErrores = "";
@@ -456,16 +462,31 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return row.getAction();
     }
 
+    /**
+     * Devuelve el índice del primer registro de la página.
+     *
+     * @return índice del primer registro.
+     */
     @Override
     public int getFirstRow() {
         return firstRow;
     }
 
+    /**
+     * Devuelve la cantidad máxima de registros por página.
+     *
+     * @return máximo de registros.
+     */
     @Override
     public int getMaxRows() {
         return maxrows;
     }
 
+    /**
+     * Devuelve el identificador de la empresa activa.
+     *
+     * @return identificador de la empresa.
+     */
     @Override
     public Long getIdcompany() {
         Long idempresa = 0L;
@@ -475,6 +496,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return idempresa;
     }
 
+    /**
+     * Devuelve el identificador de la empresa (alias {@code idempresa}).
+     *
+     * @return identificador de la empresa.
+     */
     @Override
     public Long getIdempresa() {
         return getIdcompany();
@@ -533,6 +559,11 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         this.filterParams = filterParams;
     }
 
+    /**
+     * Agrega parámetros al filtro de la consulta.
+     *
+     * @param filterParams parámetros a agregar.
+     */
     @Override
     public void addFilterParams(Map filterParams) {
         if (filterParams == null) {
@@ -545,11 +576,21 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         this.filterParams.putAll(filterParams);
     }
 
+    /**
+     * Asigna el índice del primer registro de la página.
+     *
+     * @param first índice del primer registro.
+     */
     @Override
     public void setFirstRow(int first) {
         firstRow = first;
     }
 
+    /**
+     * Asigna la cantidad máxima de registros por página.
+     *
+     * @param maxRows máximo de registros.
+     */
     @Override
     public void setMaxRows(int maxRows) {
         maxrows = maxRows;
@@ -1748,6 +1789,14 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     }
 
     //TODO Implementar copyFrom
+    /**
+     * Copia registros desde otra empresa/tabla hacia el contexto actual.
+     *
+     * @param idcompany identificador de la empresa origen.
+     * @param companyName nombre de la empresa origen.
+     * @param xmlTag etiqueta XML de configuración de la copia.
+     * @param tableCopy tabla a copiar.
+     */
     @Override
     public void copyFrom(String idcompany, String companyName, String xmlTag, String tableCopy) {
         /* No se puede modificar si es de solo lectura */
@@ -1787,6 +1836,13 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return errorMap;
     }
 
+    /**
+     * Valida el registro indicado y devuelve los errores por campo.
+     *
+     * @param row registro a validar.
+     * @return mapa campo → error (vacío si es válido).
+     * @throws Exception si ocurre un error durante la validación.
+     */
     @Override
     public Map<String, IErrorReg> checkDataRow(IDataRow row) throws Exception {
         if (row == null) {
@@ -2264,17 +2320,33 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
     }
 
+    /**
+     * Devuelve el mapa de filtros adicionales aplicados a la consulta.
+     *
+     * @return mapa clave → filtro.
+     */
     @Override
     public Map<String, String> getFilters() {
         return filters;
     }
 
+    /**
+     * Agrega un filtro adicional a la consulta.
+     *
+     * @param filter filtro a agregar.
+     */
     @Override
     public void addFilter(String filter) {
         String key = String.valueOf(filters.size());
         addFilter(key, filter);
     }
 
+    /**
+     * Agrega un filtro adicional identificado por una clave.
+     *
+     * @param key clave del filtro.
+     * @param filter filtro a agregar.
+     */
     @Override
     public void addFilter(String key, String filter) {
         if (filters == null) {
@@ -2283,6 +2355,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         filters.put(key, filter);
     }
 
+    /**
+     * Elimina todos los filtros adicionales.
+     */
     @Override
     public void removeFilter() {
         if (!filters.isEmpty()) {
@@ -2291,11 +2366,22 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
     }
 
+    /**
+     * Elimina el filtro adicional identificado por la clave indicada.
+     *
+     * @param key clave del filtro.
+     */
     @Override
     public void removeFilter(String key) {
         filters.remove(key);
     }
 
+    /**
+     * Construye la sentencia de filtro combinando los filtros aplicados.
+     *
+     * @param noMain verdadero para excluir el filtro principal.
+     * @return sentencia de filtro.
+     */
     @Override
     public String getFilterSentence(boolean noMain) {
         String allFilters = "";

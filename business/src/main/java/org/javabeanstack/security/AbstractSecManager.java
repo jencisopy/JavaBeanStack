@@ -164,6 +164,11 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
         return "";
     }
 
+    /**
+     * Devuelve la lista de empresas habilitadas (formato interno).
+     *
+     * @return lista de empresas.
+     */
     @Override
     public String getCompanyList() {
         return "";
@@ -245,11 +250,25 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
         }
     }
 
+    /**
+     * Devuelve la información de solicitud de autenticación cacheada para un
+     * encabezado de autorización.
+     *
+     * @param token encabezado de autorización.
+     * @return información de la solicitud de autenticación.
+     */
     @Override
     public IClientAuthRequestInfo getClientAuthRequestCache(String token) {
         return getSessions().getClientAuthRequestCache(token);
     }
 
+    /**
+     * Recupera el usuario a partir de su contraseña (para flujos específicos de
+     * recuperación/validación).
+     *
+     * @param appUserPass contraseña del usuario.
+     * @return usuario asociado, o {@code null} si no corresponde.
+     */
     @Override
     public IAppUser getAppUserFromPwd(String appUserPass) {
         String sqlComando;
@@ -289,6 +308,12 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
         return null;
     }
     
+    /**
+     * Recupera el token de consumidor de autenticación asociado a un token.
+     *
+     * @param deviceOrToken token de acceso.
+     * @return token del consumidor de autenticación.
+     */
     @Override
     public IAppAuthConsumerToken getAppAuthConsumerToken(String deviceOrToken) {
         String sqlComando;

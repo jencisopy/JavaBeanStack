@@ -80,11 +80,21 @@ public class DataSet implements IDataSet {
         return rowsChanged;
     }
 
+    /**
+     * Devuelve la fecha del último procesamiento del conjunto.
+     *
+     * @return fecha del último procesamiento.
+     */
     @Override
     public Date getLastProcess() {
         return lastProcess;
     }
 
+    /**
+     * Asigna la fecha del último procesamiento del conjunto.
+     *
+     * @param date fecha del último procesamiento.
+     */
     @Override
     public void setLastProcess(Date date) {
         lastProcess = date;
@@ -112,6 +122,12 @@ public class DataSet implements IDataSet {
         return mapSetEvents.get(key.toLowerCase());
     }
 
+    /**
+     * Asocia un manejador de eventos a la clave indicada.
+     *
+     * @param key clave de la lista.
+     * @param events manejador de eventos del DAO.
+     */
     @Override
     public void addEvents(String key, IDAOEvents events) {
         mapSetEvents.put(key.toLowerCase(), events);
