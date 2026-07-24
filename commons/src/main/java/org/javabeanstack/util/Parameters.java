@@ -27,20 +27,41 @@ import java.util.Map;
 
 /**
  *
+ * Contenedor fluido de parámetros nombre→valor (patrón builder) para pasar
+ * parámetros a consultas y servicios.
+ *
  * @author Jorge Enciso
  */
 public class Parameters {
     private final Map<String, Object> params = new HashMap();
             
+    /**
+     * Agrega un parámetro y devuelve esta instancia (invocación fluida).
+     *
+     * @param key clave del parámetro.
+     * @param value valor del parámetro.
+     * @return esta instancia.
+     */
     public Parameters put(String key, Object value){
         params.put(key, value);
         return this;
     }
     
+    /**
+     * Devuelve el mapa de parámetros acumulados.
+     *
+     * @return mapa de parámetros.
+     */
     public Map<String, Object> getParams(){
         return params;
     }
     
+    /**
+     * Devuelve el valor de un parámetro por su clave.
+     *
+     * @param key clave del parámetro.
+     * @return valor del parámetro.
+     */
     public Object getParam(String key){
         return params.get(key);
     }

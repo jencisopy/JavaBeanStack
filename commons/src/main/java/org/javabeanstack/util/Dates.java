@@ -78,6 +78,12 @@ public class Dates {
         return calendar.getTime();
     }
 
+    /**
+     * Convierte un {@link LocalDateTime} a {@link Date}.
+     *
+     * @param dateTime fecha y hora a convertir.
+     * @return fecha equivalente.
+     */
     public static Date toDateTime(LocalDateTime dateTime){
         if (dateTime == null){
             return null;
@@ -125,6 +131,13 @@ public class Dates {
         return formater.format(date);
     }
 
+    /**
+     * Formatea una fecha según el patrón indicado.
+     *
+     * @param date fecha a formatear.
+     * @param format patrón de formato.
+     * @return fecha formateada.
+     */
     public static String toString(Object date, String format) {
         if (date instanceof LocalDateTime){
             return LocalDates.toString((LocalDateTime)date, format);

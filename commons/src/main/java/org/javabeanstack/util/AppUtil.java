@@ -28,16 +28,31 @@ import java.util.stream.Stream;
 
 /**
  *
+ * Utilidad de aplicación centrada en el rastreo de pila (stack trace):
+ * obtiene el paquete raíz de la aplicación y los frames de la pila, con
+ * filtrado por paquete. Es un singleton accesible vía {@link #getInstance()}.
+ *
  * @author Jorge Enciso
  */
 public class AppUtil {
 
     private String appFilter = "";
 
+    /**
+     * Devuelve la instancia única (singleton) de la utilidad.
+     *
+     * @return instancia única.
+     */
     public static AppUtil getInstance() {
         return new AppUtil();
     }
 
+    /**
+     * Devuelve el rastro de pila actual como texto, filtrado por el paquete indicado.
+     *
+     * @param filter paquete por el que filtrar.
+     * @return rastro de pila como texto.
+     */
     public static String stackTraceToString(String filter) {
         List<StackWalker.StackFrame> stackTrace;
         if (filter == null) {
@@ -54,6 +69,12 @@ public class AppUtil {
         return retornar;
     }
 
+    /**
+     * Devuelve el rastro de pila como texto, filtrado por el paquete indicado.
+     *
+     * @param filter paquete por el que filtrar.
+     * @return rastro de pila como texto.
+     */
     public static String getStackTraceText(String filter) {
         List<StackWalker.StackFrame> stackTrace;
         if (filter == null) {
@@ -70,6 +91,11 @@ public class AppUtil {
         return retornar;
     }
     
+    /**
+     * Devuelve el frame de la pila correspondiente al método llamador.
+     *
+     * @return frame del llamador.
+     */
     public final StackWalker.StackFrame getCallerStack(){
         List<StackWalker.StackFrame> stackTrace = getStackTrace();
         StackWalker.StackFrame retornar = null;
@@ -82,6 +108,12 @@ public class AppUtil {
         return retornar;
     }
 
+    /**
+     * Devuelve el frame de la pila del llamador a partir de la clase indicada.
+     *
+     * @param className nombre de la clase de referencia.
+     * @return frame del llamador.
+     */
     public final static StackWalker.StackFrame getCallerStack(String className){
         List<StackWalker.StackFrame> stackTrace = getInstance().getStackTrace();
         StackWalker.StackFrame retornar = null;
@@ -101,6 +133,11 @@ public class AppUtil {
         return retornar;
     }
     
+    /**
+     * Devuelve el paquete raíz de la aplicación.
+     *
+     * @return nombre del paquete raíz.
+     */
     public static String getAppPackage(){
         String className = getInstance().getCallerStack().getClassName();
         int pos = Strings.findString(".", className, 2);
@@ -108,10 +145,21 @@ public class AppUtil {
         return retornar;
     }
     
+    /**
+     * Devuelve los frames de la pila actual.
+     *
+     * @return lista de frames.
+     */
     public List<StackWalker.StackFrame> getStackTrace() {
         return getStackTrace(null);
     }
 
+    /**
+     * Devuelve los frames de la pila actual filtrados por paquete.
+     *
+     * @param packageFilter paquete por el que filtrar.
+     * @return lista de frames.
+     */
     public List<StackWalker.StackFrame> getStackTrace(String packageFilter) {
         appFilter = packageFilter;
         List<StackWalker.StackFrame> stackTrace;
@@ -135,10 +183,22 @@ public class AppUtil {
         return stackTrace;
     }
 
+    /**
+     * Recolecta en una lista los frames de un stream de la pila.
+     *
+     * @param stackFrameStream stream de frames.
+     * @return lista de frames.
+     */
     protected List<StackWalker.StackFrame> collectStackTrace(Stream<StackWalker.StackFrame> stackFrameStream) {
         return stackFrameStream.collect(Collectors.toList());
     }
 
+    /**
+     * Recolecta y filtra por el paquete de la aplicación los frames de un stream.
+     *
+     * @param stackFrameStream stream de frames.
+     * @return lista de frames filtrados.
+     */
     protected List<StackWalker.StackFrame> collectStackTraceFiltered(Stream<StackWalker.StackFrame> stackFrameStream) {
         return stackFrameStream
                 .filter(f -> f.getClassName().contains(appFilter) || f.getClassName().contains("org.javabeanstack") || f.getClassName().contains("py.com.oym"))

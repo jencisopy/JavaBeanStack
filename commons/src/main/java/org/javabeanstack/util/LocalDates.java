@@ -126,6 +126,12 @@ public class LocalDates {
         return LocalDateTime.parse(dateString, formatter);
     }
 
+    /**
+     * Convierte un {@link Date} a {@link LocalDateTime}.
+     *
+     * @param date fecha a convertir.
+     * @return fecha y hora equivalente.
+     */
     public static LocalDateTime toDateTime(Date date) {
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
@@ -209,71 +215,150 @@ public class LocalDates {
         return dateTime;
     }
 
+    /**
+     * Devuelve el primer día de la semana actual.
+     *
+     * @return fecha del primer día de la semana actual.
+     */
     public static LocalDateTime getFirstDayOfWeek(){
         return today().with(DayOfWeek.MONDAY);
     }
 
+    /**
+     * Devuelve el primer día de la semana anterior.
+     *
+     * @return fecha del primer día de la semana anterior.
+     */
     public static LocalDateTime getFirstDayOfPreviousWeek(){
         return today().minusDays(7L).with(DayOfWeek.MONDAY);
     }
 
+    /**
+     * Devuelve el último día de la semana anterior.
+     *
+     * @return fecha del último día de la semana anterior.
+     */
     public static LocalDateTime getLastDayOfPreviousWeek(){
         LocalDateTime retornar = today().minusDays(7L).with(DayOfWeek.MONDAY);
         retornar = retornar.plusDays(6L);
         return retornar;
     }
     
+    /**
+     * Devuelve el primer día del mes actual.
+     *
+     * @return fecha del primer día del mes actual.
+     */
     public static LocalDateTime getFirstDayOfMonth(){
         return YearMonth.now().atDay(1).atStartOfDay();
     }
 
+    /**
+     * Devuelve el último día del mes actual.
+     *
+     * @return fecha del último día del mes actual.
+     */
     public static LocalDateTime getLastDayOfMonth(){
         return YearMonth.now().atEndOfMonth().atStartOfDay();
     }
     
+    /**
+     * Devuelve el primer día del mes anterior.
+     *
+     * @return fecha del primer día del mes anterior.
+     */
     public static LocalDateTime getFirstDayOfPreviousMonth(){
         return YearMonth.now().minusMonths(1L).atDay(1).atStartOfDay();
     }
 
+    /**
+     * Devuelve el último día del mes anterior.
+     *
+     * @return fecha del último día del mes anterior.
+     */
     public static LocalDateTime getLastDayOfPreviousMonth(){
         return YearMonth.now().minusMonths(1L).atEndOfMonth().atStartOfDay();
     }
     
+    /**
+     * Devuelve el primer día del mes de la fecha indicada.
+     *
+     * @param dateTime fecha de referencia.
+     * @return fecha del primer día del mes.
+     */
     public static LocalDateTime getFirstDayOfMonth(LocalDateTime dateTime){
         YearMonth yearMonth = YearMonth.of(dateTime.getYear(), dateTime.getMonth());
         return yearMonth.atDay(1).atStartOfDay();
     }
 
+    /**
+     * Devuelve el último día del mes de la fecha indicada.
+     *
+     * @param dateTime fecha de referencia.
+     * @return fecha del último día del mes.
+     */
     public static LocalDateTime getLastDayOfMonth(LocalDateTime dateTime){
         YearMonth yearMonth = YearMonth.of(dateTime.getYear(), dateTime.getMonth());
         return yearMonth.atEndOfMonth().atStartOfDay();
     }
 
+    /**
+     * Devuelve el primer día del año actual.
+     *
+     * @return fecha del primer día del año actual.
+     */
     public static LocalDateTime getFirstDayOfYear(){
         String fecha = "01/01/"+today().getYear();
         return toDateTime(fecha);
     }
 
+    /**
+     * Devuelve el último día del año actual.
+     *
+     * @return fecha del último día del año actual.
+     */
     public static LocalDateTime getLastDayOfYear(){
         String fecha = "31/12/"+today().getYear();
         return toDateTime(fecha);
     }
 
+    /**
+     * Devuelve el primer día del año anterior.
+     *
+     * @return fecha del primer día del año anterior.
+     */
     public static LocalDateTime getFirstDayOfPreviousYear(){
         String fecha = "01/01/"+(today().getYear() - 1);
         return toDateTime(fecha);
     }
 
+    /**
+     * Devuelve el último día del año anterior.
+     *
+     * @return fecha del último día del año anterior.
+     */
     public static LocalDateTime getLastDayOfPreviousYear(){
         String fecha = "31/12/"+(today().getYear() - 1);
         return toDateTime(fecha);
     }
     
+    /**
+     * Devuelve el primer día del año de la fecha indicada.
+     *
+     * @param dateTime fecha de referencia.
+     * @return fecha del primer día del año.
+     */
     public static LocalDateTime getFirstDayOfYear(LocalDateTime dateTime){
         String fecha = "01/01/"+dateTime.getYear();
         return toDateTime(fecha);
     }
 
+    /**
+     * Devuelve el último día del año de la fecha indicada.
+     *
+     * @param dateTime fecha de referencia.
+     * @return fecha del último día del año.
+     */
     public static LocalDateTime getLastDayOfYear(LocalDateTime dateTime){
         String fecha = "31/12/"+dateTime.getYear();
         return toDateTime(fecha);

@@ -252,6 +252,12 @@ public class IOUtil {
         return result;
     }
     
+    /**
+     * Escribe una cadena de texto en un archivo.
+     *
+     * @param file archivo destino.
+     * @param data texto a escribir.
+     */
     public static void writeStringToFile(File file, String data){
         try {
             FileUtils.writeStringToFile(file, data, Charset.defaultCharset());            

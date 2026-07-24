@@ -33,6 +33,9 @@ import org.apache.logging.log4j.LogManager;
 
 /**
  * 
+ * Utilidad de cálculo de resúmenes criptográficos (digest/hash) y su
+ * codificación.
+ *
  * @author Jorge Enciso
  */
 public class DigestUtil {

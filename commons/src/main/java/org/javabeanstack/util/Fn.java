@@ -89,6 +89,16 @@ public class Fn {
         return false;
     }
 
+    /**
+     * Devuelve {@code value1} si la condición es verdadera y {@code value2} si no
+     * (equivalente a un operador ternario).
+     *
+     * @param <T> tipo de los valores.
+     * @param condition condición a evaluar.
+     * @param value1 valor si la condición es verdadera.
+     * @param value2 valor si la condición es falsa.
+     * @return uno de los dos valores según la condición.
+     */
     public static <T> T iif(Boolean condition, T value1, T value2) {
         if (condition == null || condition) {
             return value1;
@@ -350,6 +360,12 @@ public class Fn {
         return nvl(result, "").trim();
     }
 
+    /**
+     * Indica si una dirección de correo tiene formato válido.
+     *
+     * @param emailAdress dirección de correo.
+     * @return verdadero si el formato es válido, falso si no.
+     */
     public static boolean isEmailValid(String emailAdress) {
         if (!emailAdress.contains(";")) {
             return EmailValidator.getInstance().isValid(emailAdress);

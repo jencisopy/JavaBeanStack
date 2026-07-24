@@ -28,7 +28,20 @@ import org.efaps.number2words.Converter;
 import org.efaps.number2words.IConverter;
 
 
+/**
+ * Utilidad que convierte un número ({@link java.math.BigDecimal}) a su
+ * representación en letras, con soporte de idioma (español por defecto).
+ * Se apoya en la librería {@code org.efaps.number2words}.
+ *
+ * @author Jorge Enciso
+ */
 public class NumberToLetterConverter {
+    /**
+     * Convierte un número a su representación en letras (en español).
+     *
+     * @param number número a convertir.
+     * @return número escrito en letras.
+     */
     public static String convert(BigDecimal number){
         return convert(number, new Locale("es"));
     }

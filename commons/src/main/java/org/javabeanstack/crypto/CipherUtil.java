@@ -450,6 +450,14 @@ public class CipherUtil {
         return getSecureRandomKey(algoritm, 256);
     }
 
+    /**
+     * Cifra un texto con el algoritmo RSA usando la clave pública.
+     *
+     * @param plainText texto a cifrar.
+     * @param publicKey clave pública.
+     * @return bytes cifrados.
+     * @throws Exception si el cifrado falla.
+     */
     public static byte[] encryptRSA(String plainText, PublicKey publicKey) throws Exception {
         if (plainText == null){
             return null;
@@ -459,6 +467,14 @@ public class CipherUtil {
         return cipher.doFinal(plainText.getBytes());        
     }
 
+    /**
+     * Descifra un texto con el algoritmo RSA usando la clave privada.
+     *
+     * @param encryptedText bytes cifrados.
+     * @param privateKey clave privada.
+     * @return bytes descifrados.
+     * @throws Exception si el descifrado falla.
+     */
     public static byte[] decryptRSA(byte[] encryptedText, PrivateKey privateKey) throws Exception {
         Cipher cipher = Cipher.getInstance(RSA_ECB);
         cipher.init(Cipher.DECRYPT_MODE, privateKey);

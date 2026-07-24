@@ -653,10 +653,26 @@ public class Strings {
         return result;
     }
     
+    /**
+     * Rellena la cadena por la izquierda hasta alcanzar el tamaño indicado.
+     *
+     * @param str cadena a rellenar.
+     * @param size tamaño final deseado.
+     * @param padStr cadena de relleno.
+     * @return cadena rellenada por la izquierda.
+     */
     public static String leftPad(String str, int size, String padStr){
         return StringUtils.leftPad(str, size, padStr);
     }
     
+    /**
+     * Rellena la cadena por la derecha hasta alcanzar el tamaño indicado.
+     *
+     * @param str cadena a rellenar.
+     * @param size tamaño final deseado.
+     * @param padStr cadena de relleno.
+     * @return cadena rellenada por la derecha.
+     */
     public static String rightPad(String str, int size, String padStr){
         return StringUtils.rightPad(str, size, padStr);
     }

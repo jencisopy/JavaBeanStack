@@ -32,10 +32,18 @@ import java.util.List;
 
 /**
  *
+ * Utilidad de red: resuelve la dirección IP local y las direcciones de red
+ * del host.
+ *
  * @author Jorge Enciso
  */
 public class Network {
 
+    /**
+     * Devuelve la dirección IP local del host.
+     *
+     * @return dirección IP local.
+     */
     public static String getLocalIpAddress() {
         String result = "";
         try {
@@ -73,6 +81,11 @@ public class Network {
         return result;
     }
 
+    /**
+     * Devuelve todas las direcciones de red del host.
+     *
+     * @return lista de direcciones de red.
+     */
     public static List<InetAddress> getAllAddresses() {
         List<InetAddress> result = new ArrayList();
         try {
