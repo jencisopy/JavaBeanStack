@@ -27,7 +27,7 @@ import static org.javabeanstack.util.Strings.isNullorEmpty;
 
 /**
  *
- * Implementación de {@link IXmlCacheKey}: clave de la caché de documentos XML
+ * Implementación de {@code IXmlCacheKey}: clave de la caché de documentos XML
  * compuesta por el tipo de origen, la ruta del documento y la ruta del
  * elemento, con el contador de referencias.
  *

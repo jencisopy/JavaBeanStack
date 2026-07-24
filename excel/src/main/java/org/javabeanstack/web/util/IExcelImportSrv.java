@@ -37,7 +37,7 @@ import org.javabeanstack.data.IDataRow;
  * las vistas (p.ej. el wizard de importación).
  *
  * @author jenciso
- * @param <T> tipo de la vista destino (debe implementar {@link IDataRow}).
+ * @param <T> tipo de la vista destino (debe implementar {@code IDataRow}).
  */
 public interface IExcelImportSrv<T extends IDataRow> extends Serializable {
 

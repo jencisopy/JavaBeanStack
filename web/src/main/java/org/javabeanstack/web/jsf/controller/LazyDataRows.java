@@ -64,7 +64,7 @@ import org.primefaces.model.FilterMeta;
  * </ol>
  *
  * <p><b>Modos de filtro por columna</b> (atributo {@code filterMode} de
- * {@link IColumnModel}, aplica solo a columnas alfanuméricas):</p>
+ * {@code IColumnModel}, aplica solo a columnas alfanuméricas):</p>
  * <ul>
  * <li>{@code exact}, {@code exact_trim}, {@code exact_ltrim} — igualdad
  * (con trim/ltrim sobre el campo).</li>
@@ -75,7 +75,7 @@ import org.primefaces.model.FilterMeta;
  * </ul>
  *
  * <p><b>Máscaras de filtro</b> (atributo {@code filterMask} de
- * {@link IColumnModel}): {@code right_blank_N} / {@code left_blank_N} rellenan
+ * {@code IColumnModel}): {@code right_blank_N} / {@code left_blank_N} rellenan
  * el valor con espacios hasta N posiciones; {@code replace('a','b')} sustituye
  * texto en el valor buscado.</p>
  *
@@ -138,7 +138,7 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
 
     /**
      * Busca el registro correspondiente a un rowKey generado por
-     * {@link IDataRow#getRowkey()}. El formato normal es
+     * {@code IDataRow.getRowkey}. El formato normal es
      * <code>{Tipo}valor</code> (ej. {Long}150); si el registro no tiene id
      * el rowkey es el id alternativo sin formato.
      *

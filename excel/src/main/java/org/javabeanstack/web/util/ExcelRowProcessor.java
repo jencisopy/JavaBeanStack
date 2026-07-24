@@ -209,7 +209,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     /**
      * Instancia un objeto destino a partir de {@link #targetType}, recorre el
      * mapeo {@link #getHeadToField()} y asigna en el destino el valor de cada
-     * celda mediante {@link IDataRow#setValue(String, Object)}, convirtiendo
+     * celda mediante {@code IDataRow.setValue}, convirtiendo
      * previamente el valor nativo de la celda al tipo declarado del atributo
      * con {@link ExcelUtil#convertValue(Object, Class)} (ya que {@code setValue}
      * no realiza conversión de tipos).

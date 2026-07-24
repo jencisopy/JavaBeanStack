@@ -67,7 +67,7 @@ import org.javabeanstack.util.Fn;
  * contadores/mensajes de resultado que consumen las vistas.
  *
  * @author jenciso
- * @param <T> tipo de la vista destino (debe implementar {@link IDataRow}).
+ * @param <T> tipo de la vista destino (debe implementar {@code IDataRow}).
  */
 @Dependent
 public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImportSrv<T> {
@@ -139,7 +139,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * Provee el servicio de datos que las subclases utilizan para persistir los
      * registros importados. Debe implementarse en cada subclase.
      *
-     * @return el {@link IDataService} asociado a la entidad destino.
+     * @return el {@code IDataService} asociado a la entidad destino.
      */
     protected abstract IDataService getDataService();
 
@@ -158,7 +158,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
 
     /**
      * Establece si los errores deben revisarse antes de importar. El valor
-     * recibido se normaliza con {@link Fn#toLogical(Object)} (nulo se
+     * recibido se normaliza con {@code Fn.toLogical} (nulo se
      * interpreta como {@code false}).
      *
      * @param checkBeforeErrors {@code true} para exigir la revisión previa;
@@ -393,7 +393,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * se obtiene el {@code sessionId} con el que opera el servicio de datos. Debe
      * implementarse en cada subclase.
      *
-     * @return la {@link IUserSession} del usuario que ejecuta la importación.
+     * @return la {@code IUserSession} del usuario que ejecuta la importación.
      */
     protected abstract IUserSession getUserSession();
 
@@ -401,7 +401,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * Provee la clase de la entidad destino en la que se persiste cada registro.
      * Es la entidad de la base de datos (no necesariamente la misma vista
      * {@code T} leída de la planilla): cada fila se convierte hacia una instancia
-     * de este tipo con {@link IDataService#copyTo} antes de grabarla. Debe
+     * de este tipo con {@code IDataService.copyTo} antes de grabarla. Debe
      * implementarse en cada subclase.
      *
      * @return la clase de la entidad a persistir.
@@ -421,7 +421,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     /**
      * Indica si durante la importación deben sobrescribirse los registros ya
      * existentes (en lugar de únicamente insertar los nuevos). El valor nulo se
-     * normaliza a {@code false} con {@link Fn#toLogical(Object)}.
+     * normaliza a {@code false} con {@code Fn.toLogical}.
      *
      * @return {@code true} si se deben sobrescribir los datos existentes;
      * {@code false} en caso contrario (valor por defecto).
@@ -434,7 +434,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     /**
      * Establece si durante la importación deben sobrescribirse los registros ya
      * existentes. El valor recibido se normaliza con
-     * {@link Fn#toLogical(Object)} (nulo se interpreta como {@code false}).
+     * {@code Fn.toLogical} (nulo se interpreta como {@code false}).
      *
      * @param overWriteData {@code true} para sobrescribir los datos existentes;
      * {@code false} para solo insertar nuevos.
@@ -594,9 +594,9 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * errores de conversión se somete además a la validación de la lógica de
      * negocios: se invoca {@link #onBeforeRowConvert(IDataRow)}, se convierte a
      * la entidad destino ({@link #getTargetType()}) con
-     * {@link IDataService#copyTo}, se invoca
+     * {@code IDataService.copyTo}, se invoca
      * {@link #onAfterRowConvert(IDataRow, IDataRow)} y se valida con
-     * {@link IDataService#checkDataRow}; los registros rechazados por la
+     * {@code IDataService.checkDataRow}; los registros rechazados por la
      * validación se acumulan en {@link #getDataRowsError()} y los omitidos por
      * los hooks se descartan. Cuando la lectura se realiza dentro de
      * {@link #importData()} ({@code errorsReviewed} en {@code true}) este método
@@ -753,12 +753,12 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * {@link #cancelError(Exception)} con {@code null} y termina.</li>
      * <li>Por cada registro válido: {@link #onBeforeRowConvert(IDataRow)},
      * conversión a la entidad {@link #getTargetType()} con
-     * {@link IDataService#copyTo}, asignación de la acción
+     * {@code IDataService.copyTo}, asignación de la acción
      * ({@code INSERT}/{@code UPDATE}; los {@code UPDATE} se omiten salvo que
      * {@link #getOverWriteData()} sea {@code true}, contabilizados en
      * {@link #getRowsExistCount()}), {@link #onAfterRowConvert(IDataRow, IDataRow)},
-     * validación con {@link IDataService#checkDataRow} y persistencia con
-     * {@link IDataService#update} (los grabados se contabilizan en
+     * validación con {@code IDataService.checkDataRow} y persistencia con
+     * {@code IDataService.update} (los grabados se contabilizan en
      * {@link #getRowsMigratedCount()}). Los registros con error se acumulan en
      * {@link #getDataRowsError()}. Si los registros ya fueron validados en la
      * pasada de {@link #checkValidation(Sheet)}, el {@code checkDataRow} no se

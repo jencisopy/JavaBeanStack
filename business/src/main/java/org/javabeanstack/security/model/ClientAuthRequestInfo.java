@@ -35,7 +35,7 @@ import org.javabeanstack.util.LocalDates;
 
 /**
  *
- * Implementación de {@link IClientAuthRequestInfo}: cachea los datos de una
+ * Implementación de {@code IClientAuthRequestInfo}: cachea los datos de una
  * solicitud de autenticación por token (token, empresa, fecha de registro y
  * cantidad de usos) para evitar revalidar el token en cada request.
  *

@@ -39,9 +39,9 @@ import org.javabeanstack.data.IGenericDAO;
 /**
  *
  * Implementación EJB (singleton de arranque) del administrador de documentos
- * XML {@link IXmlManager}: coordina el buscador de recursos XML
+ * XML {@code IXmlManager}: coordina el buscador de recursos XML
  * ({@link XmlResourceSearcher}) y la caché de documentos ya procesados
- * ({@link IXmlCache}).
+ * ({@code IXmlCache}).
  *
  * @author Jorge Enciso
  * 

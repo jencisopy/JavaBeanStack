@@ -32,7 +32,7 @@ import org.javabeanstack.data.IDataRow;
  * objeto de dominio de tipo {@code T}. La implementación de referencia es
  * {@link ExcelRowProcessor}.
  *
- * @param <T> tipo del objeto destino (debe implementar {@link IDataRow}).
+ * @param <T> tipo del objeto destino (debe implementar {@code IDataRow}).
  */
 public interface IExcelRowProcessor<T extends IDataRow> {
 

@@ -29,7 +29,7 @@ import org.javabeanstack.data.IGenericDAO;
  * Implementación concreta del gestor de seguridad: extiende
  * {@link AbstractSecManager} e inyecta por EJB el DAO genérico y el
  * administrador de sesiones sobre los que opera. Expone el contrato
- * {@link ISecManager} (local y remoto).
+ * {@code ISecManager} (local y remoto).
  *
  * @author Jorge Enciso
  */
