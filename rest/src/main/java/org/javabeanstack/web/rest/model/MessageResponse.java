@@ -26,6 +26,9 @@ import org.javabeanstack.ws.model.IMessageResponse;
 
 /**
  *
+ * Modelo de respuesta REST: implementación de
+ * {@link org.javabeanstack.ws.model.IMessageResponse} que agrega un mensaje.
+ *
  * @author Jorge Enciso
  */
 @XmlRootElement
@@ -54,10 +57,20 @@ public class MessageResponse implements IMessageResponse {
         this.link = link;
     }
 
+    /**
+     * Devuelve el mensaje de la respuesta.
+     *
+     * @return mensaje.
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Asigna el mensaje de la respuesta.
+     *
+     * @param message mensaje.
+     */
     public void setMessage(String message) {
         this.message = message;
     }

@@ -23,20 +23,41 @@ package org.javabeanstack.web.rest.exceptions;
 
 /**
  *
+ * Excepción REST que señala que la entidad JPA solicitada no existe.
+ *
  * @author Jorge Enciso
  */
 public class JpaNoExist extends RuntimeException {
+    /**
+     * Crea la excepción sin mensaje de detalle.
+     */
     public JpaNoExist(){
         super();
     }
+    /**
+     * Crea la excepción con el mensaje indicado.
+     *
+     * @param message mensaje de detalle.
+     */
     public JpaNoExist(String message){
         super(message);
     }
 
+    /**
+     * Crea la excepción con el mensaje y la causa indicados.
+     *
+     * @param message mensaje de detalle.
+     * @param cause causa original.
+     */
     public JpaNoExist(String message, Throwable cause){
         super(message, cause);
     }
 
+    /**
+     * Crea la excepción con la causa indicada.
+     *
+     * @param cause causa original.
+     */
     public JpaNoExist(Throwable cause){
         super(cause);
     }

@@ -28,6 +28,8 @@ import org.javabeanstack.data.services.IDataService;
 
 /**
  *
+ * Recurso web JAX-RS concreto basado en {@link AbstractWebResource}.
+ *
  * @author Jorge Enciso
  */
 public class WebResource extends AbstractWebResource {

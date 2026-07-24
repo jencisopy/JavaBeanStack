@@ -23,21 +23,43 @@ package org.javabeanstack.web.rest.exceptions;
 
 /**
  *
+ * Excepción REST que señala que la opción u operación solicitada no está
+ * disponible.
+ *
  * @author Jorge Enciso
  */
 public class OptionUnavailable extends RuntimeException {
+    /**
+     * Crea la excepción sin mensaje de detalle.
+     */
     public OptionUnavailable(){
         super();
     }
     
+    /**
+     * Crea la excepción con el mensaje indicado.
+     *
+     * @param message mensaje de detalle.
+     */
     public OptionUnavailable(String message){
         super(message);
     }
 
+    /**
+     * Crea la excepción con el mensaje y la causa indicados.
+     *
+     * @param message mensaje de detalle.
+     * @param cause causa original.
+     */
     public OptionUnavailable(String message, Throwable cause){
         super(message, cause);
     }
 
+    /**
+     * Crea la excepción con la causa indicada.
+     *
+     * @param cause causa original.
+     */
     public OptionUnavailable(Throwable cause){
         super(cause);
     }

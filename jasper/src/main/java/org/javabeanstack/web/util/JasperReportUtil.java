@@ -76,22 +76,47 @@ public class JasperReportUtil {
     private final String urlInDatabase = "file:///reports/";
     private String fileSystemPath = null;
 
+    /**
+     * Crea la utilidad de reportes para la sesión indicada.
+     *
+     * @param userSession sesión de usuario.
+     */
     public JasperReportUtil(IUserSession userSession) {
         this.userSession = userSession;
     }
 
+    /**
+     * Devuelve el servicio de recursos de aplicación.
+     *
+     * @return servicio de recursos.
+     */
     public IAppResource getAppResource() {
         return appResource;
     }
 
+    /**
+     * Asigna el servicio de recursos de aplicación.
+     *
+     * @param appResource servicio de recursos.
+     */
     public void setAppResource(IAppResource appResource) {
         this.appResource = appResource;
     }
 
+    /**
+     * Devuelve la ruta del sistema de archivos de los reportes.
+     *
+     * @return ruta del sistema de archivos.
+     */
     public String getFileSystemPath() {
         return fileSystemPath;
     }
 
+    /**
+     * Asigna la ruta del sistema de archivos de los reportes.
+     *
+     * @param fileSystemPath ruta del sistema de archivos.
+     */
     public void setFileSystemPath(String fileSystemPath) {
         this.fileSystemPath = fileSystemPath;
     }

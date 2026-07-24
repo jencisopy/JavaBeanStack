@@ -25,6 +25,9 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  *
+ * Modelo del mensaje de error de una respuesta REST: código, mensaje y enlace
+ * a la documentación del error.
+ *
  * @author Jorge Enciso
  */
 @XmlRootElement
@@ -33,26 +36,56 @@ public class ErrorMessage {
     private int    errorCode;
     private String documentation;
 
+    /**
+     * Devuelve el mensaje del error.
+     *
+     * @return mensaje del error.
+     */
     public String getErrorMessage() {
         return errorMessage;
     }
 
+    /**
+     * Asigna el mensaje del error.
+     *
+     * @param errorMessage mensaje del error.
+     */
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
+    /**
+     * Devuelve el código del error.
+     *
+     * @return código del error.
+     */
     public int getErrorCode() {
         return errorCode;
     }
 
+    /**
+     * Asigna el código del error.
+     *
+     * @param errorCode código del error.
+     */
     public void setErrorCode(int errorCode) {
         this.errorCode = errorCode;
     }
 
+    /**
+     * Devuelve el enlace a la documentación del error.
+     *
+     * @return enlace a la documentación.
+     */
     public String getDocumentation() {
         return documentation;
     }
 
+    /**
+     * Asigna el enlace a la documentación del error.
+     *
+     * @param documentation enlace a la documentación.
+     */
     public void setDocumentation(String documentation) {
         this.documentation = documentation;
     }

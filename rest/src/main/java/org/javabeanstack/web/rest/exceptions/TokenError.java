@@ -23,21 +23,42 @@ package org.javabeanstack.web.rest.exceptions;
 
 /**
  *
+ * Excepción REST que señala un error de token de autenticación.
+ *
  * @author Jorge Enciso
  */
 public class TokenError extends RuntimeException {
+    /**
+     * Crea la excepción sin mensaje de detalle.
+     */
     public TokenError(){
         super();
     }
     
+    /**
+     * Crea la excepción con el mensaje indicado.
+     *
+     * @param message mensaje de detalle.
+     */
     public TokenError(String message){
         super(message);
     }
 
+    /**
+     * Crea la excepción con el mensaje y la causa indicados.
+     *
+     * @param message mensaje de detalle.
+     * @param cause causa original.
+     */
     public TokenError(String message, Throwable cause){
         super(message, cause);
     }
 
+    /**
+     * Crea la excepción con la causa indicada.
+     *
+     * @param cause causa original.
+     */
     public TokenError(Throwable cause){
         super(cause);
     }

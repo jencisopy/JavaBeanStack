@@ -63,6 +63,10 @@ import org.javabeanstack.util.LocalDates;
 
 /**
  *
+ * Utilidad de Excel (Apache POI): apertura de libros, exportación de datos de
+ * consulta ({@link org.javabeanstack.data.IDataQueryModel}) a un libro y su
+ * descarga.
+ *
  * @author Jorge Enciso
  */
 public class ExcelUtil {
@@ -124,6 +128,13 @@ public class ExcelUtil {
         return (int) Math.round((chars + 1) * 256 * FONT_SCALE);  // +1 caracter de padding
     }
 
+    /**
+     * Envía un libro de Excel al navegador como descarga.
+     *
+     * @param workBook libro a descargar.
+     * @param fileName nombre del archivo.
+     * @throws Exception si la descarga falla.
+     */
     public static void downLoadFile(Workbook workBook, String fileName) throws Exception {
         if (workBook == null) {
             return;
@@ -154,6 +165,13 @@ public class ExcelUtil {
         FacesContext.getCurrentInstance().responseComplete();
     }
 
+    /**
+     * Abre un libro de Excel desde una ruta de archivo.
+     *
+     * @param filePath ruta del archivo.
+     * @return libro abierto.
+     * @throws IOException si no se puede leer el archivo.
+     */
     public static Workbook openWorkbook(String filePath) throws IOException {
         String lowerPath = filePath.toLowerCase();
         boolean isXlsx = lowerPath.endsWith("xlsx");
@@ -172,15 +190,38 @@ public class ExcelUtil {
         }
     }
 
+    /**
+     * Abre un libro de Excel desde un archivo.
+     *
+     * @param file archivo.
+     * @return libro abierto.
+     * @throws IOException si no se puede leer el archivo.
+     */
     public static Workbook openWorkbook(File file) throws IOException {
         Workbook wb = WorkbookFactory.create(file);
         return wb;
     }
 
+    /**
+     * Exporta una lista de filas de consulta a un libro de Excel.
+     *
+     * @param toExport datos a exportar.
+     * @return libro generado.
+     * @throws Exception si la exportación falla.
+     */
     public static Workbook toExcel(List<IDataQueryModel> toExport) throws Exception {
         return toExcel(toExport, null);
     }
 
+    /**
+     * Exporta una lista de filas de consulta a un libro de Excel, con anchos de
+     * columna personalizados.
+     *
+     * @param toExport datos a exportar.
+     * @param widthOverrides anchos por índice de columna.
+     * @return libro generado.
+     * @throws Exception si la exportación falla.
+     */
     public static Workbook toExcel(List<IDataQueryModel> toExport, Map<Integer, Integer> widthOverrides) throws Exception {
         if (toExport == null || toExport.isEmpty()) {
             return null;

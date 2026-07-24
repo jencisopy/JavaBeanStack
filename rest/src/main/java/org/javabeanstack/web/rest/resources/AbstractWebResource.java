@@ -39,6 +39,10 @@ import org.javabeanstack.ws.resources.IWebResource;
 
 /**
  *
+ * Base de los recursos JAX-RS: implementa
+ * {@link org.javabeanstack.ws.resources.IWebResource} y provee la verificación
+ * de token, el acceso a la sesión y los datos del cliente.
+ *
  * @author Jorge Enciso
  */
 public abstract class AbstractWebResource implements IWebResource {
@@ -77,6 +81,12 @@ public abstract class AbstractWebResource implements IWebResource {
         return requestContext.getRemoteHost();
     }
 
+    /**
+     * Extrae el token del encabezado de autorización.
+     *
+     * @param authHeader encabezado de autorización.
+     * @return token.
+     */
     public String getToken(String authHeader) {
         String token = getTokenFromHeader(authHeader);
         IClientAuthRequestInfo info = getSecManager().getClientAuthRequestCache(token);
@@ -86,14 +96,30 @@ public abstract class AbstractWebResource implements IWebResource {
         return null;
     }
 
+    /**
+     * Devuelve el gestor de consumidores OAuth.
+     *
+     * @return gestor OAuth.
+     */
     protected IOAuthConsumer getOAuthConsumer() {
         return oAuthConsumer;
     }
 
+    /**
+     * Verifica la validez de un token.
+     *
+     * @param token token a verificar.
+     * @return error si el token no es válido, o {@code null} si es válido.
+     */
     public IErrorReg verifyToken(String token) {
         return getOAuthConsumer().checkToken(token);
     }
 
+    /**
+     * Asigna el token a partir del encabezado indicado.
+     *
+     * @param tokenHeader encabezado con el token.
+     */
     protected void setToken(String tokenHeader) {
         String token = getTokenFromHeader(tokenHeader);
         //Si el token es null
@@ -122,6 +148,12 @@ public abstract class AbstractWebResource implements IWebResource {
         }
     }
 
+    /**
+     * Extrae el valor del token de un encabezado.
+     *
+     * @param tokenHeader encabezado con el token.
+     * @return valor del token.
+     */
     protected String getTokenFromHeader(String tokenHeader) {
         if (Strings.isNullorEmpty(tokenHeader)) {
             throw new TokenError("Debe proporcionar el token de autorización");
@@ -134,6 +166,12 @@ public abstract class AbstractWebResource implements IWebResource {
         return tokens[1];
     }
 
+    /**
+     * Verifica el token contra el servidor principal de autenticación.
+     *
+     * @param token token a verificar.
+     * @return verdadero si el servidor principal lo valida.
+     */
     protected boolean verifyTokenInMainServer(String token) {
         //Implementar en clases hijas
         return false;
