@@ -56,29 +56,42 @@ public interface IExcelRowProcessor<T extends IDataRow> {
     void setRow(Row row);
 
     /**
+     * Obtiene el mapa encabezado de Excel -> atributo del objeto destino.
      * @return el mapeo de encabezado de columna del Excel a nombre del atributo
      * en el objeto destino.
      */
     Map<String, String> getHeadToField();
 
     /**
+     * Obtiene el mapa atributo del objeto destino -> encabezado de Excel.
+     *
+     * <p>
+     * Si el atributo se encuentra null, se genera automáticamente a partir de
+     * headToField.</p>
      * @return el mapeo inverso de nombre de atributo en el objeto destino a
      * encabezado de columna del Excel.
      */
     Map<String, String> getFieldToHead();
 
     /**
+     * Devuelve el mapeo de encabezado de columna del Excel a índice de columna.
      * @return el mapeo de encabezado de columna del Excel a índice de columna.
      */
     Map<String, Integer> getHeadToIndex();
 
     /**
+     * Devuelve el índice (base 0) de la fila de encabezados de la planilla.
      * @return el índice (base 0) de la fila que contiene los encabezados de
      * columna dentro de la planilla.
      */
     int getHeaderRowIndex();
 
     /**
+     * Provee la clase de la entidad destino en la que se persiste cada registro.
+     * Es la entidad de la base de datos (no necesariamente la misma vista
+     * {@code T} leída de la planilla): cada fila se convierte hacia una instancia
+     * de este tipo con {@code IDataService.copyTo} antes de grabarla. Debe
+     * implementarse en cada subclase.
      * @return la clase del objeto destino, usada por {@link #process()} para
      * instanciarlo.
      */
@@ -95,6 +108,7 @@ public interface IExcelRowProcessor<T extends IDataRow> {
     String checkMetaData();
 
     /**
+     * Devuelve la hoja a la que pertenece la fila en curso.
      * @return la hoja a la que pertenece la fila en curso, o {@code null} si
      * aún no se asignó ninguna fila.
      */

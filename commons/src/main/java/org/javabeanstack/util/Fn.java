@@ -253,9 +253,10 @@ public class Fn {
     }
 
     /**
+     * Construye un mapa de parámetros a partir de pares clave-valor consecutivos.
      *
-     * @param params
-     * @return
+     * @param params pares (clave, valor) consecutivos.
+     * @return mapa de parámetros.
      */
     public static Map<String, Object> queryParams(Object... params) {
         Map<String, Object> result = new HashMap();

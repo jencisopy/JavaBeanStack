@@ -51,6 +51,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     private Map<String, Object> properties;
 
     /**
+     * Devuelve el valor de la columna identificadora.
      *
      * @return id del registro
      */
@@ -94,6 +95,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna por su nombre.
      *
      * @param index nro de columna
      * @return valor de la columna
@@ -114,6 +116,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna por su nombre.
      *
      * @param columnName nombre de la columna
      * @return valor de la columna
@@ -132,6 +135,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como cadena.
      *
      * @param columnName nombre de la columna
      * @return valor de la columna como caracter.
@@ -159,6 +163,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como cadena.
      *
      * @param index nro de columna
      * @return valor de la columna como caracter.
@@ -175,6 +180,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como número decimal.
      *
      * @param columnName nombre de la columna
      * @return valor de la columna como bigdecimal
@@ -204,6 +210,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como número decimal.
      *
      * @param index nro de columna
      * @return valor de la columna como bigdecimal
@@ -231,6 +238,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como {@link Long}.
      *
      * @param columnName nombre de la columna
      * @return valor de la columna como long
@@ -260,6 +268,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como {@link Long}.
      *
      * @param index nro de columna.
      * @return valor de la columna como long
@@ -287,6 +296,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como {@link Integer}.
      *
      * @param columnName nombre de la columna
      * @return valor de la columna como integer
@@ -316,6 +326,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como {@link Integer}.
      *
      * @param index nro de columna
      * @return valor de la columna como integer
@@ -343,6 +354,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como {@link LocalDateTime}.
      *
      * @param columnName nombre de la columna
      * @return valor de la columna como LocalDateTime
@@ -373,6 +385,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el valor de una columna como {@link LocalDateTime}.
      *
      * @param index nro de columna
      * @return valor de la columna como LocalDateTime
@@ -401,6 +414,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve el nombre de la columna ubicada en el índice indicado.
      *
      * @param index nro. de la columna
      * @return el nombre de la columna
@@ -448,6 +462,7 @@ public class DataQueryModel implements IDataQueryModel, Serializable {
     }
 
     /**
+     * Devuelve la fila cruda (arreglo de valores) subyacente.
      *
      * @return registro resultante del nativequery query
      */

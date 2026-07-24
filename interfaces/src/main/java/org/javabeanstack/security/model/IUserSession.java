@@ -42,41 +42,48 @@ import org.javabeanstack.model.IAppUser;
 public interface IUserSession extends Serializable {
 
     /**
+     * Empresa seleccionada
      *
      * @return Devuelve el objeto empresa a la cual se accedio en esta sesión.
      */
     IAppCompany getCompany();
     /**
+     * Devuelve la empresa activa de la sesión (alias de {@link #getCompany()}).
      *
      * @return Devuelve el objeto empresa a la cual se accedio en esta sesión.
      */
     IAppCompany getEmpresa();
 
     /**
+     * Devuelve el error de creación de la sesión, si la creación no fue exitosa.
      *
      * @return Devuelve un objeto error si la creación de la sesión no fue exitosa
      */
     IErrorReg getError();
 
     /**
+     * Devuelve el host del cliente.
      *
      * @return Devuelve el nombre de la máquina desde la cual fue creada la sesión.
      */
     String getHost();
 
     /**
+     * Devuelve la ip de la terminal desde la cual se creó la sesión.
      *
      * @return Devuelve el ip de la terminal, desde la cual fue creada la sesión
      */
     String getIp();
 
     /**
+     * Devuelve la última fecha y hora en que se hizo referencia a la sesión.
      *
      * @return Devuelve la ultima fecha y hora que se hizo referencia a la sesión.
      */
     LocalDateTime getLastReference();
 
     /**
+     * Devuelve la unidad de persistencia asociada a la sesión.
      *
      * @return Devuelve la unidad de persistencia donde se encuentra la configuración
      * para acceso a la base de datos donde esta la información de la empresa logeada
@@ -84,12 +91,14 @@ public interface IUserSession extends Serializable {
     String getPersistenceUnit();
 
     /**
+     * Devuelve el identificador de la sesión.
      *
      * @return Devuelve el identificador de la sesión
      */
     String getSessionId();
 
     /**
+     * Devuelve la fecha y hora que fue iniciada la sesión
      *
      * @return Devuelve la fecha y hora que fue logeada la sesión
      */

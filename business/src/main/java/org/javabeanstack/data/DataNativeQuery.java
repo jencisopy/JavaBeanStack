@@ -855,6 +855,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve las columnas (porción select) del la sentencia
      *
      * @return devuelve las columnas (porción select) del la sentencia
      */
@@ -874,6 +875,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Expresión con la lista de entidades (tablas y/o vistas)
      *
      * @return entidades (tablas y/o vistas)
      */
@@ -883,6 +885,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Lista de entidades (tablas y/o vistas)
      *
      * @return lista de entidades
      */
@@ -895,6 +898,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve la expresión where
      *
      * @return filtros (expresión where)
      */
@@ -904,6 +908,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve la lista de filtros de la expresión where
      *
      * @return lista de filtros (expresión where)
      */
@@ -916,6 +921,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve la expresion ORDER BY
      *
      * @return expresión order by
      */
@@ -925,6 +931,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve la lista de columnas del ORDER BY
      *
      * @return lista de columnas order by
      */
@@ -934,6 +941,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve la expresion GROUP BY
      *
      * @return expresión group by
      */
@@ -943,6 +951,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve la lista de columnas que forma la expresion GROUP BY
      *
      * @return lista de columnas del group by
      */
@@ -955,6 +964,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve la expresión HAVING
      *
      * @return expresión having
      */
@@ -977,6 +987,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve la sentencia SELECT resultante de los parámetros recibidos.
      *
      * @return la sentencia resultante de los parámetros recibidos.
      */
@@ -986,6 +997,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve un Map con los parametros ingresados en la expresión
      *
      * @return parámetros
      */
@@ -995,6 +1007,7 @@ public class DataNativeQuery implements IDataNativeQuery {
     }
 
     /**
+     * Devuelve el objeto para acceso a datos.
      *
      * @return devuelve el objeto para acceso a datos.
      */

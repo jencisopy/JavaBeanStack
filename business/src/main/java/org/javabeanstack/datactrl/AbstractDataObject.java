@@ -150,6 +150,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     private final Map<String, Object> properties = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
     /**
+     * Indica si el cursor está en modo lectura-escritura.
      * @return Devuelve true si los datos son de solo lectura
      */
     @Override

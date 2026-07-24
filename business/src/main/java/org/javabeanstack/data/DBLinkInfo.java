@@ -61,6 +61,7 @@ public class DBLinkInfo implements IDBLinkInfo {
     }
 
     /**
+     * Devuelve el identificador de la empresa activa.
      *
      * @return idcompany
      */
@@ -83,6 +84,7 @@ public class DBLinkInfo implements IDBLinkInfo {
     }
 
     /**
+     * Devuelve el identificador de la empresa/período activo.
      *
      * @return
      */
@@ -102,6 +104,7 @@ public class DBLinkInfo implements IDBLinkInfo {
     }
 
     /**
+     * Devuelve el nombre de la unidad de persistencia a utilizar.
      *
      * @return unidad de persistencia.
      */
@@ -118,6 +121,7 @@ public class DBLinkInfo implements IDBLinkInfo {
     }
 
     /**
+     * Devuelve la sesión de usuario asociada al contexto.
      *
      * @return objeto con información de la sesión del usuario.
      */

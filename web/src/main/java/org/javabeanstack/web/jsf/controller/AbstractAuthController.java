@@ -165,7 +165,8 @@ public abstract class AbstractAuthController extends AbstractController {
     }
 
     /**
-     * @return password
+     * Devuelve la contraseña ingresada por el usuario.
+     * @return contraseña ingresada.
      */
     public String getPassword() {
         return password;

@@ -47,6 +47,7 @@ public class NumberToLetterConverter {
     }
     
     /**
+     * Convierte un número a su representación en letras en el idioma indicado.
      *
      * @param number numero a convertir en letras.
      * @param locale valores posibles Locales("es"), Locale.ENGLISH, Locale.GERMAN.

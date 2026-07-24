@@ -115,6 +115,7 @@ public class UserSession implements IUserSession{
     }
     
     /**
+     * Empresa seleccionada
      * 
      * @return Devuelve el objeto company a la cual se accedio en esta sesión.
      */
@@ -124,6 +125,7 @@ public class UserSession implements IUserSession{
     }
 
     /**
+     * Devuelve la empresa activa de la sesión (alias de {@link #getCompany()}).
      * 
      * @return Devuelve el objeto company a la cual se accedio en esta sesión.
      */
@@ -172,6 +174,7 @@ public class UserSession implements IUserSession{
     }
 
     /**
+     * Devuelve el host del cliente.
      * 
      * @return Devuelve el nombre de la máquina desde la cual fue creada la sesión.
      */
@@ -190,6 +193,7 @@ public class UserSession implements IUserSession{
     }
 
     /**
+     * Devuelve la unidad de persistencia asociada a la sesión.
      * 
      * @return Devuelve la unidad de persistencia donde se encuentra la configuración
  para acceso a la base de datos donde esta la información de la company logeada
@@ -210,6 +214,7 @@ public class UserSession implements IUserSession{
     }
 
     /**
+     * Devuelve el identificador de la sesión.
      * 
      * @return Devuelve el identificador de la sesión
      */
@@ -229,6 +234,7 @@ public class UserSession implements IUserSession{
     }    
 
     /**
+     * Devuelve el error de creación de la sesión, si la creación no fue exitosa.
      * 
      * @return Devuelve un objeto error si la creación de la sesión no fue exitosa
      */

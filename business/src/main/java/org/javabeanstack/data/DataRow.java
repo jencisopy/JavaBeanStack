@@ -320,6 +320,7 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     /**
+     * Devuelve las advertencias de validación registradas por campo.
      *
      * @return devuelve map con una lista de errores por campo si lo hubiese.
      */
@@ -340,6 +341,8 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     /**
+     * Devuelve los errores de validación registrados por campo (excluye las
+     * advertencias).
      *
      * @return devuelve map con una lista de errores por campo si lo hubiese.
      */

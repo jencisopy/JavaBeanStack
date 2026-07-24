@@ -428,6 +428,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve un registro a travéz de su clave unica.
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -482,6 +483,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -501,6 +504,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -532,6 +537,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -553,6 +560,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -594,6 +603,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -614,6 +625,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -636,6 +649,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -669,6 +684,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -704,6 +721,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Selecciona datos de la base de datos a travez de una instrucción sql nativa
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -745,6 +763,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Selecciona datos de la base de datos a travez de una instrucción sql nativa
      *
      * @param <T>
      * @param clazz
@@ -788,6 +807,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Ejecuta una sentencia (select, insert, update, remove) sobre la base de
+     * datos
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -862,6 +883,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Ejecuta una sentencia (select, insert, update, remove) sobre la base de
+     * datos
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -1455,6 +1478,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve el nombre del motor de la base de datos.
      *
      * @param persistentUnit unidad de persistencia
      * @return devuelve el nombre del motor de la base de datos
@@ -1469,6 +1493,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve el schema de datos
      *
      * @param persistentUnit unidad de persistencia
      * @return devuelve el schema
@@ -1480,6 +1505,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una conexión a la base solo funciona en un ambiente @local no
+     * funciona en @Remote
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * @return una conexión a la base solo funciona en un ambiente @local no
@@ -1495,6 +1522,8 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve una conexión del entity manager, solo funciona en un ambiente
+     * local no funciona en @Remote
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -1582,6 +1611,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Devuelve el objeto userSession con la información de la sesión
      *
      * @param sessionId id de sesión del usuario
      * @return el objeto userSession con la información de la sesión

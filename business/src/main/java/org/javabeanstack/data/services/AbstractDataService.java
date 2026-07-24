@@ -121,6 +121,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve el objeto userSession con la información de la sesión
      *
      * @param sessionId id de sesión del usuario
      * @return el objeto userSession con la información de la sesión
@@ -154,6 +155,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve el nombre del motor de la base de datos.
      *
      * @param persistentUnit unidad de persistencia
      * @return devuelve el nombre del motor de la base de datos
@@ -164,6 +166,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve el schema de datos
      *
      * @param persistentUnit unidad de persistencia
      * @return devuelve el schema
@@ -313,6 +316,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve un registro a travéz de su clave unica.
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -328,6 +332,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -344,6 +350,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -361,6 +369,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -379,6 +389,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -394,6 +406,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -410,6 +424,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -426,6 +442,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
@@ -443,6 +461,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Devuelve una lista de objetos conteniendo los registros de la tabla
+     * solicitada
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -457,6 +477,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Selecciona datos de la base de datos a travez de una instrucción sql nativa
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -473,6 +494,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Selecciona datos de la base de datos a travez de una instrucción sql nativa
      *
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -1358,6 +1380,8 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Importa datos desde un conjunto de resultados de consulta hacia entidades
+     * destino.
      *
      * @param <S> Tipo de ejb VIEW que va a hacer de intermediario entre los
      * datos tipo dataQueryModel y el ejb destino de tipo TABLE.

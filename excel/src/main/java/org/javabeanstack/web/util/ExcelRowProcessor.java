@@ -246,6 +246,11 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
 
     /**
+     * Provee la clase de la entidad destino en la que se persiste cada registro.
+     * Es la entidad de la base de datos (no necesariamente la misma vista
+     * {@code T} leída de la planilla): cada fila se convierte hacia una instancia
+     * de este tipo con {@code IDataService.copyTo} antes de grabarla. Debe
+     * implementarse en cada subclase.
      * @return la clase del objeto destino, usada por {@link #process()} para
      * instanciarlo
      */
@@ -255,6 +260,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
     
     /**
+     * Devuelve el mapa de propiedades libres asociadas al registro.
      * @return las propiedades de configuración del procesador (por ejemplo,
      * {@code allowFieldNotExist}); nunca {@code null} (si no se establecieron,
      * retorna un mapa vacío)
@@ -392,6 +398,8 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
 
     /**
+     * Devuelve la fila de Excel que se está procesando actualmente.
+     *
      * @return la fila de Excel que se está procesando actualmente
      */
     protected Row getRow() {
@@ -399,6 +407,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
     
     /**
+     * Devuelve la hoja a la que pertenece la fila en curso.
      * @return la hoja a la que pertenece la fila en curso, o {@code null} si
      * aún no se asignó ninguna fila
      */
@@ -425,6 +434,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
 
 
     /**
+     * Obtiene el mapa encabezado de Excel -> atributo del objeto destino.
      * @return el mapeo de encabezado de columna del Excel a nombre del atributo
      * en targetType
      */
@@ -434,6 +444,11 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
 
     /**
+     * Obtiene el mapa atributo del objeto destino -> encabezado de Excel.
+     *
+     * <p>
+     * Si el atributo se encuentra null, se genera automáticamente a partir de
+     * headToField.</p>
      * @return el mapeo inverso de nombre de atributo en targetType a encabezado
      * de columna del Excel
      */
@@ -443,6 +458,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
 
     /**
+     * Devuelve el mapeo de encabezado de columna del Excel a índice de columna.
      * @return el mapeo de encabezado de columna del Excel a índice de columna
      */
     @Override
@@ -451,6 +467,7 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
 
     /**
+     * Devuelve el índice (base 0) de la fila de encabezados de la planilla.
      * @return el índice (base 0) de la fila que contiene los encabezados de
      * columna dentro de la planilla
      */

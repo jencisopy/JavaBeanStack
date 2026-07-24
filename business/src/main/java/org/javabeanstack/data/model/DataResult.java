@@ -190,6 +190,7 @@ public class DataResult implements IDataResult {
     }
 
     /**
+     * Devuelve el texto concatenado de los mensajes de error de la operación.
      *
      * @return devuelve una cadena de errores si lo hubiese.
      */

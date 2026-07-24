@@ -144,11 +144,12 @@ public class JasperReportUtil {
     }
 
     /**
+     * Genera y muestra un reporte JasperReports con los datos y parámetros indicados.
      *
      * @param reportName nombre del reporte.
      * @param parameters parametros del reporte.
      * @param data datos a mostrar.
-     * @param classRef
+     * @param classRef clase de referencia para localizar el recurso del reporte.
      * @throws JRException
      * @throws IOException
      * @throws NamingException

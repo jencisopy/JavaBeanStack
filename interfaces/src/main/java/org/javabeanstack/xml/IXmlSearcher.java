@@ -148,6 +148,7 @@ public interface IXmlSearcher<V> extends Serializable{
      */
     String search(IXmlDom context, String xmlPath);
     /**
+     * Indica si existe el recurso XML en la ruta indicada.
      * 
      * @param xmlPath  recurso buscado
      * @return verdadero si encontro el recurso y falso si no.

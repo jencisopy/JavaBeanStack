@@ -232,6 +232,7 @@ public class DataSet implements IDataSet {
     }
 
     /**
+     * Devuelve la cantidad de listas contenidas en el conjunto.
      *
      * @return devuelve la cantidad de sets de datos.
      */
