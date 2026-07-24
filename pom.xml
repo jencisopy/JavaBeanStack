@@ -87,9 +87,15 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.3</version>
+                        <version>3.12.0</version>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <!-- Se validan html/sintaxis/referencias; "missing" queda
+                                 fuera (getters/setters de entidades sin javadoc). -->
+                            <doclint>all,-missing</doclint>
+                            <quiet>true</quiet>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                            <charset>UTF-8</charset>
                         </configuration>
                         <executions>
                             <execution>
@@ -114,9 +120,15 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.3</version>
+                        <version>3.12.0</version>
                         <configuration>
-                            <additionalparam>-Xdoclint:none -docencoding "UTF-8"</additionalparam>
+                            <!-- Se validan html/sintaxis/referencias; "missing" queda
+                                 fuera (getters/setters de entidades sin javadoc). -->
+                            <doclint>all,-missing</doclint>
+                            <quiet>true</quiet>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                            <charset>UTF-8</charset>
                         </configuration>
                         <executions>
                             <execution>

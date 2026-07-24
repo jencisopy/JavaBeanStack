@@ -52,7 +52,7 @@ import org.javabeanstack.xml.DomW3cParser;
  *
  * Se implementan dos tipos de almacenes de datos de configuración
  *
- * El 1ro es un Map<Clave,Valor> el cual se guarda objetos DOM conteniendo
+ * El 1ro es un {@code Map<Clave,Valor>} el cual se guarda objetos DOM conteniendo
  * información en formato xml.
  *
  * El 2do. es un objeto "AppSystemParam" mapeado a una tabla de la base de datos

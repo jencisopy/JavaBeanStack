@@ -31,14 +31,14 @@ import java.util.Map;
  * tablas o vistas de la base de datos.
  *
  * <p>Define el comportamiento común que la capa de datos ({@link IGenericDAO},
- * {@link IDataService}) espera de cada entidad: el seguimiento de la operación
+ * {@link org.javabeanstack.data.services.IDataService}) espera de cada entidad: el seguimiento de la operación
  * CRUD a realizar ({@link #INSERT}, {@link #UPDATE}, {@link #DELETE}), la
  * conservación de los valores previos de los campos (para detectar cambios y
  * auditar), el registro de errores/advertencias de validación por campo, el
  * acceso genérico a los valores por nombre de campo (vía reflexión) y el
  * soporte de firma digital de la fila.</p>
  *
- * <p>La implementación de referencia es {@link org.javabeanstack.data.DataRow};
+ * <p>La implementación de referencia es {@code org.javabeanstack.data.DataRow};
  * las entidades de aplicación la extienden en lugar de implementar directamente
  * esta interfaz.</p>
  *
