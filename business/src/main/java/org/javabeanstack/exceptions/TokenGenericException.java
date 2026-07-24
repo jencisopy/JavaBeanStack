@@ -23,22 +23,40 @@
 package org.javabeanstack.exceptions;
 
 /**
+ * Excepción de tiempo de ejecución que señala un error genérico en el manejo de
+ * tokens de autenticación.
  *
  * @author Jorge Enciso
  */
 public class TokenGenericException extends RuntimeException {
+    /**
+     * Crea la excepción sin mensaje de detalle.
+     */
     public TokenGenericException(){
         super();
     }
-    
+
+    /**
+     * Crea la excepción con el mensaje indicado.
+     * @param message mensaje de detalle.
+     */
     public TokenGenericException(String message){
         super(message);
     }
 
+    /**
+     * Crea la excepción con el mensaje y la causa indicados.
+     * @param message mensaje de detalle.
+     * @param cause causa original.
+     */
     public TokenGenericException(String message, Throwable cause){
         super(message, cause);
     }
 
+    /**
+     * Crea la excepción con la causa indicada.
+     * @param cause causa original.
+     */
     public TokenGenericException(Throwable cause){
         super(cause);
     }

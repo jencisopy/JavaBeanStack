@@ -45,6 +45,11 @@ public class DataExpression implements IDataExpression{
     private Map<String, Object> sentenceParams = new HashMap();
 
     
+    /**
+     * Devuelve la lista de elementos que componen la expresión.
+     *
+     * @return lista de elementos de la expresión.
+     */
     public final List<ElementExpr> getExpressionList() {
         return exprList;
     }
@@ -88,11 +93,24 @@ public class DataExpression implements IDataExpression{
         String grupo = "";
         Map<String, String> params;
 
+        /**
+         * Crea un elemento de expresión.
+         *
+         * @param expr expresión.
+         * @param params parámetros con sus valores.
+         */
         public ElementExpr(String expr, Map<String, String> params) {
             this.expresion = expr;
             this.params = params;
         }
 
+        /**
+         * Crea un elemento de expresión con operador.
+         *
+         * @param expr expresión.
+         * @param params parámetros con sus valores.
+         * @param operator operador (and, or, in).
+         */
         public ElementExpr(String expr, Map<String, String> params, String operator) {
             this.expresion = expr;
             this.params = params;
@@ -101,6 +119,14 @@ public class DataExpression implements IDataExpression{
             }
         }
 
+        /**
+         * Crea un elemento de expresión con operador y grupo.
+         *
+         * @param expr expresión.
+         * @param params parámetros con sus valores.
+         * @param operator operador (and, or, in).
+         * @param group grupo al que pertenece el elemento.
+         */
         public ElementExpr(String expr, Map<String, String> params, String operator, String group) {
             this.expresion = expr;
             this.params = params;

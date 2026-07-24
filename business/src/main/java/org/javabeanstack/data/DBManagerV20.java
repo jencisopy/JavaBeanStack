@@ -68,10 +68,10 @@ import org.javabeanstack.util.Strings;
  * - jbs.persistence.dynamic.units=PU3,PU4,... | * unidades a resolver dinámicamente
  * - jbs.persistence.dynamic.datasource.prefix=    prefijo del datasource + número de PU
  * - jbs.persistence.dynamic.properties=           whitelist de propiedades a aplicar
- * - jbs.persistence.dynamic.property.<nombre>=    valor de cada propiedad de la whitelist
+ * - jbs.persistence.dynamic.property.&lt;nombre&gt;=    valor de cada propiedad de la whitelist
  * - jbs.persistence.dynamic.managed.classes[.resource]=  clases del modelo (lista o recurso)
  * - jbs.persistence.dynamic.mapping.files=        archivos orm.xml adicionales
- * - jbs.persistence.dynamic.<PU>.<nombre>=        override por unidad (jtaDataSource, etc.)
+ * - jbs.persistence.dynamic.&lt;PU&gt;.&lt;nombre&gt;=        override por unidad (jtaDataSource, etc.)
  *
  * Ciclo de vida de los entity manager dinámicos (application-managed):
  * con transacción JTA activa se crea uno por (transacción, unidad) que se
@@ -117,7 +117,7 @@ public class DBManagerV20 implements IDBManager {
     /**
      * System property con el prefijo JNDI del datasource de las unidades
      * dinámicas; se concatena el número de la unidad (jdbc/Maker950DS_ + 7).
-     * Puede sobreescribirse por unidad con jbs.persistence.dynamic.<PU>.jtaDataSource.
+     * Puede sobreescribirse por unidad con jbs.persistence.dynamic.&lt;PU&gt;.jtaDataSource.
      */
     private static final String DYNAMIC_DATASOURCE_PREFIX = "jbs.persistence.dynamic.datasource.prefix";
 
@@ -129,7 +129,7 @@ public class DBManagerV20 implements IDBManager {
     /**
      * System property con la whitelist (separada por comas) de nombres de
      * propiedades a aplicar a cada EMF dinámico; el valor de cada una se lee de
-     * jbs.persistence.dynamic.property.<nombre>.
+     * jbs.persistence.dynamic.property.&lt;nombre&gt;.
      */
     private static final String DYNAMIC_PROPERTIES = "jbs.persistence.dynamic.properties";
 
@@ -453,7 +453,7 @@ public class DBManagerV20 implements IDBManager {
     /**
      * Aplica al EMF dinámico las propiedades de la whitelist
      * jbs.persistence.dynamic.properties, leyendo el valor de cada una de
-     * jbs.persistence.dynamic[.<PU>].property.<nombre> (el override por unidad
+     * jbs.persistence.dynamic[.&lt;PU&gt;].property.&lt;nombre&gt; (el override por unidad
      * tiene prioridad).
      *
      * @param config configuración de persistencia en construcción.
@@ -577,8 +577,8 @@ public class DBManagerV20 implements IDBManager {
 
     /**
      * Lee una system property dinámica con prioridad: primero el override por
-     * unidad (jbs.persistence.dynamic.<PU>.<nombre>) y luego el valor global
-     * (jbs.persistence.dynamic.<nombre>).
+     * unidad (jbs.persistence.dynamic.&lt;PU&gt;.&lt;nombre&gt;) y luego el valor global
+     * (jbs.persistence.dynamic.&lt;nombre&gt;).
      *
      * @param persistentUnit unidad de persistencia.
      * @param name nombre de la propiedad (sin prefijo).

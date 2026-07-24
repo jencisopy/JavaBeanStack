@@ -1385,6 +1385,14 @@ public abstract class AbstractDataService implements IDataService {
         Files.writeString(file, log, StandardOpenOption.APPEND);
     }
 
+    /**
+     * Asigna el valor por defecto de un campo de la entidad.
+     *
+     * @param <T> tipo de la entidad.
+     * @param row entidad a completar.
+     * @param fieldName nombre del campo.
+     * @throws Exception si falla la asignación del valor por defecto.
+     */
     protected <T extends IDataRow> void setDefault(T row, String fieldName) throws Exception {
         if (row.getFieldType(fieldName) == BigDecimal.class) {
             row.setValue(fieldName, BigDecimal.ZERO);
@@ -1399,6 +1407,18 @@ public abstract class AbstractDataService implements IDataService {
         }
     }
 
+    /**
+     * Ejecuta una función de base de datos (dependiente del motor) y devuelve
+     * su valor, usando los campos de la entidad como parámetros.
+     *
+     * @param <T> tipo de la entidad.
+     * @param sessionId identificador de la sesión del usuario.
+     * @param source entidad con los valores de los parámetros.
+     * @param fieldId campo destino del valor calculado.
+     * @param fn expresión de la función a ejecutar.
+     * @return valor devuelto por la función.
+     * @throws Exception si la ejecución falla.
+     */
     protected <T extends IDataRow> Object getValueFromFn(String sessionId, T source, String fieldId, String fn) throws Exception {
         Map<String, Object> params;
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);

@@ -49,9 +49,19 @@ public class ClientAuth {
     private String type = "";
     private String entityBody = "";
     
+    /**
+     * Constructor por defecto.
+     */
     public ClientAuth(){
     }
 
+    /**
+     * Crea la información de autenticación del cliente.
+     *
+     * @param method método de autenticación.
+     * @param msgHeader encabezado del mensaje.
+     * @param msgBody cuerpo del mensaje.
+     */
     public ClientAuth(String method, String msgHeader, String msgBody){
         setProperties(method, msgHeader, msgBody);
     }

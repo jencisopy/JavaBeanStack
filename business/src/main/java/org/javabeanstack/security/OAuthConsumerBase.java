@@ -62,6 +62,11 @@ import org.javabeanstack.util.LocalDates;
 
 /**
  *
+ * Implementación base de la gestión de consumidores OAuth y sus tokens
+ * ({@link org.javabeanstack.security.IOAuthConsumer}): emisión, validación y
+ * revocación de tokens, y resolución del usuario, la empresa y el filtro de
+ * datos a partir de un token. La extiende {@code OAuthConsumer}.
+ *
  * @author Jorge Enciso
  */
 public abstract class OAuthConsumerBase implements IOAuthConsumer {
@@ -87,10 +92,20 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         this.dao = dao;
     }
 
+    /**
+     * Devuelve el último consumidor de autenticación resuelto.
+     *
+     * @return último consumidor, o {@code null} si no hay.
+     */
     public IAppAuthConsumer getLastAuthConsumer() {
         return lastAuthConsumer;
     }
 
+    /**
+     * Devuelve el último token de autenticación resuelto.
+     *
+     * @return último token, o {@code null} si no hay.
+     */
     public IAppAuthConsumerToken getLastAuthConsumerToken() {
         return lastAuthConsumerToken;
     }
@@ -541,7 +556,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     }
 
     /**
-     * Convierte una map<String,String> a un formato standard string para
+     * Convierte un {@code Map<String,String>} a un formato standard string para
      * guardar en la base
      *
      * @param data map con los datos.
@@ -1144,6 +1159,11 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         return null;
     }
 
+    /**
+     * Devuelve el servicio de empresas utilizado por el componente.
+     *
+     * @return servicio de empresas.
+     */
     protected IAppCompanySrv getAppCompanySrv() {
         return appCompanySrv;
     }

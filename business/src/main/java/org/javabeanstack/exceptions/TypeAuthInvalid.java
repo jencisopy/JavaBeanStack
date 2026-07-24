@@ -23,6 +23,8 @@
 package org.javabeanstack.exceptions;
 
 /**
+ * Excepción que señala que el tipo de autenticación/autorización indicado no es
+ * válido.
  *
  * @author Jorge Enciso
  */

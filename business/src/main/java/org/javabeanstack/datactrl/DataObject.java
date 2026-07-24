@@ -43,18 +43,40 @@ public class DataObject <T extends IDataRow> extends AbstractDataObject{
     @Inject
     private IDataLink daoCatalog;
     
+    /**
+     * Constructor por defecto.
+     */
     public DataObject(){
     }
 
+    /**
+     * Crea el objeto de datos para la entidad indicada.
+     *
+     * @param type clase de la entidad.
+     */
     public DataObject(Class<T> type){
         this.setType(type);
     }    
 
+    /**
+     * Crea el objeto de datos con su manejador de eventos.
+     *
+     * @param type clase de la entidad.
+     * @param dtEvents manejador de eventos.
+     */
     public DataObject(Class<T> type, IDataEvents dtEvents){
         this.setType(type);
         this.setDataEvents(dtEvents);
     }
 
+    /**
+     * Crea el objeto de datos con eventos y conexiones de datos explícitas.
+     *
+     * @param type clase de la entidad.
+     * @param dtEvents manejador de eventos.
+     * @param dao conexión de datos principal.
+     * @param daoCatalog conexión de datos del catálogo.
+     */
     public DataObject(Class<T> type, IDataEvents dtEvents, IDataLink dao, IDataLink daoCatalog){
         this.setType(type);
         this.setDataEvents(dtEvents);

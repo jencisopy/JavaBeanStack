@@ -101,10 +101,21 @@ public abstract class AbstractDAO implements IGenericDAO {
     @EJB
     private ILogManager logMngr;
 
+    /**
+     * Constructor por defecto.
+     */
     public AbstractDAO() {
     }
 
     @AroundInvoke
+    /**
+     * Interceptor que cierra los EntityManager dinámicos al finalizar la
+     * invocación del método de negocio.
+     *
+     * @param ctx contexto de la invocación interceptada.
+     * @return el resultado de la invocación.
+     * @throws Exception si la invocación o el cierre fallan.
+     */
     protected Object closeDynamicEntityManagers(InvocationContext ctx) throws Exception {
         try {
             return ctx.proceed();
@@ -138,6 +149,15 @@ public abstract class AbstractDAO implements IGenericDAO {
         return dbManager.getEntityManager(keyId);
     }
 
+    /**
+     * Crea una consulta a partir de la sentencia y sus parámetros, en el
+     * contexto de la sesión indicada.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param queryString sentencia de la consulta.
+     * @param parameters parámetros nombrados de la consulta.
+     * @return consulta lista para ejecutarse.
+     */
     protected final Query createQuery(String sessionId, String queryString, Map<String, Object> parameters) {
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
         EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
@@ -1034,6 +1054,16 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
     }
 
+    /**
+     * Registra en la tabla de auditoría el cambio realizado sobre la entidad.
+     *
+     * @param <T> tipo de la entidad.
+     * @param em entity manager activo.
+     * @param sessionId identificador de la sesión del usuario.
+     * @param ejb entidad auditada.
+     * @param auditAble verdadero si la entidad debe auditarse.
+     * @throws Exception si falla el registro de auditoría.
+     */
     protected final <T extends IDataRow> void auditSave(EntityManager em, String sessionId, T ejb, boolean auditAble) throws Exception {
         if (!auditAble && !isAuditAble(ejb)) {
             return;
@@ -1441,6 +1471,13 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    /**
+     * Asigna a la consulta los valores de los parámetros según la sentencia.
+     *
+     * @param query consulta a la que asignar los parámetros.
+     * @param parameters parámetros nombrados.
+     * @param queryString sentencia de la consulta.
+     */
     protected final void populateQueryParameters(Query query, Map<String, Object> parameters, String queryString) {
         parameters.entrySet().forEach(entry -> {
             try {

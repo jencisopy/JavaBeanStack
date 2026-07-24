@@ -23,22 +23,41 @@
 package org.javabeanstack.exceptions;
 
 /**
+ * Excepción que señala un error al asignar o convertir el valor de un campo de
+ * una entidad (por ejemplo, campo inexistente o tipo incorrecto en
+ * {@code DataRow.setValue}).
  *
  * @author Jorge Enciso
  */
 public class FieldException extends Exception {
+    /**
+     * Crea la excepción sin mensaje de detalle.
+     */
     public FieldException(){
         super();
     }
-    
+
+    /**
+     * Crea la excepción con el mensaje indicado.
+     * @param message mensaje de detalle.
+     */
     public FieldException(String message){
         super(message);
     }
 
+    /**
+     * Crea la excepción con el mensaje y la causa indicados.
+     * @param message mensaje de detalle.
+     * @param cause causa original.
+     */
     public FieldException(String message, Throwable cause){
         super(message, cause);
     }
 
+    /**
+     * Crea la excepción con la causa indicada.
+     * @param cause causa original.
+     */
     public FieldException(Throwable cause){
         super(cause);
     }

@@ -35,6 +35,10 @@ import org.javabeanstack.util.LocalDates;
 
 /**
  *
+ * Implementación de {@link IClientAuthRequestInfo}: cachea los datos de una
+ * solicitud de autenticación por token (token, empresa, fecha de registro y
+ * cantidad de usos) para evitar revalidar el token en cada request.
+ *
  * @author Jorge Enciso
  */
 public class ClientAuthRequestInfo implements IClientAuthRequestInfo{
@@ -45,6 +49,9 @@ public class ClientAuthRequestInfo implements IClientAuthRequestInfo{
     private LocalDateTime logDate;
     private int times;
 
+    /**
+     * Constructor por defecto; inicializa la fecha de registro con la fecha actual.
+     */
     public ClientAuthRequestInfo(){
         logDate = LocalDates.now();
     }

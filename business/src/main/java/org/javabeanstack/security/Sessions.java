@@ -367,6 +367,12 @@ public class Sessions implements ISessions {
         return true;
     }
 
+    /**
+     * Punto de extensión ejecutado después de crear una sesión.
+     *
+     * @param session sesión creada.
+     * @throws Exception si la lógica posterior falla.
+     */
     protected void afterCreateSession(IUserSession session) throws Exception {
     }
 
@@ -772,9 +778,18 @@ public class Sessions implements ISessions {
         String sessionId;
         String key;
 
+        /**
+         * Constructor por defecto.
+         */
         public SessionInfo() {
         }
 
+        /**
+         * Crea la clave de información de sesión.
+         *
+         * @param sessionId identificador de la sesión.
+         * @param key clave del dato de sesión.
+         */
         public SessionInfo(String sessionId, String key) {
             this.sessionId = sessionId;
             this.key = key;

@@ -24,8 +24,11 @@ package org.javabeanstack.datactrl.events;
 
 
 /**
+ * Implementación por defecto de los eventos del objeto de datos: extiende
+ * {@link AbstractDataEvents} sin agregar comportamiento. Sirve de punto de
+ * partida para redefinir solo los eventos que cada vista necesite.
  *
- *{@inheritDoc}
+ * @author Jorge Enciso
  */
 public class DataEvents extends AbstractDataEvents {
 }

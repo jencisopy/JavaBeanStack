@@ -23,22 +23,40 @@
 package org.javabeanstack.exceptions;
 
 /**
+ * Excepción que señala un error relacionado con la empresa (resolución o acceso
+ * a la empresa activa).
  *
  * @author Jorge Enciso
  */
 public class CompanyError extends Exception {
+    /**
+     * Crea la excepción sin mensaje de detalle.
+     */
     public CompanyError(){
         super();
     }
-    
+
+    /**
+     * Crea la excepción con el mensaje indicado.
+     * @param message mensaje de detalle.
+     */
     public CompanyError(String message){
         super(message);
     }
 
+    /**
+     * Crea la excepción con el mensaje y la causa indicados.
+     * @param message mensaje de detalle.
+     * @param cause causa original.
+     */
     public CompanyError(String message, Throwable cause){
         super(message, cause);
     }
 
+    /**
+     * Crea la excepción con la causa indicada.
+     * @param cause causa original.
+     */
     public CompanyError(Throwable cause){
         super(cause);
     }

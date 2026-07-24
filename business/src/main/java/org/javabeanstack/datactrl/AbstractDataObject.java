@@ -807,10 +807,23 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return true;
     }
 
+    /**
+     * Abre el cursor si está cerrado o vuelve a consultarlo, aplicando el filtro.
+     *
+     * @param filter filtro a aplicar.
+     */
     public void openOrRequery(String filter) {
         openOrRequery("", filter, -1);
     }
 
+    /**
+     * Abre el cursor si está cerrado o vuelve a consultarlo, con orden, filtro y
+     * paginación.
+     *
+     * @param order cláusula de ordenamiento.
+     * @param filter filtro a aplicar.
+     * @param maxrows máximo de registros.
+     */
     public void openOrRequery(String order, String filter, int maxrows) {
         if (!this.isOpen()) {
             this.open(order, filter, null, 0);
@@ -822,6 +835,15 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         this.requery();
     }
 
+    /**
+     * Abre o vuelve a consultar el cursor filtrando por el valor de un campo.
+     *
+     * @param fieldName nombre del campo.
+     * @param fieldValue valor a filtrar.
+     * @param order cláusula de ordenamiento.
+     * @param maxrows máximo de registros.
+     * @return verdadero si tuvo éxito, falso si no.
+     */
     public boolean openOrRequery(String fieldName, Object fieldValue, String order, int maxrows) {
         boolean result = false;
         if (!this.isOpen() || fieldValue == null) {
@@ -843,6 +865,16 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return result;
     }
 
+    /**
+     * Abre o vuelve a consultar el cursor por el valor de un campo solo si el
+     * filtro cambió respecto de la consulta anterior.
+     *
+     * @param fieldName nombre del campo.
+     * @param fieldValue valor a filtrar.
+     * @param order cláusula de ordenamiento.
+     * @param maxrows máximo de registros.
+     * @return verdadero si tuvo éxito, falso si no.
+     */
     public boolean openOrRequeryIf(String fieldName, Object fieldValue, String order, int maxrows) {
         boolean result = false;
         if (!this.isOpen() || fieldValue == null) {
@@ -1447,14 +1479,31 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         return true;
     }
 
+    /**
+     * Devuelve el mapa de propiedades libres del objeto de datos.
+     *
+     * @return mapa de propiedades.
+     */
     public Map<String, Object> getProperties() {
         return properties;
     }
 
+    /**
+     * Devuelve el valor de una propiedad libre por su clave.
+     *
+     * @param key clave de la propiedad.
+     * @return valor de la propiedad, o {@code null} si no existe.
+     */
     public Object getProperty(String key) {
         return properties.get(key);
     }
 
+    /**
+     * Agrega o reemplaza una propiedad libre.
+     *
+     * @param key clave de la propiedad.
+     * @param value valor de la propiedad.
+     */
     public void setProperty(String key, Object value) {
         properties.put(key, value);
     }

@@ -61,6 +61,9 @@ public class DigestAuth {
     private List<String> algorithmValids = new ArrayList();
     private List<String> qopValids = new ArrayList();
 
+    /**
+     * Constructor por defecto.
+     */
     public DigestAuth() {
         defaultAttributes();
     }
@@ -106,14 +109,32 @@ public class DigestAuth {
         qopValids.add("auth-int");
     }
     
+    /**
+     * Indica si el tipo de autenticación es válido.
+     *
+     * @param typeAuth tipo de autenticación.
+     * @return verdadero si es válido, falso si no.
+     */
     protected final boolean isValidTypeAuth(String typeAuth){
         return typeAuthValids.contains(typeAuth);
     }
 
+    /**
+     * Indica si el algoritmo indicado es válido.
+     *
+     * @param algorithm algoritmo.
+     * @return verdadero si es válido, falso si no.
+     */
     protected final boolean isValidAlgoritm(String algorithm){
         return algorithmValids.contains(algorithm);
     }
 
+    /**
+     * Indica si el valor de qop (quality of protection) es válido.
+     *
+     * @param qop valor de qop.
+     * @return verdadero si es válido, falso si no.
+     */
     protected final boolean isValidQop(String qop){
         return qopValids.contains(qop);
     }

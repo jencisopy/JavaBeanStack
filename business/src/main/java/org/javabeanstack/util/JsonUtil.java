@@ -37,6 +37,10 @@ import org.javabeanstack.data.IDataQueryModel;
 
 /**
  *
+ * Utilidad de conversión a JSON: transforma listas de filas de consulta
+ * ({@link org.javabeanstack.data.IDataQueryModel}) en arreglos JSON, mapeando
+ * cada columna a su tipo correspondiente.
+ *
  * @author Jorge Enciso
  */
 public class JsonUtil {

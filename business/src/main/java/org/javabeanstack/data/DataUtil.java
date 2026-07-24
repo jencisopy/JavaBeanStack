@@ -195,6 +195,13 @@ public class DataUtil {
         return result;
     }
     
+    /**
+     * Devuelve el nombre del tipo de dato de fecha/hora del motor indicado
+     * ({@code DATE} en Oracle, {@code DATETIME} en el resto).
+     *
+     * @param engine nombre del motor de base de datos.
+     * @return nombre del tipo de fecha/hora.
+     */
     public static String getDateTimeType(String engine){
         if (engine.equals("ORACLE")){
             return "DATE";

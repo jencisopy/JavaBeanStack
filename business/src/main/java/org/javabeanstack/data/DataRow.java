@@ -85,6 +85,9 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     private Class<? extends IDataRow> auditTable;
 
+    /**
+     * Constructor por defecto; inicializa la operación en 0 (sin acción).
+     */
     public DataRow() {
         this.action = 0;
     }

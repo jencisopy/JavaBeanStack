@@ -38,9 +38,18 @@ public class DataLink extends AbstractDataLink {
     @EJB
     private IGenericDAO dao;
 
+    /**
+     * Constructor por defecto.
+     */
     public DataLink() {
     }
 
+    /**
+     * Crea la conexión de datos sobre el DAO indicado.
+     *
+     * @param <T> tipo del DAO.
+     * @param dao DAO genérico subyacente.
+     */
     public <T extends IGenericDAO> DataLink(T dao) {
         this.dao = dao;
     }

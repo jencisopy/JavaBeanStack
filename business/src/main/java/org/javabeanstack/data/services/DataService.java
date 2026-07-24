@@ -23,9 +23,11 @@
 package org.javabeanstack.data.services;
 
 /**
+ * Servicio de datos genérico concreto: implementación lista para usar de
+ * {@link AbstractDataService} sin lógica de negocio adicional. Las entidades que
+ * no requieran validaciones específicas pueden usar este servicio directamente.
  *
  * @author Jorge Enciso
  */
-  
-public class DataService extends AbstractDataService { 
+public class DataService extends AbstractDataService {
 }

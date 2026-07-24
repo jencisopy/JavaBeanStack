@@ -23,22 +23,40 @@
 package org.javabeanstack.exceptions;
 
 /**
+ * Excepción de tiempo de ejecución que señala una falla en la validación
+ * (check) de una entidad o de sus campos.
  *
  * @author Jorge Enciso
  */
 public class CheckException extends RuntimeException {
+    /**
+     * Crea la excepción sin mensaje de detalle.
+     */
     public CheckException(){
         super();
     }
-    
+
+    /**
+     * Crea la excepción con el mensaje indicado.
+     * @param message mensaje de detalle.
+     */
     public CheckException(String message){
         super(message);
     }
 
+    /**
+     * Crea la excepción con el mensaje y la causa indicados.
+     * @param message mensaje de detalle.
+     * @param cause causa original.
+     */
     public CheckException(String message, Throwable cause){
         super(message, cause);
     }
 
+    /**
+     * Crea la excepción con la causa indicada.
+     * @param cause causa original.
+     */
     public CheckException(Throwable cause){
         super(cause);
     }

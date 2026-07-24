@@ -32,16 +32,20 @@ import org.javabeanstack.data.IDataRow;
 
 /**
  * 
+ * Utilidad de parámetros: convierte una entidad derivada de {@code DataRow}
+ * en un mapa nombre→valor con sus campos simples (números, texto, fechas y
+ * booleanos), apto para usarse como parámetros de consulta.
+ *
  * @author Jorge Enciso
  */
 public class ParamsUtil {
 
     /**
      * Pasa los datos que se encuentran en un objeto derivado de DataRow a un 
-     * Map<String, Object>
+     * {@code Map<String, Object>}
      * @param <T>  tipo de objeto derivado de DataRow
      * @param source objeto DataRow
-     * @return Map<String, Object> desde el origen
+     * @return {@code Map<String, Object>} desde el origen
      * @throws IllegalArgumentException
      * @throws IllegalAccessException 
      */

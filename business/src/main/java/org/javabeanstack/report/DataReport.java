@@ -127,26 +127,57 @@ public class DataReport {
     
     private int dateGroup = 0; // 0 && Ninguno, 1 año, 2 año y mes
 
+    /**
+     * Constructor por defecto.
+     */
     public DataReport() {
         // Implementar en clases heredadas
     }
 
+    /**
+     * Crea el reporte sobre la conexión de datos indicada.
+     *
+     * @param dao conexión de datos.
+     */
     public DataReport(IDataLink dao) {
         this.dataLink = dao;
     }
 
+    /**
+     * Devuelve el criterio de agrupamiento por fecha.
+     *
+     * @return criterio de agrupamiento por fecha.
+     */
     public int getDateGroup() {
         return dateGroup;
     }
 
+    /**
+     * Asigna el criterio de agrupamiento por fecha.
+     *
+     * @param dateGroup criterio de agrupamiento por fecha.
+     */
     public void setDateGroup(int dateGroup) {
         this.dateGroup = dateGroup;
     }
 
+    /**
+     * Inicializa el reporte con su conexión de datos y las preferencias.
+     *
+     * @param dao conexión de datos.
+     * @param preference1 primer conjunto de preferencias.
+     * @param preference2 segundo conjunto de preferencias.
+     */
     public void init(IDataLink dao, Map<String, Object> preference1, Map<String, Object> preference2) {
         throw new UnsupportedOperationException("Debe implementar el metodo " + getClass().getName());
     }
     
+    /**
+     * Inicializa el reporte con las preferencias indicadas.
+     *
+     * @param preference1 primer conjunto de preferencias.
+     * @param preference2 segundo conjunto de preferencias.
+     */
     public void init(Map<String, Object> preference1, Map<String, Object> preference2) {
         throw new UnsupportedOperationException("Debe implementar el metodo " + getClass().getName());
     }
@@ -160,10 +191,20 @@ public class DataReport {
         return dataLink;
     }
 
+    /**
+     * Devuelve la consulta nativa del reporte.
+     *
+     * @return consulta nativa.
+     */
     public IDataNativeQuery getQuery() {
         return query;
     }
 
+    /**
+     * Asigna la consulta nativa del reporte.
+     *
+     * @param query consulta nativa.
+     */
     protected void setQuery(IDataNativeQuery query) {
         this.query = query;
     }
@@ -308,10 +349,20 @@ public class DataReport {
         this.entitiesAlias = entitiesAlias;
     }
 
+    /**
+     * Devuelve el documento (plantilla) del reporte.
+     *
+     * @return documento del reporte.
+     */
     public final String getDocument() {
         return document;
     }
 
+    /**
+     * Asigna el documento (plantilla) del reporte.
+     *
+     * @param document documento del reporte.
+     */
     public final void setDocument(String document) {
         this.document = document;
     }
@@ -399,6 +450,12 @@ public class DataReport {
         this.sqlSentence = sqlSentence;
     }
     
+    /**
+     * Devuelve los parámetros para el reporte JasperReports. Debe implementarse
+     * en las clases derivadas.
+     *
+     * @return parámetros del reporte.
+     */
     public Map<String, Object> getJasperParams() {
         throw new UnsupportedOperationException("Debe implementar el metodo getJasperParams " + getClass().getName());
     }
@@ -427,6 +484,9 @@ public class DataReport {
         orderBy = nvl(orderBy, "");
     }
 
+    /**
+     * Punto de extensión ejecutado antes de construir la sentencia de consulta.
+     */
     protected void beforeCreateSentence(){
         // Implementar en clases heredadas
     }
@@ -470,6 +530,9 @@ public class DataReport {
         afterCreateSentence();
     }
     
+    /**
+     * Punto de extensión ejecutado después de construir la sentencia de consulta.
+     */
     protected void afterCreateSentence(){
         // Implementar en clases heredadas.
     }
@@ -510,6 +573,9 @@ public class DataReport {
     }
 
 
+    /**
+     * Punto de extensión ejecutado antes de ejecutar la sentencia SQL.
+     */
     protected void beforeExecuteSqlSentence(){
         // Implementar en clases heredadas
     }
@@ -528,6 +594,13 @@ public class DataReport {
         return result;
     }
     
+    /**
+     * Punto de extensión ejecutado después de ejecutar la sentencia SQL, que
+     * permite transformar el resultado.
+     *
+     * @param result resultado de la consulta.
+     * @return resultado (posiblemente transformado).
+     */
     protected List<IDataQueryModel> afterExecuteSqlSentence(List<IDataQueryModel> result){
         return result;
     }
@@ -685,6 +758,13 @@ public class DataReport {
     }
     
 
+    /**
+     * Construye la cláusula GROUP BY a partir de las columnas indicadas,
+     * excluyendo las que contienen funciones de agregación.
+     *
+     * @param columns columnas separadas por coma.
+     * @return cláusula GROUP BY.
+     */
     public final String createGroupBy(String columns) {
         List<String> campos = stringToList(columns);
         String[] groupFunction = {"sum(", "count(", "max(", "min(", "avg("};

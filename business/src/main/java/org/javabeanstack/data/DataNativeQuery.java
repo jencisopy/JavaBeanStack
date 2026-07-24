@@ -843,6 +843,11 @@ public class DataNativeQuery implements IDataNativeQuery {
         return exprList;
     }
 
+    /**
+     * Asigna los valores de los parámetros a la consulta nativa en construcción.
+     *
+     * @param params parámetros nombrados con sus valores.
+     */
     protected void populateQueryParams(Map<String, Object> params) {
         params.entrySet().forEach(param -> {
             queryParams.put(param.getKey(), param.getValue());
@@ -1042,6 +1047,12 @@ public class DataNativeQuery implements IDataNativeQuery {
         return query;
     }
 
+    /**
+     * Construye la expresión de JOIN entre entidades a partir de los parámetros
+     * de join acumulados.
+     *
+     * @return expresión de JOIN (cadena vacía si no hay joins).
+     */
     protected String getJoinEntityExpr() {
         if (joinParams.isEmpty()) {
             return "";

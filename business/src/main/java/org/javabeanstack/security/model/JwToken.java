@@ -26,6 +26,8 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
+ * Modelo de las reivindicaciones (claims) de un JSON Web Token (JWT): emisor,
+ * sujeto, audiencia, identificador, tiempos de validez y datos adicionales.
  *
  * @author Jorge Enciso
  */
@@ -40,66 +42,130 @@ public class JwToken {
     private String apiKey;
     private Map<String,String> data;
 
+    /**
+     * Devuelve el emisor del token (claim {@code iss}).
+     * @return emisor del token.
+     */
     public String getIss() {
         return iss;
     }
 
+    /**
+     * Asigna el emisor del token (claim {@code iss}).
+     * @param iss emisor del token.
+     */
     public void setIss(String iss) {
         this.iss = iss;
     }
 
+    /**
+     * Devuelve el sujeto del token (claim {@code sub}).
+     * @return sujeto del token.
+     */
     public String getSub() {
         return sub;
     }
 
+    /**
+     * Asigna el sujeto del token (claim {@code sub}).
+     * @param sub sujeto del token.
+     */
     public void setSub(String sub) {
         this.sub = sub;
     }
 
+    /**
+     * Devuelve la audiencia del token (claim {@code aud}).
+     * @return audiencia del token.
+     */
     public String getAud() {
         return aud;
     }
 
+    /**
+     * Asigna la audiencia del token (claim {@code aud}).
+     * @param aud audiencia del token.
+     */
     public void setAud(String aud) {
         this.aud = aud;
     }
 
+    /**
+     * Devuelve el identificador del token (claim {@code jti}).
+     * @return identificador del token.
+     */
     public Long getJti() {
         return jti;
     }
 
+    /**
+     * Asigna el identificador del token (claim {@code jti}).
+     * @param jti identificador del token.
+     */
     public void setJti(Long jti) {
         this.jti = jti;
     }
 
+    /**
+     * Devuelve el tiempo de expiración del token (claim {@code exp}).
+     * @return tiempo de expiración.
+     */
     public Long getExp() {
         return exp;
     }
 
+    /**
+     * Asigna el tiempo de expiración del token (claim {@code exp}).
+     * @param exp tiempo de expiración.
+     */
     public void setExp(Long exp) {
         this.exp = exp;
     }
 
+    /**
+     * Devuelve el tiempo a partir del cual el token es válido (claim {@code nbf}).
+     * @return tiempo de inicio de validez.
+     */
     public Long getNbf() {
         return nbf;
     }
 
+    /**
+     * Asigna el tiempo a partir del cual el token es válido (claim {@code nbf}).
+     * @param nbf tiempo de inicio de validez.
+     */
     public void setNbf(Long nbf) {
         this.nbf = nbf;
     }
 
+    /**
+     * Devuelve la clave de API asociada al token.
+     * @return clave de API.
+     */
     public String getApiKey() {
         return apiKey;
     }
 
+    /**
+     * Asigna la clave de API asociada al token.
+     * @param apiKey clave de API.
+     */
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
 
+    /**
+     * Devuelve los datos adicionales incluidos en el token.
+     * @return mapa clave → valor de datos adicionales.
+     */
     public Map<String, String> getData() {
         return data;
     }
 
+    /**
+     * Asigna los datos adicionales incluidos en el token.
+     * @param data mapa clave → valor de datos adicionales.
+     */
     public void setData(Map<String, String> data) {
         this.data = data;
     }

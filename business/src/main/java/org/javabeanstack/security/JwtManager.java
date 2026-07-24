@@ -23,9 +23,12 @@
 package org.javabeanstack.security;
 
 /**
+ * Punto de extensión reservado para el soporte de JSON Web Tokens (JWT).
+ * Actualmente no tiene implementación; se conserva como marcador de la
+ * funcionalidad prevista de emisión/validación de JWT.
  *
  * @author Jorge Enciso
  */
 public class JwtManager {
-    
+
 }

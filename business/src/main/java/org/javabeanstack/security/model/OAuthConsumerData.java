@@ -41,6 +41,9 @@ public class OAuthConsumerData implements IOAuthConsumerData{
     private boolean administrator = false;
     private Map<String, String> otherData = new TreeMap();
 
+    /**
+     * Constructor por defecto.
+     */
     public OAuthConsumerData(){
     }
     

@@ -198,6 +198,12 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
         return false;
     }
 
+    /**
+     * Indica si existe bitácora de contraseñas para el usuario de la sesión.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @return verdadero si existe bitácora, falso si no.
+     */
     public boolean isExistUserPwdLog(String sessionId) {
         if (getAppUserPwdLogSrv() != null) {
             return getAppUserPwdLogSrv().isExistUserPwdLog(sessionId);
@@ -205,6 +211,11 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
         return false;
     }
 
+    /**
+     * Registra la contraseña actual del usuario de la sesión en la bitácora.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     */
     public void insertUserPwdLog(String sessionId) {
         if (getAppUserPwdLogSrv() != null) {
             getAppUserPwdLogSrv().insertUserPwdLog(sessionId);

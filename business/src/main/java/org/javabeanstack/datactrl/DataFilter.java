@@ -52,6 +52,9 @@ public class DataFilter {
     private String filterExpression;
     private Map<String, Object> parameters = new HashMap();
 
+    /**
+     * Constructor por defecto.
+     */
     public DataFilter() {
         initParams();
     }
@@ -81,28 +84,58 @@ public class DataFilter {
         addParam("lastDayPreviousMonth", getLastTimeOfDay(getLastDayOfPreviousMonth()));
     }
 
+    /**
+     * Devuelve la expresión de filtro.
+     *
+     * @return expresión de filtro.
+     */
     public String getFilterExpression() {
         return filterExpression;
     }
 
+    /**
+     * Asigna la expresión de filtro.
+     *
+     * @param filterExpression expresión de filtro.
+     */
     public void setFilterExpression(String filterExpression) {
         this.filterExpression = filterExpression;
     }
 
+    /**
+     * Devuelve los parámetros del filtro.
+     *
+     * @return mapa de parámetros.
+     */
     public Map<String, Object> getParameters() {
         return parameters;
     }
 
+    /**
+     * Agrega un parámetro al filtro.
+     *
+     * @param key clave del parámetro.
+     * @param value valor del parámetro.
+     */
     public void addParam(String key, Object value) {
         parameters.put(key, value);
     }
 
+    /**
+     * Limpia la expresión y los parámetros del filtro.
+     */
     public void clear() {
         parameters.clear();
         filterExpression = "";
         initParams();
     }
 
+    /**
+     * Devuelve el valor de un parámetro del filtro por nombre de campo.
+     *
+     * @param fieldname nombre del campo.
+     * @return valor del parámetro.
+     */
     public Object getValue(String fieldname) {
         Object value = null;
         try {
@@ -119,6 +152,12 @@ public class DataFilter {
         return null;
     }
 
+    /**
+     * Punto de extensión ejecutado antes de aplicar el filtro.
+     *
+     * @param <T> tipo del objeto de datos.
+     * @param context objeto de datos sobre el que se aplica el filtro.
+     */
     public <T extends AbstractDataObject> void beforeExecute(T context) {
     }
 
@@ -136,6 +175,12 @@ public class DataFilter {
         afterExecute(context);
     }
 
+    /**
+     * Punto de extensión ejecutado después de aplicar el filtro.
+     *
+     * @param <T> tipo del objeto de datos.
+     * @param context objeto de datos sobre el que se aplicó el filtro.
+     */
     public <T extends AbstractDataObject> void afterExecute(T context) {
     }
 
