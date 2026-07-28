@@ -129,6 +129,31 @@ public interface IAppAuthConsumerToken extends IDataRow {
     void setUserEmail(String userEmail);
 
     /**
+     * Devuelve la empresa para la cual se emitió el token.
+     * @return identificador de la empresa.
+     */
+    Long getIdcompany();
+
+    /**
+     * Asigna la empresa para la cual se emitió el token.
+     * @param idcompany identificador de la empresa.
+     */
+    void setIdcompany(Long idcompany);
+
+    /**
+     * Devuelve el código del usuario dueño del token (relación lógica con
+     * el atributo code de la entidad usuario).
+     * @return código del usuario.
+     */
+    String getUserCode();
+
+    /**
+     * Asigna el código del usuario dueño del token.
+     * @param userCode código del usuario.
+     */
+    void setUserCode(String userCode);
+
+    /**
      * Devuelve la fecha y hora del último uso del token.
      * @return fecha del último uso.
      */

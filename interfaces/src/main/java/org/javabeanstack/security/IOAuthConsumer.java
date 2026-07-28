@@ -130,6 +130,18 @@ public interface IOAuthConsumer {
     IAppAuthConsumerToken findAuthToken(String consumerKey, String uuidOrTokenSecret);
 
     /**
+     * Busca la entidad token por consumidor, uuid/secreto y empresa. Un mismo
+     * dispositivo puede tener tokens simultáneos para empresas distintas; con
+     * {@code idcompany} nulo delega en la sobrecarga de dos argumentos.
+     *
+     * @param consumerKey clave del consumidor.
+     * @param uuidOrTokenSecret uuid del dispositivo o secreto del token.
+     * @param idcompany identificador de la empresa del token.
+     * @return entidad token, o {@code null} si no existe.
+     */
+    IAppAuthConsumerToken findAuthToken(String consumerKey, String uuidOrTokenSecret, Long idcompany);
+
+    /**
      * Da de baja un consumidor.
      *
      * @param consumerKey clave del consumidor.
@@ -147,6 +159,18 @@ public interface IOAuthConsumer {
     boolean dropToken(String consumerKey, String uuidOrTokenSecret);
 
     /**
+     * Elimina un token identificándolo también por empresa. Un dispositivo
+     * puede tener tokens simultáneos para empresas distintas: sin la empresa
+     * la búsqueda es ambigua y no se elimina ninguno.
+     *
+     * @param consumerKey clave del consumidor.
+     * @param uuidOrTokenSecret uuid del dispositivo o secreto del token.
+     * @param idcompany empresa del token.
+     * @return verdadero si lo eliminó, falso si no.
+     */
+    boolean dropToken(String consumerKey, String uuidOrTokenSecret, Long idcompany);
+
+    /**
      * Cambia el estado de un token.
      *
      * @param consumerKey clave del consumidor.
@@ -155,6 +179,19 @@ public interface IOAuthConsumer {
      * @return verdadero si se cambió, falso si no.
      */
     boolean changeTokenStatus(String consumerKey, String uuidOrTokenSecret, String status);
+
+    /**
+     * Cambia el estado de un token identificándolo también por empresa. Un
+     * dispositivo puede tener tokens simultáneos para empresas distintas: sin
+     * la empresa la búsqueda es ambigua y no se modifica ninguno.
+     *
+     * @param consumerKey clave del consumidor.
+     * @param uuidOrTokenSecret uuid del dispositivo o secreto del token.
+     * @param status nuevo estado (block, unblock).
+     * @param idcompany empresa del token.
+     * @return verdadero si lo cambió, falso si no.
+     */
+    boolean changeTokenStatus(String consumerKey, String uuidOrTokenSecret, String status, Long idcompany);
 
     /**
      * Devuelve la clase de entidad de consumidor utilizada.
@@ -233,6 +270,23 @@ public interface IOAuthConsumer {
      * @return verdadero si la solicitud fue aceptada, falso si no.
      */
     boolean requestToken(String consumerKey, String uuidDevice, String userName, String userEmail);
+
+    /**
+     * Solicita un token identificando al dueño: además de los datos de
+     * contacto, la solicitud declara el código de usuario y la empresa para la
+     * cual se pide, de modo que un token —aun pendiente de aprobación— nunca
+     * queda sin dueño.
+     *
+     * @param consumerKey clave del consumidor.
+     * @param uuidDevice uuid del dispositivo.
+     * @param userName nombre del usuario.
+     * @param userEmail correo del usuario.
+     * @param userCode código del usuario dueño del token.
+     * @param idcompany empresa para la cual se solicita el token.
+     * @return verdadero si la solicitud fue aceptada, falso si no.
+     */
+    boolean requestToken(String consumerKey, String uuidDevice, String userName,
+            String userEmail, String userCode, Long idcompany);
 
     /**
      * Indica si un token es válido.

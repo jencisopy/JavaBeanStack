@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.IOAuthConsumer;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
 import org.javabeanstack.security.model.IUserSession;
@@ -127,6 +128,20 @@ public abstract class AbstractWebResource implements IWebResource {
      */
     public IErrorReg verifyToken(String token) {
         return getOAuthConsumer().checkToken(token);
+    }
+
+    /**
+     * Determina si el usuario dueño del token es administrador del sistema
+     * (roles 00 a 20). El dato se deriva del usuario mapeado al token (columna
+     * usercode), no del contenido del campo data: data lo informa el cliente al
+     * pedir el token y no es una fuente de autorización confiable.
+     *
+     * @param token token de acceso.
+     * @return verdadero si el usuario del token es administrador del sistema.
+     */
+    protected boolean isTokenAdministrator(String token) {
+        IAppUser user = getOAuthConsumer().getUserMapped(token);
+        return user != null && user.isSysAdmin();
     }
 
     /**

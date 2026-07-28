@@ -196,6 +196,51 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     }
 
     /**
+     * Busca un registro AppAuthConsumerToken dado un consumerKey, la clave del
+     * token o uuid del dispositivo y la empresa. Desde que un mismo dispositivo
+     * puede tener tokens simultáneos para empresas distintas, la empresa forma
+     * parte de la búsqueda; la sobrecarga de dos argumentos se conserva por
+     * compatibilidad y devuelve un token cualquiera de los que coincidan.
+     *
+     * @param consumerKey clave del consumidor
+     * @param uuidOrTokenSecret clave del token o uuid del dispositivo.
+     * @param idcompany identificador de la empresa del token.
+     * @return registro AppAuthConsumerToken
+     */
+    @Override
+    public IAppAuthConsumerToken findAuthToken(String consumerKey, String uuidOrTokenSecret, Long idcompany) {
+        if (idcompany == null) {
+            return findAuthToken(consumerKey, uuidOrTokenSecret);
+        }
+        try {
+            Map<String, Object> parameters = new HashMap();
+            parameters.put("consumerKey", consumerKey);
+            parameters.put("uuidOrTokenSecret", uuidOrTokenSecret);
+            parameters.put("idcompany", idcompany);
+            String queryString = "select o from AppAuthConsumerToken o where appAuthConsumer.consumerKey = :consumerKey and tokenSecret = :uuidOrTokenSecret and idcompany = :idcompany";
+            //Busca por tokensecret
+            IAppAuthConsumerToken auth = dao.findByQuery(null, queryString, parameters);
+            if (auth == null) {
+                //Busca por uuidDevice
+                queryString = "select o from AppAuthConsumerToken o where appAuthConsumer.consumerKey = :consumerKey and uuidDevice = :uuidOrTokenSecret and idcompany = :idcompany";
+                auth = dao.findByQuery(null, queryString, parameters);
+            }
+            if (auth != null) {
+                LocalDateTime start = auth.getLastUsed();
+                LocalDateTime end = LocalDates.now();
+                if (start == null || Duration.between(start, end).getSeconds() > 2) {
+                    auth.setLastUsed(LocalDates.now());
+                    dao.merge(null, auth);
+                }
+            }
+            return auth;
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
+    }
+
+    /**
      * Crea y guarda en la base de datos el registro de AuthConsumer
      *
      * @param consumerName nombre del consumidor
@@ -372,6 +417,24 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean requestToken(String consumerKey, String uuidDevice, String userName, String userEmail) {
+        return requestToken(consumerKey, uuidDevice, userName, userEmail, null, null);
+    }
+
+    /**
+     * Graba una solicitud de token, debe completarse el proceso en otro
+     * programa.
+     *
+     * @param consumerKey clave del consumidor
+     * @param uuidDevice identificador unico del dispositivo
+     * @param userName nombre del usuario que solicita el token
+     * @param userEmail correo del usuario que solicita el token
+     * @param userCode código del usuario dueño del token
+     * @param idcompany empresa para la cual se solicita el token
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    @Override
+    public boolean requestToken(String consumerKey, String uuidDevice, String userName,
+            String userEmail, String userCode, Long idcompany) {
         try {
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().getConstructor().newInstance();
             authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
@@ -382,6 +445,10 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerToken.setUuidDevice(token);
             authConsumerToken.setUserName(userName);
             authConsumerToken.setUserEmail(userEmail);
+            //El dueño del token se declara desde el pedido: una solicitud
+            //pendiente también identifica usuario y empresa
+            authConsumerToken.setUserCode(userCode);
+            authConsumerToken.setIdcompany(idcompany);
             if (uuidDevice != null) {
                 authConsumerToken.setUuidDevice(uuidDevice);
             }
@@ -433,8 +500,9 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             String uuidDevice, String userName, String userEmail) throws TokenGenericException {
         if (uuidDevice != null) {
             //Verificar existencia de un token anterior generado con las mismas especificaciones
-            // ConsumerKey + uuidDevice
-            IAppAuthConsumerToken tokenExists = findAuthToken(consumerKey, uuidDevice);
+            // ConsumerKey + uuidDevice + empresa (un dispositivo puede tener tokens
+            // simultáneos para empresas distintas; sólo se reemplaza el de la misma empresa)
+            IAppAuthConsumerToken tokenExists = findAuthToken(consumerKey, uuidDevice, data.getIdCompany());
             if (tokenExists != null) {
                 // Si ya existe un token y esta bloqueado, generar error
                 if (tokenExists.getBlocked()) {
@@ -450,6 +518,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         try {
             dao.checkAuthConsumerData(data);
+            String userCode = data.getUserLogin();
             //Si no esta la información del id del usuario
             if (nvl(data.getIdAppUser(), 0L) == 0L) {
                 Map<String, Object> params = new HashMap<>();
@@ -463,11 +532,22 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 if (usuario.isCompanyAdmin()) {
                     data.setAdministrator(true);
                 }
+            } else if (nvl(userCode, "").isEmpty()) {
+                //Vino el id pero no el login: resolver el código del usuario
+                IAppUser usuario = dao.findByQuery(null,
+                        "select o from AppUserLight o where iduser = " + data.getIdAppUser(), null);
+                if (usuario != null) {
+                    userCode = usuario.getCode();
+                }
             }
             IAppAuthConsumerToken authConsumerToken = getAuthConsumerTokenClass().getConstructor().newInstance();
             authConsumerToken.setAppAuthConsumerKey(findAuthConsumer(consumerKey));
             authConsumerToken.setBlocked(false);
             authConsumerToken.setData(data.toString());
+            //Columnas propias del dueño del token (fuente de verdad desde la Fase 1
+            //del plan de seguridad; `data` se sigue grabando por compatibilidad)
+            authConsumerToken.setIdcompany(data.getIdCompany());
+            authConsumerToken.setUserCode(userCode);
             if (uuidDevice != null) {
                 authConsumerToken.setUuidDevice(uuidDevice);
             }
@@ -542,6 +622,18 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerTokenNew.setUuidDevice(authConsumerToken.getUuidDevice());
             authConsumerTokenNew.setUserName(authConsumerToken.getUserName());
             authConsumerTokenNew.setUserEmail(authConsumerToken.getUserEmail());
+            //Columnas propias del dueño del token; si el objeto recibido no las
+            //trae, se completan desde `data` (tokens armados por el consumidor)
+            Long idcompany = authConsumerToken.getIdcompany();
+            String userCode = authConsumerToken.getUserCode();
+            if (idcompany == null && !nvl(getDataKeyValue(authConsumerToken, "idcompany"), "").isEmpty()) {
+                idcompany = Long.valueOf(getDataKeyValue(authConsumerToken, "idcompany"));
+            }
+            if (nvl(userCode, "").isEmpty()) {
+                userCode = getDataKeyValue(authConsumerToken, "userlogin");
+            }
+            authConsumerTokenNew.setIdcompany(idcompany);
+            authConsumerTokenNew.setUserCode(userCode);
 
             IDataResult dataResult = dao.persist(null, authConsumerTokenNew);
             if (!dataResult.isSuccessFul()) {
@@ -579,7 +671,22 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean dropToken(String consumerKey, String uuidOrTokenSecret) {
-        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
+        return dropToken(consumerKey, uuidOrTokenSecret, null);
+    }
+
+    /**
+     * Elimina un token de la base de datos, identificándolo también por
+     * empresa. Sin la empresa, un dispositivo con tokens de varias empresas
+     * resulta ambiguo y no se elimina ninguno.
+     *
+     * @param consumerKey clave del consumidor.
+     * @param uuidOrTokenSecret identificador del dispositivo.
+     * @param idcompany empresa del token.
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    @Override
+    public boolean dropToken(String consumerKey, String uuidOrTokenSecret, Long idcompany) {
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret, idcompany);
         if (authConsumerToken == null) {
             return false;
         }
@@ -602,7 +709,24 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      */
     @Override
     public boolean changeTokenStatus(String consumerKey, String uuidOrTokenSecret, String status) {
-        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret);
+        return changeTokenStatus(consumerKey, uuidOrTokenSecret, status, null);
+    }
+
+    /**
+     * Bloquea o desbloquea un token, identificándolo también por empresa. Sin
+     * la empresa, un dispositivo con tokens de varias empresas resulta ambiguo
+     * y no se modifica ninguno.
+     *
+     * @param consumerKey clave del consumidor.
+     * @param uuidOrTokenSecret identificador del dispositivo.
+     * @param status (block,unblock)
+     * @param idcompany empresa del token.
+     * @return verdadero si tuvo exito y falso si no.
+     */
+    @Override
+    public boolean changeTokenStatus(String consumerKey, String uuidOrTokenSecret,
+            String status, Long idcompany) {
+        IAppAuthConsumerToken authConsumerToken = findAuthToken(consumerKey, uuidOrTokenSecret, idcompany);
         if (authConsumerToken == null) {
             return false;
         }
@@ -1044,9 +1168,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppUser getUserMapped(String token) {
         try {
-            Long iduser = Long.valueOf(getDataKeyValue(token, "idappuser"));
-            IAppUser user = dao.findByQuery(null, "select o from AppUserLight o where iduser = " + iduser, null);
-            return user;
+            return getUserMapped(findAuthToken(token));
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
@@ -1063,8 +1185,15 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppUser getUserMapped(IAppAuthConsumerToken token) {
         try {
-            Long iduser = Long.valueOf(getDataKeyValue(token, "idappuser"));
-            IAppUser user = dao.findByQuery(null, "select o from AppUserLight o where iduser = " + iduser, null);
+            if (token == null) {
+                return null;
+            }
+            //La columna usercode es la fuente de verdad (Fase 1 del plan de
+            //seguridad); `data` queda para las demás variables del token.
+            Map<String, Object> params = new HashMap<>();
+            params.put("code", token.getUserCode());
+            IAppUser user = dao.findByQuery(null,
+                    "select o from AppUserLight o where code = :code", params);
             return user;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -1082,8 +1211,13 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppCompany getCompanyMapped(IAppAuthConsumerToken token) {
         try {
-            Long idcompany = Long.valueOf(getDataKeyValue(token, "idcompany"));
-            IAppCompany company = dao.findByQuery(null, "select o from AppCompanyLight o where idcompany = " + idcompany, null);
+            if (token == null || token.getIdcompany() == null) {
+                return null;
+            }
+            //La columna idcompany es la fuente de verdad (Fase 1 del plan de
+            //seguridad); `data` queda para las demás variables del token.
+            IAppCompany company = dao.findByQuery(null,
+                    "select o from AppCompanyLight o where idcompany = " + token.getIdcompany(), null);
             return company;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -1101,9 +1235,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
     @Override
     public IAppCompany getCompanyMapped(String token) {
         try {
-            Long idcompany = Long.valueOf(getDataKeyValue(token, "idcompany"));
-            IAppCompany company = dao.findByQuery(null, "select o from AppCompanyLight o where idcompany = " + idcompany, null);
-            return company;
+            return getCompanyMapped(findAuthToken(token));
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }

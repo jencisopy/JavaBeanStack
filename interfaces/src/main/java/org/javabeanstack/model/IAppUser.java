@@ -50,6 +50,8 @@ public interface IAppUser extends IDataRow, Serializable {
     public static final String TOKEN = "25";
     /** Rol: usuario común. */
     public static final String USUARIO = "30";
+    /** Rol: usuario del portal (solo accede vía maker-portal/maker-rest). */
+    public static final String PORTAL = "40";
 
     /** Tipo de registro: usuario. */
     public static final Short ISUSER = 1;
