@@ -260,9 +260,13 @@ public class AppGenericConfig implements IAppConfig {
                 param.setId(paramMerge.getId());
                 result = dao.merge(null, param);
             } else {
-                //Sino existe agregar en la tabla
-                param.setIdAppSystemParam(0L);
-                param.setPersistMode(IDataRow.MERGE);
+                //Sino existe agregar en la tabla.
+                //El id va en null y el modo es PERSIST: la clave de
+                //appsystemparam es IDENTITY, así que la asigna la base. Con id
+                //en 0 Hibernate considera la entidad "detached" y rechaza el
+                //persist; con MERGE intenta actualizar una fila inexistente.
+                param.setIdAppSystemParam(null);
+                param.setPersistMode(IDataRow.PERSIST);
                 result = dao.persist(null, param);
             }
         }

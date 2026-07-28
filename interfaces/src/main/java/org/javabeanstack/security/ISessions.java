@@ -60,6 +60,20 @@ public interface ISessions {
     IUserSession createSessionFromToken(String authToken);
 
     /**
+     * Crea la sesión de un usuario a partir de un token, verificando además que
+     * su rol tenga acceso concedido a la aplicación indicada. Si no lo tiene,
+     * la sesión no se crea: el control forma parte de la creación y por lo
+     * tanto no puede saltearse.
+     *
+     * @param authToken token de acceso.
+     * @param appName nombre de la aplicación (context path del despliegue); con
+     * valor nulo no se evalúa la política de acceso.
+     * @return objeto sesión, o {@code null} si el token no es válido o el rol
+     * no tiene acceso a la aplicación.
+     */
+    IUserSession createSessionFromToken(String authToken, String appName);
+
+    /**
      * Crea una sesión autenticando al usuario con sus credenciales.
      *
      * @param userLogin login del usuario.

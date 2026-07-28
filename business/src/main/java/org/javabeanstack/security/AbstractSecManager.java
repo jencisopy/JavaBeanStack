@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 
 import org.javabeanstack.data.IDataRow;
+import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.data.IGenericDAO;
@@ -99,6 +100,20 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
     @Override
     public IUserSession createSessionFromToken(String token) {
         return getSessions().createSessionFromToken(token);
+    }
+
+    /**
+     * Crea la sesión de un usuario a partir de un token, verificando además que
+     * su rol tenga acceso concedido a la aplicación indicada.
+     *
+     * @param token token de acceso.
+     * @param appName nombre de la aplicación (context path del despliegue).
+     * @return objeto sesión, o {@code null} si el token no es válido o el rol
+     * no tiene acceso a la aplicación.
+     */
+    @Override
+    public IUserSession createSessionFromToken(String token, String appName) {
+        return getSessions().createSessionFromToken(token, appName);
     }
     
     /**

@@ -61,6 +61,7 @@ import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppCompanyAllowed;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.util.Fn;
+import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppAuthConsumerToken;
 import static org.javabeanstack.model.IAppLogRecord.*;
@@ -95,9 +96,12 @@ public class Sessions implements ISessions {
 
     @EJB
     private IOAuthConsumer oAuthConsumer;
-    
+
     @EJB
     private ILogManagerSecurity logMngr;
+
+    @EJB
+    private IAppConfig appConfig;
 
     /**
      * Se ejecuta al instanciarse esta clase.
@@ -279,6 +283,25 @@ public class Sessions implements ISessions {
     @Override
     @Lock(LockType.WRITE)
     public IUserSession createSessionFromToken(String token) {
+        return createSessionFromToken(token, null);
+    }
+
+    /**
+     * Crea la sesión de un usuario a partir de un token, verificando además que
+     * su rol tenga acceso concedido a la aplicación indicada.
+     *
+     * <p>El control vive acá y no en quien invoca, de modo que no haya forma de
+     * obtener una sesión salteándolo: si el rol no tiene acceso, la sesión
+     * directamente no se crea. Con {@code appName} nulo no hay aplicación
+     * contra la cual evaluar y solo se aplican los controles previos.</p>
+     *
+     * @param token token de acceso.
+     * @param appName nombre de la aplicación (context path del despliegue).
+     * @return objeto sesión, o {@code null} si el token no es válido o el rol
+     * no tiene acceso a la aplicación.
+     */
+    @Override
+    public IUserSession createSessionFromToken(String token, String appName) {
         LOGGER.debug("CREATESESSION IN FROM TOKEN");
         try {
             //Limpiar sesion si existiese todavia
@@ -314,7 +337,21 @@ public class Sessions implements ISessions {
             }
             LOGGER.debug("CREATESESSION IN FROM TOKEN con el usuario "+userLogin);
             session.setUser(appUser);
+            //Verificar que el rol tenga acceso a la aplicación. Si no lo tiene
+            //la sesión no se crea: el control no puede saltearse porque es
+            //parte de la creación misma.
+            if (!AppAccessPolicy.isAllowed(appConfig, appName, AppAccessPolicy.ACCESS, appUser)) {
+                LOGGER.info("Acceso denegado a " + appName
+                        + " para el usuario " + appUser.getLogin()
+                        + " (rol " + appUser.getRol() + ")");
+                return null;
+            }
             processCreateSessionFromToken(session, authToken, 30);
+            //Registrar la aplicación en la sesión: la capa de datos la necesita
+            //para evaluar el permiso de escritura.
+            if (!Strings.isNullorEmpty(appName)) {
+                session.addInfo(AppAccessPolicy.APPNAME, appName);
+            }
             return session;
         } catch (Exception e) {
             ErrorManager.showError(e, LOGGER, logMngr, null);

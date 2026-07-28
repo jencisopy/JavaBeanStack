@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.io.IOUtil;
 
+import org.javabeanstack.security.AppAccessPolicy;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
 
@@ -110,14 +111,31 @@ public class AuthFilter implements Filter {
             return;
         }
         IUserSession userSession = (IUserSession) req.getSession().getAttribute("userSession");
-        // El usuario no está logueado 
+        // El usuario no está logueado
         if (userSession == null) {
             res.sendRedirect(req.getContextPath() + "/login.xhtml");
             return;
         }
-        //--  A partir de aca se ejecuta sólo si el usuario ya esta logueado 
+        //--  A partir de aca se ejecuta sólo si el usuario ya esta logueado
 
-        // Verificar si la página que se abre es una página de información 
+        // Registrar el nombre de la aplicación en la sesión: acá se conoce el
+        // context path, y la capa de datos lo necesita para evaluar el WRITE.
+        userSession.addInfo(AppAccessPolicy.APPNAME, req.getContextPath());
+
+        // Verificar que el rol del usuario tenga acceso a esta aplicación.
+        // Es el único punto por el que pasan todas las peticiones, con y sin
+        // token, de modo que la política no depende del camino de autenticación.
+        if (!AppAccessPolicy.isAllowed(appConfig, req.getContextPath(),
+                AppAccessPolicy.ACCESS, userSession.getUser())) {
+            LOGGER.info("Acceso denegado a " + req.getContextPath()
+                    + " para el usuario " + userSession.getUser().getLogin()
+                    + " (rol " + userSession.getUser().getRol() + ")");
+            req.getSession().invalidate();
+            res.sendRedirect(req.getContextPath() + "/noautorizado.xhtml");
+            return;
+        }
+
+        // Verificar si la página que se abre es una página de información
         if (isPageInfo(urlStr)) {
             chain.doFilter(request, response);
             return;

@@ -70,6 +70,23 @@ public interface ISecManager {
     IUserSession createSessionFromToken(String token);
 
     /**
+     * Crea la sesión de un usuario a partir de un token, verificando además que
+     * su rol tenga acceso concedido a la aplicación indicada. Si no lo tiene,
+     * la sesión no se crea.
+     *
+     * <p>Es la variante que deben usar las capas de entrada: al resolverse el
+     * control dentro de la creación de la sesión, no hay forma de obtener una
+     * salteándolo.</p>
+     *
+     * @param token token de acceso.
+     * @param appName nombre de la aplicación (context path del despliegue); con
+     * valor nulo no se evalúa la política de acceso.
+     * @return objeto sesión, o {@code null} si el token no es válido o el rol
+     * no tiene acceso a la aplicación.
+     */
+    IUserSession createSessionFromToken(String token, String appName);
+
+    /**
      * Devuelve la lista de empresas habilitadas (formato interno).
      *
      * @return lista de empresas.

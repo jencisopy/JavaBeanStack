@@ -30,10 +30,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import jakarta.ejb.EJB;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -70,6 +73,7 @@ import org.javabeanstack.util.Strings;
 import static org.javabeanstack.util.Strings.isNullorEmpty;
 import org.javabeanstack.annotation.CheckForeignkey;
 import org.javabeanstack.config.IAppConfig;
+import org.javabeanstack.security.AppAccessPolicy;
 import org.javabeanstack.data.DataNativeQuery;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.data.events.IDAOEvents;
@@ -94,6 +98,24 @@ public abstract class AbstractDataService implements IDataService {
 
     @EJB
     protected IAppConfig appConfig;
+
+    /**
+     * Entidades exceptuadas del control de escritura de
+     * {@code AppAccessPolicy}: son las del propio mecanismo de autenticación y
+     * las bitácoras que el sistema escribe en nombre del usuario. Sin estas
+     * excepciones el control se bloquearía a sí mismo — un usuario sin permiso
+     * de escritura no podría obtener un token ni cambiar su contraseña.
+     *
+     * <p>La mayoría de estas entidades se graban hoy por el DAO con
+     * {@code sessionId} nulo y no llegan a este control; se listan igual para
+     * que la excepción no dependa de ese detalle de implementación.</p>
+     */
+    protected static final Set<String> WRITE_EXCLUDED_ENTITIES
+            = new HashSet<>(Arrays.asList(
+                    "AppAuthConsumer", "AppAuthConsumerToken",
+                    "AppUserPwdLog", "AppUserLog",
+                    "AppMessage", "AppLogRecord",
+                    "AppUserVerification"));
 
     protected boolean inheritCheckMethod = false;
 
@@ -1108,11 +1130,92 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Override
     public IDataResult update(String sessionId, IDataSet dataSet) {
+        // Verificar que el rol del usuario tenga permitido escribir en esta
+        // aplicación. Es el punto por el que pasan todas las escrituras:
+        // save, persist, merge, remove y las demás sobrecargas de update.
+        IDataResult notAllowed = checkWriteAllowed(sessionId, dataSet);
+        if (notAllowed != null) {
+            return notAllowed;
+        }
         // Recorrer los objetos a actualizar en la base
         dataSet.getMapListSet().entrySet().forEach((entry) -> {
             isChecked(entry.getValue());
         });
         return dao.update(sessionId, dataSet);
+    }
+
+    /**
+     * Verifica que el rol del usuario de la sesión tenga concedido el permiso
+     * de escritura sobre la aplicación, según {@code AppAccessPolicy}.
+     *
+     * <p>Quedan exceptuadas las entidades del propio mecanismo de
+     * autenticación: si no lo estuvieran, un usuario sin permiso de escritura
+     * no podría ni siquiera obtener un token o cambiar su contraseña, y el
+     * control se bloquearía a sí mismo. La lista es explícita y está en
+     * {@link #WRITE_EXCLUDED_ENTITIES}.</p>
+     *
+     * @param sessionId identificador de la sesión.
+     * @param dataSet set de objetos a grabar.
+     * @return {@code null} si la escritura está permitida, o un resultado con
+     * el error si no lo está.
+     */
+    protected IDataResult checkWriteAllowed(String sessionId, IDataSet dataSet) {
+        try {
+            if (appConfig == null || dataSet == null || isNullorEmpty(sessionId)) {
+                return null;
+            }
+            IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
+            IUserSession userSession = (dbLinkInfo == null) ? null : dbLinkInfo.getUserSession();
+            if (userSession == null || userSession.getUser() == null) {
+                return null;
+            }
+            //El nombre de la aplicación lo asienta la capa de entrada al validar
+            //el ACCESS; sin ese dato no hay política que evaluar acá.
+            Object appName = userSession.getInfo(AppAccessPolicy.APPNAME);
+            if (appName == null || isNullorEmpty(appName.toString())) {
+                return null;
+            }
+            //Si todas las entidades del set están exceptuadas, no se evalúa
+            if (isWriteExcluded(dataSet)) {
+                return null;
+            }
+            if (AppAccessPolicy.isAllowed(appConfig, appName.toString(),
+                    AppAccessPolicy.WRITE, userSession.getUser())) {
+                return null;
+            }
+            LOGGER.info("Escritura denegada en " + appName
+                    + " para el usuario " + userSession.getUser().getLogin()
+                    + " (rol " + userSession.getUser().getRol() + ")");
+            IDataResult dataResult = new DataResult();
+            dataResult.setSuccess(false);
+            dataResult.setErrorMsg("El usuario no tiene autorización para modificar datos en esta aplicación");
+            return dataResult;
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER);
+        }
+        return null;
+    }
+
+    /**
+     * Determina si todas las entidades de un set están exceptuadas del control
+     * de escritura.
+     *
+     * @param dataSet set de objetos a grabar.
+     * @return verdadero si ninguna entidad del set requiere permiso de
+     * escritura.
+     */
+    protected boolean isWriteExcluded(IDataSet dataSet) {
+        for (Map.Entry<String, List<? extends IDataRow>> entry : dataSet.getMapListSet().entrySet()) {
+            for (IDataRow row : entry.getValue()) {
+                if (row == null) {
+                    continue;
+                }
+                if (!WRITE_EXCLUDED_ENTITIES.contains(row.getClass().getSimpleName())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

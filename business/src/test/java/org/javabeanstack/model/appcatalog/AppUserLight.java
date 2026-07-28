@@ -268,8 +268,10 @@ public class AppUserLight extends DataRow implements IAppUser {
 
     @Override
     public String getHighRol() {
-        // Este es el valor del usuario normal
-        String result=USUARIO;    
+        // El rol asignado al propio usuario participa de la comparación:
+        // el rol de mayor privilegio es el de menor código entre el suyo
+        // y los heredados de los grupos a los que pertenece.
+        String result = Fn.nvl(rol, USUARIO).trim();    
         try{
             if (this.getUserMemberList() == null || this.getUserMemberList().isEmpty()){
                 return Fn.nvl(rol,USUARIO).trim();

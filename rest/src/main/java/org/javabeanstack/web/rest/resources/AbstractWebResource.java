@@ -147,6 +147,10 @@ public abstract class AbstractWebResource implements IWebResource {
     /**
      * Asigna el token a partir del encabezado indicado.
      *
+     * <p>La sesión se crea informando el nombre de esta aplicación, de modo que
+     * la propia creación verifique que el rol del usuario tenga acceso
+     * concedido: si no lo tiene, la sesión no se crea.</p>
+     *
      * @param tokenHeader encabezado con el token.
      */
     protected void setToken(String tokenHeader) {
@@ -159,8 +163,9 @@ public abstract class AbstractWebResource implements IWebResource {
         if (getSecManager().getClientAuthRequestCache(token) != null) {
             return;
         }
+        String appName = (requestContext == null) ? null : requestContext.getContextPath();
         //Crear la sesión
-        IUserSession userSession = getSecManager().createSessionFromToken(token);
+        IUserSession userSession = getSecManager().createSessionFromToken(token, appName);
         //Si no se puedo crear la sesion, probablemente el token no existe o esta bloqueado o ya expiro.
         if (userSession == null) {
             // Verificar y traer credenciales del servidor y grabar en el local
@@ -168,7 +173,7 @@ public abstract class AbstractWebResource implements IWebResource {
                 LOGGER.error("Este token ya expiró o es incorrecto Server: " + token);
                 throw new TokenError("Este token ya expiró o es incorrecto");
             }
-            userSession = getSecManager().createSessionFromToken(token);            
+            userSession = getSecManager().createSessionFromToken(token, appName);
         }
         //Reverificar en el local
         if (userSession == null) {
