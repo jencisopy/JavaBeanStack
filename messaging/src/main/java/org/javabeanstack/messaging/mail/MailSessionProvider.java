@@ -154,25 +154,43 @@ public class MailSessionProvider implements IMailSessionProvider {
     }
 
     /**
-     * Devuelve la contraseña SMTP en claro. Si hay llave configurada, la descifra;
-     * si no, la usa tal cual (modo de desarrollo) con una advertencia.
+     * Devuelve la contraseña SMTP en claro.
+     *
+     * <p>La presencia de la llave {@link #PARAM_CIPHER_KEY} es la que define
+     * cómo se interpreta {@link #PARAM_SMTP_PASS}:</p>
+     *
+     * <ul>
+     * <li><b>Sin llave</b> (ausente o vacía): la contraseña <b>no está
+     * cifrada</b> y se usa tal cual. Es una configuración válida —y la única
+     * posible mientras no se defina dónde custodiar la llave—, pero deja una
+     * advertencia en el log, porque en una instalación real no es deseable.</li>
+     * <li><b>Con llave</b>: la contraseña está cifrada y se descifra. Si el
+     * descifrado falla, es un <b>error de configuración</b> y se informa como
+     * tal.</li>
+     * </ul>
      *
      * @param appConfig configuración de la aplicación.
      * @return contraseña en claro, o cadena vacía.
+     * @throws IllegalStateException si hay llave y la contraseña no se puede
+     * descifrar con ella.
      */
     protected String resolvePassword(IAppConfig appConfig) {
         String pass = Fn.nvl(str(appConfig, PARAM_SMTP_PASS), "");
         String key = str(appConfig, PARAM_CIPHER_KEY);
         if (Fn.nvl(key, "").trim().isEmpty()) {
             LOGGER.warn("No hay llave de cifrado (" + PARAM_CIPHER_KEY
-                    + "): se usa la contrasenia SMTP sin descifrar. Definir la llave en la Fase 3.");
+                    + "): se usa la contrasenia SMTP sin descifrar.");
             return pass;
         }
         try {
             return CipherUtil.decryptAES_FromHex(pass, key);
         } catch (Exception e) {
-            LOGGER.error("No se pudo descifrar la contrasenia SMTP; se usa tal cual: " + e.getMessage());
-            return pass;
+            // No se vuelve a la contrasenia cifrada como si fuera clara: la
+            // autenticacion fallaria igual, pero el error visible seria
+            // "credencial rechazada", que apunta al lugar equivocado. Con llave
+            // presente, un descifrado fallido es un error de configuracion.
+            throw new IllegalStateException("No se pudo descifrar la contrasenia SMTP con la llave "
+                    + PARAM_CIPHER_KEY + ": " + e.getMessage(), e);
         }
     }
 
