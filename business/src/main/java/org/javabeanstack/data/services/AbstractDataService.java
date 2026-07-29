@@ -109,11 +109,17 @@ public abstract class AbstractDataService implements IDataService {
      * <p>La mayoría de estas entidades se graban hoy por el DAO con
      * {@code sessionId} nulo y no llegan a este control; se listan igual para
      * que la excepción no dependa de ese detalle de implementación.</p>
+     *
+     * <p><b>{@code AppUser} está en la lista</b> porque el usuario debe poder
+     * cambiar su contraseña y cargar su correo de identidad aunque su rol no
+     * tenga permiso de escritura. Su alcance está acotado por los controles de
+     * autorización por objeto, que siguen decidiendo quién abre y modifica el
+     * ABM de usuarios.</p>
      */
     protected static final Set<String> WRITE_EXCLUDED_ENTITIES
             = new HashSet<>(Arrays.asList(
                     "AppAuthConsumer", "AppAuthConsumerToken",
-                    "AppUserPwdLog", "AppUserLog",
+                    "AppUser", "AppUserPwdLog", "AppUserLog",
                     "AppMessage", "AppLogRecord",
                     "AppUserVerification"));
 

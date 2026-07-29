@@ -23,30 +23,41 @@
 package org.javabeanstack.messaging.mail;
 
 import jakarta.mail.Session;
-import org.javabeanstack.config.IAppConfig;
+import org.javabeanstack.messaging.IMailAccount;
 
 /**
  * Proveedor de la {@link jakarta.mail.Session} con la que se envía el correo.
  *
- * <p>En la Fase 2 la sesión se resuelve, en este orden: los parámetros globales
- * del sistema ({@code MAIL_SMTP_*} en la configuración de la aplicación) con
- * prioridad, y la {@code Session} del contenedor ({@code java:jboss/mail/Default})
- * como respaldo. En la Fase 3 se antepone la cuenta por empresa
- * ({@code AppMsgMailCredential}).</p>
+ * <p>La sesión se arma a partir de la {@link IMailAccount} que se recibe: si la
+ * cuenta define un servidor SMTP se usa ese, y si no se resuelve la sesión del
+ * contenedor por JNDI. <b>De dónde salió esa cuenta no es asunto de este
+ * módulo</b>: la aplicación que lo usa es la que decide si viene de sus
+ * parámetros de sistema, de una tabla por empresa o de valores fijos.</p>
  *
  * @author Jorge Enciso
  */
 public interface IMailSessionProvider {
 
     /**
-     * Devuelve la sesión de correo a usar para una empresa.
+     * Devuelve la sesión de correo correspondiente a una cuenta.
      *
-     * @param appConfig configuración de la aplicación, de donde se leen los
-     * parámetros de correo.
-     * @param idcompany empresa para la cual se resuelve la sesión (no se usa en
-     * la Fase 2, que sólo tiene configuración global; se conserva para la Fase 3).
+     * @param account cuenta de correo con la configuración ya resuelta.
      * @return la sesión de correo.
-     * @throws Exception si no hay ninguna configuración de correo disponible.
+     * @throws Exception si la cuenta no permite armar ninguna sesión.
      */
-    Session getSession(IAppConfig appConfig, Long idcompany) throws Exception;
+    Session getSession(IMailAccount account) throws Exception;
+
+    /**
+     * Comprueba si una cuenta está en condiciones de enviar, sin abrir ninguna
+     * conexión con el servidor de correo.
+     *
+     * <p>Responde si la cuenta <b>está configurada</b>, no si el servidor
+     * contesta. Sirve para no ofrecer una función que no va a poder cumplirse y
+     * para avisar de una configuración incompleta antes de que alguien la
+     * descubra con un correo que nunca llegó.</p>
+     *
+     * @param account cuenta de correo a comprobar, puede ser nula.
+     * @return el estado de la cuenta (nunca nulo).
+     */
+    MailChannelStatus checkConfig(IMailAccount account);
 }

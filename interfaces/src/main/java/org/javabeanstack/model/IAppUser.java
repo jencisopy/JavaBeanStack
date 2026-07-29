@@ -149,6 +149,85 @@ public interface IAppUser extends IDataRow, Serializable {
     String getRol();
 
     /**
+     * Devuelve el primer correo alternativo de contacto.
+     *
+     * <p>No identifica al usuario y no se verifica: es un dato de contacto. La
+     * identidad la lleva {@link #getEmail()}.</p>
+     *
+     * @return primer correo alternativo, o nulo.
+     */
+    String getEmail1();
+
+    /**
+     * Asigna el primer correo alternativo de contacto.
+     * @param email1 primer correo alternativo.
+     */
+    void setEmail1(String email1);
+
+    /**
+     * Devuelve el segundo correo alternativo de contacto.
+     *
+     * <p>Mismas condiciones que {@link #getEmail1()}: contacto, no identidad.</p>
+     *
+     * @return segundo correo alternativo, o nulo.
+     */
+    String getEmail2();
+
+    /**
+     * Asigna el segundo correo alternativo de contacto.
+     * @param email2 segundo correo alternativo.
+     */
+    void setEmail2(String email2);
+
+    /**
+     * Devuelve el correo de identidad del usuario: el que se verifica y con el
+     * que operan la activación, el segundo factor y la recuperación de
+     * contraseña.
+     *
+     * <p>Es distinto de las direcciones alternativas de contacto, que no
+     * identifican a nadie y no se verifican.</p>
+     *
+     * @return correo de identidad, o nulo si el usuario aún no lo cargó.
+     */
+    String getEmail();
+
+    /**
+     * Asigna el correo de identidad del usuario.
+     * @param email correo de identidad.
+     */
+    void setEmail(String email);
+
+    /**
+     * Indica si el usuario demostró tener acceso al correo de
+     * {@link #getEmail()}.
+     *
+     * <p>Tener el correo cargado no alcanza: mientras no esté verificado no se
+     * lo puede usar como canal para recuperar la cuenta, porque nadie comprobó
+     * que la casilla sea suya.</p>
+     *
+     * @return verdadero si el correo fue verificado.
+     */
+    Boolean getEmailVerified();
+
+    /**
+     * Asigna si el correo de identidad fue verificado.
+     * @param emailVerified verdadero si fue verificado.
+     */
+    void setEmailVerified(Boolean emailVerified);
+
+    /**
+     * Devuelve el momento en que se verificó el correo de identidad.
+     * @return fecha de verificación, o nulo si no se verificó.
+     */
+    LocalDateTime getEmailVerifiedDate();
+
+    /**
+     * Asigna el momento en que se verificó el correo de identidad.
+     * @param emailVerifiedDate fecha de verificación.
+     */
+    void setEmailVerifiedDate(LocalDateTime emailVerifiedDate);
+
+    /**
      * Devuelve el rol de mayor jerarquía del usuario.
      * @return rol de mayor jerarquía.
      */

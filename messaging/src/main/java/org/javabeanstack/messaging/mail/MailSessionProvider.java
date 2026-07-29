@@ -25,25 +25,32 @@ package org.javabeanstack.messaging.mail;
 import jakarta.mail.Authenticator;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import javax.naming.InitialContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.crypto.CipherUtil;
-import org.javabeanstack.model.IAppSystemParam;
+import org.javabeanstack.messaging.IMailAccount;
 import org.javabeanstack.util.Fn;
 
 /**
- * Implementación de {@link IMailSessionProvider}. Arma la sesión de correo desde
- * los parámetros globales del sistema (grupo {@code Messaging}); si no están
- * configurados, cae a la sesión del contenedor.
+ * Implementación de {@link IMailSessionProvider}. Arma la sesión de correo a
+ * partir de la cuenta que recibe; si la cuenta no define un servidor SMTP, cae a
+ * la sesión del contenedor.
  *
- * <p><b>Sobre la clave</b>: si existe el parámetro {@link #PARAM_CIPHER_KEY}, la
- * contraseña SMTP se descifra con {@link CipherUtil}. Dónde vive definitivamente
- * esa llave es una decisión de la Fase 3; hasta entonces, si la llave no está
- * configurada la contraseña se usa tal cual (modo de desarrollo), con una
- * advertencia en el log.</p>
+ * <p><b>La configuración llega resuelta</b>: este módulo no sabe de dónde salió
+ * —parámetros del sistema, una tabla por empresa o valores fijos— porque de eso
+ * se ocupa la aplicación que lo usa. Acá solo se lee la {@link IMailAccount}.</p>
+ *
+ * <p><b>Sobre la clave</b>: {@link IMailAccount#getCipherKey()} es lo que define
+ * cómo se interpreta la contraseña. Con llave, se descifra con
+ * {@link CipherUtil}; sin llave, la contraseña no está cifrada y se usa tal
+ * cual, dejando una advertencia en el log.</p>
  *
  * @author Jorge Enciso
  */
@@ -51,58 +58,94 @@ public class MailSessionProvider implements IMailSessionProvider {
 
     private static final Logger LOGGER = LogManager.getLogger(MailSessionProvider.class);
 
-    /** Servidor SMTP de salida. Si está vacío se usa la sesión del contenedor. */
-    public static final String PARAM_SMTP_HOST = "MAIL_SMTP_HOST";
-    /** Puerto del servidor SMTP. */
-    public static final String PARAM_SMTP_PORT = "MAIL_SMTP_PORT";
-    /** Indica si la conexión SMTP usa STARTTLS. */
-    public static final String PARAM_SMTP_STARTTLS = "MAIL_SMTP_STARTTLS";
-    /** Indica si la conexión SMTP usa SSL directo. */
-    public static final String PARAM_SMTP_SSL = "MAIL_SMTP_SSL";
-    /**
-     * Lista de hosts SMTP cuyo certificado se acepta aunque no coincida con el
-     * nombre (separada por espacios, o {@code *} para todos). Vacío = verificación
-     * de identidad estándar. Necesario cuando el servidor propio presenta un
-     * certificado emitido para otro nombre (p. ej. hosting compartido).
-     */
-    public static final String PARAM_SMTP_SSL_TRUST = "MAIL_SMTP_SSL_TRUST";
-    /** Indica si el servidor SMTP exige autenticación. */
-    public static final String PARAM_SMTP_AUTH = "MAIL_SMTP_AUTH";
-    /** Usuario de autenticación SMTP. */
-    public static final String PARAM_SMTP_USER = "MAIL_SMTP_USER";
-    /** Contraseña de autenticación SMTP (cifrada si hay llave configurada). */
-    public static final String PARAM_SMTP_PASS = "MAIL_SMTP_PASS";
-    /** Llave para descifrar la contraseña SMTP (provisional, ver Fase 3). */
-    public static final String PARAM_CIPHER_KEY = "MAIL_CIPHER_KEY";
-    /** Nombre JNDI de la sesión de correo del contenedor. */
-    public static final String PARAM_JNDI = "MAIL_SESSION_JNDI";
-
     /** Nombre JNDI por defecto de la sesión de correo del contenedor en WildFly. */
     public static final String DEFAULT_JNDI = "java:jboss/mail/Default";
     /** Puerto SMTP por defecto (submission con STARTTLS). */
     public static final int DEFAULT_SMTP_PORT = 587;
 
+    /**
+     * Milisegundos de espera por defecto en cada etapa del diálogo SMTP:
+     * establecer la conexión, leer una respuesta y escribir.
+     *
+     * <p><b>Sin un tiempo límite no hay envío que falle</b>: un servidor que
+     * acepta la conexión y no responde deja el hilo esperando para siempre, y
+     * con él a quien haya iniciado el envío. Puede ajustarse por cuenta con las
+     * propiedades adicionales.</p>
+     */
+    public static final int DEFAULT_TIMEOUT_MS = 15000;
+
     @Override
-    public Session getSession(IAppConfig appConfig, Long idcompany) throws Exception {
-        String host = str(appConfig, PARAM_SMTP_HOST);
-        if (!Fn.nvl(host, "").trim().isEmpty()) {
-            return buildSmtpSession(appConfig, host.trim());
+    public MailChannelStatus checkConfig(IMailAccount account) {
+        List<String> falta = new ArrayList<>();
+        if (account == null) {
+            return new MailChannelStatus(MailChannelStatus.Mode.NONE,
+                    Collections.singletonList("cuenta"), "No se recibio ninguna cuenta de correo");
         }
-        return lookupContainerSession(appConfig);
+        String host = Fn.nvl(account.getSmtpHost(), "").trim();
+        if (!host.isEmpty()) {
+            if (Fn.nvl(account.getSmtpAuth(), false)) {
+                if (Fn.nvl(account.getSmtpUser(), "").trim().isEmpty()) {
+                    falta.add("usuario SMTP");
+                }
+                if (Fn.nvl(account.getSmtpPass(), "").trim().isEmpty()) {
+                    falta.add("contrasenia SMTP");
+                }
+            }
+            String detalle = falta.isEmpty()
+                    ? "Servidor SMTP " + host + ":" + Fn.nvl(account.getSmtpPort(), DEFAULT_SMTP_PORT)
+                    : "El servidor SMTP exige autenticacion y falta: " + falta;
+            return new MailChannelStatus(MailChannelStatus.Mode.PARAMS, falta, detalle);
+        }
+        // Modo JNDI. El valor por defecto del contenedor NO cuenta como
+        // configuracion: existe siempre y apunta a un servidor local que
+        // normalmente no hay, de modo que un descuido pareceria estar
+        // configurado hasta que el primer envio falla.
+        String jndi = Fn.nvl(account.getSessionJndi(), "").trim();
+        if (jndi.isEmpty()) {
+            return new MailChannelStatus(MailChannelStatus.Mode.NONE,
+                    Arrays.asList("servidor SMTP", "sesion de correo"),
+                    "La cuenta no declara servidor SMTP ni sesion de correo del contenedor");
+        }
+        try {
+            Object obj = new InitialContext().lookup(jndi);
+            if (!(obj instanceof Session)) {
+                return new MailChannelStatus(MailChannelStatus.Mode.NONE,
+                        Collections.singletonList("sesion de correo"),
+                        "El recurso " + jndi + " existe pero no es una sesion de correo");
+            }
+        } catch (Exception e) {
+            return new MailChannelStatus(MailChannelStatus.Mode.NONE,
+                    Collections.singletonList("sesion de correo"),
+                    "No se pudo resolver la sesion de correo " + jndi + ": " + e.getMessage());
+        }
+        return new MailChannelStatus(MailChannelStatus.Mode.JNDI, falta,
+                "Sesion de correo del contenedor " + jndi);
+    }
+
+    @Override
+    public Session getSession(IMailAccount account) throws Exception {
+        if (account == null) {
+            throw new IllegalArgumentException("No se recibio la cuenta de correo");
+        }
+        String host = Fn.nvl(account.getSmtpHost(), "").trim();
+        if (!host.isEmpty()) {
+            return buildSmtpSession(account, host);
+        }
+        return lookupContainerSession(account);
     }
 
     /**
-     * Arma la sesión SMTP a partir de los parámetros globales.
+     * Arma la sesión SMTP a partir de los datos de la cuenta.
      *
-     * @param appConfig configuración de la aplicación.
+     * @param account cuenta de correo con la configuración resuelta.
      * @param host servidor SMTP.
      * @return la sesión de correo.
      */
-    protected Session buildSmtpSession(IAppConfig appConfig, String host) {
-        Integer port = Fn.nvl(num(appConfig, PARAM_SMTP_PORT), DEFAULT_SMTP_PORT);
-        boolean starttls = bool(appConfig, PARAM_SMTP_STARTTLS);
-        boolean ssl = bool(appConfig, PARAM_SMTP_SSL);
-        boolean auth = bool(appConfig, PARAM_SMTP_AUTH);
+    protected Session buildSmtpSession(IMailAccount account, String host) {
+        int port = Fn.nvl(account.getSmtpPort(), DEFAULT_SMTP_PORT);
+        boolean starttls = Fn.nvl(account.getSmtpStartTls(), false);
+        boolean ssl = Fn.nvl(account.getSmtpSsl(), false);
+        boolean auth = Fn.nvl(account.getSmtpAuth(), false);
 
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
@@ -112,9 +155,9 @@ public class MailSessionProvider implements IMailSessionProvider {
         if (ssl) {
             props.put("mail.smtp.ssl.enable", "true");
         }
-        String sslTrust = str(appConfig, PARAM_SMTP_SSL_TRUST);
-        if (!Fn.nvl(sslTrust, "").trim().isEmpty()) {
-            props.put("mail.smtp.ssl.trust", sslTrust.trim());
+        String sslTrust = Fn.nvl(account.getSmtpSslTrust(), "").trim();
+        if (!sslTrust.isEmpty()) {
+            props.put("mail.smtp.ssl.trust", sslTrust);
             // El trust explícito implica aceptar el certificado aunque su nombre no
             // coincida con el host (Angus Mail verifica la identidad por separado y
             // por defecto): sin esto el handshake falla con "No subject alternative
@@ -122,10 +165,27 @@ public class MailSessionProvider implements IMailSessionProvider {
             props.put("mail.smtp.ssl.checkserveridentity", "false");
         }
         props.put("mail.smtp.auth", String.valueOf(auth));
+        // Tiempos límite del diálogo SMTP. Van antes de las propiedades
+        // adicionales para que una cuenta pueda ajustarlos, pero nunca quedan
+        // sin definir: un servidor que acepta la conexión y no contesta dejaría
+        // el envío esperando indefinidamente.
+        props.put("mail.smtp.connectiontimeout", String.valueOf(DEFAULT_TIMEOUT_MS));
+        props.put("mail.smtp.timeout", String.valueOf(DEFAULT_TIMEOUT_MS));
+        props.put("mail.smtp.writetimeout", String.valueOf(DEFAULT_TIMEOUT_MS));
+        // Las propiedades adicionales se aplican al final, de modo que la cuenta
+        // pueda ajustar cualquier valor del proveedor sin ampliar el contrato.
+        Map<String, String> extra = account.getExtraProperties();
+        if (extra != null) {
+            for (Map.Entry<String, String> e : extra.entrySet()) {
+                if (e.getKey() != null && e.getValue() != null) {
+                    props.put(e.getKey(), e.getValue());
+                }
+            }
+        }
 
         if (auth) {
-            final String user = str(appConfig, PARAM_SMTP_USER);
-            final String pass = resolvePassword(appConfig);
+            final String user = account.getSmtpUser();
+            final String pass = resolvePassword(account);
             return Session.getInstance(props, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
@@ -139,12 +199,12 @@ public class MailSessionProvider implements IMailSessionProvider {
     /**
      * Resuelve la sesión de correo del contenedor por JNDI.
      *
-     * @param appConfig configuración de la aplicación.
+     * @param account cuenta de correo con la configuración resuelta.
      * @return la sesión del contenedor.
      * @throws Exception si no se encuentra la sesión en el JNDI.
      */
-    protected Session lookupContainerSession(IAppConfig appConfig) throws Exception {
-        String jndi = Fn.nvl(str(appConfig, PARAM_JNDI), DEFAULT_JNDI);
+    protected Session lookupContainerSession(IMailAccount account) throws Exception {
+        String jndi = Fn.nvl(account.getSessionJndi(), DEFAULT_JNDI);
         Object obj = new InitialContext().lookup(jndi);
         if (!(obj instanceof Session)) {
             throw new IllegalStateException("El recurso JNDI " + jndi
@@ -156,30 +216,29 @@ public class MailSessionProvider implements IMailSessionProvider {
     /**
      * Devuelve la contraseña SMTP en claro.
      *
-     * <p>La presencia de la llave {@link #PARAM_CIPHER_KEY} es la que define
-     * cómo se interpreta {@link #PARAM_SMTP_PASS}:</p>
+     * <p>La presencia de {@link IMailAccount#getCipherKey()} es la que define
+     * cómo se interpreta {@link IMailAccount#getSmtpPass()}:</p>
      *
      * <ul>
      * <li><b>Sin llave</b> (ausente o vacía): la contraseña <b>no está
-     * cifrada</b> y se usa tal cual. Es una configuración válida —y la única
-     * posible mientras no se defina dónde custodiar la llave—, pero deja una
+     * cifrada</b> y se usa tal cual. Es una configuración válida, pero deja una
      * advertencia en el log, porque en una instalación real no es deseable.</li>
      * <li><b>Con llave</b>: la contraseña está cifrada y se descifra. Si el
      * descifrado falla, es un <b>error de configuración</b> y se informa como
      * tal.</li>
      * </ul>
      *
-     * @param appConfig configuración de la aplicación.
+     * @param account cuenta de correo con la configuración resuelta.
      * @return contraseña en claro, o cadena vacía.
      * @throws IllegalStateException si hay llave y la contraseña no se puede
      * descifrar con ella.
      */
-    protected String resolvePassword(IAppConfig appConfig) {
-        String pass = Fn.nvl(str(appConfig, PARAM_SMTP_PASS), "");
-        String key = str(appConfig, PARAM_CIPHER_KEY);
-        if (Fn.nvl(key, "").trim().isEmpty()) {
-            LOGGER.warn("No hay llave de cifrado (" + PARAM_CIPHER_KEY
-                    + "): se usa la contrasenia SMTP sin descifrar.");
+    protected String resolvePassword(IMailAccount account) {
+        String pass = Fn.nvl(account.getSmtpPass(), "");
+        String key = Fn.nvl(account.getCipherKey(), "").trim();
+        if (key.isEmpty()) {
+            LOGGER.warn("La cuenta de correo no tiene llave de cifrado: "
+                    + "se usa la contrasenia SMTP sin descifrar.");
             return pass;
         }
         try {
@@ -189,26 +248,9 @@ public class MailSessionProvider implements IMailSessionProvider {
             // autenticacion fallaria igual, pero el error visible seria
             // "credencial rechazada", que apunta al lugar equivocado. Con llave
             // presente, un descifrado fallido es un error de configuracion.
-            throw new IllegalStateException("No se pudo descifrar la contrasenia SMTP con la llave "
-                    + PARAM_CIPHER_KEY + ": " + e.getMessage(), e);
+            throw new IllegalStateException("No se pudo descifrar la contrasenia SMTP "
+                    + "de la cuenta con la llave configurada: " + e.getMessage(), e);
         }
     }
 
-    private String str(IAppConfig appConfig, String param) {
-        IAppSystemParam p = appConfig.getSystemParam(param);
-        return (p == null) ? null : p.getValueChar();
-    }
-
-    private Integer num(IAppConfig appConfig, String param) {
-        IAppSystemParam p = appConfig.getSystemParam(param);
-        if (p == null || p.getValueNumber() == null) {
-            return null;
-        }
-        return p.getValueNumber().intValue();
-    }
-
-    private boolean bool(IAppConfig appConfig, String param) {
-        IAppSystemParam p = appConfig.getSystemParam(param);
-        return p != null && Boolean.TRUE.equals(p.getValueBoolean());
-    }
 }

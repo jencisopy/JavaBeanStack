@@ -30,7 +30,7 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.MimeMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.javabeanstack.config.IAppConfig;
+import org.javabeanstack.messaging.IMailAccount;
 import org.javabeanstack.messaging.IMailMessage;
 
 /**
@@ -79,15 +79,55 @@ public class MailSender implements IMailSender {
     }
 
     @Override
-    public IMailSendResult send(IAppConfig appConfig, Long idcompany, IMailMessage message) {
+    public IMailSendResult send(IMailAccount account, IMailMessage message) {
         Session session;
         try {
-            session = sessionProvider.getSession(appConfig, idcompany);
+            session = sessionProvider.getSession(account);
         } catch (Exception ex) {
             LOGGER.error("No hay configuracion de correo disponible: " + ex.getMessage());
             return MailSendResult.failed("No hay configuracion de correo disponible: " + ex.getMessage());
         }
         return send(message, session);
+    }
+
+    @Override
+    public IMailSendResult testConnection(IMailAccount account) {
+        Session session;
+        try {
+            session = sessionProvider.getSession(account);
+        } catch (Exception ex) {
+            LOGGER.error("No hay configuracion de correo disponible: " + ex.getMessage());
+            return MailSendResult.failed("No hay configuracion de correo disponible: " + ex.getMessage());
+        }
+        Transport transport = null;
+        try {
+            transport = session.getTransport("smtp");
+            // Con autenticación, las credenciales las aporta el Authenticator de
+            // la sesión; sin ella, connect() sin argumentos solo abre el diálogo.
+            transport.connect();
+            return MailSendResult.ok(null);
+        } catch (AuthenticationFailedException ex) {
+            // La credencial es incorrecta: reintentar no cambia nada. Es
+            // justamente lo que la comprobación pasiva no puede detectar.
+            LOGGER.error("Prueba de conexion rechazada (autenticacion): " + ex.getMessage());
+            return MailSendResult.failed(ex.getMessage());
+        } catch (MessagingException ex) {
+            LOGGER.warn("Prueba de conexion con error recuperable: " + ex.getMessage());
+            return MailSendResult.retryable(ex.getMessage());
+        } catch (Exception ex) {
+            LOGGER.error("No se pudo probar la conexion: " + ex.getMessage());
+            return MailSendResult.failed(ex.getMessage());
+        } finally {
+            if (transport != null) {
+                try {
+                    transport.close();
+                } catch (MessagingException ex) {
+                    // Cerrar es cortesía con el servidor: que falle no cambia el
+                    // resultado de la prueba, que ya se decidió arriba.
+                    LOGGER.debug("No se pudo cerrar el transporte de la prueba: " + ex.getMessage());
+                }
+            }
+        }
     }
 
     private void addInvalid(MailSendResult result, SendFailedException ex) {

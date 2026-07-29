@@ -22,6 +22,8 @@
  */
 package org.javabeanstack.messaging;
 
+import java.util.Map;
+
 /**
  * Contrato de la cuenta de correo de una empresa: los parámetros de salida
  * (SMTP) y de entrada (IMAP/POP3), la identidad con la que se firma el envío y
@@ -221,6 +223,80 @@ public interface IMailAccount {
      * @param smtpPass contraseña SMTP cifrada.
      */
     void setSmtpPass(String smtpPass);
+
+    /**
+     * Devuelve los servidores SMTP cuyo certificado se acepta aunque su nombre no
+     * coincida con el host. Separados por espacios, o {@code *} para todos.
+     *
+     * <p>Hace falta cuando el servidor está en un hosting compartido y presenta
+     * un certificado a nombre de otro host.</p>
+     *
+     * @return lista de hosts de confianza, o nulo.
+     */
+    String getSmtpSslTrust();
+
+    /**
+     * Asigna los servidores SMTP cuyo certificado se acepta aunque su nombre no
+     * coincida con el host.
+     * @param smtpSslTrust lista de hosts separados por espacios, o {@code *}.
+     */
+    void setSmtpSslTrust(String smtpSslTrust);
+
+    /**
+     * Devuelve la llave con la que se descifran {@link #getSmtpPass()} e
+     * {@link #getInPass()}.
+     *
+     * <p><b>Su ausencia es significativa</b>: si es nula o vacía, las
+     * contraseñas <b>no están cifradas</b> y se usan tal cual.</p>
+     *
+     * @return llave de cifrado, o nulo si las contraseñas están en claro.
+     */
+    String getCipherKey();
+
+    /**
+     * Asigna la llave con la que se descifran las contraseñas de la cuenta.
+     * @param cipherKey llave de cifrado, o nulo si están en claro.
+     */
+    void setCipherKey(String cipherKey);
+
+    /**
+     * Devuelve el nombre JNDI de la sesión de correo del contenedor a usar
+     * cuando la cuenta no define {@link #getSmtpHost()}.
+     *
+     * <p><b>Es configuración del despliegue, no de la empresa</b>: viaja en la
+     * cuenta para que el proveedor de sesiones reciba todo lo que necesita en un
+     * solo objeto, pero su valor no depende de quién sea el dueño de la cuenta.
+     * Quien prefiera resolver el recurso por su cuenta puede omitirlo y usar
+     * directamente el envío con una {@code Session} ya construida.</p>
+     *
+     * @return nombre JNDI de la sesión de correo, o nulo.
+     */
+    String getSessionJndi();
+
+    /**
+     * Asigna el nombre JNDI de la sesión de correo del contenedor.
+     * @param sessionJndi nombre JNDI, o nulo.
+     */
+    void setSessionJndi(String sessionJndi);
+
+    /**
+     * Devuelve propiedades adicionales del transporte, que se aplican tal cual
+     * sobre la sesión de correo.
+     *
+     * <p>Es la vía para usar cualquier propiedad del proveedor de correo que no
+     * tenga un método propio en este contrato —un tiempo de espera, un proxy—
+     * sin tener que ampliar la interfaz. Las claves son las del proveedor
+     * ({@code mail.smtp.*}).</p>
+     *
+     * @return propiedades adicionales, o nulo si no hay.
+     */
+    Map<String, String> getExtraProperties();
+
+    /**
+     * Asigna propiedades adicionales del transporte.
+     * @param extraProperties propiedades adicionales, o nulo.
+     */
+    void setExtraProperties(Map<String, String> extraProperties);
 
     /**
      * Devuelve el protocolo de entrada.

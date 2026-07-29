@@ -251,8 +251,20 @@ public class AuthFilter implements Filter {
 
     }
 
-    private boolean isResourceNoProtect(String urlStr) {
-        // AQUI LISTA DE RECURSO QUE NO REQUIERE PROTECCION 
+    /**
+     * Indica si el recurso pedido puede servirse sin sesión iniciada.
+     *
+     * <p>Se evalúa <b>antes</b> de exigir la sesión, así que lo que devuelva
+     * verdadero queda fuera del control de acceso. Las aplicaciones que tengan
+     * páginas públicas propias —una activación por enlace, una recuperación de
+     * contraseña— redefinen este método y llaman a {@code super} para conservar
+     * las de acá.</p>
+     *
+     * @param urlStr dirección del recurso pedido.
+     * @return verdadero si el recurso no requiere sesión.
+     */
+    protected boolean isResourceNoProtect(String urlStr) {
+        // AQUI LISTA DE RECURSO QUE NO REQUIERE PROTECCION
         if (urlStr.endsWith("login.xhtml")) {
             return true;
         }

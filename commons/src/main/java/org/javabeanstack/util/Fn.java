@@ -362,7 +362,43 @@ public class Fn {
     }
 
     /**
+     * Indica si el valor es <b>una sola</b> dirección de correo con formato
+     * válido.
+     *
+     * <p>A diferencia de {@link #isEmailValid(String)}, que acepta una lista
+     * separada por {@code ;}, acá cualquier separador invalida el valor. Es lo
+     * que corresponde cuando la dirección identifica a alguien —el correo de un
+     * usuario— y no es una lista de destinatarios: con dos direcciones en el
+     * campo no habría a cuál escribirle ni cuál dar por verificada.</p>
+     *
+     * @param emailAddress dirección de correo, puede ser nula.
+     * @return verdadero si es exactamente una dirección con formato válido.
+     */
+    public static boolean isSingleEmailValid(String emailAddress) {
+        if (emailAddress == null) {
+            return false;
+        }
+        String value = emailAddress.trim();
+        if (value.isEmpty()) {
+            return false;
+        }
+        // Un separador o un espacio interno delatan más de una dirección, aunque
+        // cada una por separado fuera válida.
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == ';' || c == ',' || Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+        return EmailValidator.getInstance().isValid(value);
+    }
+
+    /**
      * Indica si una dirección de correo tiene formato válido.
+     *
+     * <p>Acepta <b>varias direcciones separadas por {@code ;}</b>, y es válido
+     * solo si todas lo son. Para un campo que deba contener una única dirección,
+     * usar {@link #isSingleEmailValid(String)}.</p>
      *
      * @param emailAdress dirección de correo.
      * @return verdadero si el formato es válido, falso si no.

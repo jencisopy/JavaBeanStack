@@ -70,4 +70,24 @@ public interface IAppUserPwdLogSrv extends IDataService {
      * @return identificador del usuario, o {@code null} si no se encuentra.
      */
     Long getIdUserFromPwdLog(String pwd);
+
+    /**
+     * Reemplaza la contraseña de un usuario dejando el rastro que exige la
+     * auditoría.
+     *
+     * <p>El valor de {@code appuser.pass} no es solo una credencial: es el sello
+     * con el que quedan marcadas todas las filas que ese usuario graba. Por eso
+     * el hash que se retira se registra en la bitácora <b>antes</b> de
+     * reescribirlo, y el nuevo después de grabarlo: sin ese registro, las filas
+     * selladas con el hash viejo quedarían sin usuario resoluble de forma
+     * irreversible.</p>
+     *
+     * <p>Si la grabación falla, se deshace el cambio en memoria para que el
+     * objeto siga reflejando lo que realmente está en la base.</p>
+     *
+     * @param appUser usuario cuya contraseña se reemplaza.
+     * @param hashNuevo contraseña ya cifrada con la fórmula que corresponda.
+     * @return verdadero si la contraseña quedó grabada.
+     */
+    boolean replaceUserPass(IAppUser appUser, String hashNuevo);
 }

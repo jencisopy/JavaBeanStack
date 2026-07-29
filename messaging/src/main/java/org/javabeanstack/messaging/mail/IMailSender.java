@@ -23,7 +23,7 @@
 package org.javabeanstack.messaging.mail;
 
 import jakarta.mail.Session;
-import org.javabeanstack.config.IAppConfig;
+import org.javabeanstack.messaging.IMailAccount;
 import org.javabeanstack.messaging.IMailMessage;
 
 /**
@@ -47,14 +47,31 @@ public interface IMailSender {
     IMailSendResult send(IMailMessage message, Session session);
 
     /**
-     * Envía un mensaje resolviendo la sesión desde la configuración de la
-     * empresa. Camino de conveniencia para quien no quiera manejar la
-     * {@link Session}.
+     * Envía un mensaje armando la sesión a partir de la cuenta indicada. Camino
+     * de conveniencia para quien no quiera manejar la {@link Session}.
      *
-     * @param appConfig configuración de la aplicación.
-     * @param idcompany empresa para la cual se resuelve la sesión.
+     * @param account cuenta de correo con la configuración ya resuelta.
      * @param message mensaje a enviar.
      * @return el resultado del envío (nunca nulo).
      */
-    IMailSendResult send(IAppConfig appConfig, Long idcompany, IMailMessage message);
+    IMailSendResult send(IMailAccount account, IMailMessage message);
+
+    /**
+     * Prueba que se pueda establecer el diálogo con el servidor de correo de una
+     * cuenta, <b>sin enviar nada</b>: abre el transporte, se autentica si
+     * corresponde y lo cierra.
+     *
+     * <p>Es lo único que detecta una credencial rechazada o un servidor
+     * inalcanzable, cosas que la comprobación de la configuración no puede ver
+     * porque no toca la red. Como abre una conexión, no conviene usarla en cada
+     * petición.</p>
+     *
+     * <p>No lanza excepción, igual que el envío: el desenlace vuelve en el
+     * resultado.</p>
+     *
+     * @param account cuenta de correo a probar.
+     * @return el resultado del intento (nunca nulo). Sin identificador de
+     * mensaje, porque no se envió ninguno.
+     */
+    IMailSendResult testConnection(IMailAccount account);
 }

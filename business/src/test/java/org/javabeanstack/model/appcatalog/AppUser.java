@@ -96,6 +96,16 @@ public class AppUser extends DataRow implements IAppUser {
     private String description;
 
     @Size(max = 100)
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "emailverified")
+    private Boolean emailVerified;
+
+    @Column(name = "emailverifieddate")
+    private LocalDateTime emailVerifiedDate;
+
+    @Size(max = 100)
     @Column(name = "email1")
     private String email1;
 
@@ -417,6 +427,36 @@ public class AppUser extends DataRow implements IAppUser {
 
     public void setEmail2(String email2) {
         this.email2 = email2;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    @Override
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    @Override
+    public LocalDateTime getEmailVerifiedDate() {
+        return emailVerifiedDate;
+    }
+
+    @Override
+    public void setEmailVerifiedDate(LocalDateTime emailVerifiedDate) {
+        this.emailVerifiedDate = emailVerifiedDate;
     }
 
     public String getTelefono1() {
