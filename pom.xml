@@ -23,6 +23,7 @@
         <module>excel</module>
         <module>jasper</module>
         <module>aws</module>
+        <module>messaging</module>
     </modules>
 
     <!--

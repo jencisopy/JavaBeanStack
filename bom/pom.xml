@@ -108,6 +108,11 @@
                 <artifactId>jbs-aws</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.javabeanstack</groupId>
+                <artifactId>jbs-messaging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- ============ Jakarta EE / servidor de aplicaciones ============ -->
             <dependency>
@@ -133,6 +138,19 @@
             <dependency>
                 <groupId>jakarta.json</groupId>
                 <artifactId>jakarta.json-api</artifactId>
+                <version>2.1.3</version>
+                <scope>provided</scope>
+            </dependency>
+            <!--
+                Jakarta Mail: la usa jbs-messaging para armar/enviar/recibir correo.
+                Scope "provided": la API y la implementacion (Angus Mail) las trae el
+                servidor de aplicaciones (WildFly 40, modulos jakarta.mail.api 2.1.3 y
+                org.eclipse.angus.mail 2.0.4). Version alineada con la que provee el
+                contenedor.
+            -->
+            <dependency>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
                 <version>2.1.3</version>
                 <scope>provided</scope>
             </dependency>
