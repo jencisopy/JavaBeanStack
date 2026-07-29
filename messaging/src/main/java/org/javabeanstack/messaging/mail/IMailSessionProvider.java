@@ -56,6 +56,10 @@ public interface IMailSessionProvider {
      * para avisar de una configuración incompleta antes de que alguien la
      * descubra con un correo que nunca llegó.</p>
      *
+     * <p>Comprueba el <b>remitente</b> además del transporte: sin él no hay
+     * envío posible, y darlo por operativo sería la misma falsa tranquilidad
+     * que este método existe para evitar.</p>
+     *
      * @param account cuenta de correo a comprobar, puede ser nula.
      * @return el estado de la cuenta (nunca nulo).
      */

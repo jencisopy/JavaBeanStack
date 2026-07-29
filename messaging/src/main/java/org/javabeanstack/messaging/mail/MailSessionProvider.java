@@ -81,6 +81,13 @@ public class MailSessionProvider implements IMailSessionProvider {
             return new MailChannelStatus(MailChannelStatus.Mode.NONE,
                     Collections.singletonList("cuenta"), "No se recibio ninguna cuenta de correo");
         }
+        // Una cuenta sin remitente no esta en condiciones de enviar. El mensaje
+        // puede traer el suyo, pero si la cuenta no declara ninguno lo que hay
+        // es una configuracion a medio cargar, y sin este control el fallo
+        // aparece recien al enviar: el canal se habria declarado operativo.
+        if (Fn.nvl(account.getFromAddress(), "").trim().isEmpty()) {
+            falta.add("remitente");
+        }
         String host = Fn.nvl(account.getSmtpHost(), "").trim();
         if (!host.isEmpty()) {
             if (Fn.nvl(account.getSmtpAuth(), false)) {
@@ -91,9 +98,9 @@ public class MailSessionProvider implements IMailSessionProvider {
                     falta.add("contrasenia SMTP");
                 }
             }
-            String detalle = falta.isEmpty()
-                    ? "Servidor SMTP " + host + ":" + Fn.nvl(account.getSmtpPort(), DEFAULT_SMTP_PORT)
-                    : "El servidor SMTP exige autenticacion y falta: " + falta;
+            String detalle = "Servidor SMTP " + host + ":"
+                    + Fn.nvl(account.getSmtpPort(), DEFAULT_SMTP_PORT)
+                    + (falta.isEmpty() ? "" : ", falta: " + falta);
             return new MailChannelStatus(MailChannelStatus.Mode.PARAMS, falta, detalle);
         }
         // Modo JNDI. El valor por defecto del contenedor NO cuenta como
@@ -119,7 +126,8 @@ public class MailSessionProvider implements IMailSessionProvider {
                     "No se pudo resolver la sesion de correo " + jndi + ": " + e.getMessage());
         }
         return new MailChannelStatus(MailChannelStatus.Mode.JNDI, falta,
-                "Sesion de correo del contenedor " + jndi);
+                "Sesion de correo del contenedor " + jndi
+                + (falta.isEmpty() ? "" : ", falta: " + falta));
     }
 
     @Override
