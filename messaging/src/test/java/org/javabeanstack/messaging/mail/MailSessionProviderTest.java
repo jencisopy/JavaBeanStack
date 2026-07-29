@@ -40,17 +40,30 @@ public class MailSessionProviderTest {
     private final MailSessionProvider provider = new MailSessionProvider();
 
     /**
+     * Devuelve una cuenta con el transporte completo, para que cada prueba le
+     * quite lo que quiere ejercitar.
+     *
+     * @return cuenta con servidor, credencial y remitente.
+     */
+    private MailAccount cuentaCompleta() {
+        MailAccount cuenta = new MailAccount();
+        cuenta.setSmtpHost("smtp.ejemplo.com");
+        cuenta.setSmtpPort(587);
+        cuenta.setSmtpAuth(true);
+        cuenta.setSmtpUser("usuario");
+        cuenta.setSmtpPass("clave");
+        cuenta.setFromAddress("no-reply@ejemplo.com");
+        cuenta.setFromName("Ejemplo");
+        return cuenta;
+    }
+
+    /**
      * Una cuenta con servidor, credencial y remitente está en condiciones de
      * enviar.
      */
     @Test
     public void testCuentaCompleta() {
-        MailAccount cuenta = new MailAccountBuilder()
-                .smtp("smtp.ejemplo.com", 587)
-                .auth("usuario", "clave")
-                .from("no-reply@ejemplo.com", "Ejemplo")
-                .build();
-        MailChannelStatus estado = provider.checkConfig(cuenta);
+        MailChannelStatus estado = provider.checkConfig(cuentaCompleta());
         assertTrue(estado.isReady());
         assertEquals(MailChannelStatus.Mode.PARAMS, estado.getMode());
         assertTrue(estado.getMissing().isEmpty());
@@ -63,10 +76,8 @@ public class MailSessionProviderTest {
      */
     @Test
     public void testFaltaRemitente() {
-        MailAccount cuenta = new MailAccountBuilder()
-                .smtp("smtp.ejemplo.com", 587)
-                .auth("usuario", "clave")
-                .build();
+        MailAccount cuenta = cuentaCompleta();
+        cuenta.setFromAddress(null);
         MailChannelStatus estado = provider.checkConfig(cuenta);
         assertFalse(estado.isReady());
         assertTrue(estado.getMissing().contains("remitente"));
@@ -78,11 +89,9 @@ public class MailSessionProviderTest {
      */
     @Test
     public void testFaltaCredencial() {
-        MailAccount cuenta = new MailAccountBuilder()
-                .smtp("smtp.ejemplo.com", 587)
-                .auth("", "")
-                .from("no-reply@ejemplo.com", "Ejemplo")
-                .build();
+        MailAccount cuenta = cuentaCompleta();
+        cuenta.setSmtpUser("");
+        cuenta.setSmtpPass("");
         MailChannelStatus estado = provider.checkConfig(cuenta);
         assertFalse(estado.isReady());
         assertTrue(estado.getMissing().contains("usuario SMTP"));
@@ -96,9 +105,8 @@ public class MailSessionProviderTest {
      */
     @Test
     public void testSinTransporte() {
-        MailAccount cuenta = new MailAccountBuilder()
-                .from("no-reply@ejemplo.com", "Ejemplo")
-                .build();
+        MailAccount cuenta = cuentaCompleta();
+        cuenta.setSmtpHost(null);
         MailChannelStatus estado = provider.checkConfig(cuenta);
         assertFalse(estado.isReady());
         assertEquals(MailChannelStatus.Mode.NONE, estado.getMode());

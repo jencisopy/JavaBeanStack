@@ -64,15 +64,32 @@ public class MailSessionProvider implements IMailSessionProvider {
     public static final int DEFAULT_SMTP_PORT = 587;
 
     /**
-     * Milisegundos de espera por defecto en cada etapa del diálogo SMTP:
-     * establecer la conexión, leer una respuesta y escribir.
+     * Milisegundos de espera para <b>establecer la conexión</b> con el servidor.
      *
      * <p><b>Sin un tiempo límite no hay envío que falle</b>: un servidor que
      * acepta la conexión y no responde deja el hilo esperando para siempre, y
      * con él a quien haya iniciado el envío. Puede ajustarse por cuenta con las
      * propiedades adicionales.</p>
+     *
+     * <p>Este valor es corto a propósito: un servidor que no acepta la conexión
+     * en 15 segundos no la va a aceptar.</p>
      */
     public static final int DEFAULT_TIMEOUT_MS = 15000;
+
+    /**
+     * Milisegundos de espera para <b>leer o escribir</b> durante el diálogo SMTP,
+     * bastante más generoso que el de conexión.
+     *
+     * <p>La diferencia no es cosmética: conectar es instantáneo o no ocurre,
+     * pero la respuesta al {@code DATA} llega recién <b>después</b> de que el
+     * servidor aceptó el mensaje completo, y del otro lado puede haber antivirus
+     * o filtros que se toman su tiempo. Con un límite corto se corta la lectura
+     * de una respuesta que iba a llegar, el mensaje <b>ya se entregó</b> y el
+     * envío se reporta como fallido — un falso negativo verificado en
+     * producción. Y como un fallo de envío puede bloquear un ingreso con segundo
+     * factor, ese falso negativo deja gente afuera con el código ya enviado.</p>
+     */
+    public static final int DEFAULT_IO_TIMEOUT_MS = 60000;
 
     @Override
     public MailChannelStatus checkConfig(IMailAccount account) {
@@ -178,8 +195,8 @@ public class MailSessionProvider implements IMailSessionProvider {
         // sin definir: un servidor que acepta la conexión y no contesta dejaría
         // el envío esperando indefinidamente.
         props.put("mail.smtp.connectiontimeout", String.valueOf(DEFAULT_TIMEOUT_MS));
-        props.put("mail.smtp.timeout", String.valueOf(DEFAULT_TIMEOUT_MS));
-        props.put("mail.smtp.writetimeout", String.valueOf(DEFAULT_TIMEOUT_MS));
+        props.put("mail.smtp.timeout", String.valueOf(DEFAULT_IO_TIMEOUT_MS));
+        props.put("mail.smtp.writetimeout", String.valueOf(DEFAULT_IO_TIMEOUT_MS));
         // Las propiedades adicionales se aplican al final, de modo que la cuenta
         // pueda ajustar cualquier valor del proveedor sin ampliar el contrato.
         Map<String, String> extra = account.getExtraProperties();

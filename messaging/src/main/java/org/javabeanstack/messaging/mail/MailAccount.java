@@ -3,7 +3,6 @@
 *
 * Copyright (C) 2017 - 2027 Jorge Enciso
 * Email: jorge.enciso.r@gmail.com
-*        jenciso@javabeanstack.org
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -22,111 +21,65 @@
  */
 package org.javabeanstack.messaging.mail;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import org.javabeanstack.messaging.IMailAccount;
 
 /**
- * Implementación simple de {@link IMailAccount} para quien necesite armar una
- * cuenta de correo sin tener una entidad que la represente.
+ * Cuenta de correo: los datos que el subsistema necesita para enviar.
  *
- * <p>Se construye con {@link MailAccountBuilder} y, una vez construida, no se
- * modifica: los {@code set} del contrato están implementados pero lanzan. La
- * razón es práctica — una cuenta que cambia mientras se está armando una sesión
- * de correo es una fuente de errores difíciles de rastrear.</p>
+ * <p>Es un <b>portador de datos</b> y nada más: no sabe de dónde salen los
+ * valores. Eso es deliberado — hoy la aplicación los lee de sus parámetros del
+ * sistema y mañana puede leerlos de sus propias tablas, sin que el subsistema se
+ * entere ni cambie.</p>
  *
- * <p><b>Las contraseñas se guardan tal como llegan.</b> Si vienen cifradas, acá
- * siguen cifradas; el descifrado ocurre más adelante, en
- * {@link MailSessionProvider}, usando {@link #getCipherKey()}.</p>
+ * <p>Los atributos son <b>modificables</b>, como declara el contrato. Una
+ * versión inmutable que hiciera fallar sus propios setters cumpliría la interfaz
+ * solo de nombre, y quien programe contra {@link IMailAccount} tiene derecho a
+ * usarla completa.</p>
  *
  * @author Jorge Enciso
  */
 public class MailAccount implements IMailAccount {
 
-    private final Long id;
-    private final Long idcompany;
-    private final String code;
-    private final String name;
-    private final String channel;
-    private final String fromAddress;
-    private final String fromName;
-    private final String replyTo;
-    private final String smtpHost;
-    private final Integer smtpPort;
-    private final Boolean smtpStartTls;
-    private final Boolean smtpSsl;
-    private final Boolean smtpAuth;
-    private final String smtpUser;
-    private final String smtpPass;
-    private final String smtpSslTrust;
-    private final String cipherKey;
-    private final String sessionJndi;
-    private final String protocol;
-    private final String inHost;
-    private final Integer inPort;
-    private final Boolean inSsl;
-    private final String inUser;
-    private final String inPass;
-    private final String inFolder;
-    private final Boolean inDeleteOnServer;
-    private final Boolean defaultAccount;
-    private final Boolean active;
-    private final Integer maxRetry;
-    private final Map<String, String> extraProperties;
-
-    /**
-     * Construye la cuenta a partir de los valores acumulados en el
-     * constructor fluido.
-     *
-     * @param b constructor con los valores de la cuenta.
-     */
-    MailAccount(MailAccountBuilder b) {
-        this.id = b.id;
-        this.idcompany = b.idcompany;
-        this.code = b.code;
-        this.name = b.name;
-        this.channel = b.channel;
-        this.fromAddress = b.fromAddress;
-        this.fromName = b.fromName;
-        this.replyTo = b.replyTo;
-        this.smtpHost = b.smtpHost;
-        this.smtpPort = b.smtpPort;
-        this.smtpStartTls = b.smtpStartTls;
-        this.smtpSsl = b.smtpSsl;
-        this.smtpAuth = b.smtpAuth;
-        this.smtpUser = b.smtpUser;
-        this.smtpPass = b.smtpPass;
-        this.smtpSslTrust = b.smtpSslTrust;
-        this.cipherKey = b.cipherKey;
-        this.sessionJndi = b.sessionJndi;
-        this.protocol = b.protocol;
-        this.inHost = b.inHost;
-        this.inPort = b.inPort;
-        this.inSsl = b.inSsl;
-        this.inUser = b.inUser;
-        this.inPass = b.inPass;
-        this.inFolder = b.inFolder;
-        this.inDeleteOnServer = b.inDeleteOnServer;
-        this.defaultAccount = b.defaultAccount;
-        this.active = b.active;
-        this.maxRetry = b.maxRetry;
-        this.extraProperties = (b.extraProperties == null || b.extraProperties.isEmpty())
-                ? null : Collections.unmodifiableMap(new LinkedHashMap<>(b.extraProperties));
-    }
-
-    /**
-     * Devuelve un constructor vacío.
-     *
-     * @return constructor de cuentas de correo.
-     */
-    public static MailAccountBuilder create() {
-        return new MailAccountBuilder();
-    }
+    private Long id;
+    private Long idcompany;
+    private String code;
+    private String name;
+    private String channel;
+    private String fromAddress;
+    private String fromName;
+    private String replyTo;
+    private String smtpHost;
+    private Integer smtpPort;
+    private Boolean smtpStartTls;
+    private Boolean smtpSsl;
+    private Boolean smtpAuth;
+    private String smtpUser;
+    private String smtpPass;
+    private String smtpSslTrust;
+    private String cipherKey;
+    private String sessionJndi;
+    private Map<String, String> extraProperties;
+    private String protocol;
+    private String inHost;
+    private Integer inPort;
+    private Boolean inSsl;
+    private String inUser;
+    private String inPass;
+    private String inFolder;
+    private Boolean inDeleteOnServer;
+    private Boolean defaultAccount;
+    private Boolean active;
+    private Integer maxRetry;
 
     @Override
     public Long getId() {
         return id;
+    }
+
+    @Override
+    public void setId(Long value) {
+        this.id = value;
     }
 
     @Override
@@ -135,8 +88,18 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
+    public void setIdcompany(Long value) {
+        this.idcompany = value;
+    }
+
+    @Override
     public String getCode() {
         return code;
+    }
+
+    @Override
+    public void setCode(String value) {
+        this.code = value;
     }
 
     @Override
@@ -145,8 +108,18 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
+    public void setName(String value) {
+        this.name = value;
+    }
+
+    @Override
     public String getChannel() {
         return channel;
+    }
+
+    @Override
+    public void setChannel(String value) {
+        this.channel = value;
     }
 
     @Override
@@ -155,8 +128,18 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
+    public void setFromAddress(String value) {
+        this.fromAddress = value;
+    }
+
+    @Override
     public String getFromName() {
         return fromName;
+    }
+
+    @Override
+    public void setFromName(String value) {
+        this.fromName = value;
     }
 
     @Override
@@ -165,8 +148,18 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
+    public void setReplyTo(String value) {
+        this.replyTo = value;
+    }
+
+    @Override
     public String getSmtpHost() {
         return smtpHost;
+    }
+
+    @Override
+    public void setSmtpHost(String value) {
+        this.smtpHost = value;
     }
 
     @Override
@@ -175,8 +168,18 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
+    public void setSmtpPort(Integer value) {
+        this.smtpPort = value;
+    }
+
+    @Override
     public Boolean getSmtpStartTls() {
         return smtpStartTls;
+    }
+
+    @Override
+    public void setSmtpStartTls(Boolean value) {
+        this.smtpStartTls = value;
     }
 
     @Override
@@ -185,8 +188,18 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
+    public void setSmtpSsl(Boolean value) {
+        this.smtpSsl = value;
+    }
+
+    @Override
     public Boolean getSmtpAuth() {
         return smtpAuth;
+    }
+
+    @Override
+    public void setSmtpAuth(Boolean value) {
+        this.smtpAuth = value;
     }
 
     @Override
@@ -195,8 +208,18 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
+    public void setSmtpUser(String value) {
+        this.smtpUser = value;
+    }
+
+    @Override
     public String getSmtpPass() {
         return smtpPass;
+    }
+
+    @Override
+    public void setSmtpPass(String value) {
+        this.smtpPass = value;
     }
 
     @Override
@@ -205,8 +228,18 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
+    public void setSmtpSslTrust(String value) {
+        this.smtpSslTrust = value;
+    }
+
+    @Override
     public String getCipherKey() {
         return cipherKey;
+    }
+
+    @Override
+    public void setCipherKey(String value) {
+        this.cipherKey = value;
     }
 
     @Override
@@ -215,58 +248,8 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
-    public String getProtocol() {
-        return protocol;
-    }
-
-    @Override
-    public String getInHost() {
-        return inHost;
-    }
-
-    @Override
-    public Integer getInPort() {
-        return inPort;
-    }
-
-    @Override
-    public Boolean getInSsl() {
-        return inSsl;
-    }
-
-    @Override
-    public String getInUser() {
-        return inUser;
-    }
-
-    @Override
-    public String getInPass() {
-        return inPass;
-    }
-
-    @Override
-    public String getInFolder() {
-        return inFolder;
-    }
-
-    @Override
-    public Boolean getInDeleteOnServer() {
-        return inDeleteOnServer;
-    }
-
-    @Override
-    public Boolean getDefaultAccount() {
-        return defaultAccount;
-    }
-
-    @Override
-    public Boolean getActive() {
-        return active;
-    }
-
-    @Override
-    public Integer getMaxRetry() {
-        return maxRetry;
+    public void setSessionJndi(String value) {
+        this.sessionJndi = value;
     }
 
     @Override
@@ -275,157 +258,118 @@ public class MailAccount implements IMailAccount {
     }
 
     @Override
-    public void setId(Long id) {
-        throw inmutable();
+    public void setExtraProperties(Map<String, String> value) {
+        this.extraProperties = value;
     }
 
     @Override
-    public void setIdcompany(Long idcompany) {
-        throw inmutable();
+    public String getProtocol() {
+        return protocol;
     }
 
     @Override
-    public void setCode(String code) {
-        throw inmutable();
+    public void setProtocol(String value) {
+        this.protocol = value;
     }
 
     @Override
-    public void setName(String name) {
-        throw inmutable();
+    public String getInHost() {
+        return inHost;
     }
 
     @Override
-    public void setChannel(String channel) {
-        throw inmutable();
+    public void setInHost(String value) {
+        this.inHost = value;
     }
 
     @Override
-    public void setFromAddress(String fromAddress) {
-        throw inmutable();
+    public Integer getInPort() {
+        return inPort;
     }
 
     @Override
-    public void setFromName(String fromName) {
-        throw inmutable();
+    public void setInPort(Integer value) {
+        this.inPort = value;
     }
 
     @Override
-    public void setReplyTo(String replyTo) {
-        throw inmutable();
+    public Boolean getInSsl() {
+        return inSsl;
     }
 
     @Override
-    public void setSmtpHost(String smtpHost) {
-        throw inmutable();
+    public void setInSsl(Boolean value) {
+        this.inSsl = value;
     }
 
     @Override
-    public void setSmtpPort(Integer smtpPort) {
-        throw inmutable();
+    public String getInUser() {
+        return inUser;
     }
 
     @Override
-    public void setSmtpStartTls(Boolean smtpStartTls) {
-        throw inmutable();
+    public void setInUser(String value) {
+        this.inUser = value;
     }
 
     @Override
-    public void setSmtpSsl(Boolean smtpSsl) {
-        throw inmutable();
+    public String getInPass() {
+        return inPass;
     }
 
     @Override
-    public void setSmtpAuth(Boolean smtpAuth) {
-        throw inmutable();
+    public void setInPass(String value) {
+        this.inPass = value;
     }
 
     @Override
-    public void setSmtpUser(String smtpUser) {
-        throw inmutable();
+    public String getInFolder() {
+        return inFolder;
     }
 
     @Override
-    public void setSmtpPass(String smtpPass) {
-        throw inmutable();
+    public void setInFolder(String value) {
+        this.inFolder = value;
     }
 
     @Override
-    public void setSmtpSslTrust(String smtpSslTrust) {
-        throw inmutable();
+    public Boolean getInDeleteOnServer() {
+        return inDeleteOnServer;
     }
 
     @Override
-    public void setCipherKey(String cipherKey) {
-        throw inmutable();
+    public void setInDeleteOnServer(Boolean value) {
+        this.inDeleteOnServer = value;
     }
 
     @Override
-    public void setSessionJndi(String sessionJndi) {
-        throw inmutable();
+    public Boolean getDefaultAccount() {
+        return defaultAccount;
     }
 
     @Override
-    public void setProtocol(String protocol) {
-        throw inmutable();
+    public void setDefaultAccount(Boolean value) {
+        this.defaultAccount = value;
     }
 
     @Override
-    public void setInHost(String inHost) {
-        throw inmutable();
+    public Boolean getActive() {
+        return active;
     }
 
     @Override
-    public void setInPort(Integer inPort) {
-        throw inmutable();
+    public void setActive(Boolean value) {
+        this.active = value;
     }
 
     @Override
-    public void setInSsl(Boolean inSsl) {
-        throw inmutable();
+    public Integer getMaxRetry() {
+        return maxRetry;
     }
 
     @Override
-    public void setInUser(String inUser) {
-        throw inmutable();
+    public void setMaxRetry(Integer value) {
+        this.maxRetry = value;
     }
 
-    @Override
-    public void setInPass(String inPass) {
-        throw inmutable();
-    }
-
-    @Override
-    public void setInFolder(String inFolder) {
-        throw inmutable();
-    }
-
-    @Override
-    public void setInDeleteOnServer(Boolean inDeleteOnServer) {
-        throw inmutable();
-    }
-
-    @Override
-    public void setDefaultAccount(Boolean defaultAccount) {
-        throw inmutable();
-    }
-
-    @Override
-    public void setActive(Boolean active) {
-        throw inmutable();
-    }
-
-    @Override
-    public void setMaxRetry(Integer maxRetry) {
-        throw inmutable();
-    }
-
-    @Override
-    public void setExtraProperties(Map<String, String> extraProperties) {
-        throw inmutable();
-    }
-
-    private UnsupportedOperationException inmutable() {
-        return new UnsupportedOperationException(
-                "MailAccount no se modifica una vez construida: use MailAccount.create()");
-    }
 }
