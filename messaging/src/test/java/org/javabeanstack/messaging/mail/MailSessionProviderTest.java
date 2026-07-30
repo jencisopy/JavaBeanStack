@@ -121,4 +121,39 @@ public class MailSessionProviderTest {
         assertFalse(estado.isReady());
         assertEquals(MailChannelStatus.Mode.NONE, estado.getMode());
     }
+
+    /**
+     * El recurso por defecto del contenedor NO cuenta como configuración,
+     * aunque se lo declare explícitamente.
+     *
+     * <p>Es <b>la regla capital</b> de la decisión sobre prerrequisitos del
+     * canal, y la que más fácil se pierde: el lookup de
+     * {@code java:jboss/mail/Default} <b>tiene éxito</b> —ese recurso existe
+     * siempre en WildFly—, así que sin este control el canal se declararía
+     * operativo y el fallo aparecería recién al enviar, contra un
+     * {@code localhost:25} que normalmente no existe. Un "correo operativo"
+     * falso es peor que no informar nada.</p>
+     */
+    @Test
+    public void testJndiPorDefectoDelContenedorNoCuenta() {
+        MailAccount cuenta = cuentaCompleta();
+        cuenta.setSmtpHost(null);
+        cuenta.setSessionJndi(MailSessionProvider.DEFAULT_JNDI);
+        MailChannelStatus estado = provider.checkConfig(cuenta);
+        assertEquals(MailChannelStatus.Mode.NONE, estado.getMode());
+        assertFalse(estado.isReady());
+        assertTrue(estado.getMissing().contains("servidor SMTP"));
+    }
+
+    /**
+     * La comparación del recurso por defecto no distingue mayúsculas: un
+     * descuido de tipeo no debe convertirlo en configuración válida.
+     */
+    @Test
+    public void testJndiPorDefectoEnOtrasMayusculas() {
+        MailAccount cuenta = cuentaCompleta();
+        cuenta.setSmtpHost("");
+        cuenta.setSessionJndi(MailSessionProvider.DEFAULT_JNDI.toUpperCase());
+        assertEquals(MailChannelStatus.Mode.NONE, provider.checkConfig(cuenta).getMode());
+    }
 }

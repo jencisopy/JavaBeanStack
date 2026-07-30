@@ -130,6 +130,19 @@ public class MailSessionProvider implements IMailSessionProvider {
                     Arrays.asList("servidor SMTP", "sesion de correo"),
                     "La cuenta no declara servidor SMTP ni sesion de correo del contenedor");
         }
+        // Declarar EXPLICITAMENTE el recurso por defecto del contenedor tampoco
+        // cuenta como configuracion, y hay que decirlo aparte: el lookup de
+        // java:jboss/mail/Default TIENE EXITO --existe siempre-- asi que sin
+        // este control el canal se declararia operativo y el fallo recien
+        // aparecería al enviar, contra localhost:25. Es el mismo descuido que
+        // el campo vacio, escrito de otra manera.
+        if (DEFAULT_JNDI.equalsIgnoreCase(jndi)) {
+            return new MailChannelStatus(MailChannelStatus.Mode.NONE,
+                    Arrays.asList("servidor SMTP", "sesion de correo"),
+                    "La cuenta apunta a " + DEFAULT_JNDI + ", que es el recurso por defecto "
+                    + "del contenedor y no una configuracion de correo: apunta a un servidor "
+                    + "local que normalmente no existe");
+        }
         try {
             Object obj = new InitialContext().lookup(jndi);
             if (!(obj instanceof Session)) {
