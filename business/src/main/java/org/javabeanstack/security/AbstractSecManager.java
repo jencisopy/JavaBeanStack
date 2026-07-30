@@ -33,7 +33,6 @@ import org.apache.logging.log4j.Logger;
 
 
 import org.javabeanstack.data.IDataRow;
-import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.data.IGenericDAO;
@@ -332,9 +331,14 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
     @Override
     public IAppAuthConsumerToken getAppAuthConsumerToken(String deviceOrToken) {
         String sqlComando;
+        //uuidDevice, no uuiddevice: el nombre del atributo es sensible a las
+        //mayúsculas. Tal como estaba, la consulta lanzaba SemanticException
+        //("Could not interpret path expression 'uuiddevice'") en TODAS sus
+        //invocaciones, así que este método nunca devolvió un token. Se agrega
+        //además el alias, por claridad.
         sqlComando = "select a "
                 + " from AppAuthConsumerToken a"
-                + " where a.token  = :token or uuiddevice = :token";
+                + " where a.token = :token or a.uuidDevice = :token";
 
         Map<String, Object> params = new HashMap();
         params.put("token", deviceOrToken.trim());
