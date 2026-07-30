@@ -391,6 +391,46 @@ public class FacesContextUtil {
     }
 
     /**
+     * Devuelve la URL base de la aplicación derivada del pedido en curso, por
+     * ejemplo {@code https://erp.cliente.com.py/Maker-web}.
+     *
+     * <p><b>ADVERTENCIA DE SEGURIDAD.</b> El host sale del encabezado
+     * {@code Host}, que lo controla <b>quien envía la petición</b>. Una URL
+     * armada con esto solo es confiable en flujos <b>autenticados</b>, donde
+     * quien la dispara ya es el dueño de la cuenta y no gana nada envenenando
+     * su propio enlace. <b>Nunca</b> debe usarse para armar enlaces de flujos
+     * anónimos —recuperación de contraseña, reenvíos públicos—: ahí permitiría
+     * que un tercero haga llegar a la casilla legítima de la víctima un enlace
+     * que apunta a su propio servidor, con un token válido.</p>
+     *
+     * <p>Detrás de un proxy inverso el pedido trae el host interno, así que
+     * esta derivación es un <b>último recurso</b>: lo correcto es configurar la
+     * URL base de la instalación.</p>
+     *
+     * @return URL base sin barra final, o nulo si no hay pedido web en curso.
+     */
+    public String getBaseUrl() {
+        FacesContext context = getFacesContext();
+        if (context == null || context.getExternalContext() == null) {
+            return null;
+        }
+        Object pedido = context.getExternalContext().getRequest();
+        if (!(pedido instanceof HttpServletRequest)) {
+            return null;
+        }
+        HttpServletRequest request = (HttpServletRequest) pedido;
+        String esquema = request.getScheme();
+        int puerto = request.getServerPort();
+        StringBuilder url = new StringBuilder(esquema).append("://").append(request.getServerName());
+        boolean puertoImplicito = ("http".equals(esquema) && puerto == 80)
+                || ("https".equals(esquema) && puerto == 443);
+        if (!puertoImplicito) {
+            url.append(":").append(puerto);
+        }
+        return url.append(request.getContextPath()).toString();
+    }
+
+    /**
      * Devuelve el host del cliente.
      *
      * @return host.
