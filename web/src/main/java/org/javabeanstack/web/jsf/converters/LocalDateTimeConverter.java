@@ -30,9 +30,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
+import jakarta.faces.convert.ConverterException;
 import jakarta.faces.convert.FacesConverter;
 import org.javabeanstack.util.LocalDates;
 import org.primefaces.component.api.UICalendar;
@@ -66,7 +68,11 @@ public class LocalDateTimeConverter implements Converter {
             LocalDate dateLocal = LocalDate.parse(value, formatter);
             return LocalDates.toDateTime(dateLocal.toString() + "T" + sTime, "yyyy-MM-dd'T'HH:mm:ss");
         } catch (Exception e) {
-            return null;
+            throw new ConverterException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                        "Fecha inválida", 
+                        "El valor '" + value + "' no tiene un formato de fecha válido (" + extractPattern(component) + ")"), 
+                    e);
         }
     }
 
