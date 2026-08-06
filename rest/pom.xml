@@ -23,5 +23,14 @@
             <artifactId>jbs-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- Solo para los tests: los dobles de sesión usan UserSession y
+             ErrorReg. La dependencia de compilación del módulo sigue siendo
+             únicamente interfaces + commons. -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jbs-business</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

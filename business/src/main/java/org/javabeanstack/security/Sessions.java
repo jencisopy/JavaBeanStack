@@ -184,11 +184,45 @@ public class Sessions implements ISessions {
     @Override
     @Lock(LockType.WRITE)
     public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, Map<String, Object> otherParams) {
+        return createSession(userLogin, password, idcompany, idleSessionExpireInMinutes, null, otherParams);
+    }
+
+    /**
+     * Crea una sesión autenticando al usuario con sus credenciales, verificando
+     * además que su rol tenga acceso concedido a la aplicación indicada
+     * (equivalente por credenciales de
+     * {@link #createSessionFromToken(String, String)}).
+     *
+     * <p>El nombre de la aplicación queda registrado en la sesión bajo
+     * {@link AppAccessPolicy#APPNAME}: la política de acceso se evalúa dentro de
+     * la creación misma —no puede saltearse— y las capas siguientes, como la de
+     * datos, lo leen para resolver el permiso de escritura. Como la información
+     * viaja en el propio objeto sesión, el cambio de empresa
+     * ({@link #reCreateSession}) la conserva y vuelve a evaluar la política.</p>
+     *
+     * @param userLogin usuario
+     * @param password password
+     * @param idcompany empresa que esta solicitando ingresar
+     * @param idleSessionExpireInMinutes minutos sin actividad antes de cerrar
+     * la sesión.
+     * @param appName nombre de la aplicación (context path del despliegue); con
+     * valor nulo no se evalúa la política de acceso.
+     * @param otherParams
+     * @return objeto conteniendo datos del login exitoso o rechazado; si el rol
+     * no tiene acceso a la aplicación, vuelve con el usuario en nulo y el error
+     * número 5 cargado.
+     */
+    @Override
+    @Lock(LockType.WRITE)
+    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, String appName, Map<String, Object> otherParams) {
         LOGGER.debug("CREATESESSION IN");
         IUserSession session;
         try {
             // Verifcar si coincide usuario, contraseña y pasar resultado para ser procesado
             session = login(userLogin, password, otherParams);
+            if (session != null && !Strings.isNullorEmpty(appName)) {
+                session.addInfo(AppAccessPolicy.APPNAME, appName);
+            }
             processCreateSession(session, idcompany, idleSessionExpireInMinutes);
             return session;
         } catch (Exception e) {
@@ -238,7 +272,26 @@ public class Sessions implements ISessions {
             session.setUser(null);
             LOGGER.debug(mensaje);
             session.setError(new ErrorReg(mensaje, 4, ""));
-            session.getError().setEntity(getClass().getName());            
+            session.getError().setEntity(getClass().getName());
+            session.getError().setEvent(EVENT_CREATESESSION);
+            session.getError().setLevel(LEVEL_ALERT);
+            logMngr.dbWrite(session.getError());
+            return false;
+        }
+        // Verificar que el rol tenga acceso a la aplicación (si se conoce cuál
+        // es). El control es parte de la creación misma —no puede saltearse— y
+        // como el APPNAME viaja en el propio objeto sesión, también se evalúa
+        // al recrear la sesión por cambio de empresa.
+        Object appName = session.getInfo(AppAccessPolicy.APPNAME);
+        if (appName != null && !appName.toString().trim().isEmpty()
+                && !AppAccessPolicy.isAllowed(appConfig, appName.toString(),
+                        AppAccessPolicy.ACCESS, (IAppUser) session.getUser())) {
+            //Capturar el login antes de anular el usuario de la sesión
+            String mensaje = session.getUser().getLogin().trim().toUpperCase() + " no tiene autorización para acceder a esta aplicación";
+            session.setUser(null);
+            LOGGER.debug(mensaje);
+            session.setError(new ErrorReg(mensaje, 5, ""));
+            session.getError().setEntity(getClass().getName());
             session.getError().setEvent(EVENT_CREATESESSION);
             session.getError().setLevel(LEVEL_ALERT);
             logMngr.dbWrite(session.getError());

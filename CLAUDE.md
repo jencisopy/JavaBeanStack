@@ -84,8 +84,9 @@ business    (acceso a datos JPA/EJB, servicios, seguridad, lógica de negocio)
 └── excel   (importación/exportación Excel con Apache POI; Excel*Srv —
              sin PrimeFaces y sin jbs-web, usa FacesContext directo)
 
-rest        (recursos JAX-RS: AbstractWebResource, CORSFilter, exceptions, model —
-             depende solo de interfaces + commons)
+rest        (recursos JAX-RS: AbstractWebResource, SessionWebResource, CORSFilter,
+             exceptions, model, util — depende solo de interfaces + commons;
+             jbs-business entra únicamente con scope test)
 jasper      (integración JasperReports; JasperReportUtil — depende solo de jbs-core)
 aws         (integración AWS S3 — independiente, fuera de la cadena principal)
 ```
@@ -125,7 +126,7 @@ Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (
 
 ### Seguridad (`interfaces` + `business`)
 - **`IUserSession`** — contexto del usuario autenticado (login, empresa, roles, permisos).
-- **`ISecManager`** / **`Sessions`** — autenticación vía EJB, gestión de contraseñas, OAuth.
+- **`ISecManager`** / **`Sessions`** — autenticación vía EJB, gestión de contraseñas, OAuth. `Sessions` es el **único punto** que crea/elimina sesiones. La política de acceso rol→aplicación (`AppAccessPolicy`, parámetros `<APP>_<ACCESS|WRITE>_<ROL>`) se evalúa **dentro de la creación** en ambos caminos: `createSessionFromToken(token, appName)` y la sobrecarga `createSession(..., appName, otherParams)` (2026-08; rechazo = error número **5**, la firma de 5 args no la evalúa); `reCreateSession` re-evalúa sola porque el `APPNAME` viaja en el objeto sesión.
 - **`JwtManager`** / **`DigestAuth`** — soporte JWT y HTTP Digest.
 
 ### Manejo de errores (`core`)
@@ -140,6 +141,7 @@ Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (
 
 ### Recursos REST (`rest`)
 - **`AbstractWebResource`** — base de recursos JAX-RS (validación de token, sesión); **`CORSFilter`**, exceptions y model.
+- **`SessionWebResource`** (2026-08) — extiende `WebResource` con el camino de **sesión de login** (cookie `HttpOnly` o `Authorization`): guard único `requireLoginSession` (forma canónica del sessionId + rechazo de sesiones de token + anti CSRF integrado). La aplicación define su cookie y su valor anti CSRF sobrescribiendo `getSessionCookieName()`/`getCsrfHeaderValue()` (defaults `JbsSessionId`/`JavaBeanStack`). Acompañan **`SessionCredential`** y **`PagedList`** (model) y **`RestQuery`** (util: paginación `page/size` y `orderby` con lista blanca).
 
 ### Reportes Jasper (`jasper`)
 - **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]` (el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor) — por eso el módulo no depende de PrimeFaces. Resolución de archivos (2026-07-22): `getFullPathReport()` y `getJasperReportFrom()` buscan primero en `reports/v7/` (constante `JASPER_VERSION`) y luego en `reports/` — los `.jasper` convertidos a JR7 tienen precedencia sobre los legados.

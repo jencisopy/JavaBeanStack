@@ -77,6 +77,25 @@ public abstract class AbstractSecManager implements ISecManager, Serializable {
     }
 
     /**
+     * Crea una sesión de usuario para acceso a la app, verificando además que
+     * su rol tenga acceso concedido a la aplicación indicada.
+     *
+     * @param userLogin usuario
+     * @param password password
+     * @param idcompany empresa que esta solicitando ingresar
+     * @param idleSessionExpireInMinutes minutos sin actividad antes de cerrar
+     * la sesión.
+     * @param appName nombre de la aplicación (context path del despliegue); con
+     * valor nulo no se evalúa la política de acceso.
+     * @param otherParams
+     * @return objeto conteniendo datos del login exitoso o rechazado
+     */
+    @Override
+    public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, String appName, Map<String, Object> otherParams) {
+        return getSessions().createSession(userLogin, password, idcompany, idleSessionExpireInMinutes, appName, otherParams);
+    }
+
+    /**
      * Vuelve a crear la sesión con el acceso a una nueva empresa
      *
      * @param sessionId identificador de la sesión.

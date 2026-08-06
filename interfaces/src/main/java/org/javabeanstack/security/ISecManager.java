@@ -53,6 +53,24 @@ public interface ISecManager {
     IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, Map<String, Object> otherParams);
 
     /**
+     * Crea una sesión autenticando al usuario con sus credenciales, verificando
+     * además que su rol tenga acceso concedido a la aplicación indicada. Si no
+     * lo tiene, la sesión no se crea. Es el equivalente por credenciales de
+     * {@link #createSessionFromToken(String, String)}.
+     *
+     * @param userLogin login del usuario.
+     * @param password contraseña del usuario.
+     * @param idcompany empresa sobre la que se abre la sesión.
+     * @param idleSessionExpireInMinutes minutos de inactividad antes de expirar.
+     * @param appName nombre de la aplicación (context path del despliegue); con
+     * valor nulo no se evalúa la política de acceso.
+     * @param otherParams parámetros adicionales de la sesión.
+     * @return sesión creada; si el rol no tiene acceso a la aplicación, la
+     * sesión vuelve con el usuario en nulo y el error número 5 cargado.
+     */
+    IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, String appName, Map<String, Object> otherParams);
+
+    /**
      * Recrea/renueva una sesión existente, opcionalmente cambiando de empresa.
      *
      * @param sessionId identificador de la sesión.
