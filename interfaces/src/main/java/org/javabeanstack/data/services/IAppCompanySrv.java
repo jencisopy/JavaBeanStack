@@ -39,7 +39,7 @@ public interface IAppCompanySrv extends IDataService {
      * @param userSession sesión del usuario.
      * @return lista reducida de empresas.
      */
-    List<IAppCompany> getAppCompanyLight(IUserSession userSession);
+    List<IAppCompany> getAppCompanySimpleList(IUserSession userSession);
 
     /**
      * Devuelve la lista completa de empresas visibles para la sesión.

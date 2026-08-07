@@ -302,7 +302,7 @@ public class Sessions implements ISessions {
         parameters.put("idcompany", idcompany);
 
         IAppCompany company = dao.findByQuery(null,
-                "select o from AppCompanyLight o "
+                "select o from AppCompanySimple o "
                 + " where idcompany = :idcompany", parameters);
 
         // Agregar atributos adicionales a la sesión
@@ -451,7 +451,7 @@ public class Sessions implements ISessions {
         parameters.put("idcompany", idcompany);
 
         IAppCompany company = dao.findByQuery(null,
-                "select o from AppCompanyLight o "
+                "select o from AppCompanySimple o "
                 + " where idcompany = :idcompany", parameters);
 
         // Agregar atributos adicionales a la sesión

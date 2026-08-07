@@ -49,7 +49,7 @@ import org.javabeanstack.util.LocalDateTimeAdapter;
 @Entity
 @Table(name = "appcompany") 
 @XmlRootElement
-public class AppCompanyLight extends DataRow implements IAppCompany {
+public class AppCompanySimple extends DataRow implements IAppCompany {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -138,7 +138,7 @@ public class AppCompanyLight extends DataRow implements IAppCompany {
     @Column(name = "idcompanygroup")
     private Long idcompanygroup;
 
-    public AppCompanyLight() {
+    public AppCompanySimple() {
     }
 
     @Override
@@ -370,10 +370,10 @@ public class AppCompanyLight extends DataRow implements IAppCompany {
 
     @Override
     public boolean equivalent(Object o) {
-        if (!(o instanceof AppCompanyLight)) {
+        if (!(o instanceof AppCompanySimple)) {
             return false;
         }
-        AppCompanyLight obj = (AppCompanyLight) o;
+        AppCompanySimple obj = (AppCompanySimple) o;
         return (this.idcompany.equals(obj.getIdcompany()));
     }
     /**

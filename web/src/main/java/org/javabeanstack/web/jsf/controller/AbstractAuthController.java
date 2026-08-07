@@ -285,7 +285,7 @@ public abstract class AbstractAuthController extends AbstractController {
         IAppCompany emp;
         try {
             emp = getDataLink().findByQuery(
-                    "select o from AppCompanyLight o where idcompany = :idempresa",
+                    "select o from AppCompanySimple o where idcompany = :idempresa",
                     params);
             this.lastCompanySession = emp;
             this.company = lastCompanySession;
@@ -402,7 +402,7 @@ public abstract class AbstractAuthController extends AbstractController {
             userCompanyAllowedList.clear();
         }
         try {
-            List<IAppCompany> query = getAppCompanySrv().getAppCompanyLight(userSession);
+            List<IAppCompany> query = getAppCompanySrv().getAppCompanySimpleList(userSession);
             query.forEach((empresa) -> {
                 userCompanyAllowedList.add(empresa);
             });

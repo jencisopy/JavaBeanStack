@@ -1217,7 +1217,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             //La columna idcompany es la fuente de verdad (Fase 1 del plan de
             //seguridad); `data` queda para las demás variables del token.
             IAppCompany company = dao.findByQuery(null,
-                    "select o from AppCompanyLight o where idcompany = " + token.getIdcompany(), null);
+                    "select o from AppCompanySimple o where idcompany = " + token.getIdcompany(), null);
             return company;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -1260,7 +1260,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
 
             IUserSession userSession = new UserSession();
             userSession.setUser(user);
-            return getAppCompanySrv().getAppCompanyLight(userSession);
+            return getAppCompanySrv().getAppCompanySimpleList(userSession);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
         }
