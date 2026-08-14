@@ -150,6 +150,31 @@ public class S3Util {
     }
 
     /**
+     * Sube un contenido en memoria a un bucket, sin pasar por el sistema de
+     * archivos. Es el camino que usa el subsistema de salida de documentos
+     * ({@code S3Target}): el documento se genera en memoria y se entrega
+     * directo al bucket. A diferencia de
+     * {@link #copyObject(S3Client, String, File, Map)}, sobreescribe el objeto
+     * si ya existe.
+     *
+     * @param s3Client cliente para la conexión al servicio.
+     * @param bucketName nombre del bucket.
+     * @param objectKey clave del objeto en el bucket (nombre del archivo).
+     * @param content contenido binario a subir.
+     * @param contentType tipo MIME del contenido, o nulo.
+     * @throws Exception si la subida falla.
+     */
+    public static void putObject(S3Client s3Client, String bucketName, String objectKey,
+            byte[] content, String contentType) throws Exception {
+        s3Client.putObject(request -> {
+            request.bucket(bucketName).key(objectKey);
+            if (contentType != null) {
+                request.contentType(contentType);
+            }
+        }, software.amazon.awssdk.core.sync.RequestBody.fromBytes(content));
+    }
+
+    /**
      * Devuelve una lista de objetos o archivos en un bucket.
      * @param s3Client cliente para la conexión al servicio.
      * @param bucketName nombre del bucket.

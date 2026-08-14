@@ -193,10 +193,12 @@ public class JasperReportUtil {
             reporte = reportName;
         }
         if (parameters.containsKey("device")) {
-            if (parameters.get("device") == "printer") {
+            //Comparación por equals (antes era por referencia y solo funcionaba
+            //con literales internados) y cadena else-if: cada device ejecuta
+            //una única rama.
+            if ("printer".equals(String.valueOf(parameters.get("device")))) {
                 JasperPrintManager.printReport(jasperPrint, false);
-            }
-            if ("html".equals(parameters.get("device"))) {
+            } else if ("html".equals(parameters.get("device"))) {
                 HtmlExporter exporterHTML = new HtmlExporter();
                 SimpleExporterInput exporterInput = new SimpleExporterInput(jasperPrint);
                 exporterHTML.setExporterInput(exporterInput);
@@ -232,9 +234,12 @@ public class JasperReportUtil {
                     target = "inline";
                 }
                 HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+                httpServletResponse.setContentType("application/pdf");
                 httpServletResponse.addHeader("Content-disposition", target + "; filename=" + reporte.replaceAll(".jasper", "") + ".pdf");
-                ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
-                JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
+                try (ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream()) {
+                    JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
+                    servletOutputStream.flush();
+                }
                 FacesContext.getCurrentInstance().responseComplete();
             } else if ("xlsx".equals(parameters.get("device"))
                     || "xls".equals(parameters.get("device"))) {
@@ -265,6 +270,10 @@ public class JasperReportUtil {
                     outputStream.flush();
                 }
                 FacesContext.getCurrentInstance().responseComplete();
+            } else {
+                //Antes un device desconocido era un no-op silencioso: cero
+                //salida y sin error.
+                throw new Exception("Formato de salida no soportado: " + parameters.get("device"));
             }
         } else {
             JasperPrintManager.printReport(jasperPrint, false);
@@ -550,73 +559,3 @@ public class JasperReportUtil {
     }
 }
 
-/*
-switch (docType) {
-        case PDF:
-            JasperExportManager.exportReportToPdfStream(jasperPrint, os);
-            break;
-        case RTF:
-            JRRtfExporter rtfExporter = new JRRtfExporter();
-            rtfExporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-            rtfExporter.setParameter(JRExporterParameter.OUTPUT_STREAM, os);
-            rtfExporter.setParameter(JRExporterParameter.CHARACTER_ENCODING, "UTF-8");
-            rtfExporter.exportReport();
-            break;
-        case XLS:
-            JRXlsExporter xlsExporter = new JRXlsExporter();
-            xlsExporter.setParameter(JRXlsExporterParameter.JASPER_PRINT, jasperPrint);
-            xlsExporter.setParameter(JRXlsExporterParameter.OUTPUT_STREAM, os);
-            xlsExporter.setParameter(JRXlsExporterParameter.IS_ONE_PAGE_PER_SHEET, Boolean.TRUE);
-            xlsExporter.setParameter(JRXlsExporterParameter.IS_WHITE_PAGE_BACKGROUND, Boolean.FALSE);
-            xlsExporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, Boolean.TRUE);
-            xlsExporter.exportReport();
-            break;
-        case XLSX:
-            JRXlsxExporter xlsxExporter = new JRXlsxExporter();
-            xlsxExporter.setParameter(JRXlsExporterParameter.JASPER_PRINT, jasperPrint);
-            xlsxExporter.setParameter(JRXlsExporterParameter.OUTPUT_STREAM, os);
-            xlsxExporter.exportReport();
-            break;
-        case ODT:
-            JROdtExporter odtExporter = new JROdtExporter();
-            odtExporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-            odtExporter.setParameter(JRExporterParameter.OUTPUT_STREAM, os);
-            odtExporter.exportReport();
-            break;
-        case PNG:
-            BufferedImage pageImage = new BufferedImage((int) (jasperPrint.getPageWidth() * ZOOM_2X + 1),
-                (int) (jasperPrint.getPageHeight() * ZOOM_2X + 1), BufferedImage.TYPE_INT_RGB);
-            JRGraphics2DExporter exporter = new JRGraphics2DExporter();
-            exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-            exporter.setParameter(JRGraphics2DExporterParameter.GRAPHICS_2D, pageImage.getGraphics());
-            exporter.setParameter(JRGraphics2DExporterParameter.ZOOM_RATIO, ZOOM_2X);
-            exporter.setParameter(JRExporterParameter.PAGE_INDEX, Integer.valueOf(0));
-            exporter.exportReport();
-            ImageIO.write(pageImage, "png", os);
-            break;
-        case HTML:
-            JRHtmlExporter htmlExporter = new JRHtmlExporter();
-            htmlExporter.setParameter(JRHtmlExporterParameter.JASPER_PRINT, jasperPrint);
-            htmlExporter.setParameter(JRHtmlExporterParameter.OUTPUT_STREAM, os);
-            htmlExporter.setParameter(JRHtmlExporterParameter.IMAGES_URI, "img/");
-            htmlExporter.setParameter(JRHtmlExporterParameter.IMAGES_DIR, new java.io.File("img"));
-            htmlExporter.setParameter(JRHtmlExporterParameter.IS_OUTPUT_IMAGES_TO_DIR, Boolean.TRUE);
-            htmlExporter.setParameter(JRHtmlExporterParameter.ZOOM_RATIO, ZOOM_2X);
-            htmlExporter.exportReport();
-            break;
-        case DOCX:
-            JRDocxExporter docxExporter = new JRDocxExporter();
-            docxExporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-            docxExporter.setParameter(JRExporterParameter.OUTPUT_STREAM, os);
-            docxExporter.exportReport();
-            break;
-        case PPTX:
-            JRPptxExporter pptxExporter = new JRPptxExporter();
-            pptxExporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-            pptxExporter.setParameter(JRExporterParameter.OUTPUT_STREAM, os);
-            pptxExporter.exportReport();
-            break;
-        default:
-            break;
-    }
- */
