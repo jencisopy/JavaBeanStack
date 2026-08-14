@@ -70,6 +70,7 @@ public class WordTemplateSource implements IDocumentSource {
     private String templateName;
     private Map<String, String> data = new HashMap();
     private String fileName;
+    private String format = IOutputDocument.FORMAT_DOCX;
 
     /**
      * Crea la fuente con las rutas donde buscar la plantilla.
@@ -113,6 +114,31 @@ public class WordTemplateSource implements IDocumentSource {
     }
 
     /**
+     * Asigna el formato del documento generado:
+     * {@link IOutputDocument#FORMAT_DOCX} (por omisión) o
+     * {@link IOutputDocument#FORMAT_PDF} — en ese caso, tras el merge la
+     * plantilla se convierte con {@link WordToPdfConverter}.
+     *
+     * @param format formato de salida.
+     * @return esta instancia, para encadenar.
+     */
+    public WordTemplateSource format(String format) {
+        this.format = format;
+        return this;
+    }
+
+    /**
+     * Indica si la plantilla configurada existe en alguna de las rutas. Sirve
+     * para habilitar o deshabilitar las opciones de salida que dependen de
+     * ella, sin intentar generar.
+     *
+     * @return verdadero si la plantilla existe.
+     */
+    public boolean isTemplateAvailable() {
+        return !Strings.isNullorEmpty(templateName) && resolveTemplate() != null;
+    }
+
+    /**
      * Asigna el nombre de archivo del documento generado; por omisión, el
      * nombre de la plantilla.
      *
@@ -144,15 +170,28 @@ public class WordTemplateSource implements IDocumentSource {
                     + templateName + ")");
         }
         byte[] documento;
+        boolean pdf = IOutputDocument.FORMAT_PDF.equals(format);
         try (FileInputStream fis = new FileInputStream(templatePath);
                 XWPFDocument doc = new XWPFDocument(OPCPackage.open(fis))) {
             WordTemplateMerge.merge(doc, data);
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            doc.write(buffer);
-            documento = buffer.toByteArray();
+            if (pdf) {
+                //La plantilla mergeada se convierte a PDF en memoria.
+                documento = WordToPdfConverter.convert(doc);
+            } else {
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                doc.write(buffer);
+                documento = buffer.toByteArray();
+            }
         }
-        return new OutputDocument(Fn.nvl(fileName, templateName), documento,
-                IOutputDocument.FORMAT_DOCX);
+        String name = Fn.nvl(fileName, templateName);
+        if (pdf) {
+            name = name.replaceAll("\\.docx$", "");
+            if (!name.endsWith(".pdf")) {
+                name += ".pdf";
+            }
+        }
+        return new OutputDocument(name, documento,
+                pdf ? IOutputDocument.FORMAT_PDF : IOutputDocument.FORMAT_DOCX);
     }
 
     /**

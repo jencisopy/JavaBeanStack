@@ -56,6 +56,7 @@
         <log4j.version>2.25.4</log4j.version>
         <junit.jupiter.version>5.13.1</junit.jupiter.version>
         <poi.version>5.4.1</poi.version>
+        <xdocreport.version>2.2.0</xdocreport.version>
         <primefaces.version>15.0.17</primefaces.version>
         <jasperreports.version>7.0.7</jasperreports.version>
     </properties>
@@ -216,6 +217,19 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi.version}</version>
+            </dependency>
+            <!-- Conversor docx->pdf del subsistema de salida (WordTemplateSource
+                 format=pdf). Pure Java sobre el mismo XWPFDocument del merge;
+                 fidelidad buena en texto corrido y tablas simples. -->
+            <dependency>
+                <groupId>fr.opensagres.xdocreport</groupId>
+                <artifactId>fr.opensagres.poi.xwpf.converter.pdf</artifactId>
+                <version>${xdocreport.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.opensagres.xdocreport</groupId>
+                <artifactId>fr.opensagres.poi.xwpf.converter.core</artifactId>
+                <version>${xdocreport.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
