@@ -47,7 +47,7 @@ import org.javabeanstack.util.Strings;
  * {@code JasperReportUtil}:</p>
  *
  * <pre>
- * List&lt;IErrorReg&gt; results = new DocumentOutput(getUserSession())
+ * List&lt;IErrorReg&gt; results = new OutputDispatcher(getUserSession())
  *     .source(wordSource)                      // o jasperSource, excelSource...
  *     .fileName("transferencia_12.docx")       // opcional, pisa el de la fuente
  *     .to(new DownloadTarget())                // uno o más destinos
@@ -72,9 +72,9 @@ import org.javabeanstack.util.Strings;
  *
  * @author Jorge Enciso
  */
-public class DocumentOutput {
+public class OutputDispatcher {
 
-    private static final Logger LOGGER = LogManager.getLogger(DocumentOutput.class);
+    private static final Logger LOGGER = LogManager.getLogger(OutputDispatcher.class);
 
     /** Nombre de canal informado en el log para la impresión directa. */
     public static final String CHANNEL_PRINTER = "printer";
@@ -90,7 +90,7 @@ public class DocumentOutput {
     /**
      * Crea el orquestador sin contexto de sesión (sin posibilidad de log).
      */
-    public DocumentOutput() {
+    public OutputDispatcher() {
         this(null);
     }
 
@@ -100,7 +100,7 @@ public class DocumentOutput {
      *
      * @param userSession sesión del usuario, o nulo si no se va a loguear.
      */
-    public DocumentOutput(IUserSession userSession) {
+    public OutputDispatcher(IUserSession userSession) {
         this.userSession = userSession;
     }
 
@@ -110,7 +110,7 @@ public class DocumentOutput {
      * @param source fuente de generación.
      * @return esta instancia, para encadenar.
      */
-    public DocumentOutput source(IDocumentSource source) {
+    public OutputDispatcher source(IDocumentSource source) {
         this.source = source;
         return this;
     }
@@ -122,7 +122,7 @@ public class DocumentOutput {
      * @param fileName nombre del archivo con su extensión.
      * @return esta instancia, para encadenar.
      */
-    public DocumentOutput fileName(String fileName) {
+    public OutputDispatcher fileName(String fileName) {
         this.fileName = fileName;
         return this;
     }
@@ -134,7 +134,7 @@ public class DocumentOutput {
      * @param target destino de entrega.
      * @return esta instancia, para encadenar.
      */
-    public DocumentOutput to(IDocumentTarget target) {
+    public OutputDispatcher to(IDocumentTarget target) {
         if (target != null) {
             targets.add(target);
         }
@@ -151,7 +151,7 @@ public class DocumentOutput {
      * {@code AppLogEvent.class}); {@code dbWrite} la necesita para persistir.
      * @return esta instancia, para encadenar.
      */
-    public DocumentOutput log(ILogManager logMngr, Class<? extends IAppLogRecord> logType) {
+    public OutputDispatcher log(ILogManager logMngr, Class<? extends IAppLogRecord> logType) {
         this.logMngr = logMngr;
         this.logType = logType;
         return this;

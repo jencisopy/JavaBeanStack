@@ -38,14 +38,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests unitarios del orquestador {@link DocumentOutput} y del destino
+ * Tests unitarios del orquestador {@link OutputDispatcher} y del destino
  * {@link FolderTarget}: son las únicas piezas del subsistema sin dependencias
  * externas (los demás adapters necesitan servidor SMTP, contexto Faces o
  * reportes compilados).
  *
  * @author Jorge Enciso
  */
-public class DocumentOutputTest {
+public class OutputDispatcherTest {
 
     private static final byte[] CONTENIDO = "contenido de prueba".getBytes();
 
@@ -73,7 +73,7 @@ public class DocumentOutputTest {
      */
     @Test
     public void testExecuteEntregaMultiple(@TempDir File carpeta1, @TempDir File carpeta2) throws Exception {
-        List<IErrorReg> results = new DocumentOutput()
+        List<IErrorReg> results = new OutputDispatcher()
                 .source(new FuenteOk())
                 .to(new FolderTarget(carpeta1.getAbsolutePath()))
                 .to(new FolderTarget(carpeta2.getAbsolutePath()))
@@ -92,7 +92,7 @@ public class DocumentOutputTest {
      */
     @Test
     public void testFileNamePisaElDeLaFuente(@TempDir File carpeta) throws Exception {
-        new DocumentOutput()
+        new OutputDispatcher()
                 .source(new FuenteOk())
                 .fileName("otro_nombre.pdf")
                 .to(new FolderTarget(carpeta.getAbsolutePath()))
@@ -108,7 +108,7 @@ public class DocumentOutputTest {
      */
     @Test
     public void testFalloDeGeneracionNoEjecutaDestinos(@TempDir File carpeta) {
-        DocumentOutput salida = new DocumentOutput()
+        OutputDispatcher salida = new OutputDispatcher()
                 .source(new FuenteRota())
                 .to(new FolderTarget(carpeta.getAbsolutePath()));
         List<IErrorReg> results = salida.execute();
@@ -125,12 +125,12 @@ public class DocumentOutputTest {
      */
     @Test
     public void testConfiguracionIncompleta() {
-        List<IErrorReg> sinFuente = new DocumentOutput()
+        List<IErrorReg> sinFuente = new OutputDispatcher()
                 .to(new FolderTarget("/tmp")).execute();
         assertEquals(1, sinFuente.size());
         assertNotEquals(0, sinFuente.get(0).getErrorNumber());
 
-        List<IErrorReg> sinDestino = new DocumentOutput()
+        List<IErrorReg> sinDestino = new OutputDispatcher()
                 .source(new FuenteOk()).execute();
         assertEquals(1, sinDestino.size());
         assertNotEquals(0, sinDestino.get(0).getErrorNumber());
@@ -142,7 +142,7 @@ public class DocumentOutputTest {
      */
     @Test
     public void testToPrinterConFuenteNoImprimible() {
-        IErrorReg result = new DocumentOutput()
+        IErrorReg result = new OutputDispatcher()
                 .source(new FuenteOk())
                 .toPrinter();
         assertNotEquals(0, result.getErrorNumber());
@@ -165,7 +165,7 @@ public class DocumentOutputTest {
                 return "roto";
             }
         };
-        List<IErrorReg> results = new DocumentOutput()
+        List<IErrorReg> results = new OutputDispatcher()
                 .source(new FuenteOk())
                 .to(roto)
                 .to(new FolderTarget(carpeta.getAbsolutePath()))

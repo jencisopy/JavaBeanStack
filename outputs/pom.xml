@@ -17,7 +17,7 @@
     <dependencies>
         <!--
             Núcleo del subsistema de salida de documentos: SOLO el orquestador
-            (DocumentOutput), el documento en memoria (OutputDocument) y el
+            (OutputDispatcher), el documento en memoria (OutputDocument) y el
             destino a carpeta del servidor (FolderTarget). Depende únicamente de
             jbs-core (arrastra commons + interfaces): ErrorReg (core),
             IOUtil (commons) y los contratos org.javabeanstack.outputs
