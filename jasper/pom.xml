@@ -24,6 +24,11 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jbs-outputs</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Núcleo del framework (arrastra commons + interfaces): ErrorManager (core), IOUtil/Fn (commons), IDataQueryModel/IAppResource/IUserSession (interfaces). No usa nada de jbs-business. -->
         <dependency>
             <groupId>${project.groupId}</groupId>

@@ -20,10 +20,11 @@
         <module>commons</module>
         <module>web</module>
         <module>rest</module>
-        <module>excel</module>
+        <module>poi</module>
         <module>jasper</module>
         <module>aws</module>
         <module>messaging</module>
+        <module>outputs</module>
     </modules>
 
     <!--

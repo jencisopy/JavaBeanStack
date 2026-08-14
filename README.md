@@ -53,7 +53,7 @@ aws         (integración AWS S3 — independiente de la cadena principal)
 
 No se deben introducir imports que inviertan este orden (por ejemplo, que `core` dependa de `business`).
 
-Desde la versión 2.0, los módulos `excel`, `jasper` y `rest` se extrajeron de `web` para aislar sus dependencias pesadas (Apache POI, JasperReports+Groovy, JAX-RS). Los consumidores de `jbs-web` que usen importación Excel, reportes Jasper o recursos REST deben declarar `jbs-excel`, `jbs-jasper` o `jbs-rest` **explícitamente** (antes venían dentro de `jbs-web`).
+Desde la versión 2.0, los módulos `excel` (hoy `poi`), `jasper` y `rest` se extrajeron de `web` para aislar sus dependencias pesadas (Apache POI, JasperReports+Groovy, JAX-RS); en la reorganización posterior `excel` se renombró a `poi` (artefacto `jbs-poi`) al absorber también las plantillas Word. Los consumidores de `jbs-web` que usen importación Excel, reportes Jasper o recursos REST deben declarar `jbs-poi`, `jbs-jasper` o `jbs-rest` **explícitamente** (antes venían dentro de `jbs-web`).
 
 ### Split packages y JPMS — decisión de diseño
 

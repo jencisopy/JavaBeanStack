@@ -22,6 +22,7 @@
 package org.javabeanstack.web.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -435,6 +436,117 @@ public class JasperReportUtil {
         JasperReport jasper = getJasperReportFrom(reportName, classRef);
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasper, parameters, new JRMapArrayDataSource(dataRows));
         return JasperExportManager.exportReportToPdf(jasperPrint);
+    }
+
+    /**
+     * Genera el reporte y lo devuelve como arreglo de bytes en el formato
+     * indicado, sin tocar la respuesta HTTP. Es el camino para los destinos
+     * que no son el navegador (correo, carpeta del servidor, base de datos):
+     * el envoltorio de entrega queda a cargo del consumidor.
+     *
+     * <p>
+     * Formatos soportados: {@code pdf}, {@code docx} (alias {@code doc}) y
+     * {@code html}. El formato de planilla NO pasa por acá: los datos
+     * tabulares se exportan con {@code ExcelUtil}/{@code ExcelDataSource}
+     * (módulo jbs-poi), no renderizando el diseño del reporte.
+     * </p>
+     *
+     * @param reportName nombre del reporte.
+     * @param parameters parametros del reporte.
+     * @param data datos a volcar.
+     * @param classRef clase de referencia para localizar el recurso del
+     * reporte dentro del artefacto desplegado.
+     * @param format formato de salida: {@code pdf}, {@code docx} o
+     * {@code html}.
+     * @return bytes del documento generado.
+     * @throws JRException si el reporte no existe o la generación falla.
+     * @throws IOException si falla la escritura en memoria.
+     * @throws NamingException si falla la localización de recursos.
+     */
+    public byte[] getReportAs(String reportName, Map<String, Object> parameters,
+            List<IDataQueryModel> data, Class classRef, String format)
+            throws JRException, IOException, NamingException {
+        if (format == null) {
+            throw new JRException("Debe indicar el formato de salida (pdf, docx, html)");
+        }
+        switch (format.toLowerCase()) {
+            case "pdf":
+                return getReportPdf(reportName, parameters, data, classRef);
+            case "docx":
+            case "doc": {
+                JasperPrint jasperPrint = fill(reportName, parameters, data, classRef);
+                JRDocxExporter exporter = new JRDocxExporter();
+                exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(buffer));
+                exporter.exportReport();
+                return buffer.toByteArray();
+            }
+            case "html": {
+                JasperPrint jasperPrint = fill(reportName, parameters, data, classRef);
+                HtmlExporter exporter = new HtmlExporter();
+                exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+                exporter.setConfiguration(new SimpleHtmlReportConfiguration());
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                exporter.setExporterOutput(new SimpleHtmlExporterOutput(buffer));
+                exporter.exportReport();
+                return buffer.toByteArray();
+            }
+            case "xlsx":
+            case "xls":
+                throw new JRException("El formato de planilla no se genera desde el reporte: "
+                        + "usar ExcelUtil/ExcelDataSource (jbs-poi) sobre los datos");
+            default:
+                throw new JRException("Formato de salida no soportado: " + format);
+        }
+    }
+
+    /**
+     * Imprime el reporte directamente en la impresora por omisión <b>del
+     * servidor</b> (la JVM donde corre la aplicación), sin producir ningún
+     * archivo y sin tocar la respuesta HTTP. Para imprimir en el puesto del
+     * usuario, el camino es entregar el PDF y que lo imprima el navegador.
+     *
+     * @param reportName nombre del reporte.
+     * @param parameters parametros del reporte.
+     * @param data datos a volcar.
+     * @param classRef clase de referencia para localizar el recurso del
+     * reporte dentro del artefacto desplegado.
+     * @throws JRException si el reporte no existe, la generación falla o la
+     * impresora no está disponible.
+     * @throws IOException si falla la localización de recursos.
+     * @throws NamingException si falla la localización de recursos.
+     */
+    public void printDirect(String reportName, Map<String, Object> parameters,
+            List<IDataQueryModel> data, Class classRef)
+            throws JRException, IOException, NamingException {
+        JasperPrint jasperPrint = fill(reportName, parameters, data, classRef);
+        JasperPrintManager.printReport(jasperPrint, false);
+    }
+
+    /**
+     * Localiza el reporte y lo llena con los datos y parámetros indicados.
+     *
+     * @param reportName nombre del reporte (la extensión .jasper se completa
+     * si falta).
+     * @param parameters parametros del reporte.
+     * @param data datos a volcar.
+     * @param classRef clase de referencia para localizar el recurso del
+     * reporte dentro del artefacto desplegado.
+     * @return reporte llenado, listo para exportar o imprimir.
+     * @throws JRException si el reporte no existe o el llenado falla.
+     */
+    private JasperPrint fill(String reportName, Map<String, Object> parameters,
+            List<IDataQueryModel> data, Class classRef) throws JRException {
+        if (Fn.nvl(reportName, "").isEmpty()) {
+            throw new JRException("El nombre del reporte es nulo o vacío");
+        }
+        if (!reportName.endsWith(".jasper")) {
+            reportName += ".jasper";
+        }
+        Map[] dataRows = convertTo(data);
+        JasperReport jasper = getJasperReportFrom(reportName, classRef);
+        return JasperFillManager.fillReport(jasper, parameters, new JRMapArrayDataSource(dataRows));
     }
 }
 

@@ -10,4 +10,4 @@ Capa de presentación web basada en **JSF / PrimeFaces**. Provee la infraestruct
 - **Componentes de UI** — contrato `IDatatable`, modelo de columnas dinámicas.
 - **Utilidades** — `FacesContextUtil` (acceso simplificado al `FacesContext`, mensajes y navegación) y búsqueda de recursos.
 
-Depende de `jbs-business` (y de la cadena core/commons/interfaces). Los reportes Jasper, la importación Excel y los recursos REST viven ahora en los módulos `jbs-jasper`, `jbs-excel` y `jbs-rest` respectivamente.
+Depende de `jbs-business` (y de la cadena core/commons/interfaces). Los reportes Jasper, la importación Excel y los recursos REST viven ahora en los módulos `jbs-jasper`, `jbs-poi` y `jbs-rest` respectivamente.

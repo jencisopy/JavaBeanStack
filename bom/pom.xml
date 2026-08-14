@@ -95,7 +95,7 @@
             </dependency>
             <dependency>
                 <groupId>org.javabeanstack</groupId>
-                <artifactId>jbs-excel</artifactId>
+                <artifactId>jbs-poi</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -111,6 +111,11 @@
             <dependency>
                 <groupId>org.javabeanstack</groupId>
                 <artifactId>jbs-messaging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.javabeanstack</groupId>
+                <artifactId>jbs-outputs</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

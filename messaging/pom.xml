@@ -13,6 +13,11 @@
         <jbs.module.name>org.javabeanstack.messaging</jbs.module.name>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jbs-outputs</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Trae interfaces + commons + core (contratos, CipherUtil, config, errores). -->
         <dependency>
             <groupId>org.javabeanstack</groupId>

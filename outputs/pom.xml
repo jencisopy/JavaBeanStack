@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.javabeanstack</groupId>
+        <artifactId>jbs-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>jbs-outputs</artifactId>
+    <name>JavaBeanStack-Outputs</name>
+    <packaging>jar</packaging>
+
+    <properties>
+        <jbs.module.name>org.javabeanstack.outputs</jbs.module.name>
+    </properties>
+
+    <dependencies>
+        <!--
+            Núcleo del subsistema de salida de documentos: SOLO el orquestador
+            (DocumentOutput), el documento en memoria (OutputDocument) y el
+            destino a carpeta del servidor (FolderTarget). Depende únicamente de
+            jbs-core (arrastra commons + interfaces): ErrorReg (core),
+            IOUtil (commons) y los contratos org.javabeanstack.outputs
+            (interfaces). Las fuentes y destinos con dependencias pesadas viven
+            en el módulo dueño de cada una — JasperReportSource en jbs-jasper,
+            MailTarget en jbs-messaging, ExcelDataSource en jbs-poi,
+            DownloadTarget en jbs-web — e implementan los contratos de
+            jbs-interfaces sin depender de este módulo.
+        -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jbs-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

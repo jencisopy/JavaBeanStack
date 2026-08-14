@@ -47,6 +47,8 @@ public interface IAppLogRecord extends IDataRow{
     public static final String EVENT_LOAD_PAGE = "LOADPAGE";
     /** Evento: actualización de base de datos. */
     public static final String EVENT_UPDATEDB = "UPDATEDB";
+    /** Evento: salida de un documento generado (descarga, correo, carpeta, impresión). */
+    public static final String EVENT_DOCUMENT_OUTPUT = "DOCUMENTOUTPUT";
 
     /** Nivel: error. */
     public static final String LEVEL_ERROR = "E";
