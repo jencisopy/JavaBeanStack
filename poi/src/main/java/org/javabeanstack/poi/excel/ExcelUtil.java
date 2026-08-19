@@ -21,12 +21,16 @@
  */
 package org.javabeanstack.poi.excel;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -53,6 +57,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.javabeanstack.data.IDataQueryModel;
@@ -77,6 +82,8 @@ public class ExcelUtil {
     private static final int WIDTH_DATE = 19;   // "dd/mm/yyyy hh:mm:ss" = 19 fijo
     private static final int WIDTH_NUMBER = 15;   // "#,##0.00" con signo y separadores de miles
     private static final int STRING_PAD = 2;    // margen visual para texto
+    private static final int MAX_SHEET_NAME = 31;  // tope de Excel para el nombre de una hoja
+    private static final String SHEET_DEFAULT = "DATOS";  // nombre historico de la hoja unica
 
     /**
      * Factor de escala por fuente. Tus celdas usan 8pt; la unidad de Excel se
@@ -85,8 +92,9 @@ public class ExcelUtil {
      */
     private static final double FONT_SCALE = 1.0;
 
-    private static int[] computeColumnWidths(List<IDataQueryModel> data, int columnCount,
+    private static int[] computeColumnWidths(List<IDataQueryModel> data, String[] columnNames,
             Map<Integer, Integer> overrides) {
+        int columnCount = columnNames.length;
         int[] widths = new int[columnCount];
         int sampleSize = Math.min(SAMPLE_ROWS, data.size());
         for (int j = 0; j < columnCount; j++) {
@@ -96,15 +104,19 @@ public class ExcelUtil {
                 continue;
             }
             // b) Piso: que al menos entre el nombre de la cabecera
-            int chars = data.get(0).getColumnName(j).length();
+            int chars = Fn.nvl(columnNames[j], "").length();
             // c) Detectar tipo y, solo para String, muestrear longitud
             for (int i = 0; i < sampleSize; i++) {
-                Object v = ((Object[]) data.get(i).getRow())[j];
+                Object[] fila = (Object[]) data.get(i).getRow();
+                if (j >= fila.length) {
+                    continue;
+                }
+                Object v = fila[j];
                 if (v == null) {
                     continue;
                 }
-                if (v instanceof Date) {                 // Timestamp extiende Date
-                    chars = Math.max(chars, WIDTH_DATE);
+                if (v instanceof Date || v instanceof LocalDate || v instanceof LocalDateTime) {
+                    chars = Math.max(chars, WIDTH_DATE);   // Timestamp extiende Date
                 } else if (v instanceof Number) {        // BigDecimal, Long, Integer, Double...
                     chars = Math.max(chars, WIDTH_NUMBER);
                 } else {                                 // String, Boolean ("true"/"false"), etc.
@@ -219,40 +231,65 @@ public class ExcelUtil {
      *
      * @param toExport datos a exportar.
      * @param widthOverrides anchos por índice de columna.
-     * @return libro generado.
+     * @return libro generado, o {@code null} si no hay datos.
      * @throws Exception si la exportación falla.
      */
     public static Workbook toExcel(List<IDataQueryModel> toExport, Map<Integer, Integer> widthOverrides) throws Exception {
         if (toExport == null || toExport.isEmpty()) {
             return null;
         }
+        ExcelSheetData hoja = new ExcelSheetData(SHEET_DEFAULT, toExport)
+                .setWidthOverrides(widthOverrides);
+        return toExcelSheets(Collections.singletonList(hoja));
+    }
+
+    /**
+     * Exporta VARIAS hojas de datos a un solo libro de Excel.
+     *
+     * <p>Las hojas se escriben en el orden en que vienen y cada una conserva su
+     * nombre. Una hoja sin filas se crea igual —con sus cabeceras, si las
+     * declaró—: la alternativa, saltearla, haría que un libro de tres pestañas
+     * llegara con dos y nadie supiera si falta el dato o falló la
+     * exportación.</p>
+     *
+     * <p>Los estilos se crean UNA vez por libro y no por hoja: Excel admite
+     * 64.000 estilos y crearlos por hoja es la forma conocida de agotarlos.</p>
+     *
+     * @param sheets hojas a exportar.
+     * @return libro generado, o {@code null} si no hay ninguna hoja.
+     * @throws Exception si la exportación falla.
+     */
+    public static Workbook toExcelSheets(List<ExcelSheetData> sheets) throws Exception {
+        if (sheets == null || sheets.isEmpty()) {
+            return null;
+        }
         SXSSFWorkbook workBook = new SXSSFWorkbook(100);
         workBook.setCompressTempFiles(true);
-        SXSSFSheet sheet = workBook.createSheet("DATOS");
+        SheetStyles styles = new SheetStyles(workBook);
+        for (ExcelSheetData sheet : sheets) {
+            writeSheet(workBook, styles, sheet);
+        }
+        return workBook;
+    }
+
+    /**
+     * Escribe una hoja en el libro.
+     *
+     * @param workBook libro destino.
+     * @param styles estilos del libro.
+     * @param data datos de la hoja.
+     */
+    private static void writeSheet(SXSSFWorkbook workBook, SheetStyles styles, ExcelSheetData data) {
+        SXSSFSheet sheet = workBook.createSheet(sheetName(workBook, data.getName()));
         // Sin autoSizeColumn -> NO hace falta trackAllColumnsForAutoSizing()
-
-        DataFormat dataFormat = workBook.createDataFormat();
-        Font font8 = workBook.createFont();
-        font8.setFontHeightInPoints((short) 8);
-        Font fontBold = workBook.createFont();
-        fontBold.setFontHeightInPoints((short) 8);
-        fontBold.setBold(true);
-
-        CellStyle defaultCellStyle = workBook.createCellStyle();
-        defaultCellStyle.setFont(font8);
-        CellStyle numberCellStyle = workBook.createCellStyle();
-        numberCellStyle.setFont(font8);
-        numberCellStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
-        CellStyle dateCellStyle = workBook.createCellStyle();
-        dateCellStyle.setFont(font8);
-        dateCellStyle.setDataFormat(dataFormat.getFormat("dd/mm/yyyy hh:mm:ss"));
-        CellStyle textBoldCellStyle = workBook.createCellStyle();
-        textBoldCellStyle.setFont(fontBold);
-
-        int columnCount = toExport.get(0).getColumnList().length;
-
+        String[] columnNames = data.getColumns();
+        List<IDataQueryModel> toExport = data.getRows();
+        int columnCount = columnNames.length;
+        if (columnCount == 0) {
+            return;
+        }
         // 1) Calcular y fijar anchos ANTES de escribir
-        int[] widthChars = computeColumnWidths(toExport, columnCount, widthOverrides);
+        int[] widthChars = computeColumnWidths(toExport, columnNames, data.getWidthOverrides());
         for (int j = 0; j < columnCount; j++) {
             sheet.setColumnWidth(j, charsToWidthUnits(widthChars[j]));
         }
@@ -262,32 +299,158 @@ public class ExcelUtil {
         Row row = sheet.createRow(rownum++);
         for (int j = 0; j < columnCount; j++) {
             Cell cell = row.createCell(j);
-            cell.setCellStyle(textBoldCellStyle);
-            cell.setCellValue(toExport.get(0).getColumnName(j));
+            cell.setCellStyle(styles.header);
+            cell.setCellValue(columnNames[j]);
         }
 
         // 3) Datos
         for (int i = 0; i < toExport.size(); i++) {
             row = sheet.createRow(rownum++);
             Object[] fila = (Object[]) toExport.get(i).getRow();
-            for (int j = 0; j < columnCount; j++) {
-                Cell cell = row.createCell(j);
-                Object valor = fila[j];
-                if (valor == null) {
-                    cell.setCellStyle(defaultCellStyle);
-                } else if (valor instanceof BigDecimal) {
-                    cell.setCellStyle(numberCellStyle);
-                    cell.setCellValue(((BigDecimal) valor).doubleValue());
-                } else if (valor instanceof Date) {
-                    cell.setCellStyle(dateCellStyle);
-                    cell.setCellValue((Date) valor);
-                } else {
-                    cell.setCellStyle(defaultCellStyle);
-                    cell.setCellValue(String.valueOf(valor));
-                }
+            for (int j = 0; j < columnCount && j < fila.length; j++) {
+                writeCell(row.createCell(j), fila[j], styles);
             }
         }
-        return workBook;
+    }
+
+    /**
+     * Escribe un valor en una celda con el estilo que le corresponde a su tipo.
+     *
+     * <p>Los números y las fechas se escriben COMO números y fechas, no como
+     * texto: una columna de importes que llega como texto no se puede sumar en
+     * la planilla, que es a lo que se exporta.</p>
+     *
+     * @param cell celda destino.
+     * @param valor valor a escribir.
+     * @param styles estilos del libro.
+     */
+    private static void writeCell(Cell cell, Object valor, SheetStyles styles) {
+        if (valor == null) {
+            cell.setCellStyle(styles.text);
+        } else if (valor instanceof BigDecimal) {
+            cell.setCellStyle(styles.number);
+            cell.setCellValue(((BigDecimal) valor).doubleValue());
+        } else if (valor instanceof Date) {
+            cell.setCellStyle(styles.dateTime);
+            cell.setCellValue((Date) valor);
+        } else if (valor instanceof LocalDateTime) {
+            cell.setCellStyle(styles.dateTime);
+            cell.setCellValue((LocalDateTime) valor);
+        } else if (valor instanceof LocalDate) {
+            cell.setCellStyle(styles.date);
+            cell.setCellValue((LocalDate) valor);
+        } else {
+            cell.setCellStyle(styles.text);
+            cell.setCellValue(String.valueOf(valor));
+        }
+    }
+
+    /**
+     * Devuelve un nombre de hoja admisible y no repetido.
+     *
+     * <p>Excel no admite más de 31 caracteres ni los caracteres
+     * {@code []:*?/\}, y rechaza el libro entero —no la hoja— si se los
+     * ponen. Un nombre repetido hace que POI falle al crear la segunda.</p>
+     *
+     * @param workBook libro destino.
+     * @param name nombre pedido.
+     * @return el nombre a usar.
+     */
+    private static String sheetName(Workbook workBook, String name) {
+        String limpio = WorkbookUtil.createSafeSheetName(Fn.nvl(name, SHEET_DEFAULT));
+        if (limpio.trim().isEmpty()) {
+            limpio = SHEET_DEFAULT;
+        }
+        String candidato = limpio;
+        int sufijo = 2;
+        while (workBook.getSheet(candidato) != null) {
+            String numero = " (" + sufijo + ")";
+            int corte = Math.min(limpio.length(), MAX_SHEET_NAME - numero.length());
+            candidato = limpio.substring(0, corte) + numero;
+            sufijo++;
+        }
+        return candidato;
+    }
+
+    /**
+     * Escribe el libro en un flujo de salida y libera sus temporales.
+     *
+     * <p>Es la escritura NEUTRA: {@link #downLoadFile(Workbook, String)} sirve
+     * a JSF y no se puede usar fuera de él —depende de {@code FacesContext}—,
+     * así que un recurso REST o un proceso de fondo necesitan esta.</p>
+     *
+     * <p>El {@code dispose()} no es optativo: sin él, cada exportación deja en
+     * el directorio temporal del servidor los archivos que SXSSF creó para no
+     * cargar el libro entero en memoria.</p>
+     *
+     * @param workBook libro a escribir.
+     * @param output flujo destino; no se cierra.
+     * @throws Exception si la escritura falla.
+     */
+    public static void write(Workbook workBook, OutputStream output) throws Exception {
+        if (workBook == null || output == null) {
+            return;
+        }
+        try (workBook) {
+            workBook.write(output);
+            output.flush();
+        } finally {
+            if (workBook instanceof SXSSFWorkbook) {
+                ((SXSSFWorkbook) workBook).dispose();
+            }
+        }
+    }
+
+    /**
+     * Devuelve el libro como un arreglo de bytes y libera sus temporales.
+     *
+     * @param workBook libro a convertir.
+     * @return los bytes del archivo, o {@code null} si no hay libro.
+     * @throws Exception si la escritura falla.
+     */
+    public static byte[] toBytes(Workbook workBook) throws Exception {
+        if (workBook == null) {
+            return null;
+        }
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            write(workBook, output);
+            return output.toByteArray();
+        }
+    }
+
+    /**
+     * Los estilos de un libro, creados una sola vez.
+     */
+    private static class SheetStyles {
+
+        private final CellStyle text;
+        private final CellStyle number;
+        private final CellStyle dateTime;
+        private final CellStyle date;
+        private final CellStyle header;
+
+        SheetStyles(Workbook workBook) {
+            DataFormat dataFormat = workBook.createDataFormat();
+            Font font8 = workBook.createFont();
+            font8.setFontHeightInPoints((short) 8);
+            Font fontBold = workBook.createFont();
+            fontBold.setFontHeightInPoints((short) 8);
+            fontBold.setBold(true);
+
+            text = workBook.createCellStyle();
+            text.setFont(font8);
+            number = workBook.createCellStyle();
+            number.setFont(font8);
+            number.setDataFormat(dataFormat.getFormat("#,##0.00"));
+            dateTime = workBook.createCellStyle();
+            dateTime.setFont(font8);
+            dateTime.setDataFormat(dataFormat.getFormat("dd/mm/yyyy hh:mm:ss"));
+            date = workBook.createCellStyle();
+            date.setFont(font8);
+            date.setDataFormat(dataFormat.getFormat("dd/mm/yyyy"));
+            header = workBook.createCellStyle();
+            header.setFont(fontBold);
+        }
     }
 
     /**

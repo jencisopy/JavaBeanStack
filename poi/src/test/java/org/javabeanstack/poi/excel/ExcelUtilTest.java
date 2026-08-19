@@ -21,11 +21,13 @@
  */
 package org.javabeanstack.poi.excel;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,12 +35,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.data.model.DataQueryModel;
@@ -567,5 +572,116 @@ public class ExcelUtilTest {
             // celda en blanco -> sin error (lo maneja el flujo normal)
             assertNull(getAssignableTypeError(cell, Long.class, "monto"));
         }
+    }
+
+    // ----------------------------------------------------------------------
+    // toExcelSheets / write / toBytes
+    // ----------------------------------------------------------------------
+
+    @Test
+    public void testToExcelSheetsVariasHojas() throws Exception {
+        DataQueryModel maestro = new DataQueryModel();
+        maestro.setColumnList(new String[]{"nro", "total"});
+        maestro.setRow(new Object[]{"001-001-0000001", new BigDecimal("500000")});
+
+        DataQueryModel detalle = new DataQueryModel();
+        detalle.setColumnList(new String[]{"item", "cantidad"});
+        detalle.setRow(new Object[]{"SERVICIO", new BigDecimal("2")});
+
+        List<ExcelSheetData> hojas = List.of(
+                new ExcelSheetData("Cabecera", List.of(maestro)),
+                new ExcelSheetData("Detalle", List.of(detalle)));
+
+        try (Workbook wb = toExcelSheets(hojas)) {
+            assertNotNull(wb);
+            assertEquals(2, wb.getNumberOfSheets());
+            assertEquals("Cabecera", wb.getSheetAt(0).getSheetName());
+            assertEquals("Detalle", wb.getSheetAt(1).getSheetName());
+            assertEquals("nro", wb.getSheetAt(0).getRow(0).getCell(0).getStringCellValue());
+            assertEquals(2d, wb.getSheetAt(1).getRow(1).getCell(1).getNumericCellValue(), 0.0001);
+        }
+    }
+
+    @Test
+    public void testToExcelSheetsHojaVaciaConservaCabeceras() throws Exception {
+        // Una hoja sin filas se crea IGUAL, con sus cabeceras: saltearla haria
+        // que un libro de dos pestanhas llegara con una.
+        List<ExcelSheetData> hojas = List.of(
+                new ExcelSheetData("Subcuentas", new String[]{"codigo", "nombre"}, List.of()));
+
+        try (Workbook wb = toExcelSheets(hojas)) {
+            assertNotNull(wb);
+            assertEquals(1, wb.getNumberOfSheets());
+            Sheet sheet = wb.getSheetAt(0);
+            assertEquals("codigo", sheet.getRow(0).getCell(0).getStringCellValue());
+            assertEquals("nombre", sheet.getRow(0).getCell(1).getStringCellValue());
+            assertNull(sheet.getRow(1));
+        }
+    }
+
+    @Test
+    public void testToExcelSheetsNombreInvalidoYRepetido() throws Exception {
+        // Excel no admite `/` ni nombres repetidos: los dos rechazarian el
+        // libro ENTERO, asi que se saneAn en vez de propagarse.
+        DataQueryModel model = new DataQueryModel();
+        model.setColumnList(new String[]{"a"});
+        model.setRow(new Object[]{"x"});
+
+        List<ExcelSheetData> hojas = List.of(
+                new ExcelSheetData("Ventas/Notas", List.of(model)),
+                new ExcelSheetData("Ventas/Notas", List.of(model)));
+
+        try (Workbook wb = toExcelSheets(hojas)) {
+            assertEquals(2, wb.getNumberOfSheets());
+            assertNotEquals(wb.getSheetAt(0).getSheetName(), wb.getSheetAt(1).getSheetName());
+            assertFalse(wb.getSheetAt(0).getSheetName().contains("/"));
+        }
+    }
+
+    @Test
+    public void testToExcelSheetsNullOrEmptyReturnsNull() throws Exception {
+        assertNull(toExcelSheets(null));
+        assertNull(toExcelSheets(List.of()));
+    }
+
+    @Test
+    public void testToExcelSheetsFechasSonFechas() throws Exception {
+        // Lo que se exporta se tiene que poder ordenar y sumar en la planilla:
+        // una fecha escrita como texto no se ordena.
+        DataQueryModel model = new DataQueryModel();
+        model.setColumnList(new String[]{"fecha", "vencimiento"});
+        model.setRow(new Object[]{LocalDate.of(2026, 8, 19), LocalDateTime.of(2026, 8, 19, 10, 30)});
+
+        try (Workbook wb = toExcelSheets(List.of(new ExcelSheetData("F", List.of(model))))) {
+            Row fila = wb.getSheetAt(0).getRow(1);
+            assertEquals(CellType.NUMERIC, fila.getCell(0).getCellType());
+            assertTrue(DateUtil.isCellDateFormatted(fila.getCell(0)));
+            assertEquals(CellType.NUMERIC, fila.getCell(1).getCellType());
+            assertTrue(DateUtil.isCellDateFormatted(fila.getCell(1)));
+        }
+    }
+
+    @Test
+    public void testToBytesEsUnXlsx() throws Exception {
+        DataQueryModel model = new DataQueryModel();
+        model.setColumnList(new String[]{"codigo"});
+        model.setRow(new Object[]{"COD1"});
+
+        byte[] bytes = toBytes(toExcelSheets(List.of(new ExcelSheetData("H", List.of(model)))));
+        assertNotNull(bytes);
+        assertTrue(bytes.length > 0);
+        // firma de un contenedor OOXML (zip): sin esto el navegador baja basura
+        assertEquals('P', (char) bytes[0]);
+        assertEquals('K', (char) bytes[1]);
+
+        try (Workbook releido = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
+            assertEquals("H", releido.getSheetAt(0).getSheetName());
+            assertEquals("COD1", releido.getSheetAt(0).getRow(1).getCell(0).getStringCellValue());
+        }
+    }
+
+    @Test
+    public void testToBytesNullWorkbook() throws Exception {
+        assertNull(toBytes(null));
     }
 }
