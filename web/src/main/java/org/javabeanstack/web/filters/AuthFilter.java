@@ -95,7 +95,7 @@ public class AuthFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
         String remoteAddr = request.getRemoteAddr();
-        String urlStr = req.getRequestURL().toString().toLowerCase();
+        String urlStr = quitarParametrosDeRuta(req.getRequestURL().toString().toLowerCase());
         //Si el recurso solicitado es la pagina noautorizado
         if (urlStr.endsWith("noautorizado.xhtml")) {
             chain.doFilter(request, response);
@@ -152,6 +152,35 @@ public class AuthFilter implements Filter {
     }
     
     
+
+    /**
+     * Quita los parametros de ruta de una direccion, es decir todo lo que sigue
+     * al primer punto y coma.
+     *
+     * <p>Hace falta porque la lista blanca de recursos publicos compara el final
+     * de la direccion, y {@code getRequestURL()} devuelve los parametros de ruta
+     * pegados al nombre del archivo. El caso real es la PRIMERA visita: mientras
+     * el servidor no recibio ninguna cookie de vuelta no sabe si el navegador
+     * las acepta, asi que ademas de mandarla reescribe las direcciones que la
+     * aplicacion genera y el formulario sale con
+     * {@code action="login.xhtml;jsessionid=..."}. Contra esa direccion
+     * {@code endsWith("login.xhtml")} da falso, la pagina publica se toma por
+     * protegida y la peticion termina redirigida al login: el ingreso no
+     * reacciona hasta que se recarga la pagina, y lo mismo les pasa a
+     * verificarcorreo, recuperarclave y restablecerclave, que se abren desde un
+     * enlace del correo y son justamente las que llegan sin sesion previa.
+     *
+     * <p>Normalizar antes de comparar cierra ademas la puerta a que una
+     * direccion decorada cambie una decision de autorizacion, que es algo que
+     * no deberia depender de un adorno de la ruta.
+     *
+     * @param urlStr direccion pedida.
+     * @return la direccion sin parametros de ruta.
+     */
+    private String quitarParametrosDeRuta(String urlStr) {
+        int pos = urlStr.indexOf(';');
+        return (pos < 0) ? urlStr : urlStr.substring(0, pos);
+    }
 
     private boolean requestAllowed(String ipRequest) {
         //IPs allowed

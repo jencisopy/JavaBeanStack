@@ -151,6 +151,17 @@ public abstract class AbstractAuthController extends AbstractController {
         if (!userLogin.equals(userLoginOld)) {
             this.logged = false;
             this.company = null;
+            //Se da de baja lo que hubiera quedado en el mapa de la sesión web:
+            //login() guarda ahi el resultado del sondeo solo si el lugar está
+            //libre, así que sin esta baja el sondeo del login anterior sobrevive
+            //al cambio y la aplicación sigue hablando del usuario que ya no es el
+            //que está ingresando: se mostraría su avatar y, peor, el código del
+            //segundo factor se emitiría a su nombre y a su correo.
+            //Se exige un login no vacío para no dar de baja el ingreso de quien
+            //solo pasó por el campo vacío teniendo una sesión ya creada.
+            if (!Strings.isNullorEmpty(userLogin)) {
+                getFacesCtx().getSessionMap().remove("userSession");
+            }
         }
         userLoginOld = userLogin;
     }
@@ -326,7 +337,6 @@ public abstract class AbstractAuthController extends AbstractController {
                         setLastCompanySession(userSession.getUser().getIdcompany());
                     }
                     logged = true;
-                    getFacesCtx().showInfo("", "Usuario activo: " + userSession.getUser().getFullName());
                 } else {
                     getFacesCtx().showError("", userSession.getError().getMessage());
                 }
