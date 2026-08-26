@@ -43,10 +43,6 @@
         </dependency>
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports-servlets</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-excel-poi</artifactId>
         </dependency>
         <dependency>
