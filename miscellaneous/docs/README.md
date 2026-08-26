@@ -25,8 +25,8 @@ repo, para que los informes internos no viajen en un proyecto open source.
 
 | Destino | Qué va ahí |
 |---|---|
-| `<proyectos>/IA/JavaBeanStack/outputs/` | Informes de análisis generados (`analisis_modularizacion_javabeanstack.md`, `analisis_lazydatarows_pf15.md`, `instalar-jdk25.md`). |
-| `<proyectos>/IA/JavaBeanStack/inputs/` | Planes de trabajo y listas de pendientes (`pendientes_modularizacion_javabeanstack.md`). |
+| `<proyectos>/IA/Workspace-java/JavaBeanStack/outputs/` | Informes de análisis generados (`analisis_modularizacion_javabeanstack.md`, `analisis_lazydatarows_pf15.md`, `instalar-jdk25.md`). |
+| `<proyectos>/IA/Workspace-java/JavaBeanStack/inputs/` | Planes de trabajo y listas de pendientes (`pendientes_modularizacion_javabeanstack.md`). |
 | `.claude/tools/` del workspace | Scripts reutilizables (`instalar-jdk25.sh`). |
 
 En la instalación de referencia `<proyectos>` es `/home/jenciso/oym/proyectos`. Si esas
