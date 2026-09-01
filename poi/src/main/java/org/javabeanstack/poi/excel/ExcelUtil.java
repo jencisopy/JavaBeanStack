@@ -166,13 +166,10 @@ public class ExcelUtil {
             workBook.write(out);
             out.flush();
         } finally {
-            // Borra los archivos temporales que SXSSF creó en disco
-            try (workBook) {
-                // Borra los archivos temporales que SXSSF creó en disco
-                if (workBook instanceof SXSSFWorkbook) {
-                    ((SXSSFWorkbook) workBook).dispose();
-                }
-            }
+            //Cerrar el workbook alcanza para no dejar basura: close() de
+            //SXSSFWorkbook borra el mismo los temporales que dejo en disco, y
+            //por eso dispose() quedo obsoleto.
+            workBook.close();
         }
         FacesContext.getCurrentInstance().responseComplete();
     }
@@ -379,9 +376,12 @@ public class ExcelUtil {
      * a JSF y no se puede usar fuera de él —depende de {@code FacesContext}—,
      * así que un recurso REST o un proceso de fondo necesitan esta.</p>
      *
-     * <p>El {@code dispose()} no es optativo: sin él, cada exportación deja en
-     * el directorio temporal del servidor los archivos que SXSSF creó para no
-     * cargar el libro entero en memoria.</p>
+     * <p><b>Cerrar el libro no es optativo</b>: sin eso, cada exportación deja
+     * en el directorio temporal del servidor los archivos que SXSSF creó para
+     * no cargar el libro entero en memoria. De eso se encarga el
+     * try-with-resources: el {@code close()} de {@code SXSSFWorkbook} los borra
+     * él mismo, y por eso el {@code dispose()} que estaba acá —que hacía
+     * exactamente eso y nada más— quedó obsoleto en POI.</p>
      *
      * @param workBook libro a escribir.
      * @param output flujo destino; no se cierra.
@@ -394,10 +394,6 @@ public class ExcelUtil {
         try (workBook) {
             workBook.write(output);
             output.flush();
-        } finally {
-            if (workBook instanceof SXSSFWorkbook) {
-                ((SXSSFWorkbook) workBook).dispose();
-            }
         }
     }
 

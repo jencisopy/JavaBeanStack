@@ -321,7 +321,7 @@ public class DBManagerV20 implements IDBManager {
             return em;
         }
         //Sin transacción, un entity manager por unidad de persistencia y thread
-        String threadKey = persistentUnit + ":" + Thread.currentThread().getId();
+        String threadKey = persistentUnit + ":" + Thread.currentThread().threadId();
         Data data = dynamicEntityManagers.get(threadKey);
         if (data != null && data.em.isOpen()) {
             data.lastRef = Dates.now();
@@ -615,7 +615,7 @@ public class DBManagerV20 implements IDBManager {
      */
     @Override
     public void closeEntityManagers() {
-        String suffix = ":" + Thread.currentThread().getId();
+        String suffix = ":" + Thread.currentThread().threadId();
         for (Iterator<Map.Entry<String, Data>> it = dynamicEntityManagers.entrySet().iterator(); it.hasNext();) {
             Map.Entry<String, Data> entry = it.next();
             if (entry.getKey().endsWith(suffix)) {

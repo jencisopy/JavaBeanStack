@@ -43,7 +43,7 @@ public class NumberToLetterConverter {
      * @return número escrito en letras.
      */
     public static String convert(BigDecimal number){
-        return convert(number, new Locale("es"));
+        return convert(number, Locale.of("es"));
     }
     
     /**

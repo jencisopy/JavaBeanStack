@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.javabeanstack.data.IDataQueryModel;
 import org.javabeanstack.outputs.IDocumentSource;
 import org.javabeanstack.outputs.IOutputDocument;
@@ -136,12 +135,9 @@ public class ExcelDataSource implements IDocumentSource {
             return new OutputDocument(Fn.nvl(fileName, "datos.xlsx"),
                     buffer.toByteArray(), IOutputDocument.FORMAT_XLSX);
         } finally {
-            //Cierra el workbook y borra los temporales que SXSSF crea en disco
-            try (workBook) {
-                if (workBook instanceof SXSSFWorkbook) {
-                    ((SXSSFWorkbook) workBook).dispose();
-                }
-            }
+            //Cerrar el workbook alcanza: close() de SXSSFWorkbook borra el mismo
+            //los temporales que dejo en disco, y por eso dispose() quedo obsoleto.
+            workBook.close();
         }
     }
 }

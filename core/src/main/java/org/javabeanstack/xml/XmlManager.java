@@ -79,7 +79,7 @@ public class XmlManager implements IXmlManager {
     @Override
     @Lock(LockType.READ)
     public IXmlSearcher<Document> getXmlSearcher() {
-        LOGGER.debug(Thread.currentThread().getId());
+        LOGGER.debug(Thread.currentThread().threadId());
         return xmlSearcher;
     }
 

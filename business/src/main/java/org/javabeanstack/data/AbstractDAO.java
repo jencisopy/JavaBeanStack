@@ -1658,7 +1658,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         String key = persistUnit.trim() + ":";
         // Si la estrategia de acceso/creación del entity manager es por thread
         if (dbManager.getEntityIdStrategic() == IDBManager.PERTHREAD) {
-            Long threadId = Thread.currentThread().getId();
+            Long threadId = Thread.currentThread().threadId();
             key += threadId.toString();
         } else {
             //Si la estrategia de acceso/creación del entity manager es por sesión del usuario

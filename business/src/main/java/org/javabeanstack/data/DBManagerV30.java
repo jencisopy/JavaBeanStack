@@ -342,7 +342,7 @@ public class DBManagerV30 implements IDBManager {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void closeEntityManagers() {
-        String suffix = ":" + Thread.currentThread().getId();
+        String suffix = ":" + Thread.currentThread().threadId();
         for (Iterator<Map.Entry<String, EmEntry>> it = entityManagers.entrySet().iterator(); it.hasNext();) {
             Map.Entry<String, EmEntry> entry = it.next();
             if (!entry.getValue().containerManaged && entry.getKey().endsWith(suffix)) {
@@ -521,7 +521,7 @@ public class DBManagerV30 implements IDBManager {
             return emNew;
         }
         //Sin transacción, un entityManager por unidad de persistencia y thread (lecturas)
-        String key = persistentUnit + ":" + Thread.currentThread().getId();
+        String key = persistentUnit + ":" + Thread.currentThread().threadId();
         EmEntry entry = entityManagers.get(key);
         if (entry != null && entry.em.isOpen()) {
             entry.lastRef = Dates.now();
