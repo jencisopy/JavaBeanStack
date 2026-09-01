@@ -73,4 +73,37 @@ public interface IAppUser extends IDataRow, Serializable {
     boolean isSysAdmin();
     boolean isCompanyAdmin();    
     boolean isSuperUser();
+
+    /**
+     * Devuelve las direcciones IP desde las cuales este usuario tiene
+     * permitido ingresar.
+     *
+     * <p>Es una lista separada por comas, con la misma sintaxis de los
+     * parámetros {@code IP_REQUEST_ALLOWED} e {@code IP_REQUEST_NOT_ALLOWED}
+     * del sistema: direcciones exactas y comodines por octeto, de modo que
+     * {@code 192.168.*} habilita toda esa red. La evalúa
+     * {@code org.javabeanstack.util.Fn.ipMatch}, que vive en otro módulo del
+     * framework: por eso va como {@code code} y no como enlace.</p>
+     *
+     * <p><b>En blanco o nulo significa desde cualquier dirección</b>, que es
+     * el equivalente de {@code 0.0.0.0} y el comportamiento histórico. La
+     * restricción es por usuario y se evalúa <b>además</b> de las dos listas
+     * del sistema, que siguen aplicándose a toda la instalación.</p>
+     *
+     * @return lista de direcciones permitidas, o nulo si no hay restricción.
+     */
+    default String getIpLoginAllowed() {
+        return null;
+    }
+
+    /**
+     * Asigna las direcciones IP desde las cuales el usuario puede ingresar.
+     *
+     * <p>Tiene cuerpo vacío por omisión para que las proyecciones de usuario
+     * que no mapean la columna no queden obligadas a implementarlo.</p>
+     *
+     * @param ipLoginAllowed lista de direcciones o patrones separados por coma.
+     */
+    default void setIpLoginAllowed(String ipLoginAllowed) {
+    }
 }
