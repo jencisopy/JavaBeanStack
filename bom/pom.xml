@@ -51,8 +51,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jakartaee.version>11.0.0</jakartaee.version>
-        <hibernate.version>7.3.2.Final</hibernate.version>
-        <wildfly.version>40.0.1.Final</wildfly.version>
+        <hibernate.version>7.4.5.Final</hibernate.version>
+        <wildfly.version>41.0.1.Final</wildfly.version>
         <log4j.version>2.25.4</log4j.version>
         <junit.jupiter.version>5.13.1</junit.jupiter.version>
         <poi.version>5.4.1</poi.version>
@@ -150,7 +150,7 @@
             <!--
                 Jakarta Mail: la usa jbs-messaging para armar/enviar/recibir correo.
                 Scope "provided": la API y la implementacion (Angus Mail) las trae el
-                servidor de aplicaciones (WildFly 40, modulos jakarta.mail.api 2.1.3 y
+                servidor de aplicaciones (WildFly 41, modulos jakarta.mail.api 2.1.3 y
                 org.eclipse.angus.mail 2.0.4). Version alineada con la que provee el
                 contenedor.
             -->
