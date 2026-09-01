@@ -182,88 +182,36 @@ public class AuthFilter implements Filter {
         return (pos < 0) ? urlStr : urlStr.substring(0, pos);
     }
 
+    /**
+     * Verifica si la dirección desde donde llega la petición tiene
+     * autorización, según los parámetros {@code IP_REQUEST_ALLOWED} e
+     * {@code IP_REQUEST_NOT_ALLOWED} del sistema.
+     *
+     * <p>La lógica de coincidencia —comodines, listas y ceros a la derecha—
+     * vive en {@link Fn#ipMatchPattern(String, String)}. Estaba escrita acá,
+     * duplicada palabra por palabra entre las dos listas, y de esa forma no
+     * podía reutilizarse; el control de ingreso por usuario necesitaba la
+     * misma regla y habría sido una tercera copia.</p>
+     *
+     * <p>Las dos listas se consultan con métodos distintos <b>a propósito</b>,
+     * porque la lista vacía significa lo contrario en cada una: sin permitidos
+     * declarados pasan todos, sin denegados declarados no se rechaza a nadie.</p>
+     *
+     * @param ipRequest dirección desde donde llega la petición.
+     * @return verdadero si la petición está autorizada.
+     */
     private boolean requestAllowed(String ipRequest) {
-        //IPs allowed
-        boolean allowed = false;
-        for (String ip : ipRequestAllowed) {
-            //Si el ip del cliente es igual a una de las lista de ips habilitados
-            if (ipRequest.equals(ip.trim())) {
-                allowed = true;
-                break;
-            }
-            //Todos los ips estan habilitados.
-            if (Fn.inList(ip.trim(), "0.0.0.0", "*")) {
-                allowed = true;
-                break;
-            }
-            String[] partes1 = ip.trim().split("\\.");
-            String[] partes2 = ipRequest.split("\\.");
-            boolean esComodin = true;
-            for (int i = partes1.length - 1; i >= 0; i--) {
-                if (partes1[i].equals("*")) {
-                    continue;
-                }
-                if (esComodin && partes1[i].equals("0")) {
-                    continue;
-                }
-                esComodin = false;
-                if (!partes1[i].equals(partes2[i])) {
-                    break;
-                }
-                if (i == 0) {
-                    allowed = true;
-                }
-            }
-            if (allowed) {
-                break;
-            }
-        }
-        //Si no esta permido registrar en el log del sistema
-        if (!allowed) {
+        //IPs allowed (si no hay ninguna declarada, todas estan permitidas)
+        if (!Fn.ipMatchAny(ipRequest, ipRequestAllowed)) {
             logAccessNoAllowed(ipRequest);
             return false;
         }
-        //IPs not allowed.
-        if (ipRequestNotAllowed != null) {
-            for (String ip : ipRequestNotAllowed) {
-                //Si el ip del cliente es igual a una de las lista de ips no habilitada
-                if (ipRequest.equals(ip.trim())) {
-                    allowed = false;
-                    break;
-                }
-                //Todos los ips no estan habilitados.
-                if (Fn.inList(ip.trim(), "0.0.0.0", "*")) {
-                    allowed = false;
-                    break;
-                }
-                String[] partes1 = ip.trim().split("\\.");
-                String[] partes2 = ipRequest.split("\\.");
-                boolean esComodin = true;
-                for (int i = partes1.length - 1; i >= 0; i--) {
-                    if (partes1[i].equals("*")) {
-                        continue;
-                    }
-                    if (esComodin && partes1[i].equals("0")) {
-                        continue;
-                    }
-                    esComodin = false;
-                    if (!partes1[i].equals(partes2[i])) {
-                        break;
-                    }
-                    if (i == 0) {
-                        allowed = false;
-                    }
-                }
-                if (!allowed) {
-                    break;
-                }
-            }
+        //IPs not allowed (si no hay ninguna declarada, no se deniega a nadie)
+        if (Fn.ipListed(ipRequest, ipRequestNotAllowed)) {
+            logAccessNoAllowed(ipRequest);
+            return false;
         }
-        //Si no esta permido registrar en el log del sistema
-        if (!allowed){
-            logAccessNoAllowed(ipRequest);            
-        }
-        return allowed;
+        return true;
     }
 
     //Implementar en las clases derivadas.

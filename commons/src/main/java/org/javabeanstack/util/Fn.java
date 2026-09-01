@@ -443,4 +443,193 @@ public class Fn {
         }
         return map == null;
     }
+
+    /**
+     * Devuelve verdadero si una dirección IP coincide con alguna de las
+     * entradas de una lista separadas por comas.
+     *
+     * <p>Es la semántica que el sistema ya usaba en el filtro de peticiones
+     * para los parámetros {@code IP_REQUEST_ALLOWED} e
+     * {@code IP_REQUEST_NOT_ALLOWED}, extraída acá para que haya una sola
+     * implementación:</p>
+     *
+     * <ul>
+     * <li>Lista nula, vacía o compuesta solo de espacios y comas ⇒ <b>coincide
+     * siempre</b>. Es el equivalente de {@code 0.0.0.0}: sin restricción
+     * declarada, no hay nada que restringir.</li>
+     * <li>Una entrada {@code 0.0.0.0} o {@code *} ⇒ coincide siempre.</li>
+     * <li>Coincidencia exacta.</li>
+     * <li>Comodín por octetos: ver {@link #ipMatchPattern(String, String)}.</li>
+     * </ul>
+     *
+     * @param ipRequest dirección IP a evaluar.
+     * @param ipList lista de direcciones o patrones separados por coma.
+     * @return verdadero si la dirección está comprendida en la lista.
+     */
+    public static boolean ipMatch(String ipRequest, String ipList) {
+        if (ipList == null || ipList.trim().isEmpty()) {
+            return true;
+        }
+        return ipMatchAny(ipRequest, ipList.split(","));
+    }
+
+    /**
+     * Variante de {@link #ipMatch(String, String)} que recibe la lista ya
+     * separada, para quien la tiene partida de antemano.
+     *
+     * <p>Un arreglo nulo, vacío o cuyos elementos estén todos en blanco
+     * equivale a la lista vacía y por lo tanto coincide siempre.</p>
+     *
+     * @param ipRequest dirección IP a evaluar.
+     * @param ipList direcciones o patrones.
+     * @return verdadero si la dirección está comprendida en la lista.
+     */
+    public static boolean ipMatchAny(String ipRequest, String... ipList) {
+        //Una lista sin ninguna entrada útil no es una restricción.
+        if (isIpListEmpty(ipList)) {
+            return true;
+        }
+        return ipListed(ipRequest, ipList);
+    }
+
+    /**
+     * Devuelve verdadero si una dirección IP está nombrada por alguna de las
+     * entradas de la lista.
+     *
+     * <p>Se diferencia de {@link #ipMatchAny(String, String...)} en <b>qué
+     * significa la lista vacía</b>, que es lo contrario según para qué se use
+     * la lista. En una lista de <b>permitidos</b>, no declarar nada quiere
+     * decir «todos pasan»; en una de <b>denegados</b>, no declarar nada quiere
+     * decir «no se deniega a nadie». Por eso acá una lista nula, vacía o en
+     * blanco devuelve <b>falso</b>: nadie está nombrado.</p>
+     *
+     * @param ipRequest dirección IP a evaluar.
+     * @param ipList direcciones o patrones.
+     * @return verdadero si la dirección está nombrada en la lista.
+     */
+    public static boolean ipListed(String ipRequest, String... ipList) {
+        if (ipList == null) {
+            return false;
+        }
+        for (String patron : ipList) {
+            if (patron == null || patron.trim().isEmpty()) {
+                continue;
+            }
+            if (ipMatchPattern(ipRequest, patron.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Devuelve verdadero si una lista de direcciones no tiene ninguna entrada
+     * util: nula, sin elementos, o con todos los elementos en blanco.
+     *
+     * @param ipList direcciones o patrones.
+     * @return verdadero si la lista no declara nada.
+     */
+    private static boolean isIpListEmpty(String... ipList) {
+        if (ipList == null || ipList.length == 0) {
+            return true;
+        }
+        for (String patron : ipList) {
+            if (patron != null && !patron.trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Devuelve verdadero si una dirección IP coincide con un patrón.
+     *
+     * <p>El patrón se compara por octetos <b>de derecha a izquierda</b>: un
+     * {@code *} siempre pasa, y un {@code 0} pasa mientras no se haya
+     * encontrado todavía un octeto significativo. Por eso {@code 192.168.*} y
+     * {@code 192.168.0.0} significan lo mismo —cualquier dirección de esa
+     * red—, mientras que {@code 10.0.0.5} exige la dirección exacta: el
+     * {@code 0} del medio ya no es comodín porque a su derecha hay un octeto
+     * significativo.</p>
+     *
+     * <p>Los octetos se alinean por la <b>izquierda</b>, de manera que un
+     * patrón más corto que la dirección compara solo sus primeros octetos.</p>
+     *
+     * <h2>Un patrón que queda todo en comodines coincide</h2>
+     *
+     * <p>{@code *.*.*.*}, {@code 0.*.*.*}, {@code *.168.1.5} y {@code 0.0}
+     * coinciden con cualquier dirección, que es lo que dicen. <b>La versión
+     * anterior de esta lógica —la que vivía duplicada dentro del filtro de
+     * peticiones— no los aceptaba con ninguna dirección</b>: marcaba la
+     * coincidencia solo al comparar literalmente el primer octeto, y si ese
+     * octeto era comodín nunca llegaba a marcarla. O sea que esas entradas eran
+     * <b>inertes</b>: no permitían ni denegaban a nadie.</p>
+     *
+     * <p>Se corrigió a propósito, porque una entrada que no hace nada de lo que
+     * dice es peor que cualquiera de las dos alternativas. Vale saber en qué se
+     * nota: en una lista de <b>permitidos</b> esas entradas pasan de inertes a
+     * permisivas, y en una de <b>denegados</b>, de inertes a activas. Nadie
+     * puede tenerlas hoy como única entrada de la lista de permitidos —su
+     * instalación no dejaría entrar a nadie—, pero conviene mirar las listas
+     * antes de actualizar.</p>
+     *
+     * <p><b>Nunca lanza excepción.</b> Ante una entrada mal formada, una
+     * dirección desconocida o un patrón con más octetos que la dirección
+     * —el caso real es un patrón IPv4 contra el bucle local IPv6
+     * {@code 0:0:0:0:0:0:0:1}, que al partir por punto da un solo elemento—
+     * la respuesta es <b>no coincide</b>. Es lo que corresponde en un control
+     * de acceso: lo que no se puede evaluar, no se autoriza.</p>
+     *
+     * @param ipRequest dirección IP a evaluar.
+     * @param ipPattern dirección o patrón contra el cual evaluarla.
+     * @return verdadero si la dirección coincide con el patrón.
+     */
+    public static boolean ipMatchPattern(String ipRequest, String ipPattern) {
+        if (ipPattern == null) {
+            return false;
+        }
+        String patron = ipPattern.trim();
+        //Todas las direcciones habilitadas, incluso una de origen desconocido:
+        //es la forma explícita de decir "sin restricción".
+        if (inList(patron, "0.0.0.0", "*")) {
+            return true;
+        }
+        if (ipRequest == null || ipRequest.trim().isEmpty()) {
+            return false;
+        }
+        String ip = ipRequest.trim();
+        if (ip.equals(patron)) {
+            return true;
+        }
+        String[] partesPatron = patron.split("\\.");
+        String[] partesIp = ip.split("\\.");
+        //Un patrón sin un solo octeto (por ejemplo "..." o ".") no es un
+        //comodín: es basura, y no autoriza nada.
+        if (partesPatron.length == 0) {
+            return false;
+        }
+        boolean esComodin = true;
+        for (int i = partesPatron.length - 1; i >= 0; i--) {
+            if (partesPatron[i].equals("*")) {
+                continue;
+            }
+            if (esComodin && partesPatron[i].equals("0")) {
+                continue;
+            }
+            esComodin = false;
+            //El patrón tiene más octetos que la dirección: no hay con qué
+            //comparar, así que no coincide.
+            if (i >= partesIp.length) {
+                return false;
+            }
+            if (!partesPatron[i].equals(partesIp[i])) {
+                return false;
+            }
+            if (i == 0) {
+                return true;
+            }
+        }
+        //El patrón era todo comodines (por ejemplo "*.*.*.*").
+        return true;
+    }
 }

@@ -379,15 +379,27 @@ public class FacesContextUtil {
     /**
      * Devuelve la dirección IP del cliente.
      *
+     * <p>Sale del socket y <b>no</b> del encabezado {@code X-FORWARDED-FOR},
+     * que antes tenía prioridad. Ese encabezado lo pone quien envía la
+     * petición: sin un proxy inverso delante que lo reescriba, cualquiera
+     * puede declarar la dirección que quiera, y entonces lo que se registra en
+     * la bitácora es lo que el cliente eligió mostrar. Peor todavía desde que
+     * la restricción de ingreso por usuario compara contra este valor: un
+     * control construido sobre un encabezado se burla con un {@code curl}.</p>
+     *
+     * <p>Es el mismo criterio con el que
+     * {@code AuthFilter} evalúa {@code IP_REQUEST_ALLOWED} desde siempre.</p>
+     *
+     * <p>Si alguna instalación llega a servirse detrás de un proxy, esto
+     * devolverá la dirección del proxy y habrá que resolverlo declarando
+     * cuáles son de confianza —nunca volviendo a confiar en el encabezado a
+     * ciegas.</p>
+     *
      * @return dirección IP.
      */
     public String getIp() {
         HttpServletRequest request = (HttpServletRequest) getFacesContext().getExternalContext().getRequest();
-        String ip = request.getHeader("X-FORWARDED-FOR");
-        if (ip == null) {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
+        return request.getRemoteAddr();
     }
 
     /**

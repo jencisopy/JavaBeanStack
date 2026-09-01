@@ -124,6 +124,10 @@ public class AppUser extends DataRow implements IAppUser {
     @Column(name = "celular2")
     private String celular2;
 
+    @Size(max = 500)
+    @Column(name = "ip_login_allowed")
+    private String ipLoginAllowed;
+
     @Column(name = "disabled")
     private Boolean disabled = false;
 
@@ -480,6 +484,22 @@ public class AppUser extends DataRow implements IAppUser {
 
     public void setCelular2(String celular2) {
         this.celular2 = celular2;
+    }
+
+    /**
+     * Devuelve las direcciones IP desde las cuales el usuario puede ingresar.
+     * En blanco significa desde cualquiera.
+     *
+     * @return lista de direcciones permitidas, o nulo si no hay restriccion.
+     */
+    @Override
+    public String getIpLoginAllowed() {
+        return ipLoginAllowed == null ? null : ipLoginAllowed.trim();
+    }
+
+    @Override
+    public void setIpLoginAllowed(String ipLoginAllowed) {
+        this.ipLoginAllowed = ipLoginAllowed;
     }
 
     @Override
