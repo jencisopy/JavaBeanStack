@@ -642,6 +642,15 @@ public class Sessions implements ISessions {
     @Lock(LockType.WRITE)
     public void logout(String sessionIdEncrypted) {
         LOGGER.debug("LOGOUT IN");
+        if (sessionIdEncrypted == null) {
+            return;
+        }
+        //Primero la clave tal cual: las sesiones de token se indexan por el
+        //token en claro y descifrarlo lanzaba, con lo que bloquear o eliminar
+        //un token no lo sacaba de la caché y seguía sirviendo hasta 30 minutos.
+        if (sessionVar.remove(sessionIdEncrypted) != null) {
+            return;
+        }
         try {
             String sessionId = decrypt(sessionIdEncrypted);
             sessionVar.remove(sessionId);

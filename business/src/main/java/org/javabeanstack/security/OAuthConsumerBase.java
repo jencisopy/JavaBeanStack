@@ -898,6 +898,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             errorReturn.setMessage("Token: " + Fn.nvl(token, "") + ", esta bloqueado");
             return errorReturn;
         }
+        //Si el token esta marcado como eliminado
+        if (Fn.toLogical(result.getDeleted())) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: " + Fn.nvl(token, "") + ", no existe");
+            return errorReturn;
+        }
         if (result.getAppAuthConsumerKey() == null) {
             errorReturn.setErrorNumber(50000);
             errorReturn.setMessage("Token: " + Fn.nvl(token, "") + ", consumer key no existe");
@@ -957,6 +963,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         if (authToken.getBlocked()) {
             errorReturn.setErrorNumber(50000);
             errorReturn.setMessage("Token: " + Fn.nvl(authToken.getToken(), "") + ", esta bloqueado");
+            return errorReturn;
+        }
+        //Si el token esta marcado como eliminado
+        if (Fn.toLogical(authToken.getDeleted())) {
+            errorReturn.setErrorNumber(50000);
+            errorReturn.setMessage("Token: " + Fn.nvl(authToken.getToken(), "") + ", no existe");
             return errorReturn;
         }
         if (authToken.getAppAuthConsumerKey() == null) {
@@ -1040,6 +1052,11 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         //Si el token esta bloqueado
         if (result.getBlocked()) {
             LOGGER.info("Token: " + Fn.nvl(token, "") + ", esta bloqueado");
+            return false;
+        }
+        //Si el token esta marcado como eliminado
+        if (Fn.toLogical(result.getDeleted())) {
+            LOGGER.info("Token: " + Fn.nvl(token, "") + ", no existe");
             return false;
         }
         if (result.getAppAuthConsumerKey() == null) {

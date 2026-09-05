@@ -62,6 +62,15 @@ public interface IWebResource{
     Long getIdCompany(String authHeader);
 
     /**
+     * Devuelve el identificador de la empresa de la sesión resuelta por el
+     * filtro de autenticación: el {@code idcompanymask} (el {@code idempresa}
+     * del esquema de datos) y, si no lo hay, el {@code idcompany}.
+     *
+     * @return identificador de la empresa, o nulo si no hay sesión.
+     */
+    Long getIdCompany();
+
+    /**
      * Devuelve la ip del cliente que realiza la solicitud.
      * @return ip del cliente.
      */

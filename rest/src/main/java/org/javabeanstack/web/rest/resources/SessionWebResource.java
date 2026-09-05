@@ -33,6 +33,7 @@ import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.model.IUserSession;
 
 import org.javabeanstack.web.rest.model.SessionCredential;
+import org.javabeanstack.web.rest.security.CsrfRules;
 
 /**
  * Soporte de <b>sesión de login</b> para los recursos REST.
@@ -84,12 +85,12 @@ public class SessionWebResource extends WebResource {
      */
     public static final String SESSION_COOKIE = "JbsSessionId";
     /** Encabezado que deben traer las peticiones mutadoras autenticadas por cookie. */
-    public static final String CSRF_HEADER = "X-Requested-With";
+    public static final String CSRF_HEADER = CsrfRules.CSRF_HEADER;
     /**
      * Valor por omisión del encabezado anti CSRF; la aplicación define el suyo
      * en {@link #getCsrfHeaderValue()}.
      */
-    public static final String CSRF_HEADER_VALUE = "JavaBeanStack";
+    public static final String CSRF_HEADER_VALUE = CsrfRules.CSRF_HEADER_VALUE;
 
     @EJB
     private ISessions sessions;
@@ -368,10 +369,7 @@ public class SessionWebResource extends WebResource {
      * @return verdadero si hay que exigir el encabezado anti CSRF.
      */
     public static boolean isCsrfProtectionRequired(String httpMethod, SessionCredential credential) {
-        if (credential == null || !credential.isFromCookie()) {
-            return false;
-        }
-        return isMutation(httpMethod);
+        return CsrfRules.isCsrfProtectionRequired(httpMethod, credential);
     }
 
     /**
@@ -382,14 +380,7 @@ public class SessionWebResource extends WebResource {
      * @return verdadero si el método modifica datos.
      */
     public static boolean isMutation(String httpMethod) {
-        if (httpMethod == null) {
-            return true;
-        }
-        String method = httpMethod.trim().toUpperCase();
-        return !("GET".equals(method)
-                || "HEAD".equals(method)
-                || "OPTIONS".equals(method)
-                || "TRACE".equals(method));
+        return CsrfRules.isMutation(httpMethod);
     }
 
     /**
@@ -402,10 +393,7 @@ public class SessionWebResource extends WebResource {
      * @return verdadero si coincide exactamente.
      */
     public static boolean isCsrfHeaderValid(String headerValue, String expectedValue) {
-        if (headerValue == null || expectedValue == null) {
-            return false;
-        }
-        return expectedValue.equals(headerValue);
+        return CsrfRules.isCsrfHeaderValid(headerValue, expectedValue);
     }
 
     /**
