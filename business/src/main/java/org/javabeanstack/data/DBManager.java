@@ -229,16 +229,21 @@ public class DBManager implements IDBManager {
      * Ejecuta un script de actualización de base de datos (nodos SCRIPTS del
      * XML de actualización de Maker) sentencia por sentencia, filtrando por el
      * motor de base de datos de la unidad de persistencia del usuario y
-     * registrando el progreso/errores en dic_logupdate y en el log de la
+     * registrando el progreso/errores en applogdbupdate y en el log de la
      * aplicación. Las sentencias con dataconex=CATALOGO corren contra el
      * schema catalogo (sessionId null); el resto contra el schema datos de la
      * unidad de persistencia del usuario.
      *
+     * <p>La fila de la bitácora se identifica por el par (dbversion, sequence):
+     * la versión de estructura y su correlativo dentro de esa versión, que son
+     * los dos segmentos del nombre del paquete.</p>
+     *
      * @param dao DAO genérico usado para ejecutar las sentencias SQL.
      * @param sessionId identificador de la sesión del usuario que ejecuta el script.
      * @param domScript documento XML con los nodos /ROOT/SCRIPTS a ejecutar.
-     * @param parameters parámetros del script (secuencia, filename, classLog,
-     * CONTINUE_WITH_ERROR, etc.); se completan/actualizan durante la ejecución.
+     * @param parameters parámetros del script (dbversion, sequence, filename,
+     * classLog, CONTINUE_WITH_ERROR, etc.); se completan/actualizan durante la
+     * ejecución.
      * @param logMngr gestor de logs de aplicación donde registrar errores (opcional).
      * @throws Exception si una sentencia falla y CONTINUE_WITH_ERROR no está activo.
      */
@@ -248,7 +253,7 @@ public class DBManager implements IDBManager {
         List<Element> sqlScriptNodes = DomW3cParser.getChildren(domScript, "/ROOT/SCRIPTS");
         IErrorReg errorReturn;
 
-        String logTable = "dic_logupdate";
+        String logTable = "applogdbupdate";
         Class clazz = (Class) parameters.get("classLog");
         if (clazz != null) {
             logTable = DataInfo.getTableName(clazz);
@@ -256,9 +261,9 @@ public class DBManager implements IDBManager {
 
         //Inicio================================================
         String initCommand = "INSERT INTO {schema}." + logTable + " "
-                + "(secuencia, filename, script, appuser) "
+                + "(dbversion, sequence, filename, script, appuser) "
                 + "     values "
-                + "(:secuencia, :filename, :script, :appuser)";
+                + "(:dbversion, :sequence, :filename, :script, :appuser)";
 
         dao.sqlExec(sessionId, initCommand, parameters);
 
@@ -280,7 +285,7 @@ public class DBManager implements IDBManager {
             parameters.put("script", DomW3cParser.getXmlText(sqlScriptNode));
             String command = "UPDATE {schema}." + logTable
                     + " SET script = :script "
-                    + " where secuencia = :secuencia";
+                    + " where dbversion = :dbversion and sequence = :sequence";
             dao.sqlExec(sessionId, command, parameters);
             parameters.put("script", "");
 
@@ -336,7 +341,8 @@ public class DBManager implements IDBManager {
                         }
                         if (!Fn.toLogical(parameters.get("CONTINUE_WITH_ERROR"))) {
                             //Revertir proceso==================================
-                            String revertCommand = "delete from {schema}." + logTable + " where secuencia = :secuencia";
+                            String revertCommand = "delete from {schema}." + logTable
+                                    + " where dbversion = :dbversion and sequence = :sequence";
                             dao.sqlExec(sessionId, revertCommand, parameters);
                             //Registrar en el log de la base
                             if (logMngr != null) {
@@ -379,8 +385,8 @@ public class DBManager implements IDBManager {
         }
         //Fin ============================================
         String endCommand = "UPDATE {schema}." + logTable
-                + " SET concluido = {true} "
-                + " where secuencia = :secuencia";
+                + " SET finished = {true} "
+                + " where dbversion = :dbversion and sequence = :sequence";
 
         dao.sqlExec(sessionId, endCommand, parameters);
     }

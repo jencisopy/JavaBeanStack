@@ -315,23 +315,27 @@ public class AppGenericConfig implements IAppConfig {
     }
     
     /**
-     * Devuelve la versión de base de datos esperada por esta aplicación.
+     * Devuelve la versión de estructura de base de datos que espera esta
+     * aplicación, con el formato {@code <version>.<secuencia>}.
      *
-     * @return versión de base de datos de la aplicación.
+     * @return {@code "999999"}, valor con el que la verificación de versión
+     * queda desactivada. Las aplicaciones que versionan su estructura
+     * sobreescriben este método.
      */
     @Override
-    public Integer getDBVersionForThisApp(){
-        return 999999;
+    public String getDBVersionForThisApp(){
+        return DBVERSION_UNDEFINED;
     }
             
     /**
-     * Devuelve la versión de base de datos actualmente instalada.
+     * Devuelve la versión de estructura actualmente instalada en la base, con
+     * el mismo formato que {@link #getDBVersionForThisApp()}.
      *
      * @param sessionId identificador de la sesión.
-     * @return versión de base de datos instalada.
+     * @return nulo en la implementación genérica.
      */
     @Override
-    public Integer getDBVersion(String sessionId){
+    public String getDBVersion(String sessionId){
         return null;
     }
 }

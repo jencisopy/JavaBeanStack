@@ -131,17 +131,61 @@ public interface IAppConfig {
     IErrorReg checkDatabase(String sessionId) throws Exception;
 
     /**
-     * Devuelve la versión de base de datos esperada por esta aplicación.
+     * Versión de estructura "no determinada".
      *
-     * @return versión de base de datos de la aplicación.
+     * <p>Devuelto por {@link #getDBVersionForThisApp()} desactiva la
+     * verificación de versión; devuelto por {@link #getDBVersion(String)} NO la
+     * desactiva: entra a la comparación y hace que la base parezca
+     * adelantada.</p>
      */
-    Integer getDBVersionForThisApp();
+    String DBVERSION_UNDEFINED = "999999";
 
     /**
-     * Devuelve la versión de base de datos actualmente instalada.
+     * Clave con la que {@link #updateDatabase(String)} deja en la sesión del
+     * usuario ({@code IUserSession.addInfo}) el motivo por el cual no pudo
+     * actualizar la estructura de la base.
+     *
+     * <p>Es un canal de una sola lectura: la actualización corre dentro de la
+     * petición del ingreso, cuando la vista activa es todavía la de login, así
+     * que un mensaje encolado ahí no sobrevive a la navegación. La primera
+     * pantalla que se dibuja lo lee, lo muestra y lo borra.</p>
+     */
+    String DBUPDATE_ERROR = "dbUpdateError";
+
+    /**
+     * Clave con la que {@link #updateDatabase(String)} deja en la sesión del
+     * usuario el aviso de que la estructura de la base se actualizó bien, con
+     * la versión que quedó vigente.
+     *
+     * <p>Viaja por el mismo canal de una sola lectura que
+     * {@link #DBUPDATE_ERROR}, y por el mismo motivo. Los dos pueden convivir:
+     * con la actualización configurada para continuar ante un error, un
+     * paquete puede fallar y los anteriores quedar aplicados.</p>
+     */
+    String DBUPDATE_INFO = "dbUpdateInfo";
+
+    /**
+     * Devuelve la versión de estructura de base de datos que espera esta
+     * aplicación, con el formato {@code <version>.<secuencia>} (por ejemplo
+     * {@code "10.001"}).
+     *
+     * <p>Las dos partes son de ancho fijo —dos dígitos la versión, tres la
+     * secuencia— porque {@code checkDatabase} las compara como texto: sin el
+     * relleno, {@code "9.001"} resultaría mayor que {@code "10.001"}.</p>
+     *
+     * @return versión de estructura esperada, o {@code "999999"} si no está
+     * definida, valor con el que la verificación queda desactivada.
+     */
+    String getDBVersionForThisApp();
+
+    /**
+     * Devuelve la versión de estructura actualmente instalada en la base, con
+     * el mismo formato que {@link #getDBVersionForThisApp()}.
      *
      * @param sessionId identificador de la sesión.
-     * @return versión de base de datos instalada.
+     * @return versión de estructura instalada, o {@code "999999"} si no pudo
+     * determinarse. Ese valor NO desactiva la verificación por este lado: entra
+     * a la comparación y hace que la base parezca adelantada.
      */
-    Integer getDBVersion(String sessionId);
+    String getDBVersion(String sessionId);
 }
