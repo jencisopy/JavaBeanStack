@@ -46,6 +46,8 @@ import org.javabeanstack.crypto.CipherUtil;
 import org.javabeanstack.crypto.DigestUtil;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.data.IDataResult;
+import org.javabeanstack.data.model.DataResult;
+import org.javabeanstack.data.services.IAppAuthConsumerTokenSrv;
 import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppAuthConsumer;
@@ -75,6 +77,13 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
 
     @EJB
     private IDataService dao;
+
+    /**
+     * Servicio de los tokens: el único punto por el que se graba la tabla, con
+     * sus validaciones {@code @CheckMethod}.
+     */
+    @EJB
+    private IAppAuthConsumerTokenSrv authConsumerTokenSrv;
 
     @EJB
     private IAppCompanySrv appCompanySrv;
@@ -148,7 +157,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 LocalDateTime end = LocalDates.now();
                 if (start == null || Duration.between(start, end).getSeconds() > 2) {
                     auth.setLastUsed(LocalDates.now());
-                    dao.merge(null, auth);
+                    modificarToken(auth);
                 }
             }
             return auth;
@@ -185,7 +194,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 LocalDateTime end = LocalDates.now();
                 if (start == null || Duration.between(start, end).getSeconds() > 2) {
                     auth.setLastUsed(LocalDates.now());
-                    dao.merge(null, auth);
+                    modificarToken(auth);
                 }
             }
             return auth;
@@ -230,7 +239,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 LocalDateTime end = LocalDates.now();
                 if (start == null || Duration.between(start, end).getSeconds() > 2) {
                     auth.setLastUsed(LocalDates.now());
-                    dao.merge(null, auth);
+                    modificarToken(auth);
                 }
             }
             return auth;
@@ -387,6 +396,139 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @param consumerKey clave del consumidor
      * @return verdadero si tuvo exito y falso si no.
      */
+    /**
+     * Devuelve el servicio de tokens, único punto de grabación de la tabla.
+     *
+     * @return el servicio.
+     */
+    protected IAppAuthConsumerTokenSrv getAuthConsumerTokenSrv() {
+        return authConsumerTokenSrv;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Delega en el servicio de tokens, que es donde vive la validación que
+     * después se aplica sola al grabar.</p>
+     */
+    @Override
+    public IErrorReg checkTokenOwner(String consumerKey, String userCode, Long idcompany) {
+        if (getAuthConsumerTokenSrv() == null) {
+            LOGGER.error("No está declarado el servicio de tokens (AppAuthConsumerTokenSrv)");
+            return null;
+        }
+        return getAuthConsumerTokenSrv().checkTokenOwner(consumerKey, userCode, idcompany);
+    }
+
+    /**
+     * <b>Único punto de grabación</b> de {@code appauthconsumertoken}: todas
+     * las altas del framework —solicitud, creación desde un dispositivo y copia
+     * del servidor principal— pasan por acá.
+     *
+     * <p>Graba por el servicio de la entidad, de modo que sus validaciones
+     * ({@code usercode}, {@code idcompany}, consumidor y {@code data}) se
+     * ejecuten siempre, sin que cada método tenga que acordarse de llamarlas.
+     * Si el servicio no está declarado no se graba nada: es preferible un
+     * despliegue que falla ruidosamente a una tabla que se llena sin
+     * control.</p>
+     *
+     * @param token token a grabar.
+     * @return el resultado de la grabación.
+     */
+    protected IDataResult grabarToken(IAppAuthConsumerToken token) {
+        return grabarPorElServicio(token, "grabar");
+    }
+
+    /**
+     * Modifica un token existente, también por el servicio de la entidad.
+     *
+     * <p>Va por el mismo punto que el alta para que ningún camino escriba la
+     * tabla por afuera. Lo que cambia es qué se valida: mientras el dueño no se
+     * toque, el servicio deja pasar la modificación —de otro modo no se podría
+     * bloquear un token viejo, grabado antes de que hubiera reglas—.</p>
+     *
+     * @param token token a modificar.
+     * @return el resultado de la grabación.
+     */
+    protected IDataResult modificarToken(IAppAuthConsumerToken token) {
+        return grabarPorElServicio(token, "modificar");
+    }
+
+    /**
+     * Elimina un token por el servicio de la entidad.
+     *
+     * @param token token a eliminar.
+     * @return el resultado de la operación.
+     */
+    protected IDataResult borrarToken(IAppAuthConsumerToken token) {
+        return grabarPorElServicio(token, "borrar");
+    }
+
+    /**
+     * Ejecuta una escritura de la tabla de tokens por su servicio.
+     *
+     * @param token token afectado.
+     * @param operacion "grabar", "modificar" o "borrar".
+     * @return el resultado de la operación.
+     */
+    private IDataResult grabarPorElServicio(IAppAuthConsumerToken token, String operacion) {
+        if (getAuthConsumerTokenSrv() == null) {
+            LOGGER.error("No está declarado el servicio de tokens (AppAuthConsumerTokenSrv):"
+                    + " no se pudo " + operacion + " el token");
+            IDataResult fallido = new DataResult();
+            fallido.setSuccess(false);
+            fallido.setErrorMsg("No está declarado el servicio de tokens");
+            return fallido;
+        }
+        IDataResult resultado;
+        try {
+            switch (operacion) {
+                case "modificar":
+                    resultado = getAuthConsumerTokenSrv().merge(null, token);
+                    break;
+                case "borrar":
+                    resultado = getAuthConsumerTokenSrv().remove(null, token);
+                    break;
+                default:
+                    resultado = getAuthConsumerTokenSrv().persist(null, token);
+                    break;
+            }
+        } catch (Exception exp) {
+            ErrorManager.showError(exp, LOGGER);
+            resultado = new DataResult();
+            resultado.setSuccess(false);
+            resultado.setErrorMsg(ErrorManager.getStackCause(exp));
+            return resultado;
+        }
+        if (!resultado.isSuccessFul()) {
+            LOGGER.info("Token rechazado al " + operacion + ": " + motivoDelRechazo(resultado));
+        }
+        return resultado;
+    }
+
+    /**
+     * Arma el texto de los errores de validación de una grabación rechazada.
+     *
+     * @param resultado resultado de la grabación.
+     * @return el motivo, en una línea.
+     */
+    protected String motivoDelRechazo(IDataResult resultado) {
+        if (resultado == null) {
+            return "";
+        }
+        StringBuilder motivo = new StringBuilder(nvl(resultado.getErrorMsg(), ""));
+        if (resultado.getErrorsMap() != null) {
+            for (Map.Entry<String, IErrorReg> entry : resultado.getErrorsMap().entrySet()) {
+                if (motivo.length() > 0) {
+                    motivo.append(" · ");
+                }
+                motivo.append(entry.getValue().getMessage());
+            }
+        }
+        return motivo.toString();
+    }
+
+    @Deprecated
     @Override
     public boolean requestToken(String consumerKey) {
         return requestToken(consumerKey, null, null, null);
@@ -400,6 +542,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @param uuidDevice identificador unico del dispositivo
      * @return verdadero si tuvo exito y falso si no.
      */
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated ver {@link #requestToken(String)}.
+     */
+    @Deprecated
     @Override
     public boolean requestToken(String consumerKey, String uuidDevice) {
         return requestToken(consumerKey, uuidDevice, null, null);
@@ -415,6 +563,12 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @param userEmail
      * @return verdadero si tuvo exito y falso si no.
      */
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated ver {@link #requestToken(String)}.
+     */
+    @Deprecated
     @Override
     public boolean requestToken(String consumerKey, String uuidDevice, String userName, String userEmail) {
         return requestToken(consumerKey, uuidDevice, userName, userEmail, null, null);
@@ -447,12 +601,13 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             authConsumerToken.setUserEmail(userEmail);
             //El dueño del token se declara desde el pedido: una solicitud
             //pendiente también identifica usuario y empresa
-            authConsumerToken.setUserCode(userCode);
+            //El servicio valida los dos datos y completa `data` con ellos.
+            authConsumerToken.setUserCode(nvl(userCode, "").trim());
             authConsumerToken.setIdcompany(idcompany);
             if (uuidDevice != null) {
                 authConsumerToken.setUuidDevice(uuidDevice);
             }
-            IDataResult dataResult = dao.persist(null, authConsumerToken);
+            IDataResult dataResult = grabarToken(authConsumerToken);
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -510,7 +665,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 }
                 try {
                     // si no eliminar token para crear uno nuevo.
-                    dao.remove(null, tokenExists);
+                    borrarToken(tokenExists);
                 } catch (Exception ex) {
                     ErrorManager.showError(ex, LOGGER);
                 }
@@ -547,7 +702,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             //Columnas propias del dueño del token (fuente de verdad desde la Fase 1
             //del plan de seguridad; `data` se sigue grabando por compatibilidad)
             authConsumerToken.setIdcompany(data.getIdCompany());
-            authConsumerToken.setUserCode(userCode);
+            authConsumerToken.setUserCode(userCode.trim());
             if (uuidDevice != null) {
                 authConsumerToken.setUuidDevice(uuidDevice);
             }
@@ -560,9 +715,11 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             }
             authConsumerToken.setUserEmail(userEmail);
             authConsumerToken.setUserName(userName);
-            IDataResult dataResult = dao.persist(null, authConsumerToken);
+            IDataResult dataResult = grabarToken(authConsumerToken);
             if (!dataResult.isSuccessFul()) {
-                return "";
+                //El motivo viaja al cliente: un token que no se creó porque un
+                //dato está mal no puede responderse como "no encuentra el token".
+                throw new TokenGenericException(motivoDelRechazo(dataResult));
             }
             lastAuthConsumerToken = dataResult.getRowUpdated();
             return authConsumerToken.getToken();
@@ -593,7 +750,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 }
                 try {
                     // si no eliminar token para crear uno nuevo.
-                    dao.remove(null, tokenExists);
+                    borrarToken(tokenExists);
                 } catch (Exception ex) {
                     ErrorManager.showError(ex, LOGGER);
                 }
@@ -632,10 +789,14 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             if (nvl(userCode, "").isEmpty()) {
                 userCode = getDataKeyValue(authConsumerToken, "userlogin");
             }
+            //La copia tampoco se graba sin dueño: el servicio la valida igual
+            //que a un token propio. Uno del servidor principal cuyo usuario o
+            //empresa no existan acá no serviría, y quedaría una fila que solo se
+            //descubre al fallar el ingreso.
             authConsumerTokenNew.setIdcompany(idcompany);
-            authConsumerTokenNew.setUserCode(userCode);
+            authConsumerTokenNew.setUserCode(nvl(userCode, "").trim());
 
-            IDataResult dataResult = dao.persist(null, authConsumerTokenNew);
+            IDataResult dataResult = grabarToken(authConsumerTokenNew);
             if (!dataResult.isSuccessFul()) {
                 return null;
             }
@@ -691,7 +852,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             return false;
         }
         try {
-            IDataResult dataResult = dao.remove(null, authConsumerToken);
+            IDataResult dataResult = borrarToken(authConsumerToken);
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -737,7 +898,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             if (status.equalsIgnoreCase("unblock")) {
                 authConsumerToken.setBlocked(false);
             }
-            IDataResult dataResult = dao.merge(null, authConsumerToken);
+            IDataResult dataResult = modificarToken(authConsumerToken);
             return dataResult.isSuccessFul();
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);

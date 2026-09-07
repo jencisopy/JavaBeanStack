@@ -128,10 +128,16 @@ public class ClientAuthRequestInfo implements IClientAuthRequestInfo{
      */
     @Override
     public String getPropertyValue(String property) {
+        //Un token sin `data` devuelve vacío, no revienta: hasta hoy el
+        //StringReader lanzaba NullPointerException —que este catch no atrapa,
+        //porque espera IOException— y se llevaba puesta la creación de la
+        //sesión entera, con un 401 que no explicaba nada.
+        if (appAuthToken == null || appAuthToken.getData() == null) {
+            return "";
+        }
         try {
-            IAppAuthConsumerToken tokenRecord = appAuthToken;
             Properties prop = new Properties();
-            prop.load(new StringReader(tokenRecord.getData()));
+            prop.load(new StringReader(appAuthToken.getData()));
             return nvl((String) prop.getProperty(property), "");
         } catch (IOException ex) {
             ErrorManager.showError(ex, LOGGER);

@@ -249,6 +249,28 @@ public interface IOAuthConsumer {
      * @param consumerKey clave del consumidor.
      * @return verdadero si la solicitud fue aceptada, falso si no.
      */
+    /**
+     * Comprueba que el dueño con el que se quiere grabar un token —consumidor,
+     * usuario y empresa— exista y tenga el acceso concedido. Lo aplican todos
+     * los caminos que crean un token: si esto devuelve un error, no se graba
+     * nada.
+     *
+     * <p>La implementación vive en {@code OAuthConsumerBase}; acá es
+     * {@code default} para no obligar a las implementaciones existentes, y
+     * devuelve {@code null} —«sin validación disponible»— si alguna no lo
+     * provee.</p>
+     *
+     * @param consumerKey clave del consumidor.
+     * @param userCode código del usuario dueño del token.
+     * @param idcompany empresa del token; el {@code idcompany} de
+     * {@code appcompany}, no el {@code idcompanymask}.
+     * @return el error encontrado, un error con número 0 si todo está bien, o
+     * {@code null} si la implementación no valida.
+     */
+    default IErrorReg checkTokenOwner(String consumerKey, String userCode, Long idcompany) {
+        return null;
+    }
+
     boolean requestToken(String consumerKey);
 
     /**
