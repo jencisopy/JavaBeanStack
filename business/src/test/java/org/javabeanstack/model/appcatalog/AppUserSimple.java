@@ -49,8 +49,8 @@ import org.javabeanstack.util.Fn;
 
 @Entity
 @Table(name = "appuser")
-public class AppUserLight extends DataRow implements IAppUser {
-    private static final Logger LOGGER = LogManager.getLogger(AppUserLight.class);
+public class AppUserSimple extends DataRow implements IAppUser {
+    private static final Logger LOGGER = LogManager.getLogger(AppUserSimple.class);
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -143,7 +143,7 @@ public class AppUserLight extends DataRow implements IAppUser {
     @Column(name = "idcompany")
     private Long idcompany;
 
-    public AppUserLight() {
+    public AppUserSimple() {
     }
 
     @Override
@@ -506,16 +506,16 @@ public class AppUserLight extends DataRow implements IAppUser {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final AppUserLight other = (AppUserLight) obj;
+        final AppUserSimple other = (AppUserSimple) obj;
         return Objects.equals(this.iduser, other.iduser);
     }
 
     @Override
     public boolean equivalent(Object o) {
-        if (!(o instanceof AppUserLight)) {
+        if (!(o instanceof AppUserSimple)) {
             return false;
         }
-        AppUserLight obj = (AppUserLight) o;
+        AppUserSimple obj = (AppUserSimple) o;
         return (this.code.trim().equals(obj.getLogin().trim()));
     }
 
@@ -554,6 +554,6 @@ public class AppUserLight extends DataRow implements IAppUser {
     
     @Override
     public String toString() {
-        return "org.javabeanstack.model.appcatalog.AppUserLight{" + "iduser=" + iduser + ", code=" + code + ", fullName=" + fullName + ", description=" + description + ", disabled=" + disabled + ", expiredDate=" + expiredDate + ", rol=" + rol + ", type=" + type + '}';
+        return "org.javabeanstack.model.appcatalog.AppUserSimple{" + "iduser=" + iduser + ", code=" + code + ", fullName=" + fullName + ", description=" + description + ", disabled=" + disabled + ", expiredDate=" + expiredDate + ", rol=" + rol + ", type=" + type + '}';
     }    
 }

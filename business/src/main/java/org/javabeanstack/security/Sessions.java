@@ -375,9 +375,9 @@ public class Sessions implements ISessions {
             }
             //Crear objeto sesion.
             IUserSession session = new UserSession();
-            IAppUser appUser = (IAppUser)dao.findByQuery(null, "select o from AppUserLight o where code = :userLogin", Fn.queryParams("userLogin",userLogin));
+            IAppUser appUser = (IAppUser)dao.findByQuery(null, "select o from AppUserSimple o where code = :userLogin", Fn.queryParams("userLogin",userLogin));
             if (appUser == null) {
-                Class appUserModel = dao.findListByQuery(null, "select o from AppUserLight o where type = 1", null, 0, 1).get(0).getClass();
+                Class appUserModel = dao.findListByQuery(null, "select o from AppUserSimple o where type = 1", null, 0, 1).get(0).getClass();
                 appUser = (IAppUser)appUserModel.getConstructor().newInstance();
                 appUser.setId(0L);
                 appUser.setCode(userLogin);
@@ -548,7 +548,7 @@ public class Sessions implements ISessions {
         if (Fn.nvl(iduser, 0L) != 0L) {
             // Verificar existencia del usuario
             IAppUser usuario = dao.findByQuery(null,
-                    "select o from AppUserLight o where iduser = :iduser",
+                    "select o from AppUserSimple o where iduser = :iduser",
                     params);
 
             // Verificar que exista el usuario
@@ -596,7 +596,7 @@ public class Sessions implements ISessions {
         if (userLogin != null) {
             // Verificar existencia del usuario
             IAppUser usuario = dao.findByQuery(null,
-                    "select o from AppUserLight o where code = :userLogin",
+                    "select o from AppUserSimple o where code = :userLogin",
                     params);
 
             userSession = new UserSession();

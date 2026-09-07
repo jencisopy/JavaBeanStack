@@ -679,7 +679,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
                 Map<String, Object> params = new HashMap<>();
                 params.put("userLogin", data.getUserLogin());
                 IAppUser usuario = dao.findByQuery(null,
-                        "select o from AppUserLight o where code = :userLogin",
+                        "select o from AppUserSimple o where code = :userLogin",
                         params);
                 data.setIdAppUser(usuario.getIduser());
                 data.setAdministrator(false);
@@ -690,7 +690,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             } else if (nvl(userCode, "").isEmpty()) {
                 //Vino el id pero no el login: resolver el código del usuario
                 IAppUser usuario = dao.findByQuery(null,
-                        "select o from AppUserLight o where iduser = " + data.getIdAppUser(), null);
+                        "select o from AppUserSimple o where iduser = " + data.getIdAppUser(), null);
                 if (usuario != null) {
                     userCode = usuario.getCode();
                 }
@@ -1371,7 +1371,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             Map<String, Object> params = new HashMap<>();
             params.put("code", token.getUserCode());
             IAppUser user = dao.findByQuery(null,
-                    "select o from AppUserLight o where code = :code", params);
+                    "select o from AppUserSimple o where code = :code", params);
             return user;
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER);
@@ -1433,7 +1433,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
             params.put("userLogin", userLogin);
             // Verificar existencia del usuario
             IAppUser user = dao.findByQuery(null,
-                    "select o from AppUserLight o where code = :userLogin",
+                    "select o from AppUserSimple o where code = :userLogin",
                     params);
 
             IUserSession userSession = new UserSession();
