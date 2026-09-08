@@ -12,6 +12,20 @@
     <properties>
         <jbs.module.name>org.javabeanstack.poi</jbs.module.name>
     </properties>
+
+    <!-- El mismo repositorio que declara jbs-jasper, y por el mismo motivo: el
+         build de OpenPDF con el que corre JasperReports 7 (la version
+         `.jaspersoft.1`) no esta en central. Se usa ESA y no la de central para
+         que el conversor docx->pdf y Jasper compartan un unico artefacto: dos
+         versiones distintas volverian a poner dos copias de com.lowagie.text en
+         el classpath, que es justamente lo que este cambio vino a evitar. -->
+    <repositories>
+        <repository>
+            <id>jasper-3rd-party</id>
+            <name>Jasper3rdParty</name>
+            <url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -28,10 +42,46 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
         </dependency>
-        <!-- docx -> pdf (WordTemplateSource format=pdf) -->
+        <!-- docx -> pdf (WordTemplateSource format=pdf).
+
+             Se EXCLUYE com.lowagie:itext:2.1.7, que este conversor arrastra, y se
+             pone OpenPDF en su lugar (2026-09-08).
+
+             Los dos publican el MISMO paquete `com.lowagie.text`: OpenPDF es un
+             fork de aquel iText y, cuando conviven, cual gana depende del orden
+             de WEB-INF/lib, que no esta garantizado. El sintoma es un
+             NoSuchMethodError que aparece en una instalacion y no en otra con el
+             mismo WAR; se vio el 2026-09-08 imprimiendo desde el portal:
+
+               NoSuchMethodError: com.lowagie.text.pdf.BaseFont.setIncludeCidSet(boolean)
+
+             JasperReports 7 llama a ese metodo, que OpenPDF agrego y el iText de
+             2009 no tiene. Con las dos librerias en el classpath la impresion de
+             PDF es una loteria.
+
+             La sustitucion es segura y esta verificada: OpenPDF es un SUPERSET
+             (976 clases contra 474) y de las 53 que solo estan en el iText viejo
+             (BidiOrder, GifImage, BmpImage, su Base64 interno) NINGUNA la
+             referencia el conversor ni sus dos companeras (core y la extension).
+
+             Se declara OpenPDF ACA, y no se deja que llegue transitivo por
+             jasperreports-pdf, para que el conversor tenga su proveedor propio:
+             un consumidor de jbs-poi que no use Jasper se quedaria sin ninguna
+             implementacion de com.lowagie.text y el docx->pdf reventaria con
+             NoClassDefFoundError. -->
         <dependency>
             <groupId>fr.opensagres.xdocreport</groupId>
             <artifactId>fr.opensagres.poi.xwpf.converter.pdf</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.lowagie</groupId>
+                    <artifactId>itext</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
         </dependency>
     </dependencies>
 </project>
