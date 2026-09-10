@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.logging.log4j.LogManager;
@@ -51,6 +52,14 @@ public class DataRow implements IDataRow, Cloneable {
     private static final Logger LOGGER = LogManager.getLogger(DataRow.class);
     @XmlTransient
     private int persistMode = IDataRow.PERSIST;
+    /**
+     * Identificador de respaldo de la fila, usado cuando todavia no tiene
+     * identidad persistente. Ver {@link #getIdAlternative()}.
+     *
+     * <p>Lleva solo {@code @XmlTransient} y <b>no</b> el {@code transient} de
+     * java a proposito: asi el valor sobrevive a la serializacion del objeto y
+     * la fila conserva su clave entre peticiones.</p>
+     */
     @XmlTransient
     private Object idAlternative;
     @XmlTransient
@@ -561,15 +570,29 @@ public class DataRow implements IDataRow, Cloneable {
     }
 
     /**
-     * Devuelve el identificador alternativo del registro (usado cuando aún no
-     * tiene identidad persistente, p. ej. el hash de identidad del objeto).
+     * Devuelve el identificador alternativo del registro, usado cuando todavia
+     * no tiene identidad persistente (por ejemplo una fila recien agregada a
+     * una grilla, antes de grabarla).
      *
-     * @return identificador alternativo.
+     * <p>Si nadie le asigno uno se genera un UUID la primera vez que se lo
+     * pide y queda guardado en el registro. Es lo que hace que
+     * {@link #getRowkey()} devuelva un valor <b>unico y estable</b> para cada
+     * fila sin identificador: unico porque dos filas nuevas nunca comparten el
+     * UUID (con lo cual la grilla no confunde una con otra al seleccionarla), y
+     * estable porque es el mismo en todas las peticiones mientras la fila
+     * viva.</p>
+     *
+     * <p>Antes se devolvia {@code System.identityHashCode(this)}, que no
+     * cumple ninguna de las dos condiciones: la maquina virtual no garantiza
+     * que dos objetos vivos tengan hash de identidad distinto, y el valor
+     * cambia si el objeto se serializa y se vuelve a construir.</p>
+     *
+     * @return identificador alternativo, nunca nulo.
      */
     @Override
     public Object getIdAlternative() {
-        if (idAlternative == null){
-            return System.identityHashCode(this);
+        if (idAlternative == null) {
+            idAlternative = UUID.randomUUID().toString();
         }
         return idAlternative;
     }

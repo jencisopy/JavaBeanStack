@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1665,8 +1666,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             //
             newRow.setDefaults();
             //
-            Long idAlternative = (long) Math.floor(Math.random() * (100000 - 1 + 1) + 1);
-            newRow.setIdAlternative(idAlternative);
+            // Identificador de respaldo de la fila mientras no tenga id: un UUID,
+            // porque la grilla identifica cada fila por el (ver DataRow.getRowkey())
+            // y dos filas nuevas con el mismo valor se vuelven indistinguibles.
+            newRow.setIdAlternative(UUID.randomUUID().toString());
             //
             if (Fn.toLogical(getProperty("INSERT_FIRST"))) {
                 dataRows.add(0, newRow);
@@ -1708,8 +1711,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (!this.beforeInsertRow(newRow)) {
                 return false;
             }
-            Long idAlternative = (long) Math.floor(Math.random() * (100000 - 1 + 1) + 1);
-            newRow.setIdAlternative(idAlternative);
+            // Identificador de respaldo de la fila mientras no tenga id: un UUID,
+            // porque la grilla identifica cada fila por el (ver DataRow.getRowkey())
+            // y dos filas nuevas con el mismo valor se vuelven indistinguibles.
+            newRow.setIdAlternative(UUID.randomUUID().toString());
             //
             if (Fn.toLogical(getProperty("INSERT_FIRST"))) {
                 dataRows.add(0, newRow);
