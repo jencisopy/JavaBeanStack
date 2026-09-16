@@ -24,6 +24,7 @@ package org.javabeanstack.poi.excel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import jakarta.persistence.Basic;
@@ -32,6 +33,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
@@ -150,6 +152,14 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Column(name = "idcompany")
     private Long idcompany;
+
+    /**
+     * Colección hija inicializada (no nula), como las entidades reales del
+     * ERP: sirve para probar que la importación no la copia sobre el
+     * registro existente al sobreescribir (E2-01 del plan XLSXML).
+     */
+    @OneToMany(mappedBy = "usermember")
+    private List<IAppUserMember> userMemberList = new ArrayList<>();
     
     private BigDecimal prbNumerico;
 
@@ -378,12 +388,12 @@ public class AppUser extends DataRow implements IAppUser {
 
     @Override
     public List<IAppUserMember> getUserMemberList() {
-        return null;
+        return userMemberList;
     }
 
     @Override
     public void setUserMemberList(List<IAppUserMember> userMemberList) {
-        //this.userMemberList = (List<AppUserMember>) (List<?>) userMemberList;
+        this.userMemberList = userMemberList;
     }
 
     @Override

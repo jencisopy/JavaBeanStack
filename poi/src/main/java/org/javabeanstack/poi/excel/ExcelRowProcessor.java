@@ -447,25 +447,6 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     }
 
     /**
-     * Asigna en {@code target} el valor por defecto declarado por la columna,
-     * convertido al tipo del atributo.
-     * <p>
-     * Un valor por defecto que no se puede aplicar (el proveedor lanza, o el
-     * valor no es convertible al tipo del atributo) es un error de programación
-     * de la subclase, no un dato malo de la planilla; pero se reporta como
-     * error de la fila (número 50000, nombrando la columna) en vez de dejar que
-     * la excepción suba por {@link #process()} y corte la importación en la
-     * primera fila con una traza que no dice de qué columna se trata.
-     * {@link #checkMetaData()} adelanta el diagnóstico cuando el valor por
-     * defecto es fijo.
-     *
-     * @param target objeto destino a completar.
-     * @param spec especificación de la columna, con el valor por defecto ya
-     * declarado.
-     * @param fieldName nombre del atributo destino.
-     * @param fieldType tipo declarado del atributo destino.
-     */
-    /**
      * Anota {@code fieldName} en el conjunto de atributos guardado en las
      * propiedades de la fila bajo {@code key} ({@link #DEFAULTED_FIELDS} o
      * {@link #NO_OVERWRITE_FIELDS}), creándolo si no existe.
@@ -485,6 +466,25 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
         fields.add(fieldName);
     }
 
+    /**
+     * Asigna en {@code target} el valor por defecto declarado por la columna,
+     * convertido al tipo del atributo.
+     * <p>
+     * Un valor por defecto que no se puede aplicar (el proveedor lanza, o el
+     * valor no es convertible al tipo del atributo) es un error de programación
+     * de la subclase, no un dato malo de la planilla; pero se reporta como
+     * error de la fila (número 50000, nombrando la columna) en vez de dejar que
+     * la excepción suba por {@link #process()} y corte la importación en la
+     * primera fila con una traza que no dice de qué columna se trata.
+     * {@link #checkMetaData()} adelanta el diagnóstico cuando el valor por
+     * defecto es fijo.
+     *
+     * @param target objeto destino a completar.
+     * @param spec especificación de la columna, con el valor por defecto ya
+     * declarado.
+     * @param fieldName nombre del atributo destino.
+     * @param fieldType tipo declarado del atributo destino.
+     */
     private void applyDefaultValue(T target, ExcelColumnSpec spec, String fieldName, Class<?> fieldType) {
         try {
             target.setValue(fieldName, ExcelUtil.convertValue(spec.getDefaultValue().get(), fieldType));

@@ -34,6 +34,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.model.IAppUserMember;
 import org.javabeanstack.security.model.IUserSession;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -204,6 +205,8 @@ public class ExcelImportSrvTest {
 
         final List<IDataRow> updated = new ArrayList<>();
         int lookups = 0;
+        /** Miembro que tiene cargado el existente {@code u1} (null = ninguno). */
+        IAppUserMember memberOfU1;
 
         @Override
         protected IDataService getDataService() {
@@ -234,12 +237,18 @@ public class ExcelImportSrvTest {
                         case "findByUk":
                             lookups++;
                             AppUser probe = (AppUser) args[1];
+                            if ("boom".equals(probe.getCode())) {
+                                throw new IllegalStateException("sin clave única evaluable");
+                            }
                             if ("u1".equals(probe.getCode())) {
                                 AppUser existing = new AppUser();
                                 existing.setIduser(100L);
                                 existing.setCode("u1");
                                 existing.setFullName("Nombre previo");
                                 existing.setEmail1("previo@dominio.com");
+                                if (memberOfU1 != null) {
+                                    existing.getUserMemberList().add(memberOfU1);
+                                }
                                 return existing;
                             }
                             return null;
@@ -406,6 +415,45 @@ public class ExcelImportSrvTest {
     }
 
     /**
+     * Con «sobreescribir», la colección hija del registro existente (una
+     * {@code @OneToMany} que la entidad inicializa con una lista vacía, no
+     * nula) <b>no</b> se pisa con la lista vacía de la entidad convertida
+     * desde la planilla: {@code copyTo(existing, true)} copia todo lo no nulo,
+     * y una lista vacía no es nula. Sin este resguardo el servicio de datos
+     * de la entidad perdía los hijos cargados y los reinsertaba con la misma
+     * clave (hallazgo E2-01 del plan XLSXML, {@code gi_fraccion_extension}).
+     * Los atributos simples siguen actualizándose.
+     */
+    @Test
+    public void testColeccionHijaDelExistenteNoSePisaConSobreescritura() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.memberOfU1 = stub(IAppUserMember.class);
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setOverWriteData(true);
+
+            srv.checkValidation(null);
+            srv.importData();
+
+            assertEquals(2, srv.getRowsMigratedCount());
+            AppUser u1 = (AppUser) srv.updated.stream()
+                    .filter(r -> "u1".equals(((AppUser) r).getCode())).findFirst().orElseThrow();
+            assertEquals(100L, u1.getIduser(), "se graba el registro existente");
+            assertEquals("User One", u1.getFullName(), "lo que trae la planilla sí pisa");
+            assertNotNull(u1.getUserMemberList(), "la colección del existente no se anula");
+            assertEquals(1, u1.getUserMemberList().size(),
+                    "la lista vacía de la entidad convertida no pisa a la del existente");
+            assertSame(srv.memberOfU1, u1.getUserMemberList().get(0));
+            //En el alta (u2) la colección inicializada de la entidad se conserva.
+            AppUser u2 = (AppUser) srv.updated.stream()
+                    .filter(r -> "u2".equals(((AppUser) r).getCode())).findFirst().orElseThrow();
+            assertNotNull(u2.getUserMemberList(), "en un alta la colección no se toca");
+            assertTrue(u2.getUserMemberList().isEmpty());
+        }
+    }
+
+    /**
      * Si la vista ya resolvió el identificador, no se consulta la clave única:
      * se carga el registro por id y se actualiza (con sobreescritura) sobre él,
      * conservando lo que la planilla no trae; sin sobreescritura se devuelve el
@@ -433,6 +481,62 @@ public class ExcelImportSrvTest {
         result = srv.resolveExistingRow("s", huerfano);
         assertSame(huerfano, result);
         assertEquals(IDataRow.UPDATE, result.getAction());
+    }
+
+    /**
+     * Entidad convertida cuya colección hija no admite anularse: hace fallar la
+     * fase de copia de {@code resolveExistingRow} (E5-02).
+     */
+    public static class AppUserConColeccionQueLanza extends AppUser {
+
+        @jakarta.persistence.OneToMany
+        private List<String> hijos = new ArrayList<>();
+
+        public List<String> getHijos() {
+            return hijos;
+        }
+
+        public void setHijos(List<String> hijos) {
+            throw new IllegalStateException("setter que lanza");
+        }
+    }
+
+    /**
+     * E5-02 (revisión final de XLSXML): la fase de copia sobre el existente no
+     * está protegida por el {@code catch} de la búsqueda. Si la copia falla, la
+     * excepción se propaga (y la importación aborta de forma ruidosa) en vez de
+     * devolver la entidad convertida —ya con defaults y colecciones anulados—
+     * como una actualización silenciosa. La búsqueda que falla, en cambio,
+     * sigue siendo tolerante: se sigue como alta.
+     */
+    @Test
+    public void testFalloEnLaCopiaSobreElExistenteSePropaga() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.setOverWriteData(true);
+
+        //Búsqueda que falla: se registra y se sigue como alta (tolerante).
+        AppUser sinUk = new AppUser();
+        sinUk.setCode("boom");
+        IDataRow result = srv.resolveExistingRow("s", sinUk);
+        assertSame(sinUk, result);
+        assertEquals(IDataRow.INSERT, result.getAction());
+        assertTrue(srv.getResultLog().contains("No se pudo buscar el registro existente"));
+
+        //Copia que falla (la anulación de la colección hija lanza): se
+        //propaga, no se devuelve el convertido como UPDATE.
+        AppUser convertido = new AppUserConColeccionQueLanza();
+        convertido.setCode("u1");
+        convertido.setFullName("User One");
+        Exception ex = assertThrows(Exception.class, () -> srv.resolveExistingRow("s", convertido));
+        //DataInfo.setFieldValue traga la excepción del setter y devuelve false;
+        //DataRow.setValue la convierte en FieldException nombrando el campo.
+        assertTrue(String.valueOf(ex.getMessage()).contains("hijos"), String.valueOf(ex));
+        assertFalse(srv.getResultLog().contains("No se pudo buscar el registro existente (AppUser)")
+                && srv.getResultLog().indexOf("No se pudo buscar") != srv.getResultLog().lastIndexOf("No se pudo buscar"),
+                "el fallo de la copia no se registra como fallo de búsqueda");
+        //Lo que discrimina es el assertThrows: sin la corrección, el catch devolvía el
+        //convertido con UPDATE en vez de lanzar. Esta aserción solo documenta el estado.
+        assertNotEquals(IDataRow.UPDATE, convertido.getAction(), "el convertido no queda como UPDATE");
     }
 
     /**

@@ -162,7 +162,9 @@ Tras `copyTo`, la importación busca el registro existente por el id que haya re
 sobre el existente **solo los valores que trajo la planilla** (`copyTo(existing, true)`): las
 columnas ausentes conservan su valor, **incluidas las que declaran `defaultValue`** (el default
 solo rige en altas; el procesador anota esos atributos en `DEFAULTED_FIELDS` y la importación
-los excluye de la copia), y las columnas declaradas `noOverwrite()` (`NO_OVERWRITE_FIELDS`). Si la búsqueda falla, la fila sigue como alta y decide `checkDataRow`.
+los excluye de la copia), y las columnas declaradas `noOverwrite()` (`NO_OVERWRITE_FIELDS`). Si la búsqueda falla, la fila sigue como alta y decide `checkDataRow`; si falla la **copia** sobre el existente, la excepción se propaga y la importación aborta (no se graba una entidad a medio anular como actualización).
+
+Las dos protecciones actúan sobre el **atributo homónimo de la entidad destino**: la anotación guarda el nombre del atributo de la vista y la anulación exige que exista con ese nombre en la tabla (`ctbcliente` funciona porque la asociación de `Ctactesub` se llama igual). Un atributo que solo existe en la vista —un parámetro de una `fn_id*` que no es columna, como `escliente`/`esproveedor` en `CtactesubView`— no tiene qué anular: ahí `overwrite="false"` no protege nada y el valor sigue participando en la resolución de la clave. Las colecciones hijas (`@OneToMany`) de la entidad convertida se anulan siempre antes de copiar (nunca salen de la planilla; el existente conserva las suyas). La sobrecarga `resolveExistingRow(sessionId, target)` no conoce la fila de la vista y **no aplica** estas protecciones; el flujo usa siempre la de tres argumentos.
 El existente puede pertenecer a otra empresa cuando la función `fn_id*` reintenta con
 `fn_empresashared` (catálogos compartidos): se acepta como está (decisión del usuario,
 2026-09-16; a analizar aparte).

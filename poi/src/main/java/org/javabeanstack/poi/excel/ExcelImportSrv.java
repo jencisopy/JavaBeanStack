@@ -21,6 +21,7 @@
  */
 package org.javabeanstack.poi.excel;
 
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +29,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -721,11 +723,19 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * que es el comportamiento histórico; en ese caso un duplicado real lo
      * rechaza después {@code checkDataRow} con el error 50001.
      *
+     * <p>
+     * Esta sobrecarga no conoce la fila de la vista, así que <b>no</b> aplica
+     * la protección de los valores por defecto ni la de las columnas de solo
+     * alta (ver {@link #resolveExistingRow(String, IDataRow, IDataRow)}): una
+     * subclase que la llame directamente obtiene la copia «solo no nulos»
+     * completa. El flujo de la importación usa siempre la de tres argumentos.
+     *
      * @param sessionId identificador de la sesión del usuario.
      * @param target entidad destino recién convertida desde la fila de la vista.
      * @return la entidad a validar y persistir, con su acción definida.
+     * @throws Exception si falla la copia sobre el registro existente.
      */
-    protected IDataRow resolveExistingRow(String sessionId, IDataRow target) {
+    protected IDataRow resolveExistingRow(String sessionId, IDataRow target) throws Exception {
         return resolveExistingRow(sessionId, null, target);
     }
 
@@ -741,6 +751,22 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * como de solo alta).
      *
      * <p>
+     * Las dos protecciones actúan sobre el atributo de la <b>entidad destino</b>
+     * que se llama igual que el de la vista (la anotación guarda el nombre del
+     * atributo de la vista y la anulación exige que exista con ese nombre en
+     * {@code target}). Un atributo que solo existe en la vista —por ejemplo un
+     * parámetro de una {@code fn_id*} que no es columna de la tabla— no tiene
+     * qué anular: ahí {@code overwrite="false"} no protege nada y el valor
+     * sigue participando en la resolución de la clave.
+     *
+     * <p>
+     * La búsqueda del existente es tolerante: si falla (entidad sin clave
+     * única, consulta que no se pudo ejecutar) se sigue como alta y lo decide
+     * {@code checkDataRow}. La copia sobre el existente <b>no</b>: un error en
+     * esa fase es de programación (setter que lanza, tipo no asignable) y se
+     * propaga, para no grabar una entidad a medio anular como actualización.
+     *
+     * <p>
      * El registro resuelto por id puede pertenecer a <b>otra empresa</b> cuando
      * la función {@code fn_id*} de la vista reintenta con
      * {@code fn_empresashared} (catálogos compartidos entre empresas) y
@@ -752,11 +778,14 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * {@code null}.
      * @param target entidad destino recién convertida desde la fila de la vista.
      * @return la entidad a validar y persistir, con su acción definida.
+     * @throws Exception si falla la copia de la planilla sobre el registro
+     * existente (la búsqueda del existente no lanza: se registra y se sigue
+     * como alta).
      */
     @SuppressWarnings("unchecked")
-    protected IDataRow resolveExistingRow(String sessionId, IDataRow source, IDataRow target) {
+    protected IDataRow resolveExistingRow(String sessionId, IDataRow source, IDataRow target) throws Exception {
+        IDataRow existing = null;
         try {
-            IDataRow existing;
             if (target.getId() != null) {
                 //La vista ya resolvió el identificador (su @Id lleva la fórmula
                 //fn_idxxx del diccionario): se carga el registro para actualizarlo,
@@ -770,30 +799,38 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             } else {
                 existing = getDataService().findByUk(sessionId, target);
             }
-            if (existing != null) {
-                if (getOverWriteData()) {
-                    //Solo los valores que trajo la planilla; el resto se conserva.
-                    //Un atributo completado por el default de una columna AUSENTE
-                    //no vino en la planilla: se anula en la copia para no pisar
-                    //el valor del existente (copyTo con onlyFieldsNotNulls).
-                    //Lo mismo para las columnas declaradas noOverwrite(): se graban
-                    //solo en las altas.
-                    if (source != null) {
-                        clearFields(target, source, ExcelRowProcessor.DEFAULTED_FIELDS);
-                        clearFields(target, source, ExcelRowProcessor.NO_OVERWRITE_FIELDS);
-                    }
-                    target.copyTo(existing, true);
-                }
-                existing.setAction(IDataRow.UPDATE);
-                return existing;
-            }
         } catch (Exception e) {
             //Sin clave única evaluable: se sigue como alta y decide checkDataRow.
             logResult("  No se pudo buscar el registro existente ("
                     + getTargetType().getSimpleName() + "): " + e.getMessage());
+            existing = null;
         }
-        target.setAction(target.getId() != null ? IDataRow.UPDATE : IDataRow.INSERT);
-        return target;
+        if (existing == null) {
+            target.setAction(target.getId() != null ? IDataRow.UPDATE : IDataRow.INSERT);
+            return target;
+        }
+        //Fase de copia, fuera del try: un fallo acá no es «sin clave única» y
+        //no debe devolver la entidad a medio anular como actualización.
+        if (getOverWriteData()) {
+            //Solo los valores que trajo la planilla; el resto se conserva.
+            //Un atributo completado por el default de una columna AUSENTE
+            //no vino en la planilla: se anula en la copia para no pisar
+            //el valor del existente (copyTo con onlyFieldsNotNulls).
+            //Lo mismo para las columnas declaradas noOverwrite(): se graban
+            //solo en las altas.
+            if (source != null) {
+                clearFields(target, source, ExcelRowProcessor.DEFAULTED_FIELDS);
+                clearFields(target, source, ExcelRowProcessor.NO_OVERWRITE_FIELDS);
+            }
+            //Las colecciones hijas (@OneToMany) de la entidad convertida
+            //no vienen de la planilla: si la entidad las inicializa con
+            //una lista vacía, copyTo las copiaría (no son nulas) y el
+            //existente perdería sus hijos cargados.
+            clearCollections(target);
+            target.copyTo(existing, true);
+        }
+        existing.setAction(IDataRow.UPDATE);
+        return existing;
     }
 
     /**
@@ -816,6 +853,33 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         for (String fieldName : fields) {
             if (DataInfo.isFieldExist(target.getClass(), fieldName)) {
                 target.setValue(fieldName, null);
+            }
+        }
+    }
+
+    /**
+     * Anula en la entidad convertida todo atributo persistente cuyo tipo es una
+     * colección ({@link Collection}; es el caso de las asociaciones
+     * {@code @OneToMany}), para que {@code copyTo(existing, true)} no lo copie
+     * sobre el registro existente. Una entidad suele inicializar esas listas
+     * con {@code new ArrayList<>()}: no son nulas, así que la copia «solo no
+     * nulos» las pasaba igual y el existente perdía los hijos que tenía
+     * cargados (su servicio de datos los reinsertaba después con la misma
+     * clave). Los hijos nunca salen de una celda de la planilla, así que en
+     * una actualización se conservan siempre los del existente. Se recorren
+     * los mismos atributos que {@code DataRow.copyTo}: los declarados en la
+     * clase de la entidad que llevan alguna anotación.
+     *
+     * @param target entidad convertida desde la fila de la planilla.
+     * @throws Exception si falla la asignación de algún atributo.
+     */
+    private void clearCollections(IDataRow target) throws Exception {
+        for (Field field : target.getClass().getDeclaredFields()) {
+            if (field.getAnnotations().length == 0) {
+                continue;
+            }
+            if (Collection.class.isAssignableFrom(field.getType())) {
+                target.setValue(field.getName(), null);
             }
         }
     }
