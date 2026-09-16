@@ -56,6 +56,27 @@ public interface IExcelRowProcessor<T extends IDataRow> {
     void setRow(Row row);
 
     /**
+     * Devuelve la especificación de las columnas de la planilla: por cada
+     * columna, la cabecera, el atributo destino, el nivel de exigencia
+     * ({@link ColumnRequirement}), el valor por defecto y la transformación
+     * previa. Es la información que consume {@link ExcelRowProcessor} para
+     * validar la estructura de la planilla y completar el objeto destino.
+     * <p>
+     * La implementación por defecto la deriva de {@link #getHeadToField()}
+     * (todas las columnas {@link ColumnRequirement#OPTIONAL} y sin valor por
+     * defecto), de modo que un implementador previo a esta API sigue siendo
+     * válido sin cambios.
+     *
+     * @return la colección ordenada de especificaciones de columna; nunca
+     * {@code null}. Es de <b>consulta</b>: no hay que agregarle columnas
+     * después de construir el procesador, que ya calculó sus mapas derivados
+     * (por eso guarda una copia de la colección recibida).
+     */
+    default ExcelColumns getColumns() {
+        return ExcelColumns.of(getHeadToField());
+    }
+
+    /**
      * Obtiene el mapa encabezado de Excel -> atributo del objeto destino.
      * @return el mapeo de encabezado de columna del Excel a nombre del atributo
      * en el objeto destino.
@@ -98,9 +119,12 @@ public interface IExcelRowProcessor<T extends IDataRow> {
     Class<T> getTargetType();
 
     /**
-     * Valida la estructura de la planilla (encabezados de texto, sin duplicados
-     * y, según la propiedad {@code allowFieldNotExist}, compatibilidad de los
-     * tipos de columna con los atributos destino) antes de procesar sus filas.
+     * Valida la estructura de la planilla antes de procesar sus filas:
+     * encabezados de texto y sin duplicados, presencia de las columnas
+     * declaradas obligatorias en {@link #getColumns()}
+     * ({@link ColumnRequirement#COLUMN} o {@link ColumnRequirement#VALUE}) y,
+     * según la propiedad {@code allowFieldNotExist}, compatibilidad de los
+     * tipos de columna con los atributos destino.
      *
      * @return mensaje de error si hubiere inconvenientes, o cadena vacía si todo
      * es válido.

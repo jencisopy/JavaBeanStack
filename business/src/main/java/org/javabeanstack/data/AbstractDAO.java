@@ -1551,8 +1551,13 @@ public abstract class AbstractDAO implements IGenericDAO {
         parameters.entrySet().forEach(entry -> {
             try {
                 if (queryString != null) {
-                    int pos = Strings.findString(":" + entry.getKey(), queryString);
-                    if (pos >= 0) {
+                    //El parámetro tiene que aparecer en la sentencia con su nombre
+                    //COMPLETO: una búsqueda por subcadena daba por presente
+                    //":idctacte" en "fn_idctacteruta(:idctacteruta,...)" e
+                    //intentaba asignarlo, y Hibernate lo rechazaba con un ERROR
+                    //en el log por cada fila (getValueFromFn pasa todos los
+                    //atributos de la vista). Observado el 2026-09-16.
+                    if (isNamedParameterInQuery(entry.getKey(), queryString)) {
                         query.setParameter(entry.getKey(), entry.getValue());
                     }
                 } else {
@@ -1565,6 +1570,37 @@ public abstract class AbstractDAO implements IGenericDAO {
                         + "' del query: " + ex.getMessage());
             }
         });
+    }
+
+    /**
+     * Indica si la sentencia contiene el parámetro nombrado {@code :nombre}
+     * completo, es decir, no seguido de otro carácter de identificador
+     * (letra, dígito o guion bajo). Así {@code :idctacte} no se confunde con
+     * {@code :idctacteruta}.
+     *
+     * @param name nombre del parámetro (sin los dos puntos).
+     * @param queryString sentencia JPQL/SQL con parámetros nombrados.
+     * @return verdadero si la sentencia usa ese parámetro.
+     */
+    static boolean isNamedParameterInQuery(String name, String queryString) {
+        if (name == null || name.isEmpty() || queryString == null) {
+            return false;
+        }
+        int from = 0;
+        String token = ":" + name;
+        while (true) {
+            int pos = queryString.indexOf(token, from);
+            if (pos < 0) {
+                return false;
+            }
+            int end = pos + token.length();
+            if (end >= queryString.length()
+                    || !(Character.isLetterOrDigit(queryString.charAt(end))
+                    || queryString.charAt(end) == '_')) {
+                return true;
+            }
+            from = end;
+        }
     }
 
     /**

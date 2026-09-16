@@ -196,6 +196,246 @@ public class ExcelImportSrvTest {
     }
 
     /**
+     * Servicio simulado que declara <b>existente</b> la fila cuyo {@code code}
+     * es {@code u1} (devuelve una entidad ya persistida con id 100 y datos
+     * previos), y registra las entidades que recibe {@code update}.
+     */
+    static class ExistingRowSrv extends ExcelImportSrvTest01 {
+
+        final List<IDataRow> updated = new ArrayList<>();
+        int lookups = 0;
+
+        @Override
+        protected IDataService getDataService() {
+            InvocationHandler handler = new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args) {
+                    switch (method.getName()) {
+                        case "copyTo":
+                            //A diferencia del stub genérico, copia de verdad: la
+                            //búsqueda por clave única necesita el `code` convertido.
+                            try {
+                                return ((IDataRow) args[1]).copyTo((IDataRow) args[2]);
+                            } catch (Exception e) {
+                                throw new IllegalStateException(e);
+                            }
+                        case "checkDataRow":
+                            return new HashMap<>();
+                        case "findById":
+                            lookups++;
+                            if (Long.valueOf(7L).equals(args[2])) {
+                                AppUser byId = new AppUser();
+                                byId.setIduser(7L);
+                                byId.setCode("u7");
+                                byId.setFullName("Nombre previo por id");
+                                return byId;
+                            }
+                            return null;
+                        case "findByUk":
+                            lookups++;
+                            AppUser probe = (AppUser) args[1];
+                            if ("u1".equals(probe.getCode())) {
+                                AppUser existing = new AppUser();
+                                existing.setIduser(100L);
+                                existing.setCode("u1");
+                                existing.setFullName("Nombre previo");
+                                existing.setEmail1("previo@dominio.com");
+                                return existing;
+                            }
+                            return null;
+                        case "update":
+                            updated.add((IDataRow) args[1]);
+                            return stub(org.javabeanstack.data.IDataResult.class);
+                        default:
+                            break;
+                    }
+                    Class<?> type = method.getReturnType();
+                    if (type.isInterface()) {
+                        return stub(type);
+                    }
+                    if (type == boolean.class || type == Boolean.class) {
+                        return false;
+                    }
+                    return null;
+                }
+            };
+            return (IDataService) Proxy.newProxyInstance(IDataService.class.getClassLoader(),
+                    new Class[]{IDataService.class}, handler);
+        }
+
+        @Override
+        protected IUserSession getUserSession() {
+            return stub(IUserSession.class);
+        }
+
+        @Override
+        protected Class<? extends IDataRow> getTargetType() {
+            return AppUser.class;
+        }
+    }
+
+    /**
+     * Registro existente por clave única y sobreescritura apagada: la revisión
+     * lo da por válido (se valida como UPDATE del existente, no como duplicado)
+     * y la importación lo saltea contándolo como «ya existente», sin grabar.
+     */
+    @Test
+    public void testExistingRowByUniqueKeyIsSkippedWithoutOverwrite() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setOverWriteData(false);
+
+            srv.checkValidation(null);
+            assertEquals("", srv.getErrorMessage());
+            assertEquals(2, srv.getRowsValidCount());
+            assertTrue(srv.getDataRowsError().isEmpty());
+
+            srv.importData();
+            assertTrue(srv.getImportOk());
+            assertEquals(1, srv.getRowsMigratedCount());
+            assertEquals(1, srv.getRowsExistCount());
+            assertEquals(1, srv.updated.size());
+            assertEquals("u2", ((AppUser) srv.updated.get(0)).getCode());
+            assertEquals(IDataRow.INSERT, srv.updated.get(0).getAction());
+            assertTrue(srv.getResultLog().contains("Ya existe, no se sobreescribe"));
+        }
+    }
+
+    /**
+     * Registro existente y sobreescritura encendida: se graba el <b>registro
+     * existente</b> (misma identidad) con los valores que trajo la planilla
+     * copiados encima, conservando los que la planilla no trae (es una
+     * actualización, no un reemplazo).
+     */
+    @Test
+    public void testExistingRowByUniqueKeyIsUpdatedWithOverwrite() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setOverWriteData(true);
+
+            srv.checkValidation(null);
+            srv.importData();
+
+            assertTrue(srv.getImportOk());
+            assertEquals(2, srv.getRowsMigratedCount());
+            assertEquals(0, srv.getRowsExistCount());
+            AppUser u1 = (AppUser) srv.updated.stream()
+                    .filter(r -> "u1".equals(((AppUser) r).getCode())).findFirst().orElseThrow();
+            assertEquals(IDataRow.UPDATE, u1.getAction());
+            assertEquals(100L, u1.getIduser(), "se graba el registro existente, no uno nuevo");
+            assertEquals("User One", u1.getFullName(), "el valor de la planilla pisa al previo");
+            assertEquals("previo@dominio.com", u1.getEmail1(), "lo que la planilla no trae se conserva");
+        }
+    }
+
+    /**
+     * Con «sobreescribir», un atributo que la planilla NO trae y que el
+     * procesador completó con el valor por defecto de la columna ausente no
+     * pisa el valor del registro existente (decisión del usuario, 2026-09-16,
+     * hallazgo I4-01 de la revisión final): la planilla trae solo {@code code}
+     * y {@code fullName}; {@code email1} declara default y no viene.
+     */
+    @Test
+    public void testDefaultDeColumnaAusenteNoPisaAlExistenteConSobreescritura() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            ExcelColumns columns = new ExcelColumns();
+            columns.add("code", "code").required();
+            columns.add("fullName", "fullName");
+            columns.add("email1", "email1").defaultValue("default@dominio.com");
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, columns) {
+            });
+            srv.setOverWriteData(true);
+
+            srv.checkValidation(null);
+            srv.importData();
+
+            assertEquals(2, srv.getRowsMigratedCount());
+            AppUser u1 = (AppUser) srv.updated.stream()
+                    .filter(r -> "u1".equals(((AppUser) r).getCode())).findFirst().orElseThrow();
+            assertEquals(100L, u1.getIduser());
+            assertEquals("User One", u1.getFullName(), "lo que trae la planilla sí pisa");
+            assertEquals("previo@dominio.com", u1.getEmail1(),
+                    "el default de la columna ausente NO pisa al existente");
+            //En un alta (u2, no existe) el default sí se aplica.
+            AppUser u2 = (AppUser) srv.updated.stream()
+                    .filter(r -> "u2".equals(((AppUser) r).getCode())).findFirst().orElseThrow();
+            assertEquals("default@dominio.com", u2.getEmail1());
+        }
+    }
+
+    /**
+     * Una columna declarada {@code noOverwrite()} se graba en las altas pero,
+     * con «sobreescribir», no pisa el valor del registro existente aunque la
+     * planilla traiga otro (pedido del usuario, 2026-09-16). Las demás columnas
+     * presentes sí actualizan.
+     */
+    @Test
+    public void testColumnaNoOverwriteNoPisaAlExistente() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            ExcelColumns columns = new ExcelColumns();
+            columns.add("code", "code").required();
+            columns.add("fullName", "fullName").noOverwrite();
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, columns) {
+            });
+            srv.setOverWriteData(true);
+
+            srv.checkValidation(null);
+            srv.importData();
+
+            assertEquals(2, srv.getRowsMigratedCount());
+            AppUser u1 = (AppUser) srv.updated.stream()
+                    .filter(r -> "u1".equals(((AppUser) r).getCode())).findFirst().orElseThrow();
+            assertEquals(IDataRow.UPDATE, u1.getAction());
+            assertEquals("Nombre previo", u1.getFullName(),
+                    "la planilla trae 'User One' pero la columna es noOverwrite");
+            AppUser u2 = (AppUser) srv.updated.stream()
+                    .filter(r -> "u2".equals(((AppUser) r).getCode())).findFirst().orElseThrow();
+            assertEquals(IDataRow.INSERT, u2.getAction());
+            assertEquals("User Two", u2.getFullName(), "en el alta sí se graba");
+        }
+    }
+
+    /**
+     * Si la vista ya resolvió el identificador, no se consulta la clave única:
+     * se carga el registro por id y se actualiza (con sobreescritura) sobre él,
+     * conservando lo que la planilla no trae; sin sobreescritura se devuelve el
+     * existente tal cual, con acción UPDATE, para que el llamador lo cuente.
+     */
+    @Test
+    public void testResolveExistingRowPrefersResolvedId() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        AppUser withId = new AppUser();
+        withId.setIduser(7L);
+        withId.setCode("u7");
+        withId.setFullName("Nombre nuevo");
+
+        srv.setOverWriteData(true);
+        IDataRow result = srv.resolveExistingRow("s", withId);
+        assertNotSame(withId, result, "se trabaja sobre el registro cargado por id");
+        assertEquals(IDataRow.UPDATE, result.getAction());
+        assertEquals(7L, ((AppUser) result).getIduser());
+        assertEquals("Nombre nuevo", ((AppUser) result).getFullName());
+        assertEquals(1, srv.lookups, "una sola búsqueda, por id");
+
+        //Id que no existe en la base: se conserva el convertido con su id.
+        AppUser huerfano = new AppUser();
+        huerfano.setIduser(99L);
+        result = srv.resolveExistingRow("s", huerfano);
+        assertSame(huerfano, result);
+        assertEquals(IDataRow.UPDATE, result.getAction());
+    }
+
+    /**
      * Subclase que registra el valor de {@code getErrorsReviewed()} visto por
      * {@code onBeforeRowConvert} en cada fila, con servicio de datos y sesión
      * simulados vía {@link Proxy} (lo mínimo que exige el flujo de
@@ -245,6 +485,11 @@ public class ExcelImportSrvTest {
                         return args[2];
                     case "checkDataRow":
                         return new HashMap<>();
+                    case "findByUk":
+                    case "findById":
+                        //Sin registro existente (el proxy genérico devolvería otro
+                        //stub y toda fila parecería existente).
+                        return null;
                     case "isSuccessFul":
                         return true;
                     default:

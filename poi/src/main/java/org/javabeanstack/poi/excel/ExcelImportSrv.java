@@ -31,11 +31,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.Dependent;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.data.IDataResult;
@@ -676,11 +678,11 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     }
                     //Convertir a una objeto targetType
                     target = getDataService().copyTo(sessionId, source, getTargetType().getConstructor().newInstance());
-                    //Definir tipo de persitencia en la base
-                    target.setAction(IDataRow.INSERT);
-                    if (target.getId() != null) {
-                        target.setAction(IDataRow.UPDATE);
-                    }
+                    //Definir tipo de persitencia en la base: si el registro ya
+                    //existe (por id o por clave única) se valida como UPDATE
+                    //sobre el existente, para que la revisión no lo rechace
+                    //como duplicado.
+                    target = resolveExistingRow(sessionId, source, target);
                     //Despues de convertir
                     if (!onAfterRowConvert(source, target)) {
                         continue;
@@ -697,6 +699,125 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             }
         }
         return dataRows;
+    }
+
+    /**
+     * Resuelve si la entidad convertida ya existe en la base y deja definida la
+     * acción de persistencia. Primero por el identificador que haya resuelto la
+     * vista ({@code getId()}, típicamente con la fórmula {@code fn_idxxx} de su
+     * {@code @Id}), cargando el registro por id; si no lo trae, por la <b>clave
+     * única</b> de la entidad ({@link IDataService#findByUk}, la misma búsqueda que hace
+     * {@code importFrom} en la capa de servicios), que ya puede evaluarse
+     * porque {@code copyTo} resolvió las asociaciones que la componen.
+     * <p>
+     * Si existe, devuelve el <b>registro existente</b> con acción
+     * {@code UPDATE}: cuando {@link #getOverWriteData()} está activo se le
+     * copian encima los valores no nulos que trajo la planilla (las columnas
+     * que la planilla no trae conservan su valor: es una actualización, no un
+     * reemplazo); si no está activo se devuelve tal cual, y el llamador lo
+     * cuenta como «ya existente» sin grabarlo. Si no existe, o la búsqueda por
+     * clave única falla (entidad sin clave única declarada, o consulta que no se
+     * pudo ejecutar), devuelve la entidad convertida con acción {@code INSERT},
+     * que es el comportamiento histórico; en ese caso un duplicado real lo
+     * rechaza después {@code checkDataRow} con el error 50001.
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param target entidad destino recién convertida desde la fila de la vista.
+     * @return la entidad a validar y persistir, con su acción definida.
+     */
+    protected IDataRow resolveExistingRow(String sessionId, IDataRow target) {
+        return resolveExistingRow(sessionId, null, target);
+    }
+
+    /**
+     * Variante de {@link #resolveExistingRow(String, IDataRow)} que conoce la
+     * fila de la vista de la que salió {@code target}: si el registro existe y
+     * se sobreescribe, los atributos que la vista completó con el <b>valor por
+     * defecto de una columna ausente</b> ({@link ExcelRowProcessor#DEFAULTED_FIELDS})
+     * y los de las columnas declaradas con {@code noOverwrite()}
+     * ({@link ExcelRowProcessor#NO_OVERWRITE_FIELDS}) <b>no</b> se copian sobre
+     * el existente, que conserva su valor (decisión del usuario, 2026-09-16: lo
+     * que la planilla no trae no pisa lo que hay, y una columna puede declararse
+     * como de solo alta).
+     *
+     * <p>
+     * El registro resuelto por id puede pertenecer a <b>otra empresa</b> cuando
+     * la función {@code fn_id*} de la vista reintenta con
+     * {@code fn_empresashared} (catálogos compartidos entre empresas) y
+     * {@code findById} no filtra por empresa: se acepta tal cual (decisión del
+     * usuario, 2026-09-16; caso a analizar por separado).
+     *
+     * @param sessionId identificador de la sesión del usuario.
+     * @param source fila de la vista leída de la planilla; puede ser
+     * {@code null}.
+     * @param target entidad destino recién convertida desde la fila de la vista.
+     * @return la entidad a validar y persistir, con su acción definida.
+     */
+    @SuppressWarnings("unchecked")
+    protected IDataRow resolveExistingRow(String sessionId, IDataRow source, IDataRow target) {
+        try {
+            IDataRow existing;
+            if (target.getId() != null) {
+                //La vista ya resolvió el identificador (su @Id lleva la fórmula
+                //fn_idxxx del diccionario): se carga el registro para actualizarlo,
+                //no para reemplazarlo. Si no se lo encuentra, se graba el convertido
+                //con su id (comportamiento histórico).
+                existing = getDataService().findById(getTargetType(), sessionId, target.getId());
+                if (existing == null) {
+                    target.setAction(IDataRow.UPDATE);
+                    return target;
+                }
+            } else {
+                existing = getDataService().findByUk(sessionId, target);
+            }
+            if (existing != null) {
+                if (getOverWriteData()) {
+                    //Solo los valores que trajo la planilla; el resto se conserva.
+                    //Un atributo completado por el default de una columna AUSENTE
+                    //no vino en la planilla: se anula en la copia para no pisar
+                    //el valor del existente (copyTo con onlyFieldsNotNulls).
+                    //Lo mismo para las columnas declaradas noOverwrite(): se graban
+                    //solo en las altas.
+                    if (source != null) {
+                        clearFields(target, source, ExcelRowProcessor.DEFAULTED_FIELDS);
+                        clearFields(target, source, ExcelRowProcessor.NO_OVERWRITE_FIELDS);
+                    }
+                    target.copyTo(existing, true);
+                }
+                existing.setAction(IDataRow.UPDATE);
+                return existing;
+            }
+        } catch (Exception e) {
+            //Sin clave única evaluable: se sigue como alta y decide checkDataRow.
+            logResult("  No se pudo buscar el registro existente ("
+                    + getTargetType().getSimpleName() + "): " + e.getMessage());
+        }
+        target.setAction(target.getId() != null ? IDataRow.UPDATE : IDataRow.INSERT);
+        return target;
+    }
+
+    /**
+     * Anula en {@code target} los atributos anotados en las propiedades de
+     * {@code source} bajo {@code key}, para que la copia «solo no nulos» sobre
+     * el registro existente no los toque.
+     *
+     * @param target entidad convertida que se va a copiar sobre el existente.
+     * @param source fila de la vista con las anotaciones del procesador.
+     * @param key {@link ExcelRowProcessor#DEFAULTED_FIELDS} o
+     * {@link ExcelRowProcessor#NO_OVERWRITE_FIELDS}.
+     * @throws Exception si falla la asignación.
+     */
+    @SuppressWarnings("unchecked")
+    private void clearFields(IDataRow target, IDataRow source, String key) throws Exception {
+        Set<String> fields = (Set<String>) source.getProperties().get(key);
+        if (fields == null) {
+            return;
+        }
+        for (String fieldName : fields) {
+            if (DataInfo.isFieldExist(target.getClass(), fieldName)) {
+                target.setValue(fieldName, null);
+            }
+        }
     }
 
     /**
@@ -841,14 +962,13 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                 }
                 //Convertir a una objeto targetType
                 target = getDataService().copyTo(sessionId, source, getTargetType().getConstructor().newInstance());
-                //Definir tipo de persitencia en la base
-                target.setAction(IDataRow.INSERT);
-                if (target.getId() != null) {
-                    target.setAction(IDataRow.UPDATE);
-                }
+                //Definir tipo de persitencia en la base (INSERT, o UPDATE sobre
+                //el registro existente resuelto por id o por clave única).
+                target = resolveExistingRow(sessionId, source, target);
                 //Si existe el registro y no se permite sobreescribir.
                 if (target.getAction() == IDataRow.UPDATE && !getOverWriteData()) {
                     rowsExistCount++;
+                    logResult("  Ya existe, no se sobreescribe: " + getRowLogIdentifier(source));
                     continue;
                 }
                 //Despues de convertir

@@ -1414,7 +1414,19 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
-     * Copiar de un modelo origen tipo vista a uno destino tipo tabla
+     * Copiar de un modelo origen tipo vista a uno destino tipo tabla. Recorre
+     * los atributos del origen anotados con {@code @ColumnFunction}:
+     * <ul>
+     * <li>fórmula vacía o {@code ":campo"}: copia el valor al atributo homónimo;</li>
+     * <li>fórmula {@code fn_*} con {@code classMapped}: resuelve el id con la
+     * función de la base (si el origen no lo trae) y carga la entidad
+     * relacionada en el atributo sin el prefijo {@code id} (o en
+     * {@code fieldMapped});</li>
+     * <li>fórmula {@code fn_*} sin {@code classMapped}: identificador escalar
+     * (el {@code @Id} de la vista, resuelto por su clave alternativa); el id se
+     * copia tal cual al atributo homónimo (o a {@code fieldMapped}), con lo que
+     * el destino queda con acción de modificación si el registro ya existe.</li>
+     * </ul>
      *
      * @param <T>
      * @param <X>
@@ -1452,23 +1464,38 @@ public abstract class AbstractDataService implements IDataService {
                     if (id == null) {
                         id = getValueFromFn(sessionId, source, fieldSourceName, fn);
                     }
-                    if (id != null) {
-                        Class clazz = Class.forName(annotation.classMapped());
-                        //Centinela -1: el registro relacionado aún no existe, se
-                        //representa con una instancia vacía que solo lleva el id.
-                        if (id instanceof Number && id.toString().equals("-1")) {
-                            IDataRow sentinel = (IDataRow) clazz.getConstructor().newInstance();
-                            sentinel.setId(id);
-                            fieldValue = sentinel;
-                        } else {
-                            fieldValue = dao.findById(clazz, sessionId, id);
+                    if (annotation.classMapped().isEmpty()) {
+                        //Función sobre un identificador escalar, sin entidad asociada
+                        //(el caso típico es el @Id de la vista, cuya fórmula
+                        //—`fn_idxxx(:idxxx,<clave alternativa>,:idempresa)`, la del
+                        //`funcionupdate` del diccionario— resuelve el id del registro
+                        //que ya existe): el id resuelto se copia tal cual al atributo
+                        //homónimo del destino (o al `fieldMapped`), sin recortar el
+                        //prefijo "id". Antes esta combinación fallaba: `Class.forName("")`
+                        //si había id, o un `setValue` sobre un atributo inexistente si no.
+                        fieldValue = id;
+                        if (!annotation.fieldMapped().isEmpty()) {
+                            fieldTargetName = annotation.fieldMapped();
                         }
-                    }
-                    //Determinar el nombre del campo en el target
-                    if (!annotation.fieldMapped().isEmpty()) {
-                        fieldTargetName = annotation.fieldMapped();
-                    } else if (Strings.left(fieldSourceName, 2).equals("id")) {
-                        fieldTargetName = fieldSourceName.substring(2);
+                    } else {
+                        if (id != null) {
+                            Class clazz = Class.forName(annotation.classMapped());
+                            //Centinela -1: el registro relacionado aún no existe, se
+                            //representa con una instancia vacía que solo lleva el id.
+                            if (id instanceof Number && id.toString().equals("-1")) {
+                                IDataRow sentinel = (IDataRow) clazz.getConstructor().newInstance();
+                                sentinel.setId(id);
+                                fieldValue = sentinel;
+                            } else {
+                                fieldValue = dao.findById(clazz, sessionId, id);
+                            }
+                        }
+                        //Determinar el nombre del campo en el target
+                        if (!annotation.fieldMapped().isEmpty()) {
+                            fieldTargetName = annotation.fieldMapped();
+                        } else if (Strings.left(fieldSourceName, 2).equals("id")) {
+                            fieldTargetName = fieldSourceName.substring(2);
+                        }
                     }
                 }
                 if (fieldValue == null) {
