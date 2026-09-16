@@ -38,6 +38,14 @@
             <artifactId>jbs-business</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- XML (XmlDomW3c / DomW3cParser) que usa ExcelColumnsXml. Ya llegaba
+             transitivo por jbs-business; se declara explicito porque poi lo
+             usa de forma directa. -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jbs-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
