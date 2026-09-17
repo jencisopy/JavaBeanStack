@@ -81,13 +81,22 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
 
     private Map<String, Object> properties = new HashMap();
 
-    private IExcelRowProcessor excelRowProcessor;
+    /**
+     * Procesador de filas y libro Excel de la corrida en curso. Son
+     * {@code transient}: ni el libro de POI ni el procesador (que retiene la
+     * fila y las columnas) son serializables, y el servicio suele vivir dentro
+     * de un bean de vista pasivable. Si el contenedor pasiva la vista a mitad
+     * del asistente, la corrida se pierde y hay que volver a cargar la
+     * planilla; el resto del estado (contadores, log, filas convertidas) se
+     * conserva.
+     */
+    private transient IExcelRowProcessor excelRowProcessor;
 
     private List<T> dataRowsError = new ArrayList();
 
     private List<T> dataRows = new ArrayList();
 
-    private Workbook excelWorkbook;
+    private transient Workbook excelWorkbook;
 
     /**
      * Indica si los errores deben revisarse antes de importar (ver la guarda
@@ -1019,6 +1028,11 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             //Proceso de grabación
             IDataRow target;
             boolean error = false;
+            //Filas con error que ya venían de la revisión previa: lo que se agregue
+            //durante la grabación (fila descartada por onBeforeRowConvert /
+            //onAfterRowConvert, o update fallido) también cuenta como error del
+            //proceso para el cierre.
+            int erroresPrevios = getDataRowsError().size();
             for (T source : getDataRows()) {
                 //Antes de la conversion a la instancia targetType
                 if (!onBeforeRowConvert(source)) {
@@ -1062,7 +1076,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             }
             //Fin proceso: el recorrido se completó (haya o no filas con errores)
             importOk = true;
-            if (error) {
+            if (error || getDataRowsError().size() > erroresPrevios) {
                 finishWithError();
                 return;
             }

@@ -540,6 +540,96 @@ public class ExcelImportSrvTest {
     }
 
     /**
+     * Cierre con error cuando una fila se descarta <b>durante la grabación</b>:
+     * antes, {@code finishWithError()} solo se disparaba por la validación de
+     * {@code checkDataRow}; una fila que {@code onBeforeRowConvert} manda a la
+     * lista de errores, o un {@code update} fallido, terminaban en
+     * {@code finish()} aunque el proceso tuviera errores (observación de
+     * XLSGEN §6.2). También se prueba que una fila que la subclase descarta
+     * SIN marcarla como error sigue cerrando con {@code finish()}.
+     */
+    @Test
+    public void testFilaDescartadaEnLaGrabacionCierraConError() throws Exception {
+        //(1) onBeforeRowConvert descarta u1 y la agrega a la lista de errores.
+        class DescartaSrv extends ExistingRowSrv {
+            boolean conError = false;
+            boolean marcar = true;
+            @Override
+            protected boolean onBeforeRowConvert(AppUser rowView) {
+                if ("u1".equals(rowView.getCode())) {
+                    if (marcar) {
+                        rowView.setErrors("sin receptor", "code", 50000);
+                        getDataRowsError().add(rowView);
+                    }
+                    return false;
+                }
+                return true;
+            }
+            @Override
+            protected void finishWithError() {
+                conError = true;
+            }
+            @Override
+            protected void finish() {
+                conError = false;
+            }
+        }
+        DescartaSrv srv = new DescartaSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.importData();
+            assertTrue(srv.getImportOk());
+            assertEquals(1, srv.getRowsMigratedCount(), "u2 se graba");
+            assertEquals(1, srv.getRowsErrorCount(), "u1 queda en la lista de errores");
+            assertTrue(srv.conError, "el proceso cierra con finishWithError()");
+        }
+        //(2) La misma fila descartada sin marcarla: no es error del proceso.
+        DescartaSrv silencioso = new DescartaSrv();
+        silencioso.marcar = false;
+        silencioso.conError = true;
+        try (Workbook wb = buildWorkbook()) {
+            silencioso.setExcelWorkbook(wb);
+            silencioso.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            silencioso.importData();
+            assertEquals(0, silencioso.getRowsErrorCount());
+            assertFalse(silencioso.conError, "sin filas con error cierra con finish()");
+        }
+    }
+
+    /**
+     * M6-02 (XLSGEN): el servicio vive dentro de beans de vista pasivables;
+     * el libro de POI y el procesador no son serializables y van
+     * {@code transient}. Una serialización Java del servicio con la corrida en
+     * curso no debe fallar, y al volver los dos campos quedan nulos mientras
+     * el resto del estado (contadores, log) se conserva.
+     */
+    @Test
+    public void testSerializableConLibroYProcesadorTransient() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.importData();
+            assertNotNull(srv.getExcelWorkbook());
+            java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+            try (java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(bytes)) {
+                out.writeObject(srv);
+            }
+            Object copia;
+            try (java.io.ObjectInputStream in = new java.io.ObjectInputStream(
+                    new java.io.ByteArrayInputStream(bytes.toByteArray()))) {
+                copia = in.readObject();
+            }
+            ExistingRowSrv vuelto = (ExistingRowSrv) copia;
+            assertNull(vuelto.getExcelWorkbook(), "el libro no viaja");
+            assertNull(vuelto.getExcelRowProcessor(), "el procesador no viaja");
+            assertEquals(srv.getRowsMigratedCount(), vuelto.getRowsMigratedCount());
+            assertEquals(srv.getResultLog(), vuelto.getResultLog());
+        }
+    }
+
+    /**
      * Subclase que registra el valor de {@code getErrorsReviewed()} visto por
      * {@code onBeforeRowConvert} en cada fila, con servicio de datos y sesión
      * simulados vía {@link Proxy} (lo mínimo que exige el flujo de
