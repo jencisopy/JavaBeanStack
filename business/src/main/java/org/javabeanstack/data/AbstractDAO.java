@@ -986,13 +986,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         String appUser;
         boolean auditable;
         IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
-        //Si es por una sesión normal o por dispositivo movil a travez de un 
-        //un webservice.
-        if (Fn.nvl(dbLinkInfo.getUuidDevice(), "").isEmpty()) {
-            appUser = dbLinkInfo.getAppUserId();
-        } else {
-            appUser = left(dbLinkInfo.getUuidDevice(), 32);
-        }
+        appUser = dbLinkInfo.getAppUserSeal();
         IDataResult dataResult = new DataResult();
         IDataRow lastEjb = null;
         EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
@@ -1128,11 +1122,7 @@ public abstract class AbstractDAO implements IGenericDAO {
             } else {
                 device = session.getIp();
             }
-            if (Fn.nvl(dbLinkInfo.getUuidDevice(), "").isEmpty()) {
-                appUser = dbLinkInfo.getAppUserId();
-            } else {
-                appUser = left(dbLinkInfo.getUuidDevice(), 32);
-            }
+            appUser = dbLinkInfo.getAppUserSeal();
         }
         auditEjb.setValue("operacion", operacion);
         auditEjb.setValue("iprequest", device);

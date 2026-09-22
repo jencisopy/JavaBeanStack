@@ -367,10 +367,11 @@ public class Sessions implements ISessions {
                 LOGGER.error(error.getMessage());
                 throw new SessionError(error.getMessage());
             }
-            IClientAuthRequestInfo requestInfo = new ClientAuthRequestInfo();
-            requestInfo.setAppAuthToken(authToken);
-            String userLogin = Fn.nvl(requestInfo.getPropertyValue("userlogin"),"TOKEN");
-            if (userLogin.isEmpty()){
+            //El usuario sale de la columna usercode del token, que el servicio
+            //de la tabla valida en cada alta o modificacion. El campo data ya no
+            //decide nada: es un registro de lo que declaro el cliente al pedirlo.
+            String userLogin = Fn.nvl(authToken.getUserCode(), "").trim();
+            if (userLogin.isEmpty()) {
                 userLogin = "TOKEN";
             }
             //Crear objeto sesion.

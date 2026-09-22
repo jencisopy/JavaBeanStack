@@ -119,4 +119,27 @@ public interface IDBLinkInfo extends Serializable {
      * @return uuid del dispositivo.
      */
     String getUuidDevice();
+
+    /**
+     * Devuelve el sello con el que se firma cada registro que graba la
+     * sesión (la columna {@code appuser} de las tablas): el identificador del
+     * usuario, sea la sesión de un login o de un token. Antes una sesión por
+     * token sellaba con el identificador del dispositivo, que no cruza con
+     * ninguna tabla y se pierde al eliminar el token; desde que el token
+     * pertenece a un usuario verificado el sello es el de ese usuario. El
+     * dispositivo queda solo como respaldo para una sesión sin usuario
+     * resoluble.
+     *
+     * @return el sello, o cadena vacía si no hay sesión.
+     */
+    default String getAppUserSeal() {
+        String appUser = getAppUserId();
+        if (appUser == null || appUser.trim().isEmpty()) {
+            String uuidDevice = getUuidDevice();
+            if (uuidDevice != null && !uuidDevice.trim().isEmpty()) {
+                appUser = uuidDevice.length() > 32 ? uuidDevice.substring(0, 32) : uuidDevice;
+            }
+        }
+        return appUser == null ? "" : appUser;
+    }
 }
