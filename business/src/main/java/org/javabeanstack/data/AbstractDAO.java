@@ -1083,6 +1083,56 @@ public abstract class AbstractDAO implements IGenericDAO {
     /**
      * Registra en la tabla de auditoría el cambio realizado sobre la entidad.
      *
+     * <p>
+     * Es el <b>único</b> escritor de la cabecera de auditoría en todas las
+     * capas (framework, capa intermedia y aplicación). Quien necesite cambiar
+     * cómo se compone un campo de la cabecera lo cambia acá y en
+     * {@link AuditHeader}, y en ningún otro lado.
+     * </p>
+     *
+     * <p>
+     * La cabecera separa el <b>origen</b> de la grabación en dos campos:
+     * </p>
+     * <ul>
+     * <li><code>iprequest</code>: la IP del request, tal cual. Sale de
+     * {@code IUserSession#getIp()}, que la capa REST refresca en cada petición
+     * (ver <code>SessionResolver.resolve</code>) y la capa JSF fija al
+     * iniciar sesión.</li>
+     * <li><code>device</code> (columna <code>maquina</code>): el dispositivo,
+     * compuesto por {@link AuditHeader#formatDevice(String, String)} como
+     * <code>nombre (ip)</code>, o solo la IP cuando no hay nombre. El nombre
+     * es el <code>uuidDevice</code> del token y solo existe en una sesión por
+     * token.</li>
+     * </ul>
+     *
+     * <p>
+     * <b>Los dos campos se escriben solo si existen en la clase de
+     * auditoría</b> ({@link DataInfo#isFieldExist}). Eso da compatibilidad
+     * <b>hacia atrás con el modelo de la aplicación</b>, y solo en esa
+     * dirección: este método contra un modelo viejo —que mapea el atributo
+     * <code>ipRequest</code> a la columna <code>maquina</code> y no tiene
+     * <code>device</code>— escribe la IP en <code>maquina</code>, igual que
+     * antes en una sesión de login y mejor que antes en una sesión por token,
+     * donde ahí iba el <code>uuidDevice</code>.
+     * </p>
+     *
+     * <p>
+     * <b>La dirección inversa NO es compatible</b>: un modelo con los campos
+     * <code>iprequest</code> y <code>device</code> <b>exige</b> un framework
+     * con este cambio. Con una versión anterior no hay excepción, pero el dato
+     * se degrada en silencio —el <code>setValue("iprequest", device)</code> de
+     * entonces mete el nombre del dispositivo en la columna de la IP y deja
+     * <code>maquina</code> en nulo—, que es peor que un error. De ahí el orden
+     * de publicación obligatorio: instalar y publicar el framework primero y
+     * recompilar la aplicación contra él (<code>mvn -U clean install</code>)
+     * antes de empaquetarla.
+     * </p>
+     *
+     * <p>
+     * La otra precondición dura es la base: el modelo nuevo exige que ya tenga
+     * la columna <code>iprequest</code> en las tablas de auditoría.
+     * </p>
+     *
      * @param <T> tipo de la entidad.
      * @param em entity manager activo.
      * @param sessionId identificador de la sesión del usuario.
@@ -1113,19 +1163,28 @@ public abstract class AbstractDAO implements IGenericDAO {
                 operacion = "?";
                 break;
         }
-        String device = "", appUser = "";
+        String ip = "", deviceName = "", appUser = "";
         IUserSession session = getUserSession(sessionId);
         if (session != null) {
             IDBLinkInfo dbLinkInfo = getDBLinkInfo(sessionId);
+            ip = Fn.nvl(session.getIp(), "");
+            //El nombre del dispositivo solo existe en una sesión por token:
+            //es el uuidDevice que declaró el cliente al pedirlo.
             if (session.getClientAuthRequestInfo() != null) {
-                device = dbLinkInfo.getUuidDevice();
-            } else {
-                device = session.getIp();
+                deviceName = Fn.nvl(dbLinkInfo.getUuidDevice(), "");
             }
             appUser = dbLinkInfo.getAppUserSeal();
         }
         auditEjb.setValue("operacion", operacion);
-        auditEjb.setValue("iprequest", device);
+        //Los dos campos se escriben solo si la clase de auditoría los tiene,
+        //para que el framework y el modelo de la aplicación se puedan
+        //desplegar en cualquier orden (ver el javadoc del método).
+        if (DataInfo.isFieldExist(auditEjb.getClass(), "iprequest")) {
+            auditEjb.setValue("iprequest", Strings.isNullorEmpty(ip) ? null : ip);
+        }
+        if (DataInfo.isFieldExist(auditEjb.getClass(), "device")) {
+            auditEjb.setValue("device", AuditHeader.formatDevice(deviceName, ip));
+        }
         auditEjb.setValue("sessionid", sessionId);
         auditEjb = ejb.copyTo(auditEjb);
         if (DataInfo.isFieldExist(auditEjb.getClass(), "appuser")) {

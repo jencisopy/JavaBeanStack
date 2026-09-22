@@ -164,6 +164,18 @@ public class SessionResolver {
     /**
      * Resuelve la sesión de la petición.
      *
+     * <p>
+     * Además de resolverla, le fija la <b>IP del request en curso</b>
+     * ({@link #fijarIp}). Es el único punto por el que pasan todas las
+     * peticiones con <code>@SessionRequired</code>, sean de token o de cookie
+     * de login, y es lo que hace que la auditoría y los registros de
+     * aplicación tengan el origen de la petición: una sesión creada desde un
+     * token nunca recibió IP (nadie llamaba a
+     * {@code IUserSession#setIp(String)} fuera del login JSF), así que
+     * <code>iprequest</code> quedaba vacío justo en el camino que más lo
+     * necesita.
+     * </p>
+     *
      * @param request petición.
      * @return resultado con la sesión (o sin ella) y la credencial.
      */
@@ -179,6 +191,7 @@ public class SessionResolver {
                 LOGGER.info("Credencial rechazada: una cookie no puede transportar un token");
                 return new Resolution(null, credential);
             }
+            fijarIp(session, request);
             return new Resolution(session, credential);
         }
         if (credential.isFromCookie()) {
@@ -187,7 +200,41 @@ public class SessionResolver {
             return new Resolution(null, credential);
         }
         session = createFromToken(value, request.getContextPath());
+        fijarIp(session, request);
         return new Resolution(session, credential);
+    }
+
+    /**
+     * Deja en la sesión la IP de la petición en curso.
+     *
+     * <p>
+     * Se usa <code>getRemoteAddr()</code>, el mismo criterio que el resto del
+     * framework, y <b>no</b> se lee <code>X-Forwarded-For</code>: detrás de un
+     * proxy inverso el valor sería el del proxy, pero un encabezado que
+     * cualquier cliente puede escribir no es una fuente confiable de origen
+     * sin una lista de proxies de confianza, que hoy no existe.
+     * </p>
+     *
+     * <p>
+     * La sesión de un token es compartida por todas las peticiones de ese
+     * token, así que queda la IP de la <b>última</b>. Dos peticiones
+     * simultáneas del mismo token desde IPs distintas podrían cruzarse; se
+     * acepta, porque un token está atado a un dispositivo. Cada
+     * <code>auditSave</code> corre dentro de su propia petición, de modo que
+     * en la práctica lee la IP que le corresponde.
+     * </p>
+     *
+     * @param session sesión resuelta, puede ser nula.
+     * @param request petición en curso, puede ser nula.
+     */
+    protected void fijarIp(IUserSession session, HttpServletRequest request) {
+        if (session == null || request == null) {
+            return;
+        }
+        String ip = request.getRemoteAddr();
+        if (ip != null && !ip.isEmpty()) {
+            session.setIp(ip);
+        }
     }
 
     /**

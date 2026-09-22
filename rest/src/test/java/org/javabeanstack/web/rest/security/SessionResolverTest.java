@@ -243,4 +243,83 @@ public class SessionResolverTest {
         assertFalse(r.resolve(request(null, ajena, "GET")).isPresent(), "la cookie por omisión ya no cuenta");
         assertEquals(SessionResolver.SESSION_COOKIE, new SessionResolver(null, null, null, " ").getCookieName());
     }
+
+    /**
+     * Request con una IP de origen a elección, para las pruebas de
+     * {@link SessionResolver#fijarIp}.
+     */
+    static HttpServletRequest requestConIp(String authHeader, Cookie[] cookies, String ip) {
+        HttpServletRequest base = request(authHeader, cookies, "GET");
+        return (HttpServletRequest) Proxy.newProxyInstance(HttpServletRequest.class.getClassLoader(),
+                new Class<?>[]{HttpServletRequest.class}, (proxy, method, args) -> {
+                    if ("getRemoteAddr".equals(method.getName())) {
+                        return ip;
+                    }
+                    return method.invoke(base, args);
+                });
+    }
+
+    @Test
+    @DisplayName("Sesión de token cacheada: queda con la IP de la petición en curso")
+    public void ipEnSesionDeTokenCacheada() {
+        Map<String, IUserSession> pool = new HashMap<>();
+        UserSession sesion = sesionDeToken();
+        pool.put(TOKEN, sesion);
+        SessionResolver r = new SessionResolver(sessions(pool), secManager(new HashMap<>(), new ArrayList<>()), null);
+        assertNull(sesion.getIp(), "una sesión de token nace sin IP");
+        SessionResolver.Resolution res = r.resolve(requestConIp("Bearer " + TOKEN, null, "10.1.2.3"));
+        assertTrue(res.isPresent());
+        assertEquals("10.1.2.3", res.getSession().getIp());
+        //La sesión es compartida por todas las peticiones del token: gana la última.
+        r.resolve(requestConIp("Bearer " + TOKEN, null, "10.9.9.9"));
+        assertEquals("10.9.9.9", sesion.getIp());
+    }
+
+    @Test
+    @DisplayName("Sesión recién creada desde el token: también queda con la IP")
+    public void ipEnSesionDeTokenNueva() {
+        Map<String, IUserSession> porToken = new HashMap<>();
+        porToken.put(TOKEN, sesionDeToken());
+        SessionResolver r = new SessionResolver(sessions(new HashMap<>()),
+                secManager(porToken, new ArrayList<>()), null);
+        SessionResolver.Resolution res = r.resolve(requestConIp("Bearer " + TOKEN, null, "181.91.86.240"));
+        assertTrue(res.isPresent());
+        assertEquals("181.91.86.240", res.getSession().getIp());
+    }
+
+    @Test
+    @DisplayName("Sesión de login resuelta por cookie: se refresca la IP en cada petición")
+    public void ipEnSesionDeLoginPorCookie() {
+        Map<String, IUserSession> pool = new HashMap<>();
+        UserSession sesion = sesionDeLogin();
+        pool.put(ID_LOGIN, sesion);
+        SessionResolver r = new SessionResolver(sessions(pool), secManager(new HashMap<>(), new ArrayList<>()), null);
+        Cookie[] cookies = {new Cookie(SessionResolver.SESSION_COOKIE, ID_LOGIN)};
+        SessionResolver.Resolution res = r.resolve(requestConIp(null, cookies, "192.168.0.7"));
+        assertTrue(res.isPresent());
+        assertEquals("192.168.0.7", res.getSession().getIp());
+    }
+
+    @Test
+    @DisplayName("Sin IP en la petición no se pisa la que ya tenía la sesión")
+    public void sinIpNoSePisa() {
+        Map<String, IUserSession> pool = new HashMap<>();
+        UserSession sesion = sesionDeToken();
+        sesion.setIp("10.0.0.1");
+        pool.put(TOKEN, sesion);
+        SessionResolver r = new SessionResolver(sessions(pool), secManager(new HashMap<>(), new ArrayList<>()), null);
+        r.resolve(requestConIp("Bearer " + TOKEN, null, null));
+        assertEquals("10.0.0.1", sesion.getIp());
+        r.resolve(requestConIp("Bearer " + TOKEN, null, ""));
+        assertEquals("10.0.0.1", sesion.getIp());
+    }
+
+    @Test
+    @DisplayName("fijarIp tolera sesión nula y petición nula")
+    public void fijarIpTolerante() {
+        SessionResolver r = new SessionResolver(sessions(new HashMap<>()),
+                secManager(new HashMap<>(), new ArrayList<>()), null);
+        assertDoesNotThrow(() -> r.fijarIp(null, requestConIp(null, null, "10.0.0.1")));
+        assertDoesNotThrow(() -> r.fijarIp(new UserSession(), null));
+    }
 }

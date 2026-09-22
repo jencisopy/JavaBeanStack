@@ -130,6 +130,16 @@ public interface IDBLinkInfo extends Serializable {
      * dispositivo queda solo como respaldo para una sesión sin usuario
      * resoluble.
      *
+     * <p>
+     * Esta regla —como la del <b>dispositivo</b> y la de la <b>IP</b> del
+     * resto de la cabecera de auditoría— tiene un solo dueño:
+     * {@code AbstractDAO.auditSave} (módulo {@code jbs-business}), que se
+     * apoya en {@code AuditHeader}. La del sello llegó a estar escrita tres
+     * veces, en el framework, la capa intermedia y la aplicación, y corregirla
+     * costó tocar los tres repositorios. No volver a copiarla: si hace falta
+     * cambiar cómo se arma un campo de la cabecera, se cambia allá.
+     * </p>
+     *
      * @return el sello, o cadena vacía si no hay sesión.
      */
     default String getAppUserSeal() {
