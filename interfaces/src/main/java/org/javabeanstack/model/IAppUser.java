@@ -409,4 +409,160 @@ public interface IAppUser extends IDataRow, Serializable {
      */
     default void setIpLoginAllowed(String ipLoginAllowed) {
     }
+
+    // ------------------------------------------------------------------------
+    // Límite de intentos fallidos de ingreso (bloqueo de cuenta)
+    //
+    // Los seis atributos que siguen son el ESTADO del control de intentos
+    // fallidos y viven en las mismas columnas de la tabla de usuarios. Van
+    // como métodos `default` —getter nulo, setter vacío— por la misma razón
+    // que `ipLoginAllowed`: hay siete implementadores de esta interfaz, tres
+    // de ellos fixtures de prueba de este framework y del proyecto de test,
+    // que no mapean estas columnas y no tienen por qué saber de ellas.
+    //
+    // Quien SÍ tiene que mapearlas es la proyección que lee la autenticación:
+    // si solo las mapeara la entidad del mantenimiento de usuarios, los
+    // getters devolverían nulo en cada ingreso, el control permitiría todo y
+    // ninguna prueba lo notaría.
+    //
+    // La política que interpreta estos valores —cuándo un bloqueo está
+    // vigente, cuándo vence, cuándo escala a definitivo— no vive acá: es de
+    // la aplicación (`py.com.oym.frame.security.LoginLockPolicy`). Acá solo
+    // está el estado.
+    // ------------------------------------------------------------------------
+
+    /**
+     * Devuelve la cantidad de intentos de ingreso fallidos consecutivos del
+     * ciclo vigente.
+     *
+     * <p>Lo incrementa cada contraseña incorrecta y vuelve a cero cuando la
+     * cuenta se bloquea, cuando el usuario ingresa bien o cuando cambia el
+     * día calendario. Un rechazo que no llegó a probar contraseña —cuenta
+     * inactiva, vencida, dirección no autorizada, bloqueo vigente— no
+     * cuenta.</p>
+     *
+     * @return cantidad de fallos consecutivos, o nulo si la proyección no
+     * mapea la columna (la política lo trata como cero).
+     */
+    default Integer getLoginFailCount() {
+        return null;
+    }
+
+    /**
+     * Asigna la cantidad de intentos de ingreso fallidos consecutivos.
+     *
+     * @param loginFailCount cantidad de fallos consecutivos.
+     */
+    default void setLoginFailCount(Integer loginFailCount) {
+    }
+
+    /**
+     * Devuelve el momento del último intento de ingreso fallido.
+     *
+     * <p>Es lo que permite descartar el contador al cambiar el día: un fallo
+     * anterior a las 00:00 de hoy no se suma al de hoy, se lo reemplaza.</p>
+     *
+     * @return fecha y hora del último fallo, o nulo si no hay ninguno.
+     */
+    default LocalDateTime getLoginFailDate() {
+        return null;
+    }
+
+    /**
+     * Asigna el momento del último intento de ingreso fallido.
+     *
+     * @param loginFailDate fecha y hora del último fallo.
+     */
+    default void setLoginFailDate(LocalDateTime loginFailDate) {
+    }
+
+    /**
+     * Devuelve el momento en que se aplicó el último bloqueo temporal por
+     * intentos fallidos.
+     *
+     * <p><b>No significa que el bloqueo esté vigente</b>: el bloqueo temporal
+     * dura una cantidad de minutos configurable y vence solo, pero la fecha se
+     * conserva después de vencer porque es la memoria de que hubo un bloqueo
+     * en el día —y es un segundo bloqueo en el mismo día lo que escala al
+     * bloqueo definitivo—. La borra un ingreso correcto, que cierra el
+     * episodio.</p>
+     *
+     * @return fecha y hora del último bloqueo temporal, o nulo.
+     */
+    default LocalDateTime getLoginLockDate() {
+        return null;
+    }
+
+    /**
+     * Asigna el momento del último bloqueo temporal por intentos fallidos.
+     *
+     * @param loginLockDate fecha y hora del bloqueo temporal.
+     */
+    default void setLoginLockDate(LocalDateTime loginLockDate) {
+    }
+
+    /**
+     * Indica si la cuenta tiene un bloqueo <b>definitivo</b> por intentos
+     * fallidos.
+     *
+     * <p>A diferencia del temporal, no vence: solo lo levanta un
+     * administrador. Lo aplica el sistema cuando una cuenta acumula un segundo
+     * bloqueo temporal en el mismo día calendario, y va acompañado de
+     * {@link #setDisabled(Boolean)} en verdadero.</p>
+     *
+     * <p>Es una marca distinta de {@link #getDisabled()} a propósito, y es la
+     * que <b>discrimina</b> las dos situaciones: una cuenta deshabilitada con
+     * esta marca en falso es una baja administrativa, que el desbloqueo no
+     * toca; con esta marca en verdadero la deshabilitó el sistema, y el
+     * desbloqueo levanta las dos.</p>
+     *
+     * @return verdadero si la cuenta está bloqueada definitivamente, o nulo si
+     * la proyección no mapea la columna (la política lo trata como falso).
+     */
+    default Boolean getLoginBlocked() {
+        return null;
+    }
+
+    /**
+     * Asigna el bloqueo definitivo de la cuenta.
+     *
+     * @param loginBlocked verdadero para bloquear definitivamente.
+     */
+    default void setLoginBlocked(Boolean loginBlocked) {
+    }
+
+    /**
+     * Devuelve el momento en que se aplicó el bloqueo definitivo.
+     *
+     * @return fecha y hora del bloqueo definitivo, o nulo si no hay bloqueo.
+     */
+    default LocalDateTime getLoginBlockedDate() {
+        return null;
+    }
+
+    /**
+     * Asigna el momento en que se aplicó el bloqueo definitivo.
+     *
+     * @param loginBlockedDate fecha y hora del bloqueo definitivo.
+     */
+    default void setLoginBlockedDate(LocalDateTime loginBlockedDate) {
+    }
+
+    /**
+     * Devuelve el motivo del bloqueo definitivo, en texto legible para el
+     * administrador que lo va a levantar.
+     *
+     * @return motivo del bloqueo, o nulo si no hay bloqueo.
+     */
+    default String getLoginBlockedReason() {
+        return null;
+    }
+
+    /**
+     * Asigna el motivo del bloqueo definitivo.
+     *
+     * @param loginBlockedReason motivo del bloqueo.
+     */
+    default void setLoginBlockedReason(String loginBlockedReason) {
+    }
 }

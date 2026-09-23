@@ -64,6 +64,7 @@ import org.javabeanstack.util.Fn;
 import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppAuthConsumerToken;
+import org.javabeanstack.model.IAppLogRecord;
 import static org.javabeanstack.model.IAppLogRecord.*;
 import org.javabeanstack.security.model.ClientAuthRequestInfo;
 import org.javabeanstack.security.model.IClientAuthRequestInfo;
@@ -388,6 +389,11 @@ public class Sessions implements ISessions {
                 appUser.setRol(IAppUser.USUARIO);
                 appUser.setExpiredDate(LocalDates.toDateTime("31/12/9999"));
                 appUser.setDisabled(false);
+            } else if (!isTokenUserValid(appUser, token)) {
+                //El estado de la cuenta se verifica SOLO cuando el usuario
+                //existe de verdad: el usuario sintetico de arriba no esta en la
+                //base y no tiene estado que verificar.
+                return null;
             }
             LOGGER.debug("CREATESESSION IN FROM TOKEN con el usuario "+userLogin);
             session.setUser(appUser);
@@ -411,6 +417,73 @@ public class Sessions implements ISessions {
             ErrorManager.showError(e, LOGGER, logMngr, null);
         }
         return null;
+    }
+
+    /**
+     * Indica si la cuenta dueña de un token está en condiciones de recibir una
+     * sesión.
+     *
+     * <p>Hasta este control el ingreso por token <b>no verificaba nada</b> de
+     * la cuenta: un token vivo de un usuario dado de baja, con la fecha de
+     * vencimiento pasada o bloqueado por intentos fallidos seguía creando
+     * sesión, porque el único camino que revisa esas condiciones es el ingreso
+     * con contraseña, y por acá no se pasa.</p>
+     *
+     * <p>Se reutiliza {@link #checkUser(Long)} —el mismo criterio que usa
+     * {@code isUserValid}— y se agrega el bloqueo por intentos fallidos. Lo del
+     * bloqueo es una verificación de cinturón y tirantes: cuando el sistema lo
+     * aplica marca también la cuenta como deshabilitada, así que {@code
+     * checkUser} ya la rechazaría; acá se mira la marca propia para que el
+     * rechazo no dependa de que las dos sigan acompañándose.</p>
+     *
+     * <p><b>Aviso de despliegue.</b> Desde que esto entra en vigencia, toda
+     * integración cuyo token pertenezca a un usuario de baja, vencido o
+     * bloqueado deja de funcionar <b>en el primer arranque</b>, sin aviso
+     * previo. Es un efecto buscado, pero puede haber integraciones en esa
+     * condición sin que nadie lo sepa: antes de publicar hay que contar los
+     * tokens vigentes de usuarios en esas condiciones. La salida para un token
+     * afectado es reactivar o prorrogar al usuario, no exceptuar el control.</p>
+     *
+     * @param appUser cuenta dueña del token.
+     * @param token token con el que se pidió la sesión.
+     * @return verdadero si la sesión puede crearse.
+     */
+    protected boolean isTokenUserValid(IAppUser appUser, String token) {
+        try {
+            String motivo = null;
+            if (Fn.nvl(appUser.getLoginBlocked(), false)) {
+                motivo = "la cuenta esta bloqueada por intentos fallidos";
+            } else {
+                IErrorReg error = checkUser(appUser.getIduser());
+                if (error != null) {
+                    motivo = error.getMessage();
+                }
+            }
+            if (motivo == null) {
+                return true;
+            }
+            LOGGER.info("Token de " + appUser.getLogin().trim()
+                    + " rechazado, " + motivo);
+            IAppLogRecord registro = logMngr.getNewAppLogRecord(null);
+            if (registro != null) {
+                registro.setIduser(appUser.getIduser());
+                registro.setEvent(EVENT_LOGIN);
+                registro.setLevel(LEVEL_ALERT);
+                registro.setCategory(CATEGORY_SECURITY);
+                registro.setMessageNumber(13);
+                registro.setMessage("Token de " + appUser.getLogin().trim()
+                        + " rechazado, " + motivo);
+                registro.setMessageInfo("");
+                registro.setAppObject(getClass().getName());
+                logMngr.dbWrite(registro, null);
+            }
+            return false;
+        } catch (Exception e) {
+            //Lo que no se puede evaluar no se autoriza: sin poder verificar el
+            //estado de la cuenta, la sesion por token no se crea.
+            ErrorManager.showError(e, LOGGER);
+            return false;
+        }
     }
 
     /**

@@ -129,6 +129,29 @@ public class AppUser extends DataRow implements IAppUser {
     @Column(name = "ip_login_allowed")
     private String ipLoginAllowed;
 
+    //Estado del bloqueo por intentos fallidos de ingreso. Se escriben con
+    //sentencias atomicas desde la politica de ingreso, nunca por merge de la
+    //entidad: de ahi el insertable/updatable en falso, para que una grabacion
+    //de la entidad no pise el estado del bloqueo con valores de antes.
+    @Column(name = "login_fail_count", insertable = false, updatable = false)
+    private Integer loginFailCount = 0;
+
+    @Column(name = "login_fail_date", insertable = false, updatable = false)
+    private LocalDateTime loginFailDate;
+
+    @Column(name = "login_lock_date", insertable = false, updatable = false)
+    private LocalDateTime loginLockDate;
+
+    @Column(name = "login_blocked", insertable = false, updatable = false)
+    private Boolean loginBlocked = false;
+
+    @Column(name = "login_blocked_date", insertable = false, updatable = false)
+    private LocalDateTime loginBlockedDate;
+
+    @Size(max = 200)
+    @Column(name = "login_blocked_reason", insertable = false, updatable = false)
+    private String loginBlockedReason;
+
     @Column(name = "disabled")
     private Boolean disabled = false;
 
@@ -501,6 +524,66 @@ public class AppUser extends DataRow implements IAppUser {
     @Override
     public void setIpLoginAllowed(String ipLoginAllowed) {
         this.ipLoginAllowed = ipLoginAllowed;
+    }
+
+    @Override
+    public Integer getLoginFailCount() {
+        return loginFailCount;
+    }
+
+    @Override
+    public void setLoginFailCount(Integer loginFailCount) {
+        this.loginFailCount = loginFailCount;
+    }
+
+    @Override
+    public LocalDateTime getLoginFailDate() {
+        return loginFailDate;
+    }
+
+    @Override
+    public void setLoginFailDate(LocalDateTime loginFailDate) {
+        this.loginFailDate = loginFailDate;
+    }
+
+    @Override
+    public LocalDateTime getLoginLockDate() {
+        return loginLockDate;
+    }
+
+    @Override
+    public void setLoginLockDate(LocalDateTime loginLockDate) {
+        this.loginLockDate = loginLockDate;
+    }
+
+    @Override
+    public Boolean getLoginBlocked() {
+        return loginBlocked;
+    }
+
+    @Override
+    public void setLoginBlocked(Boolean loginBlocked) {
+        this.loginBlocked = loginBlocked;
+    }
+
+    @Override
+    public LocalDateTime getLoginBlockedDate() {
+        return loginBlockedDate;
+    }
+
+    @Override
+    public void setLoginBlockedDate(LocalDateTime loginBlockedDate) {
+        this.loginBlockedDate = loginBlockedDate;
+    }
+
+    @Override
+    public String getLoginBlockedReason() {
+        return loginBlockedReason;
+    }
+
+    @Override
+    public void setLoginBlockedReason(String loginBlockedReason) {
+        this.loginBlockedReason = loginBlockedReason;
     }
 
     @Override
