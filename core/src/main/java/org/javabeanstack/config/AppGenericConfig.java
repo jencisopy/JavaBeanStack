@@ -83,6 +83,12 @@ public class AppGenericConfig implements IAppConfig {
     /**
      * Lee el objeto DOM de configuración guardado bajo una clave "groupkey"
      *
+     * <p>El {@code Document} devuelto es compartido y no es seguro para hilos,
+     * ni siquiera en lectura: quien lo recorra debe hacerlo dentro de
+     * {@code synchronized (dom)}, el mismo monitor que usan
+     * {@link #getProperty(String, String, String)} y
+     * {@link #setProperty(String, String, String, String)}.</p>
+     *
      * @param groupKey identificador del registro.
      * @return objeto DOM.
      */
@@ -109,10 +115,24 @@ public class AppGenericConfig implements IAppConfig {
             return null;
         }
         String propValue;
-        try {
-            propValue = DomW3cParser.getPropertyValue(dom, property, nodePath);
-        } catch (Exception ex) {
-            propValue = null;
+        // El Document de Xerces no es seguro para hilos ni siquiera en lectura
+        // (expansión diferida de nodos) y este bean es @Lock(READ): sin este
+        // candado, varias sesiones leyendo a la vez recibían null o "" y hasta
+        // dejaban el DOM corrupto. Se sincroniza sobre el propio Document para
+        // que las subclases que lo lean directamente usen el mismo monitor.
+        synchronized (dom) {
+            try {
+                propValue = DomW3cParser.getPropertyValue(dom, property, nodePath);
+            } catch (Exception ex) {
+                // Se devuelve null como siempre, pero ya no en silencio: sin
+                // este aviso la falla se veía lejos de acá, como un null en
+                // quien leyó la propiedad. Una línea por falla; la pila solo
+                // en DEBUG para no inundar el log.
+                LOGGER.warn("No se pudo leer la propiedad " + property + " de "
+                        + groupKey + " (" + nodePath + "): " + ex);
+                LOGGER.debug("Detalle del error al leer la propiedad " + property, ex);
+                propValue = null;
+            }
         }
         return propValue;
     }
@@ -138,10 +158,19 @@ public class AppGenericConfig implements IAppConfig {
             return false;
         }
         boolean result;
-        try {
-            result = DomW3cParser.setPropertyValue(dom, value, property, nodePath);
-        } catch (Exception ex) {
-            result = false;
+        // Mismo candado que getProperty: @Lock(WRITE) solo excluye a las
+        // llamadas que pasan por el proxy del contenedor, no a los accesos
+        // internos del propio bean.
+        synchronized (dom) {
+            try {
+                result = DomW3cParser.setPropertyValue(dom, value, property, nodePath);
+            } catch (Exception ex) {
+                // Mismo criterio que getProperty: se devuelve false, pero dejando rastro
+                LOGGER.warn("No se pudo asignar la propiedad " + property + " de "
+                        + groupKey + " (" + nodePath + "): " + ex);
+                LOGGER.debug("Detalle del error al asignar la propiedad " + property, ex);
+                result = false;
+            }
         }
         return result;
     }

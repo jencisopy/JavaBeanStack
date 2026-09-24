@@ -63,11 +63,46 @@ import static org.javabeanstack.util.Strings.*;
 public class DomW3cParser {
 
     private static final Logger LOGGER = LogManager.getLogger(DomW3cParser.class);
-    private static final DocumentBuilderFactory FACTORY = DocumentBuilderFactory.newInstance();
-    private static final XPathFactory XPATHFACTORY = XPathFactory.newInstance();
+    /**
+     * Característica de Xerces que controla la expansión diferida de nodos.
+     * Con expansión diferida cada nodo se construye la primera vez que se lo
+     * lee, y esa construcción no es segura si dos hilos leen a la vez el mismo
+     * documento (hallazgo I1-07, 2026-09-24). Se desactiva para que el DOM
+     * quede completo al cargarse.
+     */
+    private static final String DEFER_NODE_EXPANSION
+            = "http://apache.org/xml/features/dom/defer-node-expansion";
+    /**
+     * Fábricas por hilo: JAXP no garantiza que {@code DocumentBuilderFactory}
+     * ni {@code XPathFactory} sean seguras para hilos, y estas son estáticas y
+     * se usan desde beans concurrentes.
+     */
+    private static final ThreadLocal<DocumentBuilderFactory> FACTORY
+            = ThreadLocal.withInitial(DomW3cParser::newDocumentBuilderFactory);
+    private static final ThreadLocal<XPathFactory> XPATHFACTORY
+            = ThreadLocal.withInitial(XPathFactory::newInstance);
     private static final String DEFAULTCHARSET = "UTF-8";
 
     private DomW3cParser() {
+    }
+
+    /**
+     * Crea la fábrica de documentos con la expansión diferida desactivada. Si la
+     * implementación JAXP en uso no reconoce la característica, se sigue con la
+     * fábrica por defecto: la seguridad entre hilos la garantiza igual quien
+     * comparta el documento sincronizando sobre él.
+     *
+     * @return fábrica de documentos.
+     */
+    private static DocumentBuilderFactory newDocumentBuilderFactory() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            factory.setFeature(DEFER_NODE_EXPANSION, false);
+        } catch (ParserConfigurationException ex) {
+            LOGGER.debug("La implementación JAXP " + factory.getClass().getName()
+                    + " no admite " + DEFER_NODE_EXPANSION);
+        }
+        return factory;
     }
 
     /**
@@ -77,7 +112,7 @@ public class DomW3cParser {
      * @throws ParserConfigurationException
      */
     public static Document newDocument() throws ParserConfigurationException {
-        return FACTORY.newDocumentBuilder().newDocument();
+        return FACTORY.get().newDocumentBuilder().newDocument();
     }
 
     /**
@@ -95,7 +130,7 @@ public class DomW3cParser {
         if (Fn.nvl(xml,"").isEmpty()){
             return null;
         }
-        DocumentBuilder builder = FACTORY.newDocumentBuilder();
+        DocumentBuilder builder = FACTORY.get().newDocumentBuilder();
         InputStream stream;
         String charSet = getXmlFileCharSet(xml);
         if (!charSet.isEmpty()) {
@@ -118,7 +153,7 @@ public class DomW3cParser {
     public static Document loadXml(InputStream xml)
             throws ParserConfigurationException, SAXException, IOException {
 
-        DocumentBuilder builder = FACTORY.newDocumentBuilder();
+        DocumentBuilder builder = FACTORY.get().newDocumentBuilder();
         return builder.parse(xml);
     }
 
@@ -362,7 +397,7 @@ public class DomW3cParser {
         if (!nodePath.startsWith("/")) {
             nodePath = "//" + nodePath;
         }
-        XPath xpath = XPATHFACTORY.newXPath();
+        XPath xpath = XPATHFACTORY.get().newXPath();
         xpathExpr = xpath.compile(nodePath);
 
         return (Node) xpathExpr.evaluate(document, XPathConstants.NODE);
@@ -381,7 +416,7 @@ public class DomW3cParser {
         if (!nodePath.startsWith("/")) {
             nodePath = "//" + nodePath;
         }
-        XPath xpath = XPATHFACTORY.newXPath();        
+        XPath xpath = XPATHFACTORY.get().newXPath();        
         xpathExpr = xpath.compile(nodePath);
         return (NodeList) xpathExpr.evaluate(document, XPathConstants.NODESET);
     }
