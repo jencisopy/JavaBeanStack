@@ -539,6 +539,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             return false;
         }
         action = operation;
+        // Mensajes ya encolados antes de la acción: si la acción se cancela con
+        // un aviso propio, no se agrega el genérico encima.
+        int mensajesPrevios = getCantidadMensajes();
 
         // Si no es agregar nuevo registro refrescar el registro actual
         if (!Fn.inList(operation.toLowerCase(), "insert", "insertcopy"," agregar", "1")) {
@@ -589,7 +592,9 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             result = false;
             action = "";
         } else if (!result) {
-            facesCtx.showWarn("No es posible realizar esta operación");
+            if (getCantidadMensajes() == mensajesPrevios) {
+                facesCtx.showWarn("No es posible realizar esta operación");
+            }
             action = "";
         }
         initAction(operation, result);
@@ -599,6 +604,19 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             refreshUIComponent(refreshUI);
         }
         return result;
+    }
+
+    /**
+     * Cantidad de mensajes encolados en el FacesContext del request actual.
+     *
+     * @return cantidad de mensajes, 0 si no hay FacesContext.
+     */
+    protected int getCantidadMensajes() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context == null) {
+            return 0;
+        }
+        return context.getMessageList().size();
     }
 
     /**
