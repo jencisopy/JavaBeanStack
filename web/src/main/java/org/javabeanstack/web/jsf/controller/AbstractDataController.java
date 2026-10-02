@@ -840,7 +840,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     }
 
     /**
-     * Cierra la sesión y devuelve la navegación resultante.
+     * Cierra la sesión y devuelve la navegación resultante. El cierre de la
+     * sesión HTTP y del pool se hace al terminar el pedido (ver
+     * {@link FacesContextUtil#logout()}), porque se llama desde
+     * {@code init()} en mitad del render.
      *
      * @return destino de navegación tras el logout.
      */

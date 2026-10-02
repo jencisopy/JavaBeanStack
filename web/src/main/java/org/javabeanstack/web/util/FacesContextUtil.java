@@ -520,12 +520,32 @@ public class FacesContextUtil {
     }
 
     /**
+     * Atributo de la petición con el que {@link #logout()} marca la sesión del
+     * usuario que hay que cerrar al terminar el pedido. Lo procesa el
+     * {@code AuthFilter}.
+     */
+    public static final String LOGOUT_REQUEST_ATTR = "org.javabeanstack.web.logoutUserSession";
+
+    /**
      * Cierra la sesión y devuelve la navegación resultante.
+     *
+     * <p>A diferencia de {@code AbstractController.logout()}, este cierre se
+     * llama también desde un {@code @PostConstruct} (los {@code DataController}
+     * ante un {@code SessionError}), en mitad del render: invalidar ahí la
+     * sesión HTTP rompería la respuesta en curso. Por eso quita la sesión del
+     * usuario de la sesión HTTP y <b>marca</b> la petición; el
+     * {@code AuthFilter}, cuando el pedido terminó, la quita del pool de
+     * sesiones e invalida la sesión HTTP. El siguiente pedido va al
+     * ingreso.</p>
      *
      * @return destino de navegación tras el logout.
      */
     public String logout() {
+        Object userSession = getSessionMap().get("userSession");
         getSessionMap().put("userSession", null);
+        if (userSession != null) {
+            getRequestMap().put(LOGOUT_REQUEST_ATTR, userSession);
+        }
         return "/login.xhtml?faces-redirect=true";
     }
 

@@ -88,11 +88,19 @@ public abstract class AbstractController implements Serializable{
     }
 
     /**
-     * Cierra la sesión del usuario.
+     * Cierra la sesión del usuario: quita la sesión del usuario e invalida la
+     * sesión HTTP, con lo que se liberan en el acto los beans de sesión y la
+     * cookie deja de servir. Antes solo se quitaba el atributo y la sesión HTTP
+     * seguía viva hasta su vencimiento.
+     *
+     * <p>Después de llamarlo no hay que volver a usar la sesión HTTP en la
+     * misma petición: el destino devuelto es una redirección.</p>
+     *
      * @return link para redireccionar a la página de logeo
      */
     public String logout() {
-        facesCtx.getSessionMap().put("userSession", null);
+        getFacesCtx().getSessionMap().put("userSession", null);
+        getFacesCtx().getExternalContext().invalidateSession();
         return "/login.xhtml?faces-redirect=true";
-    }    
+    }
  }

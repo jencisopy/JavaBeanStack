@@ -439,13 +439,29 @@ public abstract class AbstractAuthController extends AbstractController {
     }
 
     /**
-     * Cierra la sesión del usuario
+     * Cierra la sesión del usuario: la quita del pool de sesiones
+     * ({@code ISecManager.logout}), con lo que su identificador deja de ser
+     * válido, y después invalida la sesión HTTP ({@link AbstractController#logout()}).
+     * Antes las dos seguían vivas hasta vencer por inactividad.
      *
      * @return link para redireccionar a la página de logeo
      */
     @Override
     public String logout() {
         logged = false;
+        IUserSession userSession = getUserSession();
+        if (userSession != null && getSecManager() != null) {
+            try {
+                getSecManager().logout(userSession);
+                if (LOGGER.isDebugEnabled() && userSession.getSessionId() != null) {
+                    LOGGER.debug("Sesión quitada del pool; sigue vigente: "
+                            + getSecManager().isSessionIdValid(userSession.getSessionId()));
+                }
+            } catch (Exception ex) {
+                //El cierre de la sesión HTTP sigue igual: el pool la vence solo.
+                LOGGER.warn("No se pudo quitar la sesión del pool: " + ex.getMessage());
+            }
+        }
         return super.logout();
     }
 }
