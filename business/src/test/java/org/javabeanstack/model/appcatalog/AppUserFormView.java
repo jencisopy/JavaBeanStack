@@ -72,10 +72,6 @@ public class AppUserFormView extends DataRow {
     @Column(name = "iduser")
     private Long iduser;
     
-    @Size(max = 2147483647)
-    @Column(name = "filtertext")
-    private String filtertext;
-    
     
     @OneToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE}, mappedBy = "appUserFormView")
     @OrderBy("idorder ASC")
@@ -124,14 +120,6 @@ public class AppUserFormView extends DataRow {
 
     public void setIduser(Long iduser) {
         this.iduser = iduser;
-    }
-
-    public String getFiltertext() {
-        return filtertext;
-    }
-
-    public void setFiltertext(String filtertext) {
-        this.filtertext = filtertext;
     }
 
     @Override
