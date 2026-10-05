@@ -37,6 +37,7 @@ import org.javabeanstack.data.IDataRow;
 import org.w3c.dom.Document;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
+import org.javabeanstack.error.ErrorReg;
 import org.javabeanstack.error.IErrorReg;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.log.ILogManagerData;
@@ -186,7 +187,7 @@ public class AppGenericConfig implements IAppConfig {
     public IAppSystemParam getSystemParam(Long id) {
         IAppSystemParam appSystemParam;
         String queryString
-                = "select o from AppSystemParam o where idsystemparam = :id";
+                = "select o from AppSystemParam o where idAppSystemParam = :id";
         try {
             appSystemParam
                     = dao.findByQuery(null, queryString, Fn.queryParams("id", id));
@@ -198,8 +199,12 @@ public class AppGenericConfig implements IAppConfig {
     }
 
     /**
-     * Lee de una tabla "appSystemParam" un registro utilizando el nombre de un
-     * parámetro como identificador solicitado.
+     * Lee de una tabla "appSystemParam" el valor global (empresa nula) de un
+     * parámetro, utilizando su nombre como identificador.
+     *
+     * <p>Filtra la empresa a propósito: con valores por empresa puede haber
+     * varias filas del mismo nombre, y sin el filtro la consulta de un único
+     * resultado fallaba y devolvía nulo, como si el parámetro no existiera.</p>
      *
      * @param param nombre del parametro.
      * @return registro AppSystemParam solicitado.
@@ -207,13 +212,55 @@ public class AppGenericConfig implements IAppConfig {
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)        
     public IAppSystemParam getSystemParam(String param) {
-        String queryString
-                = "select o from AppSystemParam o where LOWER(param) = :param";
-        IAppSystemParam appSystemParam;
+        return findSystemParam(param, null);
+    }
+
+    /**
+     * Devuelve el valor de un parámetro que rige para una empresa: el propio de
+     * la empresa si existe y el global lo admite; si no, el global.
+     *
+     * @param param nombre del parámetro.
+     * @param idcompany empresa real ({@code appcompany.idcompany}), o nulo.
+     * @return parámetro que rige, o nulo si no existe el global.
+     */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public IAppSystemParam getSystemParam(String param, Long idcompany) {
+        IAppSystemParam global = findSystemParam(param, null);
+        // Un parámetro de alcance global ignora cualquier valor por empresa,
+        // aunque alguien lo haya cargado por script salteando la validación.
+        if (idcompany == null || global == null || !global.isCompanyAllowed()) {
+            return global;
+        }
+        IAppSystemParam propio = findSystemParam(param, idcompany);
+        return (propio != null) ? propio : global;
+    }
+
+    /**
+     * Busca la fila exacta de un parámetro: la global si la empresa es nula o
+     * la propia de la empresa en caso contrario. No aplica la cascada.
+     *
+     * @param param nombre del parámetro.
+     * @param idcompany empresa, o nulo para la fila global.
+     * @return la fila, o nulo si no existe.
+     */
+    protected IAppSystemParam findSystemParam(String param, Long idcompany) {
+        if (param == null) {
+            return null;
+        }
+        String queryString;
+        Map<String, Object> params;
+        if (idcompany == null) {
+            queryString = "select o from AppSystemParam o where LOWER(param) = :param"
+                    + " and idcompany is null";
+            params = Fn.queryParams("param", param.toLowerCase());
+        } else {
+            queryString = "select o from AppSystemParam o where LOWER(param) = :param"
+                    + " and idcompany = :idcompany";
+            params = Fn.queryParams("param", param.toLowerCase(), "idcompany", idcompany);
+        }
         try {
-            appSystemParam
-                    = dao.findByQuery(null, queryString, Fn.queryParams("param", param.toLowerCase()));
-            return appSystemParam;
+            return dao.findByQuery(null, queryString, params);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER, logMngr, null);
         }
@@ -221,7 +268,8 @@ public class AppGenericConfig implements IAppConfig {
     }
 
     /**
-     * Devuelve una lista conteniendo los registros de "appSystemParam"
+     * Devuelve una lista conteniendo los registros globales de "appSystemParam"
+     * (sin los valores propios de las empresas).
      *
      * @return lista de registros "AppSystemParam"
      */
@@ -229,13 +277,48 @@ public class AppGenericConfig implements IAppConfig {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)        
     public List<IAppSystemParam> getSystemParams() {
         String queryString
-                = "select o from AppSystemParam o";
+                = "select o from AppSystemParam o where idcompany is null";
         try {
             return dao.findListByQuery(null, queryString, null);
         } catch (Exception ex) {
             ErrorManager.showError(ex, LOGGER, logMngr, null);
         }
         return new ArrayList();
+    }
+
+    /**
+     * Devuelve los parámetros tal como rigen para una empresa: los globales,
+     * reemplazados por el valor propio de la empresa en los que lo admiten.
+     *
+     * @param idcompany empresa real, o nulo para obtener solo los globales.
+     * @return lista de parámetros vigentes para la empresa.
+     */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public List<IAppSystemParam> getSystemParams(Long idcompany) {
+        List<IAppSystemParam> globales = getSystemParams();
+        if (idcompany == null) {
+            return globales;
+        }
+        List<IAppSystemParam> propios;
+        try {
+            propios = dao.findListByQuery(null,
+                    "select o from AppSystemParam o where idcompany = :idcompany",
+                    Fn.queryParams("idcompany", idcompany));
+        } catch (Exception ex) {
+            ErrorManager.showError(ex, LOGGER, logMngr, null);
+            return globales;
+        }
+        Map<String, IAppSystemParam> porNombre = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (IAppSystemParam propio : propios) {
+            porNombre.put(propio.getParam(), propio);
+        }
+        List<IAppSystemParam> result = new ArrayList<>(globales.size());
+        for (IAppSystemParam global : globales) {
+            IAppSystemParam propio = porNombre.get(global.getParam());
+            result.add(propio != null && global.isCompanyAllowed() ? propio : global);
+        }
+        return result;
     }
 
     /**
@@ -270,20 +353,31 @@ public class AppGenericConfig implements IAppConfig {
     }
 
     /**
-     * Persiste un parámetro de sistema.
+     * Persiste un parámetro de sistema. La fila se identifica por el par
+     * (nombre, empresa).
+     *
+     * <p><b>Autorización</b>: este método no verifica quién graba. Es API
+     * interna de la configuración (siembra, procesos del sistema); el permiso
+     * de administración de la empresa para crear o modificar valores por
+     * empresa se resuelve en el servicio que exponga esa edición a los
+     * usuarios (plan SYSPAR, D14).</p>
      *
      * @param param parámetro a guardar.
      * @return resultado de la operación.
+     * @throws SystemParamScopeException si es un valor por empresa de un
+     * parámetro que no lo admite.
      * @throws Exception si la persistencia falla.
      */
     @Override
     public IDataResult setSystemParam(IAppSystemParam param) throws Exception {
+        checkScope(param);
         IDataResult result;
         if (param.getId() != null && param.getIdAppSystemParam() != 0L) {
             result = dao.merge(null, param);
         } else {
-            //Verificar si existe
-            IAppSystemParam paramMerge = getSystemParam(param.getParam());
+            //Verificar si existe la misma fila (nombre + empresa): sin la
+            //empresa, un valor por empresa pisaría al global.
+            IAppSystemParam paramMerge = findSystemParam(param.getParam(), param.getIdcompany());
             if (paramMerge != null) {
                 //Si existe actualizar el registro
                 param.setId(paramMerge.getId());
@@ -300,6 +394,82 @@ public class AppGenericConfig implements IAppConfig {
             }
         }
         if (!result.isSuccessFul()){
+            LOGGER.error(result.getErrorMsg());
+        }
+        return result;
+    }
+
+    /**
+     * Rechaza un valor por empresa sobre un parámetro que no lo admite. El
+     * alcance lo define la fila global: si es solo global, o si el global no
+     * existe, no puede haber fila con empresa.
+     *
+     * <p>El error (número 50000, campo {@code idcompany}) queda registrado en
+     * el propio parámetro y viaja en la excepción, que es de aplicación: no
+     * marca la transacción ni se registra como falla del sistema.</p>
+     *
+     * @param param parámetro a grabar.
+     * @throws SystemParamScopeException si el parámetro no admite valor por empresa.
+     */
+    protected void checkScope(IAppSystemParam param) throws SystemParamScopeException {
+        if (param.getIdcompany() == null) {
+            return;
+        }
+        IAppSystemParam global = findSystemParam(param.getParam(), null);
+        if (global == null || !global.isCompanyAllowed()) {
+            String msg = "El parámetro " + param.getParam()
+                    + " no admite un valor por empresa (alcance global)";
+            IErrorReg error = new ErrorReg();
+            error.setErrorNumber(50000);
+            error.setFieldName("idcompany");
+            error.setMessage(msg);
+            param.setErrors(error, "idcompany");
+            throw new SystemParamScopeException(error);
+        }
+    }
+
+    /**
+     * Restablece un parámetro: con empresa nula vuelve el global a su valor
+     * de fábrica; con empresa, borra el valor propio para que rija el global.
+     *
+     * @param param nombre del parámetro.
+     * @param idcompany empresa, o nulo para el global.
+     * @return resultado de la operación, o nulo si no había nada que restablecer.
+     * @throws Exception si la persistencia falla.
+     */
+    @Override
+    public IDataResult restoreSystemParam(String param, Long idcompany) throws Exception {
+        if (idcompany != null) {
+            return deleteSystemParam(param, idcompany);
+        }
+        IAppSystemParam global = findSystemParam(param, null);
+        if (global == null) {
+            return null;
+        }
+        global.restoreDefault();
+        return setSystemParam(global);
+    }
+
+    /**
+     * Borra el valor propio de una empresa para un parámetro. Nunca borra el
+     * global.
+     *
+     * @param param nombre del parámetro.
+     * @param idcompany empresa (obligatoria).
+     * @return resultado de la operación, o nulo si la empresa no tenía valor propio.
+     * @throws Exception si la persistencia falla.
+     */
+    @Override
+    public IDataResult deleteSystemParam(String param, Long idcompany) throws Exception {
+        if (idcompany == null) {
+            throw new IllegalArgumentException("deleteSystemParam no borra el valor global de " + param);
+        }
+        IAppSystemParam propio = findSystemParam(param, idcompany);
+        if (propio == null) {
+            return null;
+        }
+        IDataResult result = dao.remove(null, propio);
+        if (!result.isSuccessFul()) {
             LOGGER.error(result.getErrorMsg());
         }
         return result;

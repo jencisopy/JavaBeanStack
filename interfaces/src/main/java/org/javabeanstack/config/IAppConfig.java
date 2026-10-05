@@ -44,7 +44,9 @@ public interface IAppConfig {
     IAppSystemParam getSystemParam(Long id);
 
     /**
-     * Devuelve un parámetro de sistema por su nombre.
+     * Devuelve el valor global de un parámetro de sistema por su nombre. Nunca
+     * devuelve el valor propio de una empresa: para eso está
+     * {@link #getSystemParam(String, Long)}.
      *
      * @param param nombre del parámetro.
      * @return parámetro de sistema.
@@ -52,11 +54,67 @@ public interface IAppConfig {
     IAppSystemParam getSystemParam(String param);
 
     /**
-     * Devuelve la lista de todos los parámetros de sistema.
+     * Devuelve la lista de los parámetros de sistema globales (sin los valores
+     * propios de las empresas).
      *
      * @return lista de parámetros de sistema.
      */
     List<IAppSystemParam> getSystemParams();
+
+    /**
+     * Devuelve el valor de un parámetro que rige para una empresa: el valor
+     * propio de la empresa si existe y el parámetro global admite valores por
+     * empresa ({@link IAppSystemParam#SCOPE_COMPANY}); si no, el global.
+     *
+     * <p>La empresa es la real ({@code appcompany.idcompany}), no la empresa
+     * máscara del catálogo.</p>
+     *
+     * @param param nombre del parámetro.
+     * @param idcompany empresa, o nulo para leer el global.
+     * @return parámetro que rige, o nulo si no existe el global.
+     */
+    default IAppSystemParam getSystemParam(String param, Long idcompany) {
+        return getSystemParam(param);
+    }
+
+    /**
+     * Devuelve la lista de parámetros tal como rigen para una empresa: los
+     * globales, reemplazados por el valor propio de la empresa en los que lo
+     * admiten y lo tienen.
+     *
+     * @param idcompany empresa, o nulo para obtener solo los globales.
+     * @return lista de parámetros vigentes para la empresa.
+     */
+    default List<IAppSystemParam> getSystemParams(Long idcompany) {
+        return getSystemParams();
+    }
+
+    /**
+     * Restablece un parámetro. Con empresa nula vuelve el global a su valor de
+     * fábrica; con empresa, borra el valor propio de la empresa para que vuelva
+     * a regir el global.
+     *
+     * @param param nombre del parámetro.
+     * @param idcompany empresa, o nulo para restablecer el global.
+     * @return resultado de la operación, o nulo si no había nada que restablecer.
+     * @throws Exception si la persistencia falla.
+     */
+    default IDataResult restoreSystemParam(String param, Long idcompany) throws Exception {
+        throw new UnsupportedOperationException("restoreSystemParam no implementado");
+    }
+
+    /**
+     * Borra el valor propio de una empresa para un parámetro. Nunca borra el
+     * global.
+     *
+     * @param param nombre del parámetro.
+     * @param idcompany empresa (obligatoria).
+     * @return resultado de la operación, o nulo si la empresa no tenía valor propio.
+     * @throws Exception si la persistencia falla.
+     */
+    default IDataResult deleteSystemParam(String param, Long idcompany) throws Exception {
+        throw new UnsupportedOperationException("deleteSystemParam no implementado");
+    }
 
     /**
      * Devuelve la configuración de un grupo como documento XML.
@@ -96,11 +154,17 @@ public interface IAppConfig {
     String getFileSystemPath(String sessionId);
 
     /**
-     * Persiste un parámetro de sistema.
+     * Persiste un parámetro de sistema. La fila se identifica por el par
+     * (nombre, empresa). Un valor por empresa de un parámetro que no lo admite
+     * (alcance solo global) se rechaza con una excepción de aplicación que
+     * lleva el error 50000 sobre el campo {@code idcompany}.
+     *
+     * <p>No verifica quién graba: el permiso para editar valores por empresa
+     * se resuelve en el servicio que exponga esa edición a los usuarios.</p>
      *
      * @param param parámetro a guardar.
      * @return resultado de la operación.
-     * @throws Exception si la persistencia falla.
+     * @throws Exception si la persistencia falla o el alcance no lo admite.
      */
     IDataResult setSystemParam(IAppSystemParam param) throws Exception;
 

@@ -95,6 +95,18 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @Size(max = 200)
     @Column(name = "valueChar")
     private String valueChar;
+
+    @Column(name = "idcompany")
+    private Long idcompany;
+
+    @Basic(optional = false)
+    @NotNull
+    @Column(name = "paramScope")
+    private Character paramScope = IAppSystemParam.SCOPE_GLOBAL;
+
+    @Size(max = 200)
+    @Column(name = "defaultValue")
+    private String defaultValue;
     
     @Transient    
     @Basic(optional = false)
@@ -249,6 +261,37 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
         this.appuser = appuser;
     }
 
+
+
+    @Override
+    public Long getIdcompany() {
+        return idcompany;
+    }
+
+    @Override
+    public void setIdcompany(Long idcompany) {
+        this.idcompany = idcompany;
+    }
+
+    @Override
+    public Character getParamScope() {
+        return paramScope;
+    }
+
+    @Override
+    public void setParamScope(Character paramScope) {
+        this.paramScope = paramScope;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    @Override
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 
     @Override
     public Object getValue() {
