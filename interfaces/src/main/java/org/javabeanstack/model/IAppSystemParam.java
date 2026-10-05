@@ -50,4 +50,43 @@ public interface IAppSystemParam extends IDataRow {
     void setValueDate(LocalDateTime valueDate);
     void setValueNumber(Long valueNumber);
     void setValue(Object value) throws Exception;
+
+    /** Alcance solo global: el parámetro solo tiene la fila con empresa nula. */
+    char SCOPE_GLOBAL = 'G';
+
+    /** Alcance por empresa: global obligatorio más valores por empresa opcionales. */
+    char SCOPE_COMPANY = 'E';
+
+    /**
+     * Devuelve la empresa dueña de este valor; nulo es el valor global.
+     *
+     * <p>Las columnas idcompany, paramScope y defaultValue las administra la
+     * línea 10 (plan SYSPAR) sobre la base de catálogo compartida: esta línea
+     * solo las lee y nunca graba valores por empresa. Son {@code default} para
+     * no romper implementaciones anteriores.</p>
+     *
+     * @return identificador de la empresa, o nulo si es el valor global.
+     */
+    default Long getIdcompany() {
+        return null;
+    }
+
+    /**
+     * Devuelve el alcance del parámetro: G solo global, E admite valor por
+     * empresa.
+     *
+     * @return alcance del parámetro.
+     */
+    default Character getParamScope() {
+        return SCOPE_GLOBAL;
+    }
+
+    /**
+     * Devuelve el valor de fábrica del parámetro en texto canónico.
+     *
+     * @return valor por defecto, o nulo si no tiene.
+     */
+    default String getDefaultValue() {
+        return null;
+    }
 }

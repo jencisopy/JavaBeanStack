@@ -95,6 +95,18 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @Size(max = 200)
     @Column(name = "valueChar")
     private String valueChar;
+
+    //Columnas de la linea 10 (plan SYSPAR): esta linea solo las lee. Con
+    //insertable/updatable en falso nunca las graba, y al insertar rige el
+    //DEFAULT 'G' de paramScope.
+    @Column(name = "idcompany", insertable = false, updatable = false)
+    private Long idcompany;
+
+    @Column(name = "paramScope", insertable = false, updatable = false)
+    private Character paramScope;
+
+    @Column(name = "defaultValue", insertable = false, updatable = false)
+    private String defaultValue;
     
     @Transient    
     @Basic(optional = false)
@@ -249,6 +261,21 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
         this.appuser = appuser;
     }
 
+
+    @Override
+    public Long getIdcompany() {
+        return idcompany;
+    }
+
+    @Override
+    public Character getParamScope() {
+        return paramScope;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return defaultValue;
+    }
 
     @Override
     public Object getValue() {

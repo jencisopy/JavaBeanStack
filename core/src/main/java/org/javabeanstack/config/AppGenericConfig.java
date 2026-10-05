@@ -157,7 +157,7 @@ public class AppGenericConfig implements IAppConfig {
     public IAppSystemParam getSystemParam(Long id) {
         IAppSystemParam appSystemParam;
         String queryString
-                = "select o from AppSystemParam o where idsystemparam = :id";
+                = "select o from AppSystemParam o where idAppSystemParam = :id";
         try {
             appSystemParam
                     = dao.findByQuery(null, queryString, Fn.queryParams("id", id));
@@ -169,8 +169,14 @@ public class AppGenericConfig implements IAppConfig {
     }
 
     /**
-     * Lee de una tabla "appSystemParam" un registro utilizando el nombre de un
-     * parámetro como identificador solicitado.
+     * Lee de una tabla "appSystemParam" el valor global (empresa nula) de un
+     * parámetro, utilizando su nombre como identificador.
+     *
+     * <p>Filtra la empresa a propósito: la base de catálogo compartida con la
+     * línea 10 puede tener valores por empresa del mismo parámetro (plan
+     * SYSPAR), y sin el filtro la consulta de un único resultado fallaba y
+     * devolvía nulo, como si el parámetro no existiera. Esta línea solo lee el
+     * valor global.</p>
      *
      * @param param nombre del parametro.
      * @return registro AppSystemParam solicitado.
@@ -179,7 +185,8 @@ public class AppGenericConfig implements IAppConfig {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)        
     public IAppSystemParam getSystemParam(String param) {
         String queryString
-                = "select o from AppSystemParam o where LOWER(param) = :param";
+                = "select o from AppSystemParam o where LOWER(param) = :param"
+                + " and idcompany is null";
         IAppSystemParam appSystemParam;
         try {
             appSystemParam
@@ -192,7 +199,8 @@ public class AppGenericConfig implements IAppConfig {
     }
 
     /**
-     * Devuelve una lista conteniendo los registros de "appSystemParam"
+     * Devuelve una lista conteniendo los registros globales de "appSystemParam"
+     * (sin los valores propios de las empresas).
      *
      * @return lista de registros "AppSystemParam"
      */
@@ -200,7 +208,7 @@ public class AppGenericConfig implements IAppConfig {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)        
     public List<IAppSystemParam> getSystemParams() {
         String queryString
-                = "select o from AppSystemParam o";
+                = "select o from AppSystemParam o where idcompany is null";
         try {
             return dao.findListByQuery(null, queryString, null);
         } catch (Exception ex) {
