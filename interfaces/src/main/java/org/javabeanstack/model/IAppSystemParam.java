@@ -23,6 +23,9 @@ package org.javabeanstack.model;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 import org.javabeanstack.data.IDataRow;
 
 /**
@@ -167,6 +170,19 @@ public interface IAppSystemParam extends IDataRow {
     char SCOPE_COMPANY = 'E';
 
     /**
+     * Alcance "global oculto": como {@link #SCOPE_GLOBAL}, solo admite la fila
+     * con empresa nula, pero es de uso interno del sistema (claves, versión de
+     * la estructura): las pantallas de parámetros no lo muestran ni lo editan.
+     */
+    char SCOPE_HIDDEN = 'H';
+
+    /**
+     * Separador de las opciones de la lista de valores válidos
+     * ({@link #getValidValues()}).
+     */
+    String VALID_VALUES_SEPARATOR = "|";
+
+    /**
      * Devuelve la empresa dueña de este valor. Nulo indica el valor global.
      *
      * <p>Los métodos de alcance y valor por defecto son {@code default} para no
@@ -189,8 +205,9 @@ public interface IAppSystemParam extends IDataRow {
     }
 
     /**
-     * Devuelve el alcance del parámetro: {@link #SCOPE_GLOBAL} o
-     * {@link #SCOPE_COMPANY}. Rige el que figure en la fila global.
+     * Devuelve el alcance del parámetro: {@link #SCOPE_GLOBAL},
+     * {@link #SCOPE_COMPANY} o {@link #SCOPE_HIDDEN}. Rige el que figure en la
+     * fila global.
      * @return alcance del parámetro.
      */
     default Character getParamScope() {
@@ -199,7 +216,8 @@ public interface IAppSystemParam extends IDataRow {
 
     /**
      * Asigna el alcance del parámetro.
-     * @param paramScope {@link #SCOPE_GLOBAL} o {@link #SCOPE_COMPANY}.
+     * @param paramScope {@link #SCOPE_GLOBAL}, {@link #SCOPE_COMPANY} o
+     * {@link #SCOPE_HIDDEN}.
      */
     default void setParamScope(Character paramScope) {
         throw new UnsupportedOperationException("Esta implementación no admite alcance por empresa");
@@ -223,11 +241,41 @@ public interface IAppSystemParam extends IDataRow {
     }
 
     /**
+     * Devuelve la lista de valores válidos del parámetro, o nulo si admite
+     * cualquier valor de su tipo. Formato: opciones separadas por
+     * {@code |}; cada opción {@code valor} o {@code valor=etiqueta} (ver
+     * {@link #parseValidValues(String)}).
+     *
+     * @return lista de valores válidos, o nulo.
+     */
+    default String getValidValues() {
+        return null;
+    }
+
+    /**
+     * Asigna la lista de valores válidos del parámetro (ver
+     * {@link #getValidValues()}).
+     * @param validValues lista de valores válidos, o nulo.
+     */
+    default void setValidValues(String validValues) {
+        throw new UnsupportedOperationException("Esta implementación no admite lista de valores válidos");
+    }
+
+    /**
      * Indica si el parámetro admite un valor propio por empresa.
      * @return verdadero si el alcance es {@link #SCOPE_COMPANY}.
      */
     default boolean isCompanyAllowed() {
         return getParamScope() != null && getParamScope() == SCOPE_COMPANY;
+    }
+
+    /**
+     * Indica si el parámetro es global oculto: se lee como cualquier global,
+     * pero no se muestra ni se edita desde las pantallas de parámetros.
+     * @return verdadero si el alcance es {@link #SCOPE_HIDDEN}.
+     */
+    default boolean isHidden() {
+        return getParamScope() != null && getParamScope() == SCOPE_HIDDEN;
     }
 
     /**
@@ -324,6 +372,38 @@ public interface IAppSystemParam extends IDataRow {
             default:
                 return text;
         }
+    }
+
+    /**
+     * Interpreta una lista de valores válidos: opciones separadas por
+     * {@code |}; cada opción {@code valor} o {@code valor=etiqueta} (se corta
+     * en el primer {@code =}, así la etiqueta puede llevar comas o signos
+     * igual). Se recortan los espacios, las opciones vacías se omiten y, si
+     * una opción no trae etiqueta, la etiqueta es el propio valor. Un valor
+     * repetido conserva la primera etiqueta.
+     *
+     * <p>Ejemplos: {@code GRAY|WHITE|BLUE};
+     * {@code 1=Permitido salvo negación explícita|2=Negado salvo permiso explícito}.</p>
+     *
+     * @param validValues texto de la lista.
+     * @return mapa valor → etiqueta en el orden de la lista; vacío si el texto
+     * es nulo o no trae opciones.
+     */
+    static Map<String, String> parseValidValues(String validValues) {
+        Map<String, String> result = new LinkedHashMap<>();
+        if (validValues == null || validValues.isBlank()) {
+            return result;
+        }
+        for (String option : validValues.split(Pattern.quote(VALID_VALUES_SEPARATOR))) {
+            int eq = option.indexOf('=');
+            String value = (eq < 0 ? option : option.substring(0, eq)).trim();
+            if (value.isEmpty()) {
+                continue;
+            }
+            String label = eq < 0 ? "" : option.substring(eq + 1).trim();
+            result.putIfAbsent(value, label.isEmpty() ? value : label);
+        }
+        return result;
     }
 
     /**

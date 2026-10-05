@@ -107,6 +107,10 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @Size(max = 200)
     @Column(name = "defaultValue")
     private String defaultValue;
+
+    @Size(max = 500)
+    @Column(name = "validValues")
+    private String validValues;
     
     @Transient    
     @Basic(optional = false)
@@ -291,6 +295,27 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @Override
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    /**
+     * Lista de valores válidos ({@code valor} o {@code valor=etiqueta}
+     * separados por {@code |}), o nulo si admite cualquier valor de su tipo.
+     *
+     * @return lista de valores válidos, o nulo.
+     */
+    @Override
+    public String getValidValues() {
+        return validValues;
+    }
+
+    /**
+     * Asigna la lista de valores válidos (ver {@link #getValidValues()}).
+     *
+     * @param validValues lista de valores válidos, o nulo.
+     */
+    @Override
+    public void setValidValues(String validValues) {
+        this.validValues = validValues;
     }
 
     @Override

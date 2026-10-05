@@ -273,5 +273,57 @@ public class AppGenericConfigSystemParamTest {
         AppSystemParam p = new AppSystemParam();
         assertEquals(IAppSystemParam.SCOPE_GLOBAL, p.getParamScope());
         assertFalse(p.isCompanyAllowed());
+        assertFalse(p.isHidden());
+    }
+
+    @Test
+    @DisplayName("Alcance H: se lee como global, ignora valores por empresa y los rechaza al grabar")
+    void alcanceOculto() {
+        AppSystemParam global = fila("MAIL_CIPHER_KEY", null, 'H', "clave");
+        fila("MAIL_CIPHER_KEY", EMPRESA, 'H', "clave de la empresa");
+        assertTrue(global.isHidden());
+        assertFalse(global.isCompanyAllowed());
+        assertEquals("clave", config.getSystemParam("MAIL_CIPHER_KEY").getValueChar());
+        assertEquals("clave", config.getSystemParam("MAIL_CIPHER_KEY", EMPRESA).getValueChar());
+
+        AppSystemParam nuevo = new AppSystemParam();
+        nuevo.setParam("MAIL_CIPHER_KEY");
+        nuevo.setParamType('C');
+        nuevo.setIdcompany(OTRA_EMPRESA);
+        assertThrows(SystemParamScopeException.class, () -> config.setSystemParam(nuevo));
+        assertTrue(operaciones.isEmpty());
+    }
+
+    @Test
+    @DisplayName("parseValidValues: valor o valor=etiqueta separados por |, en orden")
+    void listaDeValoresValidos() {
+        Map<String, String> colores = IAppSystemParam.parseValidValues("GRAY| WHITE |BLUE");
+        assertEquals(List.of("GRAY", "WHITE", "BLUE"), new ArrayList<>(colores.keySet()));
+        assertEquals("WHITE", colores.get("WHITE"));
+
+        Map<String, String> politica = IAppSystemParam.parseValidValues(
+                "1=Permitido salvo negación explícita, por defecto|2=Negado = salvo permiso");
+        assertEquals(List.of("1", "2"), new ArrayList<>(politica.keySet()));
+        // Se corta en el primer "=": la etiqueta conserva comas y signos igual
+        assertEquals("Permitido salvo negación explícita, por defecto", politica.get("1"));
+        assertEquals("Negado = salvo permiso", politica.get("2"));
+
+        // Opciones vacías omitidas; etiqueta vacía = el valor; repetido conserva la primera
+        Map<String, String> raro = IAppSystemParam.parseValidValues("|A=|| =sin valor|B=b1|B=b2|");
+        assertEquals(List.of("A", "B"), new ArrayList<>(raro.keySet()));
+        assertEquals("A", raro.get("A"));
+        assertEquals("b1", raro.get("B"));
+
+        assertTrue(IAppSystemParam.parseValidValues(null).isEmpty());
+        assertTrue(IAppSystemParam.parseValidValues("  ").isEmpty());
+    }
+
+    @Test
+    @DisplayName("La entidad guarda la lista de valores válidos")
+    void validValuesEnLaEntidad() {
+        AppSystemParam p = new AppSystemParam();
+        assertNull(p.getValidValues());
+        p.setValidValues("NONE|READ|WRITE");
+        assertEquals(3, IAppSystemParam.parseValidValues(p.getValidValues()).size());
     }
 }
