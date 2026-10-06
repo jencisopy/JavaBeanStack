@@ -177,6 +177,17 @@ public class AuthFilter implements Filter {
             return;
         }
 
+        // Página forzada: mientras la sesión tenga algo pendiente que el
+        // usuario tiene que resolver antes de seguir (por ejemplo, cambiar una
+        // contraseña vencida), toda petición que no sea esa página ni un recurso
+        // estático va a ella. Las ajax reciben la redirección parcial.
+        String forzada = getForcedPage(req, userSession);
+        if (forzada != null && !forzada.isEmpty() && !isStaticResource(urlStr)
+                && !isForcedPageRequest(urlStr, forzada)) {
+            redirect(req, res, req.getContextPath() + forzada);
+            return;
+        }
+
         // Verificar si la página que se abre es una página de información
         if (isPageInfo(urlStr)) {
             chain.doFilter(request, response);
@@ -293,9 +304,9 @@ public class AuthFilter implements Filter {
         if (urlStr.endsWith("404.xhtml")) {
             return true;
         }
-        if (urlStr.endsWith("cambiarclave.xhtml")) {
-            return true;
-        }
+        // cambiarclave.xhtml ya NO es pública (plan PWDEXP, I1-01): era una
+        // entrada heredada sin página detrás, y la página de cambio obligatorio
+        // de contraseña exige la sesión del usuario. Ver getForcedPage.
         return urlStr.contains("/jakarta.faces.resource/");
     }
 
@@ -419,6 +430,59 @@ public class AuthFilter implements Filter {
      */
     protected String getSessionExpiredPage() {
         return "/login.xhtml";
+    }
+
+    /**
+     * Página (relativa al contexto) a la que hay que llevar al usuario antes
+     * de dejarlo seguir, o nulo si no hay nada pendiente.
+     *
+     * <p>Se evalúa en cada petición de un usuario con sesión, <b>después</b>
+     * del control de acceso por rol y antes de servir la página. Mientras
+     * devuelva una página, el filtro solo deja pasar esa misma página (y sus
+     * postbacks), los recursos estáticos y las páginas públicas, que se
+     * resuelven antes; cualquier otra petición —incluidas las ajax— se desvía a
+     * ella. Es una imposición del servidor: ocultar el menú no alcanza, porque
+     * una dirección escrita a mano o un favorito saltean la interfaz.</p>
+     *
+     * <p><b>Contrato</b>: la página forzada tiene que poder servirse con la
+     * sesión tal como está y tiene que ofrecer una salida (cerrar la sesión)
+     * desde ella misma; si dependiera de otra página protegida, el usuario
+     * quedaría en un bucle de redirecciones. Tiene que ser una consulta en
+     * memoria, porque corre en cada pedido.</p>
+     *
+     * <p>Por omisión devuelve nulo: el framework no impone nada.</p>
+     *
+     * @param req petición en curso.
+     * @param userSession sesión del usuario guardada en la sesión HTTP.
+     * @return dirección relativa al contexto (con la barra inicial), o nulo.
+     */
+    protected String getForcedPage(HttpServletRequest req, IUserSession userSession) {
+        return null;
+    }
+
+    /**
+     * Indica si la petición es la de la página forzada misma.
+     *
+     * @param urlStr dirección pedida, en minúsculas y sin parámetros de ruta.
+     * @param forzada página forzada, relativa al contexto; se ignora su
+     * consulta.
+     * @return verdadero si la dirección termina en la página forzada.
+     */
+    public static boolean isForcedPageRequest(String urlStr, String forzada) {
+        if (urlStr == null || forzada == null) {
+            return false;
+        }
+        String pagina = forzada.toLowerCase();
+        int pos = pagina.indexOf('?');
+        if (pos >= 0) {
+            pagina = pagina.substring(0, pos);
+        }
+        String ruta = urlStr;
+        pos = ruta.indexOf('?');
+        if (pos >= 0) {
+            ruta = ruta.substring(0, pos);
+        }
+        return !pagina.isEmpty() && ruta.endsWith(pagina);
     }
 
     /**

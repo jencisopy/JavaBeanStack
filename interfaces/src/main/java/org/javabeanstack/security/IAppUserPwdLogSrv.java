@@ -21,6 +21,7 @@
 */
 package org.javabeanstack.security;
 
+import java.time.LocalDateTime;
 import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.model.IAppUser;
 
@@ -90,4 +91,25 @@ public interface IAppUserPwdLogSrv extends IDataService {
      * @return verdadero si la contraseña quedó grabada.
      */
     boolean replaceUserPass(IAppUser appUser, String hashNuevo);
+
+    /**
+     * Devuelve la fecha del último cambio de la contraseña <b>vigente</b> del
+     * usuario.
+     *
+     * <p>Es la fecha de alta, en la bitácora, de la fila cuyo hash es el que el
+     * usuario tiene hoy, y no la de la última fila del usuario: la bitácora
+     * guarda también el hash que se retira en cada cambio, y una fila posterior
+     * con otro hash no dice nada sobre la contraseña en uso.</p>
+     *
+     * <p>Por omisión devuelve nulo, que la política de vencimiento interpreta
+     * como «no se puede evaluar»: así un implementador que no lo redefina no
+     * vence a nadie.</p>
+     *
+     * @param appUser usuario a consultar.
+     * @return fecha y hora del último cambio de la contraseña vigente, o nulo
+     * si no hay registro o no se pudo consultar.
+     */
+    default LocalDateTime getLastPasswordChange(IAppUser appUser) {
+        return null;
+    }
 }

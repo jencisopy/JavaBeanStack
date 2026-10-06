@@ -143,6 +143,11 @@ public class AppUserSimple extends DataRow implements IAppUser {
     @Size(max = 200)
     @Column(name = "login_blocked_reason", insertable = false, updatable = false)
     private String loginBlockedReason;
+
+    //Exencion del vencimiento de contrasena (plan PWDEXP). De solo lectura en
+    //la proyeccion del ingreso: la escribe el ABM y nadie mas.
+    @Column(name = "password_noexpire", insertable = false, updatable = false)
+    private Boolean passwordNoExpire = false;
     
     @Column(name = "disabled")
     private Boolean disabled = false;
@@ -570,6 +575,16 @@ public class AppUserSimple extends DataRow implements IAppUser {
     @Override
     public void setLoginBlockedReason(String loginBlockedReason) {
         this.loginBlockedReason = loginBlockedReason;
+    }
+
+    @Override
+    public Boolean getPasswordNoExpire() {
+        return passwordNoExpire;
+    }
+
+    @Override
+    public void setPasswordNoExpire(Boolean passwordNoExpire) {
+        this.passwordNoExpire = passwordNoExpire;
     }
     
     @Override

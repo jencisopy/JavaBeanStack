@@ -565,4 +565,46 @@ public interface IAppUser extends IDataRow, Serializable {
      */
     default void setLoginBlockedReason(String loginBlockedReason) {
     }
+
+    // ------------------------------------------------------------------------
+    // Vencimiento de la contraseña (exención por usuario)
+    //
+    // Mismo criterio que los atributos del bloqueo: método `default` —getter
+    // nulo, setter vacío— para no obligar a los implementadores que no mapean
+    // la columna (fixtures de prueba, proyecciones reducidas).
+    //
+    // Quien SÍ tiene que mapearla es la proyección que lee la autenticación:
+    // si solo la mapeara la entidad del mantenimiento de usuarios, el getter
+    // devolvería nulo en cada ingreso, la exención quedaría apagada para todos
+    // y ninguna prueba lo notaría.
+    //
+    // La política que decide cuándo vence una contraseña no vive acá: es de la
+    // aplicación (`py.com.oym.frame.security.PasswordExpirePolicy`).
+    // ------------------------------------------------------------------------
+
+    /**
+     * Indica si este usuario está exento de la política de vencimiento de
+     * contraseña.
+     *
+     * <p>Con la exención marcada la contraseña no vence nunca, aunque la
+     * instalación tenga el vencimiento encendido: el ingreso no avisa ni obliga
+     * a cambiarla. Solo un administrador del sistema puede marcarla.</p>
+     *
+     * @return verdadero si la contraseña no vence, o nulo si la proyección no
+     * mapea la columna (la política lo trata como falso).
+     */
+    default Boolean getPasswordNoExpire() {
+        return null;
+    }
+
+    /**
+     * Marca o desmarca la exención del vencimiento de contraseña.
+     *
+     * <p>Tiene cuerpo vacío por omisión para que las proyecciones de usuario
+     * que no mapean la columna no queden obligadas a implementarlo.</p>
+     *
+     * @param passwordNoExpire verdadero para que la contraseña no venza.
+     */
+    default void setPasswordNoExpire(Boolean passwordNoExpire) {
+    }
 }

@@ -87,4 +87,50 @@ public class AuthFilterTest {
         assertEquals("/login.xhtml", filtro.getNoSessionPage(true));
         assertEquals("/login.xhtml", filtro.getNoSessionPage(false));
     }
+
+    /**
+     * Por omisión no hay página forzada: el framework no impone nada (plan
+     * PWDEXP, RF7).
+     */
+    @Test
+    public void testGetForcedPagePorOmision() {
+        AuthFilter filtro = new AuthFilter();
+        assertNull(filtro.getForcedPage(null, null));
+    }
+
+    /**
+     * La página forzada se reconoce por el final de la ruta, sin importar la
+     * consulta ni las mayúsculas de la declaración; cualquier otra página no
+     * es la forzada (si lo fuera, el desvío no ocurriría y quedaría una puerta
+     * abierta).
+     */
+    @Test
+    public void testIsForcedPageRequest() {
+        String forzada = "/secure/cambiarClave.xhtml";
+        assertTrue(AuthFilter.isForcedPageRequest("http://h/app/secure/cambiarclave.xhtml", forzada));
+        assertTrue(AuthFilter.isForcedPageRequest("http://h/app/secure/cambiarclave.xhtml?x=1", forzada));
+        assertTrue(AuthFilter.isForcedPageRequest("http://h/app/secure/cambiarclave.xhtml",
+                forzada + "?aviso=1"));
+        assertFalse(AuthFilter.isForcedPageRequest("http://h/app/secure/home.xhtml", forzada));
+        assertFalse(AuthFilter.isForcedPageRequest("http://h/app/secure/usuarioperfil.xhtml", forzada));
+        assertFalse(AuthFilter.isForcedPageRequest("http://h/app/cambiarclave.xhtml", forzada));
+        assertFalse(AuthFilter.isForcedPageRequest(null, forzada));
+        assertFalse(AuthFilter.isForcedPageRequest("http://h/app/secure/home.xhtml", null));
+        assertFalse(AuthFilter.isForcedPageRequest("http://h/app/secure/home.xhtml", ""));
+    }
+
+    /**
+     * {@code cambiarclave.xhtml} dejó de ser pública (plan PWDEXP, I1-01): la
+     * página de cambio obligatorio exige la sesión del usuario. Las públicas de
+     * siempre lo siguen siendo.
+     */
+    @Test
+    public void testCambiarClaveNoEsPublica() {
+        AuthFilter filtro = new AuthFilter();
+        assertFalse(filtro.isResourceNoProtect("http://h/app/secure/cambiarclave.xhtml"));
+        assertFalse(filtro.isResourceNoProtect("http://h/app/cambiarclave.xhtml"));
+        assertTrue(filtro.isResourceNoProtect("http://h/app/login.xhtml"));
+        assertTrue(filtro.isResourceNoProtect("http://h/app/noautorizado.xhtml"));
+        assertTrue(filtro.isResourceNoProtect("http://h/app/404.xhtml"));
+    }
 }

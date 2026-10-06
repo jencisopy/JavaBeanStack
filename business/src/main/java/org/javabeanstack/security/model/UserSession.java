@@ -25,7 +25,7 @@ package org.javabeanstack.security.model;
 
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.error.IErrorReg;
@@ -53,7 +53,11 @@ public class UserSession implements IUserSession{
     private IErrorReg error;
     private Integer idleSessionExpireInMinutes;
     private IDBFilter dbFilter;
-    private Map<String, Object> info = new HashMap();
+    //Concurrente (plan PWDEXP, M5-04): el filtro de autenticacion lo lee en cada
+    //peticion -incluidas las ajax en paralelo- y lo escribe (APPNAME, las marcas
+    //de vencimiento de contrasena) desde varios hilos. No admite claves ni
+    //valores nulos: addInfo/getInfo(key) los resuelven.
+    private Map<String, Object> info = new ConcurrentHashMap<>();
     private IClientAuthRequestInfo clientAuthRequestInfo;
 
     /**
@@ -358,17 +362,31 @@ public class UserSession implements IUserSession{
      */
     @Override
     public  Object getInfo(String key) {
+        if (key == null) {
+            return null;
+        }
         return info.get(key);
     }
     
     /**
      * Agrega o reemplaza un dato libre de la sesión.
      *
+     * <p>El mapa es concurrente y no admite nulos: una clave nula se ignora y un
+     * valor nulo quita la clave, que para quien lee con {@link #getInfo(String)}
+     * es lo mismo que guardar nulo.</p>
+     *
      * @param key clave del dato.
      * @param info valor del dato.
      */
     @Override
     public void addInfo(String key, Object info) {
+        if (key == null) {
+            return;
+        }
+        if (info == null) {
+            this.info.remove(key);
+            return;
+        }
         this.info.put(key, info);
     }
 
