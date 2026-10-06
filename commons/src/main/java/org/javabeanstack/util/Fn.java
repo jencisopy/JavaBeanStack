@@ -542,6 +542,111 @@ public class Fn {
     }
 
     /**
+     * Indica si una entrada de una lista de IPs está bien escrita para
+     * {@link #ipMatchPattern(String, String)}: es la sintaxis que el filtro de
+     * peticiones sabe evaluar, de modo que lo que se acepta al cargar el valor
+     * y lo que se evalúa después son la misma regla.
+     *
+     * <p>Válidas: {@code *}, {@code 0.0.0.0}, una IPv4 completa
+     * ({@code 192.168.1.10}) o un patrón de uno a cuatro octetos separados por
+     * punto, cada uno {@code *} o un número de {@code 0} a {@code 255}
+     * ({@code 192.168.*}, {@code 10.*.*.5}, {@code 192.168.0.0}; los ceros a la
+     * derecha funcionan como comodín).</p>
+     *
+     * <p>Inválidas: vacía, con espacios en el medio, con un octeto vacío
+     * ({@code 192..1}, {@code 192.168.}), con más de cuatro octetos, con un
+     * número fuera de rango o con ceros a la izquierda ({@code 010}: el
+     * filtro compara los octetos como texto y nunca coincidiría con
+     * {@code 10}), y cualquier dirección IPv6 (el filtro no compara IPv6: la
+     * trataría siempre como «no coincide»). Para distinguir este último caso
+     * en un mensaje, ver {@link #isIpv6Pattern(String)}.</p>
+     *
+     * @param ipPattern entrada a revisar (se recortan los extremos).
+     * @return verdadero si la entrada es una dirección o patrón IPv4 válido.
+     */
+    public static boolean isValidIpPattern(String ipPattern) {
+        if (ipPattern == null) {
+            return false;
+        }
+        String patron = ipPattern.trim();
+        if (patron.isEmpty()) {
+            return false;
+        }
+        if (inList(patron, "0.0.0.0", "*")) {
+            return true;
+        }
+        String[] octetos = patron.split("\\.", -1);
+        if (octetos.length > 4) {
+            return false;
+        }
+        for (String octeto : octetos) {
+            if (octeto.equals("*")) {
+                continue;
+            }
+            if (octeto.isEmpty() || octeto.length() > 3) {
+                return false;
+            }
+            for (int i = 0; i < octeto.length(); i++) {
+                if (octeto.charAt(i) < '0' || octeto.charAt(i) > '9') {
+                    return false;
+                }
+            }
+            if (octeto.length() > 1 && octeto.charAt(0) == '0') {
+                return false;
+            }
+            if (Integer.parseInt(octeto) > 255) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Indica si una entrada de una lista de IPs parece una dirección IPv6
+     * (contiene {@code ::} o al menos dos {@code :}; con uno solo es una IPv4
+     * con puerto). Sirve para explicar el rechazo de
+     * {@link #isValidIpPattern(String)}: el filtro de peticiones solo evalúa
+     * IPv4.
+     *
+     * @param ipPattern entrada a revisar.
+     * @return verdadero si la entrada tiene forma de IPv6.
+     */
+    public static boolean isIpv6Pattern(String ipPattern) {
+        if (ipPattern == null) {
+            return false;
+        }
+        //Un solo ":" es una IPv4 con puerto (192.168.1.1:8080), no una IPv6:
+        //las IPv6 llevan "::" o al menos dos ":" (SYSPARUI M3-13)
+        return ipPattern.contains("::") || ipPattern.indexOf(':') != ipPattern.lastIndexOf(':');
+    }
+
+    /**
+     * Indica si una entrada válida de una lista de IPs coincide con
+     * <b>cualquier</b> dirección en {@link #ipMatchPattern(String, String)}:
+     * {@code *}, {@code 0.0.0.0} y todo patrón cuyos octetos sean solo
+     * {@code 0} o {@code *} ({@code 0}, {@code 0.0}, {@code 0.*.*.*}), porque
+     * los ceros sin un octeto significativo a la derecha son comodines.
+     *
+     * <p>En una lista de permitidos es la forma de decir «sin restricción»;
+     * en una de denegados dejaría afuera a todos, incluido el administrador
+     * (SYSPARUI M3-07).</p>
+     *
+     * @param ipPattern entrada a revisar (se recortan los extremos).
+     * @return verdadero si la entrada es válida y coincide con toda dirección.
+     */
+    public static boolean isIpMatchAllPattern(String ipPattern) {
+        if (!isValidIpPattern(ipPattern)) {
+            return false;
+        }
+        for (String octeto : ipPattern.trim().split("\\.", -1)) {
+            if (!octeto.equals("0") && !octeto.equals("*")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Devuelve verdadero si una dirección IP coincide con un patrón.
      *
      * <p>El patrón se compara por octetos <b>de derecha a izquierda</b>: un

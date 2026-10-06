@@ -422,4 +422,52 @@ public class FnTest {
         assertFalse(Fn.ipMatch("192.168.1.5", "*.169.1.5"));
         assertFalse(Fn.ipMatch("192.168.1.5", "0.0.0.6"));
     }
+
+    /**
+     * {@code isValidIpPattern} acepta exactamente lo que {@code ipMatchPattern}
+     * sabe evaluar (plan SYSPARUI, §3.1.2: validador {@code {IPMASK_LIST}}).
+     */
+    @Test
+    public void testIsValidIpPattern() {
+        System.out.println("isValidIpPattern");
+        //Las formas que el filtro evalúa
+        for (String valido : new String[]{"*", "0.0.0.0", " 0.0.0.0 ", "192.168.1.10", "192.168.*",
+            "192.168.0.0", "10.*.*.5", "*.*.*.*", "0.*.*.*", "10", "255.255.255.255", "0.0", "127.0.0.1", "192.168.1"}) {
+            assertTrue(Fn.isValidIpPattern(valido), valido);
+        }
+        //Ceros a la derecha como comodín: el patrón válido coincide con la red
+        assertTrue(Fn.ipMatchPattern("192.168.7.9", "192.168.0.0"));
+        //Basura, octetos vacíos, de más o fuera de rango, ceros a la izquierda
+        for (String invalido : new String[]{null, "", "   ", "abc", "192.168.", "192..1",
+            ".192.168.1.1", "1.2.3.4.5", "0.0.0.0.0", "256.1.1.1", "192.168.1.-1", "192.168.1.1a",
+            "010.1.1.1", "00", "1 .2.3.4", "192.168.1.1/24", "1234", "**", "192.168.*a"}) {
+            assertFalse(Fn.isValidIpPattern(invalido), String.valueOf(invalido));
+        }
+        //IPv6: el filtro no la compara; se rechaza y se puede explicar por qué
+        for (String v6 : new String[]{"::1", "fe80::1", "0:0:0:0:0:0:0:1", "2001:db8::*"}) {
+            assertFalse(Fn.isValidIpPattern(v6), v6);
+            assertTrue(Fn.isIpv6Pattern(v6), v6);
+        }
+        assertFalse(Fn.isIpv6Pattern("192.168.1.1"));
+        assertFalse(Fn.isIpv6Pattern(null));
+        //M3-13: una IPv4 con puerto no es IPv6 (y tampoco es una entrada válida)
+        assertFalse(Fn.isIpv6Pattern("192.168.1.1:8080"));
+        assertFalse(Fn.isValidIpPattern("192.168.1.1:8080"));
+    }
+
+    /**
+     * {@code isIpMatchAllPattern}: las entradas que coinciden con cualquier
+     * dirección (SYSPARUI M3-07), contrastadas con {@code ipMatchPattern}.
+     */
+    @Test
+    public void testIsIpMatchAllPattern() {
+        System.out.println("isIpMatchAllPattern");
+        for (String todo : new String[]{"*", "0.0.0.0", " 0.0.0.0 ", "0", "0.0", "0.*.*.*", "*.*.*.*", "*.0", "0.0.0"}) {
+            assertTrue(Fn.isIpMatchAllPattern(todo), todo);
+            assertTrue(Fn.ipMatchPattern("203.0.113.7", todo.trim()), todo);
+        }
+        for (String acotado : new String[]{"10", "192.168.*", "0.0.0.5", "10.0.0.0", "*.168.1.5", "", null, "abc", "0.0.0.0.0"}) {
+            assertFalse(Fn.isIpMatchAllPattern(acotado), String.valueOf(acotado));
+        }
+    }
 }

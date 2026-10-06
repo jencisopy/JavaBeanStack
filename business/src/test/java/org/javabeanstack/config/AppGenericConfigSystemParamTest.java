@@ -326,4 +326,59 @@ public class AppGenericConfigSystemParamTest {
         p.setValidValues("NONE|READ|WRITE");
         assertEquals(3, IAppSystemParam.parseValidValues(p.getValidValues()).size());
     }
+
+    @Test
+    @DisplayName("SYSPARUI §3.1.1: los validadores entre llaves no son opciones de la lista")
+    void validadoresEntreLlaves() {
+        // Solo validadores: sin lista cerrada
+        assertTrue(IAppSystemParam.parseValidValues("{FOLDER}").isEmpty());
+        assertEquals(List.of("FOLDER"), IAppSystemParam.parseValidators("{FOLDER}"));
+        // El rango se toma completo antes de separar valor=etiqueta
+        assertTrue(IAppSystemParam.parseValidValues("{>=0 and <=10}").isEmpty());
+        assertEquals(List.of(">=0 and <=10"), IAppSystemParam.parseValidators(" { >=0 and <=10 } "));
+        // Mezcla: lista cerrada más validador adicional, en orden
+        Map<String, String> mezcla = IAppSystemParam.parseValidValues("1=Uno|{>=1}|2=Dos");
+        assertEquals(List.of("1", "2"), new ArrayList<>(mezcla.keySet()));
+        assertEquals(List.of(">=1"), IAppSystemParam.parseValidators("1=Uno|{>=1}|2=Dos"));
+        // Un | entre llaves no corta el validador
+        assertEquals(List.of("A|B"), IAppSystemParam.parseValidators("{A|B}"));
+        assertTrue(IAppSystemParam.parseValidValues("{A|B}").isEmpty());
+        // Llave sin cerrar: validador mal escrito (conserva la llave), nunca una opción
+        assertTrue(IAppSystemParam.parseValidValues("{EMAIL").isEmpty());
+        assertEquals(List.of("{EMAIL"), IAppSystemParam.parseValidators("{EMAIL"));
+        // M3-10: la llave sin cerrar abarca solo hasta el primer |; el resto de la lista sobrevive
+        assertEquals(List.of("GRAY", "WHITE"), new ArrayList<>(IAppSystemParam.parseValidValues("{X|GRAY|WHITE").keySet()));
+        assertEquals(List.of("{X"), IAppSystemParam.parseValidators("{X|GRAY|WHITE"));
+        assertEquals(List.of("GRAY", "WH{ITE", "BLUE"),
+                new ArrayList<>(IAppSystemParam.parseValidValues("GRAY|WH{ITE|BLUE").keySet()));
+        assertTrue(IAppSystemParam.parseValidators("GRAY|WH{ITE|BLUE").isEmpty());
+        assertEquals(List.of("{A", "B"), IAppSystemParam.parseValidators("{A|{B}|C"));
+        assertEquals(List.of("C"), new ArrayList<>(IAppSystemParam.parseValidValues("{A|{B}|C").keySet()));
+        assertTrue(IAppSystemParam.parseValidators("{").isEmpty());
+        assertTrue(IAppSystemParam.parseValidValues("{|A").containsKey("A"));
+        // Vacíos y repetidos
+        assertEquals(List.of("EMAIL"), IAppSystemParam.parseValidators("{}|{ }|{EMAIL}|{EMAIL}"));
+        assertTrue(IAppSystemParam.parseValidators(null).isEmpty());
+        assertTrue(IAppSystemParam.parseValidators("  ").isEmpty());
+        assertTrue(IAppSystemParam.parseValidators("GRAY|WHITE").isEmpty());
+    }
+
+    @Test
+    @DisplayName("SYSPARUI §3.1.1: las 8 listas sembradas en la Fase 2 no cambian de comportamiento")
+    void listasSembradasSinCambios() {
+        String estados = "1=Liberado|2=Probado por el usuario|3=Probado por desarrollo|4=Desarrollado|5=No iniciado";
+        String[][] casos = {
+            {"GRAY|WHITE|LIGHTBLUE|BLUE|TEAL|WINE|RED|BLACK", "GRAY,WHITE,LIGHTBLUE,BLUE,TEAL,WINE,RED,BLACK"},
+            {"NONE|READ|WRITE", "NONE,READ,WRITE"},
+            {"ES=Español|EN=Inglés|PT=Portugués", "ES,EN,PT"},
+            {"1=Permitido salvo negación explícita|2=Negado salvo permiso explícito", "1,2"},
+            {estados, "1,2,3,4,5"}, {estados, "1,2,3,4,5"}, {estados, "1,2,3,4,5"}, {estados, "1,2,3,4,5"}};
+        for (String[] caso : casos) {
+            assertEquals(List.of(caso[1].split(",")),
+                    new ArrayList<>(IAppSystemParam.parseValidValues(caso[0]).keySet()), caso[0]);
+            assertTrue(IAppSystemParam.parseValidators(caso[0]).isEmpty(), caso[0]);
+        }
+        assertEquals("Español", IAppSystemParam.parseValidValues(casos[2][0]).get("ES"));
+        assertEquals("Negado salvo permiso explícito", IAppSystemParam.parseValidValues(casos[3][0]).get("2"));
+    }
 }

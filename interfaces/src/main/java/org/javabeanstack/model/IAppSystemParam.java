@@ -23,9 +23,10 @@ package org.javabeanstack.model;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import org.javabeanstack.data.IDataRow;
 
 /**
@@ -183,6 +184,17 @@ public interface IAppSystemParam extends IDataRow {
     String VALID_VALUES_SEPARATOR = "|";
 
     /**
+     * Apertura de un validador en la lista de valores válidos (ver
+     * {@link #parseValidators(String)}).
+     */
+    String VALIDATOR_OPEN = "{";
+
+    /**
+     * Cierre de un validador en la lista de valores válidos.
+     */
+    String VALIDATOR_CLOSE = "}";
+
+    /**
      * Devuelve la empresa dueña de este valor. Nulo indica el valor global.
      *
      * <p>Los métodos de alcance y valor por defecto son {@code default} para no
@@ -244,7 +256,9 @@ public interface IAppSystemParam extends IDataRow {
      * Devuelve la lista de valores válidos del parámetro, o nulo si admite
      * cualquier valor de su tipo. Formato: opciones separadas por
      * {@code |}; cada opción {@code valor} o {@code valor=etiqueta} (ver
-     * {@link #parseValidValues(String)}).
+     * {@link #parseValidValues(String)}), o un validador entre llaves como
+     * {@code {FOLDER}} o {@code {>=0 and <=10}} (ver
+     * {@link #parseValidators(String)}).
      *
      * @return lista de valores válidos, o nulo.
      */
@@ -385,6 +399,11 @@ public interface IAppSystemParam extends IDataRow {
      * <p>Ejemplos: {@code GRAY|WHITE|BLUE};
      * {@code 1=Permitido salvo negación explícita|2=Negado salvo permiso explícito}.</p>
      *
+     * <p>Las opciones que empiezan con llave son <b>validadores</b> (ver
+     * {@link #parseValidators(String)}) y no forman parte de la lista: se
+     * omiten aunque la llave no esté cerrada. Un texto con solo validadores
+     * devuelve un mapa vacío (el parámetro no tiene lista cerrada).</p>
+     *
      * @param validValues texto de la lista.
      * @return mapa valor → etiqueta en el orden de la lista; vacío si el texto
      * es nulo o no trae opciones.
@@ -394,7 +413,10 @@ public interface IAppSystemParam extends IDataRow {
         if (validValues == null || validValues.isBlank()) {
             return result;
         }
-        for (String option : validValues.split(Pattern.quote(VALID_VALUES_SEPARATOR))) {
+        for (String option : splitValidValues(validValues)) {
+            if (option.trim().startsWith(VALIDATOR_OPEN)) {
+                continue;
+            }
             int eq = option.indexOf('=');
             String value = (eq < 0 ? option : option.substring(0, eq)).trim();
             if (value.isEmpty()) {
@@ -404,6 +426,107 @@ public interface IAppSystemParam extends IDataRow {
             result.putIfAbsent(value, label.isEmpty() ? value : label);
         }
         return result;
+    }
+
+    /**
+     * Devuelve los validadores declarados en la lista de valores válidos: las
+     * opciones escritas entre llaves, como {@code {EMAIL}}, {@code {FOLDER}} o
+     * {@code {>=0 and <=10}}. Cada uno se toma <b>completo</b> antes de
+     * separar {@code valor=etiqueta}, así el {@code =} de un rango no se
+     * confunde con el de una etiqueta, y un {@code |} entre llaves no corta la
+     * opción.
+     *
+     * <p>Se devuelve el texto de adentro de las llaves, recortado y sin
+     * cambiar mayúsculas (interpretarlo es tarea de quien valida; un
+     * validador desconocido se ignora). Una llave que no se cierra abarca solo
+     * hasta el primer {@code |} que le sigue —el resto de la lista se
+     * conserva— y ese tramo se devuelve <b>con</b> la llave de apertura
+     * (<code>{EMAIL</code> se devuelve como <code>"{EMAIL"</code>), así quien valida lo reconoce como
+     * un validador mal escrito y no como uno válido; nunca es una opción de la
+     * lista. Los vacíos ({@code {}}) se omiten y un repetido se devuelve una
+     * sola vez.</p>
+     *
+     * <p>Ejemplo: {@code {>=1 and <=65535}} devuelve
+     * {@code [">=1 and <=65535"]}; {@code GRAY|WHITE} devuelve una lista
+     * vacía.</p>
+     *
+     * @param validValues texto de la lista.
+     * @return validadores en el orden de la lista; vacía si no hay.
+     */
+    static List<String> parseValidators(String validValues) {
+        List<String> result = new ArrayList<>();
+        if (validValues == null || validValues.isBlank()) {
+            return result;
+        }
+        for (String option : splitValidValues(validValues)) {
+            String token = option.trim();
+            if (!token.startsWith(VALIDATOR_OPEN)) {
+                continue;
+            }
+            if (token.length() > VALIDATOR_OPEN.length() && token.endsWith(VALIDATOR_CLOSE)) {
+                token = token.substring(VALIDATOR_OPEN.length(), token.length() - VALIDATOR_CLOSE.length()).trim();
+            } else {
+                // Sin cerrar: se conserva la llave para que no pase por un validador válido
+                token = VALIDATOR_OPEN + token.substring(VALIDATOR_OPEN.length()).trim();
+                if (token.equals(VALIDATOR_OPEN)) {
+                    token = "";
+                }
+            }
+            if (!token.isEmpty() && !result.contains(token)) {
+                result.add(token);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Parte la lista de valores válidos en opciones por {@code |}, sin cortar
+     * dentro de las llaves de un validador. Una llave que llega al final sin
+     * cerrarse no se traga el resto de la lista: su tramo termina en el primer
+     * {@code |} que le sigue y lo que viene después se vuelve a partir
+     * (SYSPARUI M3-10).
+     *
+     * @param validValues texto de la lista (no nulo).
+     * @return opciones sin recortar, en orden.
+     */
+    private static List<String> splitValidValues(String validValues) {
+        char open = VALIDATOR_OPEN.charAt(0);
+        char close = VALIDATOR_CLOSE.charAt(0);
+        char separator = VALID_VALUES_SEPARATOR.charAt(0);
+        List<String> options = new ArrayList<>();
+        int start = 0;
+        int depth = 0;
+        int firstSeparatorInBrace = -1;
+        int i = 0;
+        while (i < validValues.length()) {
+            char c = validValues.charAt(i);
+            if (c == open) {
+                if (depth == 0) {
+                    firstSeparatorInBrace = -1;
+                }
+                depth++;
+            } else if (c == close && depth > 0) {
+                depth--;
+            } else if (c == separator) {
+                if (depth == 0) {
+                    options.add(validValues.substring(start, i));
+                    start = i + 1;
+                } else if (firstSeparatorInBrace < 0) {
+                    firstSeparatorInBrace = i;
+                }
+            }
+            i++;
+            if (i == validValues.length() && depth > 0 && firstSeparatorInBrace >= 0) {
+                // Llave sin cerrar: el tramo termina en el primer | dentro de ella
+                options.add(validValues.substring(start, firstSeparatorInBrace));
+                start = firstSeparatorInBrace + 1;
+                i = start;
+                depth = 0;
+                firstSeparatorInBrace = -1;
+            }
+        }
+        options.add(validValues.substring(start));
+        return options;
     }
 
     /**
