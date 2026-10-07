@@ -111,6 +111,10 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @Size(max = 500)
     @Column(name = "validValues")
     private String validValues;
+
+    @Size(max = 2000)
+    @Column(name = "paramHelp")
+    private String paramHelp;
     
     @Transient    
     @Basic(optional = false)
@@ -316,6 +320,26 @@ public class AppSystemParam extends DataRow implements IAppSystemParam {
     @Override
     public void setValidValues(String validValues) {
         this.validValues = validValues;
+    }
+
+    /**
+     * Ayuda extensa del parámetro (SYSPARUI D4-04).
+     *
+     * @return ayuda, o nulo.
+     */
+    @Override
+    public String getParamHelp() {
+        return paramHelp;
+    }
+
+    /**
+     * Asigna la ayuda extensa del parámetro.
+     *
+     * @param paramHelp ayuda, o nulo.
+     */
+    @Override
+    public void setParamHelp(String paramHelp) {
+        this.paramHelp = paramHelp;
     }
 
     @Override

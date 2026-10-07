@@ -328,6 +328,32 @@ public class AppGenericConfigSystemParamTest {
     }
 
     @Test
+    @DisplayName("SYSPARUI D4-04: la entidad guarda la ayuda; una implementación anterior no tiene")
+    void ayudaDelParametro() {
+        AppSystemParam p = new AppSystemParam();
+        assertNull(p.getParamHelp());
+        p.setParamHelp("Qué hace, valores válidos y cuándo rige");
+        assertEquals("Qué hace, valores válidos y cuándo rige", p.getParamHelp());
+        assertEquals(2000, IAppSystemParam.PARAM_HELP_MAX);
+        // Los métodos default: sin ayuda al leer, y no admite asignarla
+        IAppSystemParam anterior = (IAppSystemParam) java.lang.reflect.Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class<?>[]{IAppSystemParam.class},
+                (proxy, method, args) -> method.isDefault()
+                ? java.lang.reflect.InvocationHandler.invokeDefault(proxy, method, args) : null);
+        assertNull(anterior.getParamHelp());
+        assertThrows(UnsupportedOperationException.class, () -> anterior.setParamHelp("x"));
+    }
+
+    @Test
+    @DisplayName("SYSPARUI §4.2.1: {PASSWORD} con y sin argumento se devuelve completo")
+    void validadorPassword() {
+        assertEquals(List.of("PASSWORD"), IAppSystemParam.parseValidators("{PASSWORD}"));
+        assertEquals(List.of("PASSWORD MAIL_CIPHER_KEY"),
+                IAppSystemParam.parseValidators("{ PASSWORD MAIL_CIPHER_KEY }"));
+        assertTrue(IAppSystemParam.parseValidValues("{PASSWORD MAIL_CIPHER_KEY}").isEmpty());
+    }
+
+    @Test
     @DisplayName("SYSPARUI §3.1.1: los validadores entre llaves no son opciones de la lista")
     void validadoresEntreLlaves() {
         // Solo validadores: sin lista cerrada

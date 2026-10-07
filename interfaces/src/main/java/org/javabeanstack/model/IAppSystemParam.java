@@ -195,6 +195,11 @@ public interface IAppSystemParam extends IDataRow {
     String VALIDATOR_CLOSE = "}";
 
     /**
+     * Largo máximo de la ayuda de un parámetro ({@link #getParamHelp()}).
+     */
+    int PARAM_HELP_MAX = 2000;
+
+    /**
      * Devuelve la empresa dueña de este valor. Nulo indica el valor global.
      *
      * <p>Los métodos de alcance y valor por defecto son {@code default} para no
@@ -273,6 +278,32 @@ public interface IAppSystemParam extends IDataRow {
      */
     default void setValidValues(String validValues) {
         throw new UnsupportedOperationException("Esta implementación no admite lista de valores válidos");
+    }
+
+    /**
+     * Devuelve la ayuda extensa del parámetro: qué hace, valores válidos y
+     * su significado, cuándo rige y advertencias (hasta
+     * {@link #PARAM_HELP_MAX} caracteres). Las pantallas de parámetros la
+     * muestran como ayuda contextual del control del valor; si es nula usan la
+     * descripción.
+     *
+     * <p>Es {@code default} por la misma razón que el alcance y la lista de
+     * valores válidos: una implementación anterior que no la sobreescriba no
+     * tiene ayuda.</p>
+     *
+     * @return ayuda del parámetro, o nulo si no tiene.
+     */
+    default String getParamHelp() {
+        return null;
+    }
+
+    /**
+     * Asigna la ayuda extensa del parámetro (ver {@link #getParamHelp()}).
+     *
+     * @param paramHelp ayuda del parámetro, o nulo.
+     */
+    default void setParamHelp(String paramHelp) {
+        throw new UnsupportedOperationException("Esta implementación no admite ayuda del parámetro");
     }
 
     /**
