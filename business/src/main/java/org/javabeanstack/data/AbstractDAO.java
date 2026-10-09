@@ -37,7 +37,9 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceException;
 import jakarta.persistence.Parameter;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.Query;
@@ -973,6 +975,17 @@ public abstract class AbstractDAO implements IGenericDAO {
     /**
      * Sincroniza una lista de ejbs con la base de datos.
      *
+     * <p>
+     * Las filas marcadas {@link IDataRow#DELETE} se borran con
+     * {@link #removeEjb(EntityManager, IDataRow)}. Quien envíe un padre y una
+     * de sus hijas a borrar en el mismo set tiene que <b>sacar la hija de la
+     * colección del padre</b> antes de grabar: mientras la hija siga dentro de
+     * una colección con cascada {@code PERSIST} de una entidad administrada, el
+     * flush deshace su borrado (ver el porqué en
+     * {@link #removeEjb(EntityManager, IDataRow)}) y la grabación termina en
+     * error.
+     * </p>
+     *
      * @param dataSet set de objetos mapeados a los registros de una tabla.
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -1029,8 +1042,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                             break;
                         case IDataRow.DELETE:
                             checkFieldIdcompany(dbLinkInfo, ejb);
-                            em.remove(em.merge(ejb));
-                            em.flush();
+                            removeEjb(em, ejb);
                             dataResult.setRowUpdated(ejb);
                             ejbsRes.add(ejb);
                             break;
@@ -1066,6 +1078,63 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
         }
         return dataResult;
+    }
+
+    /**
+     * Borra de la base la fila que representa {@code row}.
+     *
+     * <p>
+     * La fila llega <b>desprendida</b> (fue leída en otra transacción), así que
+     * para borrarla hay que traerla al contexto de persistencia. Lo que no se
+     * puede hacer es traerla con {@code merge}: Hibernate resuelve lo que
+     * mergea con su perfil interno de fetch "merge", que inicializa toda
+     * asociación con cascada {@code MERGE} que encuentre en el camino. Con eso,
+     * al mergear una hija entra al contexto también su padre <b>con la
+     * colección de hermanas cargada</b>; y en el flush la cascada
+     * {@code PERSIST} desde ese padre administrado vuelve a dejar administrada
+     * a la hija recién borrada (JPA 3.2, 3.2.4: a toda entidad alcanzable por
+     * una relación con cascada {@code PERSIST} desde una administrada se le
+     * aplica {@code persist}), con lo cual el {@code DELETE} no se emite, y sin
+     * error ni aviso.
+     * </p>
+     *
+     * <p>
+     * Por eso acá la fila se busca por su clave con {@code find}, que usa el
+     * plan de carga normal y no ese perfil, y se borra la instancia
+     * administrada que devuelve. La clave la resuelve
+     * {@link jakarta.persistence.PersistenceUnitUtil#getIdentifier(Object)},
+     * que es la vía estándar y sirve también para las claves compuestas.
+     * </p>
+     *
+     * <p>
+     * Si después del flush la fila sigue administrada es que un padre
+     * administrado la conserva en una colección con cascada {@code PERSIST}:
+     * borrarla es imposible por definición mientras siga ahí, y se informa el
+     * error en lugar de devolver éxito. El llamador tiene que quitar la fila de
+     * la colección del padre (o no enviar al padre con esa colección) antes de
+     * borrarla.
+     * </p>
+     *
+     * @param em unidad de persistencia donde está la fila.
+     * @param row fila a borrar, marcada {@link IDataRow#DELETE}.
+     * @throws EntityNotFoundException si la fila no existe en la base.
+     * @throws PersistenceException si el flush deshizo el borrado.
+     */
+    protected void removeEjb(EntityManager em, IDataRow row) {
+        Object id = em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(row);
+        String fila = row.getClass().getSimpleName() + " " + id;
+        IDataRow managed = em.find(row.getClass(), id);
+        if (managed == null) {
+            throw new EntityNotFoundException("No existe la fila a borrar: " + fila);
+        }
+        em.remove(managed);
+        em.flush();
+        if (em.contains(managed)) {
+            throw new PersistenceException("No se borro la fila " + fila
+                    + ": sigue dentro de una coleccion con cascada PERSIST de otra entidad"
+                    + " administrada, que en el flush deshace el borrado."
+                    + " Quitar la fila de la coleccion del padre antes de borrarla.");
+        }
     }
 
     /**
