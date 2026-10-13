@@ -77,6 +77,42 @@ import org.javabeanstack.util.LocalDates;
  * El test unitario se encuentra en TestProjects clase
  * py.com.oym.test.data.TestSesiones
  *
+ * <p><b>Transaccionalidad de la creación de sesión.</b> Los métodos que
+ * crean o recrean una sesión, y el que valida credenciales para emitir un
+ * token, corren con {@code NOT_SUPPORTED}: <b>suspenden</b> la transacción
+ * del llamador, de modo que cada escritura del proceso de ingreso —la
+ * bitácora de seguridad y, si la implementación derivada las hace, la fila
+ * del usuario con el contador de intentos fallidos o el sello de su última
+ * empresa— vuelve a ser su propia transacción, la del DAO.</p>
+ *
+ * <p>No es estilo, es un requisito. En cuanto la implementación derivada
+ * escribe la fila del usuario —la clase base no la escribe: solo consulta
+ * y graba bitácora—, el ingreso pasa a grabar acto seguido un registro de la
+ * bitácora que referencia esa misma fila por clave foránea, y ese registro se
+ * graba en una transacción nueva ({@code REQUIRES_NEW} en
+ * {@code LogManager.dbWrite}). Si las dos cosas ocurrieran dentro de una
+ * misma transacción, la inserción de la bitácora
+ * esperaría en el motor a que se confirme la fila del usuario, y esa
+ * confirmación depende de que termine el método que está esperando: el
+ * motor no lo ve como interbloqueo —del otro lado el que espera es Java— y
+ * el ingreso no vuelve hasta que la transacción vence. No es un error
+ * visible, es una petición que no responde. En SQL Server la espera ocurre
+ * con cualquier nivel de aislamiento, porque ahí la validación de una clave
+ * foránea se hace con lectura bloqueante; en otros motores puede no darse
+ * —PostgreSQL la valida con {@code FOR KEY SHARE}, que no choca con un
+ * {@code UPDATE} de columnas que no son clave—, de modo que la decisión no
+ * depende de un motor en particular pero el síntoma sí.</p>
+ *
+ * <p>Suspender la transacción conserva además el contador de intentos
+ * fallidos que lleve la implementación derivada, que no debe deshacerse
+ * junto con la operación que lo provocó.</p>
+ *
+ * <p>Es legítimo porque <b>el ingreso no escribe nada fuera de la base del
+ * catálogo</b>: todos sus accesos a datos van con la sesión en nulo. Si
+ * alguna vez necesitara escribir en la base de una empresa hay que revisar
+ * esta decisión, porque lo que se pierde al suspender es justamente que esa
+ * escritura participe de la transacción del llamador.</p>
+ *
  * @author Jorge Enciso
  */
 //@Singleton
@@ -174,6 +210,10 @@ public class Sessions implements ISessions {
     /**
      * Crea una sesión de usuario para acceso a la app
      *
+     * <p>Corre con la transacción del llamador <b>suspendida</b>
+     * ({@code NOT_SUPPORTED}); el motivo está en la documentación de la
+     * clase.</p>
+     *
      * @param userLogin usuario
      * @param password password
      * @param idcompany empresa que esta solicitando ingresar
@@ -184,6 +224,7 @@ public class Sessions implements ISessions {
      */
     @Override
     @Lock(LockType.WRITE)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, Map<String, Object> otherParams) {
         return createSession(userLogin, password, idcompany, idleSessionExpireInMinutes, null, otherParams);
     }
@@ -201,6 +242,10 @@ public class Sessions implements ISessions {
      * viaja en el propio objeto sesión, el cambio de empresa
      * ({@link #reCreateSession}) la conserva y vuelve a evaluar la política.</p>
      *
+     * <p>Corre con la transacción del llamador <b>suspendida</b>
+     * ({@code NOT_SUPPORTED}); el motivo está en la documentación de la
+     * clase.</p>
+     *
      * @param userLogin usuario
      * @param password password
      * @param idcompany empresa que esta solicitando ingresar
@@ -215,6 +260,7 @@ public class Sessions implements ISessions {
      */
     @Override
     @Lock(LockType.WRITE)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public IUserSession createSession(String userLogin, String password, Object idcompany, Integer idleSessionExpireInMinutes, String appName, Map<String, Object> otherParams) {
         LOGGER.debug("CREATESESSION IN");
         IUserSession session;
@@ -331,11 +377,16 @@ public class Sessions implements ISessions {
     /**
      * Crea una sesión de usuario para acceso a la app
      *
+     * <p>Corre con la transacción del llamador <b>suspendida</b>
+     * ({@code NOT_SUPPORTED}); el motivo está en la documentación de la
+     * clase.</p>
+     *
      * @param token token de acceso.
      * @return objeto conteniendo datos del login exitoso o rechazado
      */
     @Override
     @Lock(LockType.WRITE)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public IUserSession createSessionFromToken(String token) {
         return createSessionFromToken(token, null);
     }
@@ -349,12 +400,17 @@ public class Sessions implements ISessions {
      * directamente no se crea. Con {@code appName} nulo no hay aplicación
      * contra la cual evaluar y solo se aplican los controles previos.</p>
      *
+     * <p>Corre con la transacción del llamador <b>suspendida</b>
+     * ({@code NOT_SUPPORTED}); el motivo está en la documentación de la
+     * clase.</p>
+     *
      * @param token token de acceso.
      * @param appName nombre de la aplicación (context path del despliegue).
      * @return objeto sesión, o {@code null} si el token no es válido o el rol
      * no tiene acceso a la aplicación.
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public IUserSession createSessionFromToken(String token, String appName) {
         LOGGER.debug("CREATESESSION IN FROM TOKEN");
         try {
@@ -563,6 +619,10 @@ public class Sessions implements ISessions {
     /**
      * Vuelve a crear la sesión con el acceso a una nueva empresa
      *
+     * <p>Corre con la transacción del llamador <b>suspendida</b>
+     * ({@code NOT_SUPPORTED}); el motivo está en la documentación de la
+     * clase.</p>
+     *
      * @param sessionIdEncrypted identificador de la sesión.
      * @param idcompany identificador de la empresa a la que se solicita el
      * nuevo acceso.
@@ -570,6 +630,7 @@ public class Sessions implements ISessions {
      */
     @Override
     @Lock(LockType.WRITE)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public IUserSession reCreateSession(String sessionIdEncrypted, Object idcompany) {
         LOGGER.debug("RECREATESESSION IN");
         String sessionId = decrypt(sessionIdEncrypted);
@@ -838,10 +899,20 @@ public class Sessions implements ISessions {
     /**
      * Verifica consistencia de el modelo AuthConsumerData
      *
+     * <p>Corre con la transacción del llamador <b>suspendida</b>
+     * ({@code NOT_SUPPORTED}) por el mismo motivo que los métodos de
+     * creación de sesión —ver la documentación de la clase—, y acá importa
+     * más: valida las credenciales invocando a {@link #login} <b>desde
+     * dentro</b> de la clase, así que esa llamada no pasa por el proxy y
+     * ningún atributo puesto en {@code login} puede protegerla. Este método
+     * es la única frontera. El llamador conserva su propia transacción para
+     * grabar el token: lo que se suspende es solo la validación.</p>
+     *
      * @param data modelo OAuthConsumerData
      * @return verdadero si es válido o falso si no
      */
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public boolean checkAuthConsumerData(IOAuthConsumerData data) {
         if (data == null) {
             return false;
