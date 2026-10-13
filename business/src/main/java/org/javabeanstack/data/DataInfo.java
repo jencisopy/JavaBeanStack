@@ -23,14 +23,19 @@ package org.javabeanstack.data;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,6 +51,20 @@ import org.javabeanstack.util.Strings;
 public class DataInfo {
 
     private static final Logger LOGGER = LogManager.getLogger(DataInfo.class);
+
+    /**
+     * Atributos de la clave única ya resueltos, por clase de entidad (plan
+     * {@code QUERYUK}). Las anotaciones no cambian en tiempo de ejecución, así
+     * que la traducción columna→atributo se hace una sola vez por clase y la
+     * caché vive con el cargador de clases del despliegue.
+     */
+    private static final Map<Class<?>, String[]> UK_ATTRIBUTES = new ConcurrentHashMap<>();
+
+    /**
+     * Centinela de la caché: la entidad no declara clave única o alguna de sus
+     * columnas no se pudo traducir ({@code ConcurrentHashMap} no admite nulos).
+     */
+    private static final String[] SIN_CLAVE_UNICA = new String[0];
 
     private DataInfo() {
     }
@@ -242,6 +261,14 @@ public class DataInfo {
      * Crea una sentencia para buscar un registro especifico utilizando los
      * valores de los campos unicos.
      *
+     * <p>La sentencia es HQL, de modo que se escribe con los nombres de los
+     * <b>atributos</b> de la entidad; la anotación {@code @UniqueConstraint}
+     * declara nombres de <b>columna</b> de la base. La traducción de una cosa a
+     * la otra la hace {@link #getUniqueKeyAttributes(Class)} (plan
+     * {@code QUERYUK}, hallazgo {@code I5-12}). Si alguna columna de la clave
+     * única no corresponde a ningún atributo ni asociación devuelve nulo, que
+     * los consumidores tratan como «esta entidad no tiene clave única».</p>
+     *
      * @param ejb
      * @return sentencia con la expresión de filtro de/los campos unicos.
      */
@@ -255,7 +282,7 @@ public class DataInfo {
             }
             String uniqueFilter = "";
             String separador = "";
-            String[] uniqueList = DataInfo.getUniqueFields(ejb.getClass());
+            String[] uniqueList = DataInfo.getUniqueKeyAttributes(ejb.getClass());
             if (uniqueList == null) {
                 return null;
             }
@@ -298,6 +325,13 @@ public class DataInfo {
     /**
      * Devuelve una lista conteniendo los campos que conforman la clave unica.
      *
+     * <p><b>Son nombres de COLUMNA de la base</b>, tal cual los declara la
+     * primera {@code @UniqueConstraint} de la anotación {@code @Table}: es lo
+     * que necesitan el DDL y las comprobaciones que hablan de columnas
+     * ({@link #isUniqueKey(Class, String)}). Para escribir una consulta HQL
+     * hace falta el nombre del <b>atributo</b>, que devuelve
+     * {@link #getUniqueKeyAttributes(Class)}.</p>
+     *
      * @param <T>
      * @param classType
      * @return lista conteniendo los campos que conforman la clave unica.
@@ -316,6 +350,159 @@ public class DataInfo {
             ErrorManager.showError(ex, LOGGER);
         }
         return null;
+    }
+
+    /**
+     * Devuelve los ATRIBUTOS de la entidad que conforman la clave única.
+     *
+     * <p>Traduce cada columna que declara la primera {@code @UniqueConstraint}
+     * (ver {@link #getUniqueFields(Class)}) al nombre del atributo o de la
+     * asociación que la mapea, con
+     * {@link #getAttributeByColumnName(Class, String)}. Es lo que permite que
+     * la consulta de clave única sea HQL válido también cuando la columna y el
+     * atributo se escriben distinto o cuando la columna es una clave foránea
+     * mapeada únicamente como asociación (plan {@code QUERYUK}, hallazgo
+     * {@code I5-12}).</p>
+     *
+     * <p>Dos columnas que caen en la misma asociación (caso de
+     * {@code @JoinColumns}) producen un solo atributo; se conserva el orden de
+     * aparición. Si alguna columna no se puede traducir devuelve <b>nulo</b> y
+     * deja una advertencia en el log <b>una sola vez por clase</b>: el control
+     * de duplicados queda sin efecto para esa entidad, que es lo que ya ocurría
+     * antes, pero declarado y sin excepción.</p>
+     *
+     * <p>El resultado se calcula una sola vez por clase (las anotaciones no
+     * cambian en tiempo de ejecución) y se guarda en una caché estática.</p>
+     *
+     * @param <T>
+     * @param classType clase de la entidad.
+     * @return atributos que conforman la clave única, nulo si la entidad no
+     * declara clave única o si alguna de sus columnas no se pudo traducir.
+     */
+    public static <T extends IDataRow> String[] getUniqueKeyAttributes(Class<T> classType) {
+        if (classType == null) {
+            return null;
+        }
+        String[] attributes = UK_ATTRIBUTES.computeIfAbsent(classType, clase -> {
+            String[] columns = getUniqueFields((Class<? extends IDataRow>) clase);
+            if (columns == null || columns.length == 0) {
+                return SIN_CLAVE_UNICA;
+            }
+            List<String> result = new ArrayList<>();
+            for (String column : columns) {
+                String attribute = getAttributeByColumnName(clase, column);
+                if (attribute == null) {
+                    LOGGER.warn("Clave única de {}: la columna '{}' no corresponde a ningún "
+                            + "atributo ni asociación; el control de duplicados queda sin "
+                            + "efecto para esta entidad", clase.getSimpleName(), column);
+                    return SIN_CLAVE_UNICA;
+                }
+                if (!result.contains(attribute)) {
+                    result.add(attribute);
+                }
+            }
+            return result.toArray(new String[0]);
+        });
+        if (attributes.length == 0) {
+            return null;
+        }
+        return attributes;
+    }
+
+    /**
+     * Devuelve el nombre del atributo de la clase que mapea una columna dada.
+     *
+     * <p>Recorre los campos declarados de la clase y de sus superclases hasta
+     * {@link DataRow} (exclusive), ignorando los campos {@code static}, los
+     * {@code transient} y los anotados {@code @Transient}. La búsqueda no
+     * distingue mayúsculas de minúsculas, pero el nombre devuelto conserva la
+     * grafía del atributo, que es la que entiende HQL.</p>
+     *
+     * <p>Orden de precedencia (plan {@code QUERYUK}, decisión D5):</p>
+     * <ol>
+     * <li>campo con {@code @Column(name = columna)};</li>
+     * <li>campo <b>sin</b> {@code @Column(name)} cuyo nombre coincide con la
+     * columna (mapeo por defecto de JPA);</li>
+     * <li>campo con {@code @JoinColumn(name = columna)} —suelto o dentro de un
+     * {@code @JoinColumns}—, es decir la <b>asociación</b>.</li>
+     * </ol>
+     *
+     * <p>El orden importa: una entidad puede tener a la vez el escalar
+     * {@code @Column(name = "iddocumento")} y la asociación
+     * {@code @JoinColumn(name = "iddocumento")}, y también una asociación
+     * llamada igual que la columna de otro atributo (por ejemplo
+     * {@code Ctbivapyfrmdetalle}, donde la columna {@code ctbivapyfrm} la mapea
+     * el atributo {@code ctbivapyfrmCodigo} y existe además la asociación
+     * {@code ctbivapyfrm}). Gana siempre el escalar anotado.</p>
+     *
+     * @param classType clase de la entidad.
+     * @param columnName nombre de la columna en la base de datos.
+     * @return nombre del atributo o de la asociación, nulo si no lo mapea
+     * ninguno.
+     */
+    public static String getAttributeByColumnName(Class classType, String columnName) {
+        if (classType == null || Strings.isNullorEmpty(columnName)) {
+            return null;
+        }
+        List<Field> fields = getMappedFields(classType);
+        // 1) Atributo con @Column(name = columna)
+        for (Field field : fields) {
+            Column column = field.getAnnotation(Column.class);
+            if (column != null && columnName.equalsIgnoreCase(column.name())) {
+                return field.getName();
+            }
+        }
+        // 2) Atributo homónimo sin @Column(name) (mapeo por defecto de JPA)
+        for (Field field : fields) {
+            Column column = field.getAnnotation(Column.class);
+            if ((column == null || Strings.isNullorEmpty(column.name()))
+                    && columnName.equalsIgnoreCase(field.getName())) {
+                return field.getName();
+            }
+        }
+        // 3) Asociación con @JoinColumn(name = columna) o @JoinColumns
+        for (Field field : fields) {
+            JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
+            if (joinColumn != null && columnName.equalsIgnoreCase(joinColumn.name())) {
+                return field.getName();
+            }
+            JoinColumns joinColumns = field.getAnnotation(JoinColumns.class);
+            if (joinColumns != null) {
+                for (JoinColumn item : joinColumns.value()) {
+                    if (columnName.equalsIgnoreCase(item.name())) {
+                        return field.getName();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Devuelve los campos de la clase que pueden estar mapeados a una columna.
+     *
+     * <p>Son los campos declarados por la clase y por sus superclases hasta
+     * {@link DataRow} (exclusive), sin los {@code static}, los
+     * {@code transient} ni los anotados {@code @Transient}.</p>
+     *
+     * @param classType clase de la entidad.
+     * @return campos candidatos, de la clase primero y después los heredados.
+     */
+    private static List<Field> getMappedFields(Class classType) {
+        List<Field> fields = new ArrayList<>();
+        Class clase = classType;
+        while (clase != null && !clase.equals(DataRow.class) && !clase.equals(Object.class)) {
+            for (Field field : clase.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())
+                        || Modifier.isTransient(field.getModifiers())
+                        || field.getAnnotation(Transient.class) != null) {
+                    continue;
+                }
+                fields.add(field);
+            }
+            clase = clase.getSuperclass();
+        }
+        return fields;
     }
 
     /**

@@ -230,6 +230,19 @@ public class DataRow implements IDataRow, Cloneable {
      * Devuelve una sentencia para buscar un registro especifico utilizando los
      * valores de los campos unicos.
      *
+     * <p>La arma {@link DataInfo#createQueryUkCommand(IDataRow)} a partir de la
+     * primera {@code @UniqueConstraint} de la entidad, traduciendo cada nombre
+     * de <b>columna</b> al nombre del <b>atributo</b> o de la asociación que la
+     * mapea (plan {@code QUERYUK}, hallazgo {@code I5-12}): HQL se escribe con
+     * atributos y la anotación declara columnas. Por eso una entidad ya no
+     * necesita sobrescribir este método cuando la columna y el atributo se
+     * escriben distinto o cuando la clave incluye una clave foránea mapeada
+     * solo como asociación.</p>
+     *
+     * <p>La sentencia se calcula una sola vez por instancia; una entidad puede
+     * fijar otra asignando el atributo {@code queryUK} en su constructor, y en
+     * ese caso el framework la respeta.</p>
+     *
      * @return sentencia con la condición de la clave unica.
      */
     @Override

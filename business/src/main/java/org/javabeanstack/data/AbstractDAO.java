@@ -298,6 +298,15 @@ public abstract class AbstractDAO implements IGenericDAO {
     /**
      * Devuelve un registro a travéz de su clave unica.
      *
+     * <p>Si alguno de los valores de la clave única es nulo o es una entidad
+     * todavía sin identificador (un detalle cuyo padre aún no se grabó, en un
+     * alta maestro-detalle) devuelve nulo <b>sin consultar</b>: el resultado es
+     * el mismo —una comparación con nulo nunca encuentra coincidencia— y se
+     * evita la {@code TransientObjectException} que Hibernate lanza al ligar
+     * una entidad transitoria como parámetro (plan {@code QUERYUK}, RF5).
+     * {@code GenericDAO} de Oym-frame no sobrescribe este método, de modo que
+     * la regla vale para toda la línea.</p>
+     *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -323,7 +332,13 @@ public abstract class AbstractDAO implements IGenericDAO {
         Query q = getEntityManager(getEntityManagerId(dbLinkInfo)).createQuery(ejb.getQueryUK());
 
         for (Parameter param : q.getParameters()) {
-            q.setParameter(param, ejb.getValue(param.getName()));
+            Object value = ejb.getValue(param.getName());
+            if (isUnresolvableUkValue(value)) {
+                LOGGER.debug("findByUk {}: {} sin valor o transitorio, no hay coincidencia posible",
+                        ejb.getClass().getSimpleName(), param.getName());
+                return null;
+            }
+            q.setParameter(param, value);
         }
         try {
             row = (T) q.getSingleResult();
@@ -345,6 +360,35 @@ public abstract class AbstractDAO implements IGenericDAO {
             row = null;
         }
         return row;
+    }
+
+    /**
+     * Determina si un valor de la clave única hace inútil la consulta.
+     *
+     * <p>Lo es cuando el valor es nulo —ninguna fila coincide con nulo— o
+     * cuando es una entidad todavía sin identificador, porque ligar una
+     * entidad transitoria como parámetro hace que Hibernate lance
+     * {@code TransientObjectException} (plan {@code QUERYUK}, RF5).</p>
+     *
+     * <p>Lo de «todavía sin identificador» solo se afirma cuando la clase
+     * declara su campo clave: en un proxy perezoso o en una entidad con
+     * {@code @EmbeddedId}, {@code getId()} devuelve nulo aunque el registro
+     * exista, y dar esos casos por transitorios dejaría el control de
+     * duplicados inerte en silencio. Ante la duda se consulta, que es lo que
+     * se hacía antes.</p>
+     *
+     * @param value valor de uno de los campos de la clave única.
+     * @return verdadero si no tiene sentido consultar con ese valor.
+     */
+    protected static boolean isUnresolvableUkValue(Object value) {
+        if (value == null) {
+            return true;
+        }
+        if (value instanceof IDataRow) {
+            IDataRow row = (IDataRow) value;
+            return DataInfo.getIdFieldName(row.getClass()) != null && row.getId() == null;
+        }
+        return false;
     }
 
     /**
