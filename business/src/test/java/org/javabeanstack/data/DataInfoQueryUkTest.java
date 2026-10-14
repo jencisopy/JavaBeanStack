@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
@@ -127,12 +128,22 @@ public class DataInfoQueryUkTest {
     }
 
     @Test
-    @DisplayName("El resultado se calcula una sola vez por clase")
+    @DisplayName("El resultado se calcula una sola vez por clase y no expone la caché")
     public void testCache() {
         String[] primera = DataInfo.getUniqueKeyAttributes(Ciudad.class);
         String[] segunda = DataInfo.getUniqueKeyAttributes(Ciudad.class);
         assertNotNull(primera);
-        assertSame(primera, segunda, "la segunda llamada tiene que venir de la caché");
+        //El plan pedía la MISMA instancia (CA1-02 e) como prueba de que la
+        //segunda llamada sale de la caché. Se cambió a copia (M4-02): el
+        //arreglo cacheado lo comparten todos los hilos del servidor y bastaba
+        //que un llamador lo ordenara o lo pisara para corromper la clave única
+        //de esa entidad para todos. La caché se sigue verificando —mismo
+        //contenido— y además se comprueba que mutar lo devuelto no la toque.
+        assertArrayEquals(primera, segunda, "la segunda llamada tiene que venir de la caché");
+        assertNotSame(primera, segunda, "no se devuelve el arreglo interno de la caché");
+        primera[0] = "CORROMPIDO";
+        assertArrayEquals(segunda, DataInfo.getUniqueKeyAttributes(Ciudad.class),
+                "mutar lo devuelto no puede afectar a la caché");
     }
 
     @Test

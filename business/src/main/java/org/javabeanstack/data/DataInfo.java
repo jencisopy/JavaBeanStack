@@ -406,7 +406,10 @@ public class DataInfo {
         if (attributes.length == 0) {
             return null;
         }
-        return attributes;
+        //Copia: el arreglo del caché lo comparten todos los hilos del servidor
+        //y basta que un llamador lo ordene o lo pise para corromper la clave
+        //única de esa entidad para todos (M4-02).
+        return attributes.clone();
     }
 
     /**
