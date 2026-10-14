@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Lock;
 import jakarta.ejb.LockType;
@@ -538,57 +536,5 @@ public class AppGenericConfig implements IAppConfig {
     @Override
     public String getDBVersion(String sessionId){
         return null;
-    }
-
-    /**
-     * Cache de {@link #isEntityAuditAble(String, String, String)}. La clave es
-     * la terna de nombres; el valor, la respuesta del catalogo.
-     *
-     * <p>Es un mapa concurrente y no un cache con vencimiento porque la tabla
-     * de auditoria se toca cuando se reconfigura el sistema, no durante la
-     * operacion. Para verlo actualizado sin reiniciar esta
-     * {@link #clearAuditCache()}.</p>
-     */
-    private final ConcurrentMap<String, Boolean> auditCache = new ConcurrentHashMap<>();
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public boolean isEntityAuditAble(String entity1, String entity2, String entity3) {
-        String clave = entity1 + "\u0001" + entity2 + "\u0001" + entity3;
-        Boolean cacheado = auditCache.get(clave);
-        if (cacheado != null) {
-            return cacheado;
-        }
-        List<IDataRow> result;
-        try {
-            Map<String, Object> params = new java.util.HashMap<>();
-            params.put("entity1", entity1);
-            params.put("entity2", entity2);
-            params.put("entity3", entity3);
-            result = dao.findListByQuery(null, "select o from AppAudit o "
-                    + "where entity in (:entity1, :entity2, :entity3) "
-                    + "and audit = true", params);
-        } catch (Exception e) {
-            //Deliberadamente NO se devuelve falso: con el catalogo caido eso
-            //dejaba de auditar sin que nadie se entere. Que falle y se vea.
-            ErrorManager.showError(e, LOGGER);
-            throw new IllegalStateException(
-                    "No se pudo determinar si la entidad se audita (" + clave + ")", e);
-        }
-        boolean auditable = result != null && !result.isEmpty();
-        auditCache.put(clave, auditable);
-        return auditable;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void clearAuditCache() {
-        auditCache.clear();
     }
 }

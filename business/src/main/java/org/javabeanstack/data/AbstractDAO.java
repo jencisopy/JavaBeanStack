@@ -24,7 +24,6 @@ package org.javabeanstack.data;
 import org.javabeanstack.data.model.DataResult;
 import org.javabeanstack.data.model.DataSet;
 import org.javabeanstack.datactrl.IDataObject;
-import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import java.lang.reflect.Field;
@@ -101,17 +100,22 @@ public abstract class AbstractDAO implements IGenericDAO {
     @EJB
     private ISessions sessions;
 
-    @EJB
-    private ILogManager logMngr;
-
     /**
-     * Responde si una entidad se audita. Vive afuera del DAO a propósito: su
-     * método está anotado {@code NOT_SUPPORTED} y eso solo surte efecto si la
-     * llamada cruza el proxy del contenedor, cosa que una invocación entre
-     * métodos de esta misma clase no hace.
+     * Administrador del log. Además de registrar eventos, responde si una
+     * entidad se audita: ese método vive afuera del DAO a propósito, porque
+     * está anotado {@code NOT_SUPPORTED} y eso solo surte efecto si la llamada
+     * cruza el proxy del contenedor, cosa que una invocación entre métodos de
+     * esta misma clase no hace.
+     *
+     * <p>La consulta estuvo en el bean de configuración y hubo que moverla
+     * acá: en las aplicaciones que siembran parámetros desde el
+     * {@code @PostConstruct} de ese singleton, cada grabación de la siembra lo
+     * reentraba por el proxy mientras el contenedor lo construía
+     * ({@code WFLYEJB0132}). Este bean es {@code Stateless} y no tiene
+     * inicialización propia (hallazgo {@code E5-07} del plan JTACAT).</p>
      */
     @EJB
-    private IAppConfig appConfig;
+    private ILogManager logMngr;
 
     /**
      * Constructor por defecto.
@@ -1334,9 +1338,12 @@ public abstract class AbstractDAO implements IGenericDAO {
         }
         //Por nombre de la clase
         String entidad1 = ejb.getClass().getSimpleName().toLowerCase();
-        //Por el nombre de la anotación Table en la clase.
+        //Por el nombre de la anotación Table en la clase. Una entidad sin
+        //@Table es legal para JPA (la tabla toma el nombre de la clase), así
+        //que no puede hacer fallar toda grabación con un NullPointerException.
         Table tableAnnotation = ejb.getClass().getAnnotation(Table.class);
-        String entidad2 = tableAnnotation.name().toLowerCase();
+        String entidad2 = (tableAnnotation != null)
+                ? tableAnnotation.name().toLowerCase() : entidad1;
         //Por el valor en la anotación AuditEntity o un valor personalizado
         //determinado en la clase
         String auditEntity = ejb.getAuditEntity();
@@ -1344,9 +1351,9 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (auditEntity != null) {
             entidad3 = auditEntity;
         }
-        //La consulta la hace appConfig y no este método: tiene que correr FUERA
+        //La consulta la hace logMngr y no este método: tiene que correr FUERA
         //de la transacción que está grabando (ver el javadoc de la interfaz).
-        return appConfig.isEntityAuditAble(entidad1, entidad2, entidad3);
+        return logMngr.isEntityAuditAble(entidad1, entidad2, entidad3);
     }
 
     /**
@@ -1355,19 +1362,26 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @param <T> tipo de la entidad.
      * @param clazz clase de la entidad.
      * @return verdadero si es auditable, falso si no.
+     * @throws RuntimeException si no se pudo consultar el catálogo. Solo se
+     * devuelve falso cuando la clase no se puede instanciar: dejar pasar el
+     * fallo del catálogo equivaldría a no auditar en silencio, que es
+     * justamente lo que la política nueva prohíbe.
      */
     @Override
     public <T extends IDataRow> boolean isAuditAble(Class<IDataRow> clazz) {
         if (clazz == null) {
             return false;
         }
+        IDataRow ejb;
         try {
-            IDataRow ejb = clazz.getDeclaredConstructor().newInstance();
-            return isAuditAble(ejb);
-        } catch (Exception e) {
+            ejb = clazz.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            //Lo único que se tolera es no poder construir la instancia: sin
+            //ella no hay nada que preguntar. El fallo del catálogo se propaga.
             ErrorManager.showError(e, LOGGER, logMngr, null);
+            return false;
         }
-        return false;
+        return isAuditAble(ejb);
     }
 
     /**
@@ -1380,7 +1394,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> boolean isAuditAble(String entityName) {
         //Los tres nombres iguales equivalen al "entity = :entity1" anterior.
-        return appConfig.isEntityAuditAble(entityName, entityName, entityName);
+        return logMngr.isEntityAuditAble(entityName, entityName, entityName);
     }
 
     /**
@@ -1984,13 +1998,29 @@ public abstract class AbstractDAO implements IGenericDAO {
      * Construye un registro de error a partir del catálogo de mensajes
      * (tabla {@code AppMessage}), usando el mensaje alternativo si el número no existe.
      *
+     * <p>Es {@code REQUIRES_NEW} por la misma razón que la sobrecarga de cuatro
+     * argumentos en la que delega: lee —y a veces escribe— el catálogo, que es
+     * otro origen de datos. Con el catálogo en {@code jta="true"}, armar un
+     * mensaje de validación desde una transacción que ya tocó la base de la
+     * empresa enlistaba un segundo recurso de una fase y Narayana abortaba
+     * ({@code ARJUNA012140}): el operador recibía un error 500 en vez del
+     * mensaje. Pasa por el camino REST de administración
+     * ({@code REQUIRED} → servicio → {@code checkUniqueKey}), no por el de la
+     * UI web, donde no hay transacción (hallazgos {@code E3-12} / {@code I5-14}
+     * del plan JTACAT).</p>
+     *
+     * <p>La anotación va acá y no solo en la de cuatro argumentos porque esta
+     * delega con {@code this}: esa llamada no cruza el proxy y la anotación de
+     * la otra nunca se aplicaba. Al abrir la transacción desde acá, la
+     * delegación corre dentro de ella.</p>
+     *
      * @param messageNumber número de mensaje en el catálogo.
      * @param alternativeMsg mensaje a usar si el número no se encuentra.
      * @param fieldName campo asociado al error.
      * @return registro de error.
      */
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
         return getErrorMessage(messageNumber, alternativeMsg, fieldName, null);
     }

@@ -78,13 +78,18 @@ public interface IAppUserPwdLogSrv extends IDataService {
      *
      * <p>El valor de {@code appuser.pass} no es solo una credencial: es el sello
      * con el que quedan marcadas todas las filas que ese usuario graba. Por eso
-     * el hash que se retira se registra en la bitácora <b>antes</b> de
-     * reescribirlo, y el nuevo después de grabarlo: sin ese registro, las filas
-     * selladas con el hash viejo quedarían sin usuario resoluble de forma
-     * irreversible.</p>
+     * <b>las dos filas de la bitácora —la del hash que se retira y la del hash
+     * nuevo— se graban antes</b> de reescribir {@code appuser}: sin la primera,
+     * las filas selladas con el hash viejo quedarían sin usuario resoluble de
+     * forma irreversible; sin la segunda, la contraseña nueva queda sin fecha
+     * de cambio y la cuenta puede vencer en el acto.</p>
      *
-     * <p>Si la grabación falla, se deshace el cambio en memoria para que el
-     * objeto siga reflejando lo que realmente está en la base.</p>
+     * <p>Ese orden es lo que hace que el objeto en memoria y la base nunca
+     * discrepen: mientras {@code appuser} no se tocó, un fallo devuelve falso y
+     * no hay nada que deshacer; si falla el {@code UPDATE} de {@code appuser},
+     * se repone el hash anterior en memoria y es correcto, porque la escritura
+     * no se hizo. Vale igual con el datasource del catálogo en
+     * {@code jta="true"} y en {@code jta="false"} ({@code I5-13}).</p>
      *
      * @param appUser usuario cuya contraseña se reemplaza.
      * @param hashNuevo contraseña ya cifrada con la fórmula que corresponda.
