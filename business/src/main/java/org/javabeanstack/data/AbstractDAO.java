@@ -86,6 +86,49 @@ public abstract class AbstractDAO implements IGenericDAO {
     public static final String FALSE = "false";
     public static final String TRUE = "true";
 
+    /**
+     * Tipos de excepción que indican un fallo de infraestructura y no de
+     * negocio (ver {@link #isInfrastructureError(Throwable)}). Se nombran por
+     * texto a propósito: son tipos del servidor de aplicaciones y del proveedor
+     * de persistencia, y esta clase no tiene por qué depender de ellos para
+     * poder clasificar un error.
+     *
+     * <p>Dos tipos quedaron <b>deliberadamente afuera</b>, porque los dos
+     * pueden transportar un mensaje escrito para el usuario:</p>
+     * <ul>
+     * <li>el error JDBC <i>sin clasificar</i> del proveedor de persistencia: es
+     * el cajón de sastre al que va a parar, entre otras cosas, el mensaje que
+     * levanta un <i>trigger</i> de la base (error definido por el usuario), que
+     * suele ser una regla de negocio redactada para quien opera;</li>
+     * <li>la excepción con que el contenedor envuelve lo que lanza un bean
+     * llamado dentro de la misma transacción: adentro puede venir tanto un
+     * fallo técnico como una validación del sistema, porque las excepciones de
+     * validación no están anotadas como excepciones de aplicación.</li>
+     * </ul>
+     */
+    private static final String[] INFRASTRUCTURE_ERROR_TYPES = new String[]{
+        "jakarta.resource.ResourceException",
+        "jakarta.persistence.TransactionRequiredException",
+        "jakarta.transaction.RollbackException",
+        "jakarta.transaction.SystemException",
+        "org.hibernate.AssertionFailure",
+        "org.hibernate.TransactionException",
+        "org.hibernate.exception.JDBCConnectionException",
+        "java.sql.SQLNonTransientConnectionException",
+        "java.sql.SQLTransientConnectionException",
+        "java.sql.SQLRecoverableException"
+    };
+
+    /**
+     * Textos que delatan un fallo de infraestructura llegado como excepción
+     * genérica del JDK, sin un tipo propio por el cual reconocerlo.
+     */
+    private static final String[] INFRASTRUCTURE_ERROR_MESSAGES = new String[]{
+        "STATUS_MARKED_ROLLBACK",
+        "EntityManager is closed",
+        "Session is closed"
+    };
+
     @Resource
     TransactionSynchronizationRegistry tsr;
 
@@ -1123,19 +1166,146 @@ public abstract class AbstractDAO implements IGenericDAO {
                 dataResult.put(entry.getKey(), ejbsRes);
             } catch (Exception e) {
                 dataResult.setRowUpdated(null);
-                String msgError = ErrorManager.getStackCause(e);
+                //El texto que se devuelve distingue el fallo de negocio del de
+                //infraestructura (ver getErrorMsgToShow). La excepción entera
+                //queda en el resultado y va al log: no se pierde nada.
+                String msgError = getErrorMsgToShow(e);
                 if (lastEjb != null) {
                     lastEjb.setErrors(msgError, "", 0);
                 }
                 dataResult.put(entry.getKey(), ejbsRes);
                 dataResult.setSuccess(false);
                 dataResult.setErrorMsg(msgError);
+                dataResult.setException(e);
                 dbRollBack();
                 ErrorManager.showError(e, LOGGER, logMngr, sessionId);
                 break;
             }
         }
         return dataResult;
+    }
+
+    /**
+     * Mensaje del fallo de una grabación, tal como se le va a mostrar a quien
+     * opera el sistema.
+     *
+     * <p>
+     * Los fallos no son todos iguales y no se informan igual. El de
+     * <b>negocio</b> —el que lanza una regla del sistema desde los eventos de
+     * grabación o una validación— trae un texto escrito para el usuario y se
+     * devuelve tal cual, que es lo que se viene haciendo. El de
+     * <b>infraestructura</b> —la transacción marcada para deshacerse, la
+     * conexión que no se puede tomar, el contexto de persistencia envenenado—
+     * trae un volcado técnico que al usuario no le dice nada y que encima
+     * arrastra la sentencia completa; en ese caso se devuelve un texto fijo y
+     * accionable.
+     * </p>
+     *
+     * <p>
+     * No se pierde información: la excepción entera va igual al log del
+     * servidor y queda en el resultado de la grabación
+     * ({@link IDataResult#getException()}), de modo que quien tenga que
+     * diagnosticar la tiene completa. Lo único que cambia es que deja de
+     * mostrarse donde no sirve. El texto lleva la fecha y hora para poder
+     * ubicar en el log la línea que le corresponde.
+     * </p>
+     *
+     * @param exp excepción que cortó la grabación.
+     * @return mensaje a mostrar.
+     */
+    protected String getErrorMsgToShow(Exception exp) {
+        if (exp == null) {
+            return "";
+        }
+        if (!isInfrastructureError(exp)) {
+            return ErrorManager.getStackCause(exp);
+        }
+        return "No se pudo completar la operación por un problema técnico. "
+                + "Reintente y, si vuelve a ocurrir, avise a soporte indicando la fecha "
+                + "y hora (" + LocalDates.toString(LocalDates.now(), "dd/MM/yyyy HH:mm:ss")
+                + "). El detalle quedó registrado en el log del servidor.";
+    }
+
+    /**
+     * Determina si un fallo es de infraestructura y no de negocio.
+     *
+     * <p>
+     * Se recorre la cadena de causas y se la compara contra una lista de tipos
+     * conocidos; lo que no está en la lista <b>conserva</b> el tratamiento de
+     * siempre (se muestra el mensaje de la excepción). Es deliberado que la
+     * lista sea corta y positiva: una violación de integridad —clave duplicada,
+     * clave foránea, restricción de verificación— no entra, porque su mensaje
+     * dice algo que quien opera puede entender y corregir; una fila que no está
+     * o que cambió de versión, tampoco; y el mensaje que levanta un
+     * <i>trigger</i> de la base, menos todavía, porque es una regla de negocio
+     * escrita para quien opera.
+     * </p>
+     *
+     * <p>
+     * Los dos nombres que se buscan por texto y no por tipo son el de la
+     * transacción ya marcada para deshacerse y el del contexto de persistencia
+     * cerrado: los dos llegan como excepciones genéricas del JDK, imposibles de
+     * distinguir por su clase de las que lanza la aplicación.
+     * </p>
+     *
+     * @param exp excepción a clasificar.
+     * @return verdadero si el fallo es de infraestructura.
+     */
+    protected boolean isInfrastructureError(Throwable exp) {
+        Throwable causa = exp;
+        //Un tope por si alguna excepción llega con una cadena de causas cíclica.
+        int vueltas = 0;
+        while (causa != null && vueltas < 50) {
+            if (isInfrastructureType(causa.getClass())
+                    || isInfrastructureMessage(causa.getMessage())) {
+                return true;
+            }
+            causa = causa.getCause();
+            vueltas++;
+        }
+        return false;
+    }
+
+    /**
+     * Determina si el tipo de la excepción es uno de los de infraestructura.
+     *
+     * <p>
+     * Se compara por nombre y subiendo por las clases padre, de manera que las
+     * especializaciones entran sin enumerarlas y sin que esta clase tenga que
+     * importar los tipos del servidor de aplicaciones ni del proveedor de
+     * persistencia.
+     * </p>
+     *
+     * @param clase clase de la excepción.
+     * @return verdadero si es un tipo de infraestructura.
+     */
+    private boolean isInfrastructureType(Class<?> clase) {
+        for (Class<?> tipo = clase; tipo != null; tipo = tipo.getSuperclass()) {
+            for (String nombre : INFRASTRUCTURE_ERROR_TYPES) {
+                if (nombre.equals(tipo.getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determina si el mensaje de la excepción es de los de infraestructura.
+     *
+     * @param mensaje mensaje de la excepción.
+     * @return verdadero si el mensaje corresponde a un fallo de infraestructura.
+     */
+    private boolean isInfrastructureMessage(String mensaje) {
+        if (mensaje == null) {
+            return false;
+        }
+        for (String texto : INFRASTRUCTURE_ERROR_MESSAGES) {
+            if (mensaje.contains(texto)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

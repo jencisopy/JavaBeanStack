@@ -273,9 +273,11 @@ public class LogManager implements ILogManager {
         } catch (Exception e) {
             //Deliberadamente NO se devuelve falso: con el catalogo caido eso
             //dejaba de auditar sin que nadie se entere. Que falle y se vea.
-            //El error no se registra aca: la excepcion viaja con su causa y
-            //quien la atrapa -- el update() del DAO -- ya la deja en el log.
-            //Registrarla en los dos lugares daba la misma traza dos veces.
+            //El error no se registra aca, pero no porque asi salga una sola
+            //vez: al cruzar el limite de este bean el contenedor ya la deja en
+            //el log (en WildFly, WFLYEJB0034) y despues la vuelve a dejar el
+            //update() del DAO que la atrapa, asi que la traza sale dos veces
+            //igual. Registrarla aca seria una tercera copia de lo mismo.
             throw new IllegalStateException(
                     "No se pudo determinar si la entidad se audita (" + clave + ")", e);
         }
