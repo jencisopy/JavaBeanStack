@@ -47,7 +47,10 @@ import org.javabeanstack.data.DataRow;
  * Además trae las dos trampas de precedencia: la columna {@code idpais}, que es
  * a la vez un escalar de solo lectura y una asociación, y la columna
  * {@code zonaurbana}, que la mapea {@code zonaurbanaCodigo} mientras existe una
- * asociación llamada justamente {@code zonaurbana}.</p>
+ * asociación llamada justamente {@code zonaurbana}. Los pares
+ * {@code idregion}/{@code region} e {@code idzona}/{@code zona} agregan los
+ * dos sentidos de la precedencia por escribibilidad (D16): escalar de solo
+ * lectura contra asociación escribible y al revés.</p>
  *
  * @author Jorge Enciso
  */
@@ -83,13 +86,35 @@ public class Ciudad extends DataRow {
             insertable = false, updatable = false)
     private Pais pais;
 
+    //La misma columna como escalar de SOLO LECTURA y como asociación
+    //escribible: con D16 tiene que ganar la asociación, que es la única que
+    //escribe la columna en el alta (caso Documentoctrl del plan QUERYUK).
+    @Column(name = "idregion", insertable = false, updatable = false)
+    private Long idregion;
+
+    @ManyToOne
+    @JoinColumn(name = "idregion", referencedColumnName = "idregion")
+    private Region region;
+
+    //El caso inverso: el escalar escribe la columna y la asociación es de
+    //solo lectura; con D16 tiene que ganar el escalar.
+    @Column(name = "idzona")
+    private Long idzona;
+
+    @ManyToOne
+    @JoinColumn(name = "idzona", referencedColumnName = "idmoneda",
+            insertable = false, updatable = false)
+    private Moneda zona;
+
     //La asociación se llama igual que la columna de otro atributo: tiene que
-    //ganar el atributo anotado con @Column(name = "zonaurbana").
+    //ganar el atributo anotado con @Column(name = "zonaurbana") aunque sea de
+    //solo lectura, porque la asociación en realidad mapea otra columna
+    //(idzonaurbana) y coincide solo por el nombre: D16 no la puede hacer ganar.
     @ManyToOne
     @JoinColumn(name = "idzonaurbana", referencedColumnName = "idregion")
     private Region zonaurbana;
 
-    @Column(name = "zonaurbana")
+    @Column(name = "zonaurbana", insertable = false, updatable = false)
     private String zonaurbanaCodigo;
 
     //Atributo no persistido: no mapea ninguna columna.
@@ -146,6 +171,38 @@ public class Ciudad extends DataRow {
 
     public void setPais(Pais pais) {
         this.pais = pais;
+    }
+
+    public Long getIdregion() {
+        return idregion;
+    }
+
+    public void setIdregion(Long idregion) {
+        this.idregion = idregion;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public Long getIdzona() {
+        return idzona;
+    }
+
+    public void setIdzona(Long idzona) {
+        this.idzona = idzona;
+    }
+
+    public Moneda getZona() {
+        return zona;
+    }
+
+    public void setZona(Moneda zona) {
+        this.zona = zona;
     }
 
     public Region getZonaurbana() {

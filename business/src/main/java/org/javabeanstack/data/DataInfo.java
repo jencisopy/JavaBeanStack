@@ -90,6 +90,16 @@ public class DataInfo {
     /**
      * Determina si un campo o miembro dado es o forma parte de una clave unica.
      *
+     * <p>Responde verdadero tanto si el nombre dado es una <b>columna</b> de la
+     * clave única —lo que declara {@code @UniqueConstraint}, ver
+     * {@link #getUniqueFields(Class)}— como si es uno de los <b>atributos</b>
+     * que la mapean ({@link #getUniqueKeyAttributes(Class)}). Los llamadores
+     * son pantallas y servicios que hablan en atributos (es el nombre que
+     * conoce el formulario), y la columna puede escribirse distinto:
+     * preguntarle por {@code nombreCorto} cuando la anotación dice
+     * {@code nombre_corto} devolvía falso (plan {@code QUERYUK}, hallazgo
+     * {@code M0-03}). La comparación sigue sin distinguir mayúsculas.</p>
+     *
      * @param <T>
      * @param classType clase DataRow dado
      * @param fieldname nombre del campo
@@ -102,7 +112,16 @@ public class DataInfo {
                 return false;
             }
             for (String field : fields) {
-                if (field.equalsIgnoreCase(fieldname.toLowerCase())) {
+                if (field.equalsIgnoreCase(fieldname)) {
+                    return true;
+                }
+            }
+            String[] attributes = DataInfo.getUniqueKeyAttributes(classType);
+            if (attributes == null) {
+                return false;
+            }
+            for (String attribute : attributes) {
+                if (attribute.equalsIgnoreCase(fieldname)) {
                     return true;
                 }
             }
@@ -436,23 +455,81 @@ public class DataInfo {
      * llamada igual que la columna de otro atributo (por ejemplo
      * {@code Ctbivapyfrmdetalle}, donde la columna {@code ctbivapyfrm} la mapea
      * el atributo {@code ctbivapyfrmCodigo} y existe además la asociación
-     * {@code ctbivapyfrm}). Gana siempre el escalar anotado.</p>
+     * {@code ctbivapyfrm}).</p>
+     *
+     * <p>Decisión D16 (cierre del plan {@code QUERYUK}, hallazgo
+     * {@code M4-01}): cuando la columna la mapea <b>más de un</b> campo, antes
+     * de aplicar D5 gana el que <b>puede escribirla</b>, es decir el que no
+     * está anotado {@code insertable = false}. El caso real es
+     * {@code Documentoctrl}, donde la columna {@code iddocumento} la mapean a
+     * la vez el escalar de solo lectura {@code iddocumento} y la asociación
+     * escribible {@code documento}: con D5 a secas la consulta de clave única
+     * comparaba el escalar, que en el alta todavía viene nulo, y el control de
+     * duplicados quedaba inerte. Si ninguno o más de uno puede escribir la
+     * columna rige D5, que es lo que ocurre cuando los dos son de solo
+     * lectura.</p>
+     *
+     * <p>Al filtrar por escribibilidad solo se toman en cuenta los campos que
+     * mapean la columna de forma <b>explícita</b> (regla 1 y regla 3). Un
+     * campo de la regla 2 que además sea una asociación mapea en realidad
+     * <b>otra</b> columna —la de su {@code @JoinColumn}— y coincide solo por
+     * el nombre, así que no puede ganarle a un mapeo explícito; se lo conserva
+     * como candidato de D5 para no cambiar el resultado de las entidades donde
+     * hoy es el único.</p>
      *
      * @param classType clase de la entidad.
      * @param columnName nombre de la columna en la base de datos.
      * @return nombre del atributo o de la asociación, nulo si no lo mapea
      * ninguno.
      */
-    public static String getAttributeByColumnName(Class classType, String columnName) {
+    public static String getAttributeByColumnName(Class<?> classType, String columnName) {
         if (classType == null || Strings.isNullorEmpty(columnName)) {
             return null;
         }
+        List<Candidato> candidatos = getColumnCandidates(classType, columnName);
+        if (candidatos.isEmpty()) {
+            return null;
+        }
+        if (candidatos.size() > 1) {
+            //D16: si uno solo puede escribir la columna, es ese.
+            String escribible = null;
+            int cuantos = 0;
+            for (Candidato candidato : candidatos) {
+                if (candidato.mapeoExplicito() && candidato.escribible()) {
+                    escribible = candidato.nombre();
+                    cuantos++;
+                }
+            }
+            if (cuantos == 1) {
+                return escribible;
+            }
+        }
+        //D5: la recolección ya devuelve los candidatos en orden de precedencia.
+        return candidatos.get(0).nombre();
+    }
+
+    /**
+     * Recolecta todos los campos que mapean una columna, en el orden de
+     * precedencia de D5.
+     *
+     * <p>Un mismo campo puede coincidir por dos reglas (nombre igual a la
+     * columna y {@code @JoinColumn} con ese nombre); se lo deja una sola vez,
+     * en la posición de la primera coincidencia, y se conserva la marca de
+     * mapeo explícito si alguna de las dos la tiene.</p>
+     *
+     * @param classType clase de la entidad.
+     * @param columnName nombre de la columna en la base de datos.
+     * @return candidatos en orden de precedencia, vacío si ninguno la mapea.
+     */
+    private static List<Candidato> getColumnCandidates(Class<?> classType, String columnName) {
+        List<Candidato> candidatos = new ArrayList<>();
         List<Field> fields = getMappedFields(classType);
         // 1) Atributo con @Column(name = columna)
         for (Field field : fields) {
             Column column = field.getAnnotation(Column.class);
             if (column != null && columnName.equalsIgnoreCase(column.name())) {
-                return field.getName();
+                agregarCandidato(candidatos,
+                        new Candidato(field.getName(), column.insertable(), true));
             }
         }
         // 2) Atributo homónimo sin @Column(name) (mapeo por defecto de JPA)
@@ -460,25 +537,67 @@ public class DataInfo {
             Column column = field.getAnnotation(Column.class);
             if ((column == null || Strings.isNullorEmpty(column.name()))
                     && columnName.equalsIgnoreCase(field.getName())) {
-                return field.getName();
+                boolean asociacion = field.getAnnotation(JoinColumn.class) != null
+                        || field.getAnnotation(JoinColumns.class) != null;
+                agregarCandidato(candidatos,
+                        new Candidato(field.getName(),
+                                column == null || column.insertable(), !asociacion));
             }
         }
         // 3) Asociación con @JoinColumn(name = columna) o @JoinColumns
         for (Field field : fields) {
             JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
             if (joinColumn != null && columnName.equalsIgnoreCase(joinColumn.name())) {
-                return field.getName();
+                agregarCandidato(candidatos,
+                        new Candidato(field.getName(), joinColumn.insertable(), true));
+                continue;
             }
             JoinColumns joinColumns = field.getAnnotation(JoinColumns.class);
             if (joinColumns != null) {
                 for (JoinColumn item : joinColumns.value()) {
                     if (columnName.equalsIgnoreCase(item.name())) {
-                        return field.getName();
+                        agregarCandidato(candidatos,
+                                new Candidato(field.getName(), item.insertable(), true));
+                        break;
                     }
                 }
             }
         }
-        return null;
+        return candidatos;
+    }
+
+    /**
+     * Agrega un candidato a la lista cuidando de no repetir el mismo campo.
+     *
+     * @param candidatos lista en construcción.
+     * @param nuevo candidato a agregar.
+     */
+    private static void agregarCandidato(List<Candidato> candidatos, Candidato nuevo) {
+        for (int i = 0; i < candidatos.size(); i++) {
+            Candidato existente = candidatos.get(i);
+            if (!existente.nombre().equals(nuevo.nombre())) {
+                continue;
+            }
+            if (!existente.mapeoExplicito() && nuevo.mapeoExplicito()) {
+                candidatos.set(i, new Candidato(existente.nombre(),
+                        nuevo.escribible(), true));
+            }
+            return;
+        }
+        candidatos.add(nuevo);
+    }
+
+    /**
+     * Campo que mapea una columna de la base, con lo que D16 necesita saber de
+     * él.
+     *
+     * @param nombre nombre del atributo o de la asociación.
+     * @param escribible verdadero si puede escribir la columna
+     * ({@code insertable} de su {@code @Column} o {@code @JoinColumn}).
+     * @param mapeoExplicito verdadero si la anotación nombra la columna; falso
+     * si la coincidencia es solo por el nombre del atributo.
+     */
+    private record Candidato(String nombre, boolean escribible, boolean mapeoExplicito) {
     }
 
     /**
@@ -491,9 +610,9 @@ public class DataInfo {
      * @param classType clase de la entidad.
      * @return campos candidatos, de la clase primero y después los heredados.
      */
-    private static List<Field> getMappedFields(Class classType) {
+    private static List<Field> getMappedFields(Class<?> classType) {
         List<Field> fields = new ArrayList<>();
-        Class clase = classType;
+        Class<?> clase = classType;
         while (clase != null && !clase.equals(DataRow.class) && !clase.equals(Object.class)) {
             for (Field field : clase.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers())

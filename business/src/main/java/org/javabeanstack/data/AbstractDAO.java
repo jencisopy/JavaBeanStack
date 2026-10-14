@@ -82,6 +82,14 @@ import org.javabeanstack.util.Strings;
 public abstract class AbstractDAO implements IGenericDAO {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractDAO.class);
+
+    /**
+     * Hasta dónde se sigue la cadena de identidades derivadas al decidir si un
+     * valor de la clave única es transitorio. Es un tope de cortesía: un mapeo
+     * real no encadena más de dos o tres niveles y así un ciclo no cuelga el
+     * servidor.
+     */
+    private static final int MAX_NIVEL_IDENTIDAD_DERIVADA = 10;
     private static final String DEFAULT_SCHEMA_PROPERTY = "hibernate.default_schema";
     public static final String FALSE = "false";
     public static final String TRUE = "true";
@@ -364,6 +372,15 @@ public abstract class AbstractDAO implements IGenericDAO {
      * {@code GenericDAO} de Oym-frame no sobrescribe este método, de modo que
      * la regla vale para toda la línea.</p>
      *
+     * <p>Si la base ya tiene filas duplicadas para esa clave devuelve una de
+     * ellas y deja una advertencia en el log, en vez de propagar la
+     * {@code NonUniqueResultException} que lanzaba {@code getSingleResult}
+     * (plan {@code QUERYUK}, hallazgo {@code M0-02}): esa excepción la tragaba
+     * {@code AbstractDataService.checkUniqueKey} y el control de duplicados
+     * terminaba siendo <b>menos</b> estricto cuanto peor estaba la base —con
+     * una fila repetida rechazaba, con dos aprobaba—. Cuál de las filas se
+     * devuelve lo decide {@link #pickUkMatch(List, IDataRow)}.</p>
+     *
      * @param <T>
      * @param sessionId identificador de la sesión que permite realizar las
      * operaciones
@@ -398,7 +415,13 @@ public abstract class AbstractDAO implements IGenericDAO {
             q.setParameter(param, value);
         }
         try {
-            row = (T) q.getSingleResult();
+            //setMaxResults(2): alcanza para saber si hay más de una coincidencia
+            //y evita traer la tabla entera si la base está muy sucia (M0-02).
+            List<T> rows = q.setMaxResults(2).getResultList();
+            row = pickUkMatch(rows, ejb);
+            if (row == null) {
+                return null;
+            }
             // Si no hay transacción activada
             if (Status.STATUS_NO_TRANSACTION == tsr.getTransactionStatus()) {
                 return row;
@@ -420,6 +443,49 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Elige qué fila devuelve {@link #findByUk(String, IDataRow)} entre las
+     * coincidencias de la clave única.
+     *
+     * <p>Sin coincidencias devuelve nulo; con una, esa. Con más de una la base
+     * tiene duplicados que su clave única física tendría que haber impedido:
+     * se deja una advertencia en el log y se devuelve una fila <b>distinta</b>
+     * de la que se está validando, si la hay, para que
+     * {@code checkUniqueKey} rechace también la modificación de una de las
+     * filas repetidas. Si la fila validada todavía no tiene identificador (un
+     * alta) cualquiera sirve y se devuelve la primera.</p>
+     *
+     * <p>No es el caso de {@code I3-30} —resultado del DAO ignorado dentro de
+     * una transacción que el contenedor deshace—: acá no hay marca de
+     * deshacer, lo que había era una validación que tragaba una excepción y
+     * aprobaba. Son familias hermanas con mecanismos distintos (plan
+     * {@code QUERYUK}, D20).</p>
+     *
+     * @param <T>
+     * @param rows filas que coinciden con la clave única.
+     * @param ejb fila que se está validando.
+     * @return la fila elegida, nulo si no hubo coincidencias.
+     */
+    protected static <T extends IDataRow> T pickUkMatch(List<T> rows, IDataRow ejb) {
+        if (rows == null || rows.isEmpty()) {
+            return null;
+        }
+        if (rows.size() > 1) {
+            LOGGER.warn("findByUk {}: la clave única devuelve más de una fila, "
+                    + "la base tiene duplicados ({})",
+                    ejb.getClass().getSimpleName(), ejb.getQueryUK());
+            Object id = ejb.getId();
+            if (id != null) {
+                for (T otra : rows) {
+                    if (!id.equals(otra.getId())) {
+                        return otra;
+                    }
+                }
+            }
+        }
+        return rows.get(0);
+    }
+
+    /**
      * Determina si un valor de la clave única hace inútil la consulta.
      *
      * <p>Lo es cuando el valor es nulo —ninguna fila coincide con nulo— o
@@ -434,16 +500,50 @@ public abstract class AbstractDAO implements IGenericDAO {
      * duplicados inerte en silencio. Ante la duda se consulta, que es lo que
      * se hacía antes.</p>
      *
+     * <p>Con <b>identidad derivada</b> —el {@code @Id} puesto sobre una
+     * asociación, como en {@code Ctacteretencion}— el identificador es a su vez
+     * una entidad y casi nunca es nulo, porque el atributo viene inicializado
+     * con {@code new}: en ese caso la pregunta se repite sobre el padre. Hizo
+     * falta al aplicar D16, que puso justamente una de esas entidades como
+     * parámetro de la clave única de {@code Ctacteretenciondetalle}.</p>
+     *
      * @param value valor de uno de los campos de la clave única.
      * @return verdadero si no tiene sentido consultar con ese valor.
      */
     protected static boolean isUnresolvableUkValue(Object value) {
+        return isUnresolvableUkValue(value, 0);
+    }
+
+    /**
+     * Resuelve {@link #isUnresolvableUkValue(Object)} siguiendo la cadena de
+     * identidades derivadas.
+     *
+     * @param value valor de uno de los campos de la clave única.
+     * @param nivel profundidad alcanzada, para no caer en un ciclo de mapeo.
+     * @return verdadero si no tiene sentido consultar con ese valor.
+     */
+    private static boolean isUnresolvableUkValue(Object value, int nivel) {
         if (value == null) {
             return true;
         }
         if (value instanceof IDataRow) {
             IDataRow row = (IDataRow) value;
-            return DataInfo.getIdFieldName(row.getClass()) != null && row.getId() == null;
+            if (DataInfo.getIdFieldName(row.getClass()) == null) {
+                return false;
+            }
+            Object id = row.getId();
+            if (id == null) {
+                return true;
+            }
+            //Identidad derivada: el identificador es a su vez una entidad
+            //(el @Id está sobre una asociación, como en Ctacteretencion). Su
+            //getId() nunca devuelve nulo —el atributo suele venir inicializado
+            //con new—, así que hay que mirar el identificador del padre o se
+            //liga igual una entidad transitoria y vuelve la
+            //TransientObjectException que RF5 vino a evitar.
+            if (id instanceof IDataRow && nivel < MAX_NIVEL_IDENTIDAD_DERIVADA) {
+                return isUnresolvableUkValue(id, nivel + 1);
+            }
         }
         return false;
     }

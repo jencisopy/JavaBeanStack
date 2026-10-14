@@ -32,10 +32,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Traducción columna→atributo de la clave única (plan {@code QUERYUK},
@@ -117,7 +119,41 @@ public class DataInfoQueryUkTest {
     public void testPrecedenciaColumnaSobreAtributoHomonimo() {
         //Caso Ctbivapyfrmdetalle: la columna "zonaurbana" la mapea
         //zonaurbanaCodigo, y existe ademas una asociación llamada zonaurbana.
+        //zonaurbanaCodigo es de SOLO LECTURA y la asociación es escribible: aun
+        //así gana el escalar, porque la asociación mapea idzonaurbana y coincide
+        //solo por el nombre. Es la trampa de D16 (plan QUERYUK, cierre).
         assertEquals("zonaurbanaCodigo", DataInfo.getAttributeByColumnName(Ciudad.class, "zonaurbana"));
+    }
+
+    @Test
+    @DisplayName("D16: la asociación escribible gana al escalar de solo lectura")
+    public void testPrecedenciaAsociacionEscribibleSobreEscalarSoloLectura() {
+        //Caso Documentoctrl: la columna la mapean el escalar RO idregion y la
+        //asociación escribible region; en el alta el escalar viene nulo y el
+        //control de duplicados quedaba inerte (M4-01).
+        assertEquals("region", DataInfo.getAttributeByColumnName(Ciudad.class, "idregion"));
+    }
+
+    @Test
+    @DisplayName("D16: el escalar escribible gana a la asociación de solo lectura")
+    public void testPrecedenciaEscalarEscribibleSobreAsociacionSoloLectura() {
+        assertEquals("idzona", DataInfo.getAttributeByColumnName(Ciudad.class, "idzona"));
+    }
+
+    @Test
+    @DisplayName("isUniqueKey responde por columna y por atributo")
+    public void testIsUniqueKeyPorColumnaYPorAtributo() {
+        //Columnas, como siempre (DataInfoTest.test10).
+        assertTrue(DataInfo.isUniqueKey(Ciudad.class, "nombre_corto"));
+        assertTrue(DataInfo.isUniqueKey(Ciudad.class, "NOMBRE_CORTO"));
+        assertTrue(DataInfo.isUniqueKey(Ciudad.class, "idprovincia"));
+        //Atributos, que es el nombre que conoce el formulario (M0-03).
+        assertTrue(DataInfo.isUniqueKey(Ciudad.class, "nombreCorto"));
+        assertTrue(DataInfo.isUniqueKey(Ciudad.class, "provincia"));
+        assertTrue(DataInfo.isUniqueKey(Ciudad.class, "codigo"));
+        //Lo que no forma parte de la clave sigue dando falso.
+        assertFalse(DataInfo.isUniqueKey(Ciudad.class, "descripcion"));
+        assertFalse(DataInfo.isUniqueKey(Ciudad.class, "idpais"));
     }
 
     @Test

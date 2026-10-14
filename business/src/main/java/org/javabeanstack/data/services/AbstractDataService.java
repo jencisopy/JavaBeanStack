@@ -789,10 +789,21 @@ public abstract class AbstractDataService implements IDataService {
             if (!Fn.toLogical(properties.get("UNIQUEKEY_NOCHECK"))
                     && Fn.inList(row.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
                 if (!checkUniqueKey(sessionId, row)) {
+                    //Los campos del error son los ATRIBUTOS de la clave única,
+                    //que es el nombre que conoce el formulario; la anotación
+                    //declara COLUMNAS, que pueden escribirse distinto (plan
+                    //QUERYUK, hallazgo M0-03). El respaldo no debería hacer
+                    //falta —si fueran nulos checkUniqueKey ya habría aprobado—,
+                    //pero una entidad que sobreescriba getQueryUK() podría
+                    //llegar hasta acá sin atributos traducibles.
+                    String[] uniqueKeyFields = DataInfo.getUniqueKeyAttributes(row.getClass());
+                    if (uniqueKeyFields == null) {
+                        uniqueKeyFields = DataInfo.getUniqueFields(row.getClass());
+                    }
                     errors.put("UNIQUEKEY",
                             new ErrorReg("Este registro ya existe - " + row.toString(),
                                     50001,
-                                    DataInfo.getUniqueFields(row.getClass())));
+                                    uniqueKeyFields));
                     return errors;
                 }
             }
