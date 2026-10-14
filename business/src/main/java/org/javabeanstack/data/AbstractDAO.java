@@ -24,6 +24,7 @@ package org.javabeanstack.data;
 import org.javabeanstack.data.model.DataResult;
 import org.javabeanstack.data.model.DataSet;
 import org.javabeanstack.datactrl.IDataObject;
+import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorReg;
 import java.lang.reflect.Field;
@@ -102,6 +103,15 @@ public abstract class AbstractDAO implements IGenericDAO {
 
     @EJB
     private ILogManager logMngr;
+
+    /**
+     * Responde si una entidad se audita. Vive afuera del DAO a propósito: su
+     * método está anotado {@code NOT_SUPPORTED} y eso solo surte efecto si la
+     * llamada cruza el proxy del contenedor, cosa que una invocación entre
+     * métodos de esta misma clase no hace.
+     */
+    @EJB
+    private IAppConfig appConfig;
 
     /**
      * Constructor por defecto.
@@ -1322,36 +1332,21 @@ public abstract class AbstractDAO implements IGenericDAO {
         if (ejb.isAuditAble()) {
             return true;
         }
-        try {
-            //Por nombre de la clase
-            String entidad1 = ejb.getClass().getSimpleName().toLowerCase();
-            //Por el nombre de la anotación Table en la clase.
-            Table tableAnnotation = ejb.getClass().getAnnotation(Table.class);
-            String entidad2 = tableAnnotation.name().toLowerCase();
-            //Por el valor en la anotación AuditEntity o un valor personalizado
-            //determinado en la clase
-            String auditEntity = ejb.getAuditEntity();
-            String entidad3 = "*";
-            if (auditEntity != null) {
-                entidad3 = auditEntity;
-            }
-
-            Map<String, Object> params = new Parameters()
-                    .put("entity1", entidad1)
-                    .put("entity2", entidad2)
-                    .put("entity3", entidad3)
-                    .getParams();
-            List<IDataRow> result = findListByQuery(null, "select o from AppAudit o "
-                    + "where entity in (:entity1, :entity2, :entity3) "
-                    + "and audit = true", params);
-
-            if (result != null && !result.isEmpty()) {
-                return true;
-            }
-        } catch (Exception e) {
-            ErrorManager.showError(e, LOGGER, logMngr, null);
+        //Por nombre de la clase
+        String entidad1 = ejb.getClass().getSimpleName().toLowerCase();
+        //Por el nombre de la anotación Table en la clase.
+        Table tableAnnotation = ejb.getClass().getAnnotation(Table.class);
+        String entidad2 = tableAnnotation.name().toLowerCase();
+        //Por el valor en la anotación AuditEntity o un valor personalizado
+        //determinado en la clase
+        String auditEntity = ejb.getAuditEntity();
+        String entidad3 = "*";
+        if (auditEntity != null) {
+            entidad3 = auditEntity;
         }
-        return false;
+        //La consulta la hace appConfig y no este método: tiene que correr FUERA
+        //de la transacción que está grabando (ver el javadoc de la interfaz).
+        return appConfig.isEntityAuditAble(entidad1, entidad2, entidad3);
     }
 
     /**
@@ -1384,21 +1379,8 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @Override
     public <T extends IDataRow> boolean isAuditAble(String entityName) {
-        try {
-            Map<String, Object> params = new Parameters()
-                    .put("entity1", entityName)
-                    .getParams();
-            List<IDataRow> result = findListByQuery(null, "select o from AppAudit o "
-                    + "where entity = :entity1 "
-                    + "and audit = true", params);
-
-            if (result != null && !result.isEmpty()) {
-                return true;
-            }
-        } catch (Exception e) {
-            ErrorManager.showError(e, LOGGER, logMngr, null);
-        }
-        return false;
+        //Los tres nombres iguales equivalen al "entity = :entity1" anterior.
+        return appConfig.isEntityAuditAble(entityName, entityName, entityName);
     }
 
     /**

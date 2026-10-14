@@ -252,4 +252,38 @@ public interface IAppConfig {
      * a la comparación y hace que la base parezca adelantada.
      */
     String getDBVersion(String sessionId);
+
+    /**
+     * Indica si una entidad debe auditarse, segun la tabla de auditoria del
+     * catalogo ({@code AppAudit}).
+     *
+     * <p><b>Por que vive aca y no en el DAO.</b> La respuesta es configuracion,
+     * no un dato de la operacion en curso, y hay que resolverla <i>fuera</i> de
+     * la transaccion que esta grabando: el catalogo es otro origen de datos y,
+     * con el suyo en {@code jta="true"}, consultarlo desde adentro enlista un
+     * segundo recurso de una fase y Narayana aborta la transaccion
+     * ({@code ARJUNA012140}). La implementacion esta anotada
+     * {@code NOT_SUPPORTED} y se la invoca <b>a traves del contenedor</b>, que
+     * es la unica forma de que esa anotacion tenga efecto: una llamada entre
+     * metodos del mismo objeto no pasa por el proxy y la anotacion se ignora.</p>
+     *
+     * <p>El resultado se cachea por clave, porque la tabla tiene decenas de
+     * filas y cambia solo cuando se reconfigura la auditoria, mientras que la
+     * pregunta se hace <b>una vez por cada fila que se graba</b>.</p>
+     *
+     * @param entity1 nombre de la clase de la entidad, en minusculas.
+     * @param entity2 nombre de la tabla de la entidad, en minusculas.
+     * @param entity3 valor de {@code getAuditEntity()}, o {@code "*"}.
+     * @return verdadero si alguno de los tres nombres esta marcado para auditar.
+     * @throws RuntimeException si la consulta al catalogo falla. <b>No devuelve
+     * falso ante un error</b>: hacerlo dejaba registros sin auditar en silencio.
+     */
+    boolean isEntityAuditAble(String entity1, String entity2, String entity3);
+
+    /**
+     * Vacia el cache de {@link #isEntityAuditAble(String, String, String)}.
+     * Hay que llamarlo despues de modificar la tabla de auditoria del catalogo,
+     * o los cambios no se ven hasta reiniciar.
+     */
+    void clearAuditCache();
 }
