@@ -22,7 +22,9 @@
 package org.javabeanstack.data;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -226,31 +228,179 @@ public class DBManager implements IDBManager {
     }
 
     /**
+     * Valor de {@code dataconex} que la firma histórica (5 argumentos) envía
+     * al catálogo con tolerancia de errores. Es el único nombre de sección que
+     * conoce el framework, y solo por compatibilidad: la API de
+     * {@link #dbScriptUpdateExecute(IGenericDAO, ILogManager, DbScriptUpdateRequest)}
+     * no lo usa.
+     */
+    private static final String LEGACY_DATACONEX_CATALOG = "CATALOGO";
+
+    /**
      * Ejecuta un script de actualización de base de datos (nodos SCRIPTS del
-     * XML de actualización de Maker) sentencia por sentencia, filtrando por el
-     * motor de base de datos de la unidad de persistencia del usuario y
-     * registrando el progreso/errores en applogdbupdate y en el log de la
-     * aplicación. Las sentencias con dataconex=CATALOGO corren contra el
-     * schema catalogo (sessionId null); el resto contra el schema datos de la
-     * unidad de persistencia del usuario.
+     * XML de actualización) sentencia por sentencia, con el mapeo histórico de
+     * secciones y su política de errores.
      *
-     * <p>La fila de la bitácora se identifica por el par (dbversion, sequence):
-     * la versión de estructura y su correlativo dentro de esa versión, que son
-     * los dos segmentos del nombre del paquete.</p>
+     * <p><b>Adaptador de compatibilidad.</b> Equivale a
+     * {@link #dbScriptUpdateExecute(IGenericDAO, ILogManager, DbScriptUpdateRequest)}
+     * con la bitácora en {@code sessionId}, los nodos
+     * {@code dataconex="CATALOGO"} con sesión nula (catálogo, PU1) y todo otro
+     * valor presente en el documento —el nodo sin atributo incluido— con
+     * {@code sessionId}, y conserva tres rasgos de la versión anterior que la
+     * API nueva no tiene:</p>
+     * <ul>
+     * <li>los errores de las sentencias {@code CATALOGO} se registran y se
+     * toleran siempre (mensaje «ERROR en PU1, SCRIPT ...»); los del resto
+     * siguen {@code CONTINUE_WITH_ERROR} de {@code parameters};</li>
+     * <li>el motor con el que se filtran los nodos (atributo {@code motor}) y
+     * se separan los lotes es el de la unidad de persistencia de
+     * {@code sessionId}, también para los nodos del catálogo;</li>
+     * <li>trabaja sobre el mapa {@code parameters} del llamador (la clave
+     * {@code script} queda vacía al terminar) y lanza la excepción de la
+     * sentencia, no una {@link DbScriptUpdateException}.</li>
+     * </ul>
      *
      * @param dao DAO genérico usado para ejecutar las sentencias SQL.
-     * @param sessionId identificador de la sesión del usuario que ejecuta el script.
+     * @param sessionId identificador de la sesión del usuario que ejecuta el
+     * script; nulo ejecuta todo (bitácora incluida) contra el catálogo (PU1).
      * @param domScript documento XML con los nodos /ROOT/SCRIPTS a ejecutar.
      * @param parameters parámetros del script (dbversion, sequence, filename,
      * classLog, CONTINUE_WITH_ERROR, etc.); se completan/actualizan durante la
      * ejecución.
      * @param logMngr gestor de logs de aplicación donde registrar errores (opcional).
-     * @throws Exception si una sentencia falla y CONTINUE_WITH_ERROR no está activo.
+     * @throws Exception si una sentencia que no es del catálogo falla y
+     * CONTINUE_WITH_ERROR no está activo.
+     * @deprecated usar
+     * {@link #dbScriptUpdateExecute(IGenericDAO, ILogManager, DbScriptUpdateRequest)},
+     * que no fija nombres de sección, elige la sesión de cada nodo, filtra por
+     * el motor de esa sesión e informa el resultado.
      */
+    @Deprecated
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public static void dbScriptUpdateExecute(IGenericDAO dao, String sessionId, Document domScript, Map<String, Object> parameters, ILogManager logMngr) throws Exception {
+        //Mapa histórico: CATALOGO -> catálogo; cualquier otro valor -> sessionId
+        Map<String, String> sessions = new LinkedHashMap<>();
+        for (Element sqlScriptNode : DomW3cParser.getChildren(domScript, "/ROOT/SCRIPTS")) {
+            String dataconex = sqlScriptNode.getAttribute("dataconex");
+            sessions.put(dataconex, LEGACY_DATACONEX_CATALOG.equals(dataconex) ? null : sessionId);
+        }
+        try {
+            execute(dao, logMngr, domScript, parameters, sessionId, sessions,
+                    Fn.toLogical(parameters.get("CONTINUE_WITH_ERROR")), false, null, true);
+        } catch (DbScriptUpdateException e) {
+            //La firma histórica lanza la excepción de la sentencia
+            throw (Exception) e.getCause();
+        }
+    }
 
+    /**
+     * Ejecuta un script de actualización de base de datos (nodos
+     * {@code /ROOT/SCRIPTS/SQLCOMMAND} de un paquete de actualización)
+     * sentencia por sentencia, cada nodo con la sesión que indica el llamador,
+     * y registra el progreso en la bitácora (la tabla de {@code classLog}, o
+     * {@code applogdbupdate}) y los errores en el log de la aplicación.
+     *
+     * <p><b>Secciones: el framework no las nombra.</b> El atributo
+     * {@code dataconex} de cada nodo es un nombre lógico de la aplicación;
+     * {@link DbScriptUpdateRequest#getSessionByDataconex()} dice con qué
+     * sesión corre cada valor (sesión nula = catálogo, la unidad
+     * {@link IDBManager#CATALOGO}). El nodo sin atributo se busca con
+     * {@link DbScriptUpdateRequest#DATACONEX_UNSET}. Un nodo cuyo valor no es
+     * clave del mapa se saltea <i>antes</i> de tocar la bitácora: no actualiza
+     * la columna script ni ejecuta nada, y su valor queda en
+     * {@link DbScriptUpdateResult#getSkippedDataconex()} para que el llamador
+     * detecte una sección que no esperaba. La fila igual se inserta y se
+     * cierra aunque ningún nodo quede seleccionado.</p>
+     *
+     * <p><b>Motor por nodo.</b> El atributo {@code motor} de cada nodo se
+     * compara con {@code dao.getDataEngine(pu)} de la unidad de persistencia
+     * de <i>su</i> sesión, y esa misma unidad decide el separador de lotes
+     * ({@code GO} en SQL Server y Sybase, {@code /} en el resto) y es la que
+     * nombra el mensaje de error: «ERROR en unidad de persistencia
+     * &lt;PU&gt;, SCRIPT &lt;archivo&gt;, &lt;error&gt;».</p>
+     *
+     * <p><b>Bitácora.</b> La fila se identifica por el par (dbversion,
+     * sequence) y se escribe en {@code {schema}} de
+     * {@link DbScriptUpdateRequest#getLogSessionId()}, como los registros de
+     * error de {@code applogevent}. Con
+     * {@link DbScriptUpdateRequest#isLogRowOwned()} no se inserta (el
+     * llamador ya la insertó). Con
+     * {@link DbScriptUpdateRequest#getLogRowOwner()} el cierre y la reversión
+     * llevan {@code appuser = :logRowOwner}, y tras el cierre se relee la fila
+     * para informar {@link DbScriptUpdateResult#isLogRowClosed()}.</p>
+     *
+     * <p><b>Política de errores</b>, igual para todos los nodos
+     * ({@link DbScriptUpdateRequest#isContinueWithError()}): con falso, la
+     * primera sentencia rechazada borra la fila de la bitácora (lo que permite
+     * reintentar), queda en el log de la aplicación y corta la ejecución con
+     * una {@link DbScriptUpdateException} que lleva el resultado parcial;
+     * ninguna sentencia posterior se ejecuta. Con verdadero se registra, se
+     * agrega a {@link DbScriptUpdateResult#getToleratedErrors()} y se
+     * continúa.</p>
+     *
+     * <p><b>Detección de errores.</b> Cada sentencia viaja por
+     * {@link IGenericDAO#sqlExec(String, String, Map)}, que la ejecuta como
+     * consulta nativa de JPA, es decir por {@code PreparedStatement}. Con
+     * mssql-jdbc ese camino informa también un error que llega después del
+     * primer recuento de filas del lote (RAISERROR/THROW tras un INSERT o un
+     * PRINT); con {@code Statement} simple se perdería. La política de errores
+     * de arriba depende de que el DAO conserve ese camino.</p>
+     *
+     * <p><b>Lotes con {@code ROLLBACK}/{@code RETURN} propios.</b> No tienen
+     * manejo especial. Un lote que hace {@code ROLLBACK TRANSACTION} dentro de
+     * la transacción del {@code sqlExec} y luego {@code RAISERROR} termina en
+     * error igual (lo provoca el {@code RAISERROR} y, si no, el commit de la
+     * transacción falla por el contador de transacciones del motor), de modo
+     * que se aplica la política de errores de arriba.</p>
+     *
+     * <p>El mapa de parámetros de la petición no se modifica: se trabaja
+     * sobre una copia.</p>
+     *
+     * @param dao DAO genérico usado para ejecutar las sentencias SQL.
+     * @param logMngr gestor de logs de aplicación donde registrar errores (opcional).
+     * @param request script, sesiones, bitácora y política de errores.
+     * @return el resultado de la ejecución.
+     * @throws DbScriptUpdateException si una sentencia es rechazada y la
+     * política no tolera errores; lleva el resultado parcial.
+     * @throws Exception si falla el acceso a datos de otro modo (por ejemplo,
+     * el DAO lanza en lugar de devolver el error).
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public static DbScriptUpdateResult dbScriptUpdateExecute(IGenericDAO dao, ILogManager logMngr, DbScriptUpdateRequest request) throws Exception {
+        Map<String, Object> parameters = new HashMap<>(request.getParameters());
+        if (request.getLogRowOwner() != null) {
+            parameters.put("logRowOwner", request.getLogRowOwner());
+        }
+        return execute(dao, logMngr, request.getScript(), parameters, request.getLogSessionId(),
+                request.getSessionByDataconex(), request.isContinueWithError(), request.isLogRowOwned(),
+                request.getLogRowOwner(), false);
+    }
+
+    /**
+     * Cuerpo común de las dos firmas de {@code dbScriptUpdateExecute}.
+     *
+     * @param dao DAO genérico.
+     * @param logMngr gestor de logs (opcional).
+     * @param domScript documento del paquete.
+     * @param parameters mapa de trabajo (se modifica la clave {@code script}).
+     * @param logSessionId sesión de la bitácora y del log de errores.
+     * @param sessions valor de {@code dataconex} → sesión del nodo.
+     * @param continueWithError política de errores.
+     * @param logRowOwned la fila ya existe.
+     * @param logRowOwner dueño exigido en el cierre y la reversión, o nulo.
+     * @param legacy modo de la firma histórica: un solo motor (el de la
+     * bitácora) para todos los nodos y tolerancia de los nodos
+     * {@code CATALOGO} con su mensaje «ERROR en PU1».
+     * @return el resultado.
+     * @throws DbScriptUpdateException si una sentencia es rechazada sin
+     * tolerancia.
+     * @throws Exception si el DAO lanza.
+     */
+    private static DbScriptUpdateResult execute(IGenericDAO dao, ILogManager logMngr, Document domScript,
+            Map<String, Object> parameters, String logSessionId, Map<String, String> sessions,
+            boolean continueWithError, boolean logRowOwned, String logRowOwner, boolean legacy) throws Exception {
         List<Element> sqlScriptNodes = DomW3cParser.getChildren(domScript, "/ROOT/SCRIPTS");
+        DbScriptUpdateResult result = new DbScriptUpdateResult();
         IErrorReg errorReturn;
 
         String logTable = "applogdbupdate";
@@ -258,6 +408,7 @@ public class DBManager implements IDBManager {
         if (clazz != null) {
             logTable = DataInfo.getTableName(clazz);
         }
+        String ownerFilter = logRowOwner == null ? "" : " and appuser = :logRowOwner";
 
         //Inicio================================================
         String initCommand = "INSERT INTO {schema}." + logTable + " "
@@ -265,19 +416,57 @@ public class DBManager implements IDBManager {
                 + "     values "
                 + "(:dbversion, :sequence, :filename, :script, :appuser)";
 
-        dao.sqlExec(sessionId, initCommand, parameters);
+        if (!logRowOwned) {
+            dao.sqlExec(logSessionId, initCommand, parameters);
+        }
 
-        String persistUnit = dao.getDBLinkInfo(sessionId).getPersistUnit();
-        String motorDatos = dao.getDataEngine(persistUnit);
+        //Firma histórica: un solo motor, el de la unidad de la bitácora
+        String legacyPersistUnit = null;
+        String legacyEngine = null;
+        if (legacy) {
+            legacyPersistUnit = persistUnitOf(dao, logSessionId);
+            legacyEngine = dao.getDataEngine(legacyPersistUnit);
+        }
+        Map<String, String> unitBySession = new HashMap<>();
+        Map<String, String> engineBySession = new HashMap<>();
         String filename = (String)parameters.get("filename");
-        
+
         for (Element sqlScriptNode : sqlScriptNodes) {
-            //Solo se ejecuta los scripts que corresponde a motor de la base 
-            if (!sqlScriptNode.getAttribute("motor").equals(motorDatos)) {
-                continue;
+            String dataconex = sqlScriptNode.getAttribute("dataconex");
+            String persistUnit;
+            String engine;
+            String nodeSessionId;
+            if (legacy) {
+                //Orden histórico: motor primero; todo valor está en el mapa
+                if (!sqlScriptNode.getAttribute("motor").equals(legacyEngine)) {
+                    continue;
+                }
+                nodeSessionId = sessions.get(dataconex);
+                persistUnit = legacyPersistUnit;
+                engine = legacyEngine;
+            } else {
+                //Solo las secciones pedidas; se saltea antes de tocar la bitácora
+                if (!sessions.containsKey(dataconex)) {
+                    //Se informa: un valor que el llamador no esperaba no queda mudo (I6-07)
+                    result.skipped(dataconex);
+                    continue;
+                }
+                nodeSessionId = sessions.get(dataconex);
+                persistUnit = unitBySession.get(nodeSessionId);
+                if (persistUnit == null) {
+                    persistUnit = persistUnitOf(dao, nodeSessionId);
+                    unitBySession.put(nodeSessionId, persistUnit);
+                    engineBySession.put(nodeSessionId, dao.getDataEngine(persistUnit));
+                }
+                engine = engineBySession.get(nodeSessionId);
+                //Solo los scripts del motor de la unidad del nodo
+                if (!sqlScriptNode.getAttribute("motor").equals(engine)) {
+                    continue;
+                }
             }
+            boolean legacyCatalog = legacy && LEGACY_DATACONEX_CATALOG.equals(dataconex);
             String stringEnd = "\nGO\n";
-            if (!Fn.inList(motorDatos, "SQLSERVER", "Microsoft SQL Server", "SYBASE")) {
+            if (!Fn.inList(engine, "SQLSERVER", "Microsoft SQL Server", "SYBASE")) {
                 stringEnd = "\n/\n";
             }
             String script = sqlScriptNode.getTextContent();
@@ -286,7 +475,7 @@ public class DBManager implements IDBManager {
             String command = "UPDATE {schema}." + logTable
                     + " SET script = :script "
                     + " where dbversion = :dbversion and sequence = :sequence";
-            dao.sqlExec(sessionId, command, parameters);
+            dao.sqlExec(logSessionId, command, parameters);
             parameters.put("script", "");
 
             while (!script.isEmpty()) {
@@ -299,96 +488,125 @@ public class DBManager implements IDBManager {
                     sentencia = Strings.substr(script, 0, posicion);
                     script = Strings.substr(script, posicion + stringEnd.length());
                 }
-                // Ejecución del Script
-                if (sqlScriptNode.getAttribute("dataconex").equals("CATALOGO")) {
-                    //En el schema catalogo.
-                    errorReturn = dao.sqlExec(null, sentencia, parameters);
-                    if (errorReturn.getErrorNumber() > 0) {
-                        //Se permite errores y se continua
-                        String message = "ERROR en PU1, SCRIPT " + filename + ", " + errorReturn.getMessage();
-                        Exception ex;
-                        if (errorReturn.getException() != null) {
-                            ex = errorReturn.getException();
-                        } else {
-                            ex = new Exception(message);
-                        }
-                        ErrorManager.showError(ex, LOGGER);
-                        if (logMngr != null) {
-                            IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
-                            String messageInfo = "";
-                            if (errorReturn.getException() != null) {
-                                messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
-                            }
-                            logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
-                            logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
-                            logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
-                            logRecord.setMessage(message);
-                            logRecord.setMessageInfo(messageInfo);
-                            logRecord.setMessageNumber(1);
-                            logMngr.dbWrite(logRecord, sessionId);
-                        }
+                // Ejecución del Script, con la sesión de su sección
+                result.statementSent();
+                errorReturn = dao.sqlExec(nodeSessionId, sentencia, parameters);
+                if (errorReturn.getErrorNumber() > 0) {
+                    //El ordinal de la rechazada es la cantidad enviada hasta ella (M6-07)
+                    result.failure(result.getStatementsExecuted(), sentencia, legacyCatalog ? IDBManager.CATALOGO : persistUnit);
+                    String message;
+                    if (legacyCatalog) {
+                        message = "ERROR en PU1, SCRIPT " + filename + ", " + errorReturn.getMessage();
+                    } else {
+                        message = "ERROR en unidad de persistencia " + persistUnit + ", SCRIPT " + filename + ", " + errorReturn.getMessage();
                     }
-                } else {
-                    //En el schema datos.
-                    errorReturn = dao.sqlExec(sessionId, sentencia, parameters);
-                    if (errorReturn.getErrorNumber() > 0) {
-                        String message = "ERROR en unidad de persistencia " + persistUnit + ", SCRIPT " + filename + ", " + errorReturn.getMessage();
-                        Exception ex;
-                        if (errorReturn.getException() != null) {
-                            ex = errorReturn.getException();
-                        } else {
-                            ex = new Exception(message);
-                        }
-                        if (!Fn.toLogical(parameters.get("CONTINUE_WITH_ERROR"))) {
-                            //Revertir proceso==================================
-                            String revertCommand = "delete from {schema}." + logTable
-                                    + " where dbversion = :dbversion and sequence = :sequence";
-                            dao.sqlExec(sessionId, revertCommand, parameters);
-                            //Registrar en el log de la base
-                            if (logMngr != null) {
-                                IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
-                                String messageInfo = "";
-                                if (errorReturn.getException() != null) {
-                                    messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
-                                }
-                                logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
-                                logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
-                                logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
-                                logRecord.setMessage(message);
-                                logRecord.setMessageInfo(messageInfo);
-                                logRecord.setMessageNumber(1);
-                                logMngr.dbWrite(logRecord, sessionId);
-                            }
-                            throw ex;
-                        } else {
-                            ErrorManager.showError(ex, LOGGER);                            
-                            //Registrar en el log de la base
-                            if (logMngr != null) {
-                                IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
-                                String messageInfo = "";
-                                if (errorReturn.getException() != null) {
-                                    messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
-                                }
-                                logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
-                                logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
-                                logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
-                                logRecord.setMessage(message);
-                                logRecord.setMessageInfo(messageInfo);
-                                logRecord.setMessageNumber(1);
-                                logMngr.dbWrite(logRecord, sessionId);
-                            }
-                        }
+                    Exception ex;
+                    if (errorReturn.getException() != null) {
+                        ex = errorReturn.getException();
+                    } else {
+                        ex = new Exception(message);
+                    }
+                    if (legacyCatalog || continueWithError) {
+                        //Se permite errores y se continua
+                        ErrorManager.showError(ex, LOGGER);
+                        writeErrorLog(logMngr, logSessionId, errorReturn, message);
+                        result.tolerated(errorReturn);
+                    } else {
+                        //Revertir proceso==================================
+                        String revertCommand = "delete from {schema}." + logTable
+                                + " where dbversion = :dbversion and sequence = :sequence" + ownerFilter;
+                        IErrorReg reverted = dao.sqlExec(logSessionId, revertCommand, parameters);
+                        result.logRowDeleted(reverted == null || reverted.getErrorNumber() == 0);
+                        //Registrar en el log de la base
+                        writeErrorLog(logMngr, logSessionId, errorReturn, message);
+                        throw new DbScriptUpdateException(message, ex, result);
                     }
                 }
-
             }
         }
         //Fin ============================================
         String endCommand = "UPDATE {schema}." + logTable
                 + " SET finished = {true} "
-                + " where dbversion = :dbversion and sequence = :sequence";
+                + " where dbversion = :dbversion and sequence = :sequence" + ownerFilter;
 
-        dao.sqlExec(sessionId, endCommand, parameters);
+        IErrorReg closed = dao.sqlExec(logSessionId, endCommand, parameters);
+        boolean closedOk = closed == null || closed.getErrorNumber() == 0;
+        if (closedOk && logRowOwner != null) {
+            //sqlExec no informa las filas afectadas: se relee la fila del dueño
+            closedOk = isLogRowClosedBy(dao, logSessionId, logTable, parameters, logRowOwner);
+        }
+        result.logRowClosed(closedOk);
+        return result;
+    }
+
+    /**
+     * Unidad de persistencia de una sesión; la del catálogo si el DAO no
+     * devuelve vínculo.
+     *
+     * @param dao DAO genérico.
+     * @param sessionId sesión, o nulo para el catálogo.
+     * @return nombre de la unidad de persistencia.
+     */
+    private static String persistUnitOf(IGenericDAO dao, String sessionId) {
+        IDBLinkInfo dbLinkInfo = dao.getDBLinkInfo(sessionId);
+        return dbLinkInfo == null ? IDBManager.CATALOGO : dbLinkInfo.getPersistUnit();
+    }
+
+    /**
+     * Relee la fila de la bitácora y comprueba que quedó concluida a nombre de
+     * su dueño.
+     *
+     * @param dao DAO genérico.
+     * @param logSessionId sesión de la bitácora.
+     * @param logTable tabla de la bitácora.
+     * @param parameters parámetros con {@code dbversion} y {@code sequence}.
+     * @param logRowOwner {@code appuser} dueño.
+     * @return verdadero si la fila existe, es del dueño y tiene
+     * {@code finished} verdadero.
+     * @throws Exception si la lectura falla.
+     */
+    private static boolean isLogRowClosedBy(IGenericDAO dao, String logSessionId, String logTable,
+            Map<String, Object> parameters, String logRowOwner) throws Exception {
+        //Literales numéricos (no se interpola texto del llamador)
+        int dbversion = Integer.parseInt(String.valueOf(parameters.get("dbversion")).trim());
+        int sequence = Integer.parseInt(String.valueOf(parameters.get("sequence")).trim());
+        IDataQueryModel row = DataNativeQuery.create(dao, logSessionId)
+                .select("finished, appuser")
+                .from(logTable)
+                .where("dbversion = " + dbversion + " and sequence = " + sequence)
+                .execQuerySingle();
+        //trim: una columna char(n) llega con relleno; el "=" de SQL lo ignora
+        Object appuser = row == null ? null : row.getColumn("appuser");
+        return row != null && Fn.toLogical(row.getColumn("finished"))
+                && appuser != null && logRowOwner.trim().equals(appuser.toString().trim());
+    }
+
+    /**
+     * Registra el error de una sentencia del script en el log de la base
+     * (evento EVENT_UPDATEDB, nivel error). No hace nada si {@code logMngr}
+     * es nulo.
+     *
+     * @param logMngr gestor de logs de aplicación (opcional).
+     * @param sessionId sesión con la que se escribe el registro.
+     * @param errorReturn error devuelto por la sentencia.
+     * @param message mensaje a registrar.
+     */
+    private static void writeErrorLog(ILogManager logMngr, String sessionId, IErrorReg errorReturn, String message) {
+        if (logMngr == null) {
+            return;
+        }
+        IAppLogRecord logRecord = logMngr.getNewAppLogRecord(null);
+        String messageInfo = "";
+        if (errorReturn.getException() != null) {
+            messageInfo = ErrorManager.getMessageToShow(errorReturn.getException());
+        }
+        logRecord.setEvent(IAppLogRecord.EVENT_UPDATEDB);
+        logRecord.setLevel(IAppLogRecord.LEVEL_ERROR);
+        logRecord.setCategory(IAppLogRecord.CATEGORY_DATA);
+        logRecord.setMessage(message);
+        logRecord.setMessageInfo(messageInfo);
+        logRecord.setMessageNumber(1);
+        logMngr.dbWrite(logRecord, sessionId);
     }
 
     /**
