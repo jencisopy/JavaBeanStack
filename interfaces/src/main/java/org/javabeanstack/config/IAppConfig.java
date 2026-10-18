@@ -23,7 +23,7 @@ package org.javabeanstack.config;
 
 import java.util.List;
 import org.javabeanstack.data.IDataResult;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.w3c.dom.Document;
 import org.javabeanstack.model.IAppSystemParam;
 
@@ -183,7 +183,7 @@ public interface IAppConfig {
      * @return registro de error si la actualización falla, o {@code null} si tuvo éxito.
      * @throws Exception si ocurre un error durante la actualización.
      */
-    IErrorReg updateDatabase(String sessionId) throws Exception;
+    IErrorInfo updateDatabase(String sessionId) throws Exception;
 
     /**
      * Verifica que el esquema de la base de datos sea compatible con la aplicación.
@@ -192,7 +192,7 @@ public interface IAppConfig {
      * @return registro de error si no es compatible, o {@code null} si lo es.
      * @throws Exception si ocurre un error durante la verificación.
      */
-    IErrorReg checkDatabase(String sessionId) throws Exception;
+    IErrorInfo checkDatabase(String sessionId) throws Exception;
 
     /**
      * Versión de estructura "no determinada".

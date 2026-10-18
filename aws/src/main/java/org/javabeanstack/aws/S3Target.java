@@ -24,8 +24,8 @@ package org.javabeanstack.aws;
 
 import software.amazon.awssdk.services.s3.S3Client;
 
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.outputs.IDocumentTarget;
 import org.javabeanstack.outputs.IOutputDocument;
 import org.javabeanstack.util.Strings;
@@ -85,7 +85,7 @@ public class S3Target implements IDocumentTarget {
      * configurado (uso inválido).
      */
     @Override
-    public IErrorReg deliver(IOutputDocument document) throws Exception {
+    public IErrorInfo deliver(IOutputDocument document) throws Exception {
         if (document == null || document.getSize() == 0) {
             throw new Exception("El documento a subir es nulo o está vacío");
         }
@@ -95,7 +95,7 @@ public class S3Target implements IDocumentTarget {
         if (Strings.isNullorEmpty(document.getFileName())) {
             throw new Exception("El documento no tiene nombre de archivo");
         }
-        IErrorReg result = new ErrorReg();
+        IErrorInfo result = new ErrorInfo();
         try {
             S3Util.putObject(s3Client, bucketName, prefix + document.getFileName(),
                     document.getContent(), document.getContentType());

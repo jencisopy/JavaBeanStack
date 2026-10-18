@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Descripción del proyecto
 
-JavaBeanStack es un framework Java multi-módulo Maven (LGPL v3.0) que provee infraestructura reutilizable para acceso a datos, seguridad, manejo de errores y capas web JSF/REST. Es una **librería/framework**, no una aplicación ejecutable. Grupo Maven: `org.javabeanstack`, parent `jbs-parent`, versión actual `2.0.0-SNAPSHOT`. `maven.compiler.release` fija **Java 25** (`java.version` en el pom raíz, alineado al runtime de WildFly 40; Jakarta EE 11 exige 17 como mínimo).
+JavaBeanStack es un framework Java multi-módulo Maven (LGPL v3.0) que provee infraestructura reutilizable para acceso a datos, seguridad, manejo de errores y capas web JSF/REST. Es una **librería/framework**, no una aplicación ejecutable. Grupo Maven: `org.javabeanstack`, parent `jbs-parent`, versión actual `2.1.0-SNAPSHOT`. `maven.compiler.release` fija **Java 25** (`java.version` en el pom raíz, alineado al runtime de WildFly 40; Jakarta EE 11 exige 17 como mínimo).
 
 ## Estrategia de ramas — IMPORTANTE
 
@@ -132,7 +132,7 @@ Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (
 - **`JwtManager`** / **`DigestAuth`** — soporte JWT y HTTP Digest.
 
 ### Manejo de errores (`core`)
-- **`IErrorReg`** / **`ErrorReg`** — representación unificada de errores entre capas.
+- **`IErrorInfo`** / **`ErrorInfo`** — representación unificada de errores entre capas.
 - **`ErrorManager`** — utilidad estática de log de errores: `ErrorManager.showError(ex, LOGGER)`.
 - **`LogManager`** — persiste mensajes/eventos en la tabla `AppMessage` (campo `number`).
 
@@ -154,7 +154,7 @@ Todo lo construido sobre Apache POI, en dos paquetes por dominio:
 - **`org.javabeanstack.poi.word`** — **`WordTemplateMerge`** (merge de marcadores `<<campo>>` por párrafo sobre plantillas .docx) y **`WordTemplateSource`** (fuente del subsistema de salida). Subidos desde Maker el 2026-08-14, relicenciados a LGPL.
 
 ### Salida de documentos (`outputs` + adapters)
-- **`org.javabeanstack.outputs`** (contratos en `interfaces`; núcleo en el módulo `outputs`, artefacto `jbs-outputs`, que depende solo de `jbs-core`): modelo fuente→documento→destinos. **`OutputDispatcher`** (orquestador fluido: genera una vez, entrega a N destinos, nunca lanza — todo vuelve como `IErrorReg`; log opcional con `EVENT_DOCUMENT_OUTPUT`), **`OutputDocument`**, **`FolderTarget`**. Adapters en el módulo dueño de cada dependencia: `JasperReportSource` (jasper), `MailTarget` (messaging), `ExcelDataSource` (poi), `DownloadTarget` (web, único autorizado a tocar la respuesta HTTP), `WordTemplateSource` (poi). Regla que el subsistema garantiza: *primero generar en memoria, después comprometer el destino*.
+- **`org.javabeanstack.outputs`** (contratos en `interfaces`; núcleo en el módulo `outputs`, artefacto `jbs-outputs`, que depende solo de `jbs-core`): modelo fuente→documento→destinos. **`OutputDispatcher`** (orquestador fluido: genera una vez, entrega a N destinos, nunca lanza — todo vuelve como `IErrorInfo`; log opcional con `EVENT_DOCUMENT_OUTPUT`), **`OutputDocument`**, **`FolderTarget`**. Adapters en el módulo dueño de cada dependencia: `JasperReportSource` (jasper), `MailTarget` (messaging), `ExcelDataSource` (poi), `DownloadTarget` (web, único autorizado a tocar la respuesta HTTP), `WordTemplateSource` (poi). Regla que el subsistema garantiza: *primero generar en memoria, después comprometer el destino*.
 
 ## Header de copyright
 

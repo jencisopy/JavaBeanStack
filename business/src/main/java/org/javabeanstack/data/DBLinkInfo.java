@@ -24,7 +24,7 @@ package org.javabeanstack.data;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.model.IAppCompany;
@@ -164,7 +164,7 @@ public class DBLinkInfo implements IDBLinkInfo {
     @Override
     public void setToken(IAppAuthConsumerToken token, IOAuthConsumer oAuthConsumer, boolean noValid) throws SessionError {
         LOGGER.debug("setToken in");
-        IErrorReg error = oAuthConsumer.checkToken(token.getToken());
+        IErrorInfo error = oAuthConsumer.checkToken(token.getToken());
         if (!noValid && error.getErrorNumber() > 0) {
             throw new SessionError(error.getMessage());
         }

@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Resultado de
@@ -48,7 +48,7 @@ public final class DbScriptUpdateResult {
     private Integer failedStatementIndex;
     private String failedStatement;
     private String failedPersistUnit;
-    private final List<IErrorReg> toleratedErrors = new ArrayList<>();
+    private final List<IErrorInfo> toleratedErrors = new ArrayList<>();
     private final Set<String> skippedDataconex = new LinkedHashSet<>();
 
     DbScriptUpdateResult() {
@@ -129,7 +129,7 @@ public final class DbScriptUpdateResult {
      *
      * @return lista inmutable, vacía si no hubo.
      */
-    public List<IErrorReg> getToleratedErrors() {
+    public List<IErrorInfo> getToleratedErrors() {
         return Collections.unmodifiableList(toleratedErrors);
     }
 
@@ -183,7 +183,7 @@ public final class DbScriptUpdateResult {
         }
     }
 
-    void tolerated(IErrorReg error) {
+    void tolerated(IErrorInfo error) {
         toleratedErrors.add(error);
     }
 

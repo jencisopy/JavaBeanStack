@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import org.javabeanstack.data.IDBFilter;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
@@ -50,7 +50,7 @@ public class UserSession implements IUserSession{
     private String host;
     private String persistenceUnit;
     private String sessionId;
-    private IErrorReg error;
+    private IErrorInfo error;
     private Integer idleSessionExpireInMinutes;
     private IDBFilter dbFilter;
     //Concurrente (plan PWDEXP, M5-04): el filtro de autenticacion lo lee en cada
@@ -243,7 +243,7 @@ public class UserSession implements IUserSession{
      * @return Devuelve un objeto error si la creación de la sesión no fue exitosa
      */
     @Override
-    public IErrorReg getError() {
+    public IErrorInfo getError() {
         return error;
     }
 
@@ -253,7 +253,7 @@ public class UserSession implements IUserSession{
      * @param error registro de error.
      */
     @Override
-    public void setError(IErrorReg error) {
+    public void setError(IErrorInfo error) {
         this.error = error;
     }
 

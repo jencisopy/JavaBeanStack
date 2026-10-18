@@ -53,7 +53,7 @@ import org.junit.jupiter.api.TestMethodOrder;
  * {@code IDataSet} (plan DELHIJA, Fase 1; hallazgos E0-01 y E0-02).
  *
  * <p>La rama {@code case IDataRow.DELETE} de
- * {@link AbstractDAO#update(java.lang.String, org.javabeanstack.data.IDataSet)}
+ * {@link AbstractDAO#save(java.lang.String, org.javabeanstack.data.IDataSet)}
  * hace {@code em.remove(em.merge(ejb))}. El {@code merge} de una fila
  * desprendida carga el grafo con el perfil interno de fetch "merge", que
  * inicializa toda coleccion con cascada {@code MERGE} que encuentre: eso trae
@@ -204,7 +204,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
         dataSet.add("AppUserFormViewColumn", unaLista(aBorrar));
 
         long marca = marcarLog();
-        IDataResult resultado = dao.update(null, dataSet);
+        IDataResult resultado = dao.save(null, dataSet);
         String tramo = guardarTramoLog(caso, marca);
 
         long hijasAhora = contarHijas(idView);
@@ -245,7 +245,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
         dataSet.add("AppUserFormViewColumn", unaLista(aBorrar));
 
         long marca = marcarLog();
-        IDataResult resultado = dao.update(null, dataSet);
+        IDataResult resultado = dao.save(null, dataSet);
         String tramo = guardarTramoLog(caso, marca);
 
         long hijasAhora = contarHijas(idView);
@@ -288,7 +288,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
         dataSet.add("AppUserFormView", unaLista(padre));
 
         long marca = marcarLog();
-        IDataResult resultado = dao.update(null, dataSet);
+        IDataResult resultado = dao.save(null, dataSet);
         String tramo = guardarTramoLog(caso, marca);
 
         long hijasAhora = contarHijas(idView);
@@ -338,7 +338,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
         dataSet.add("AppUserFormViewColumn", unaLista(aBorrar));
 
         long marca = marcarLog();
-        IDataResult resultado = dao.update(null, dataSet);
+        IDataResult resultado = dao.save(null, dataSet);
         String tramo = guardarTramoLog(caso, marca);
 
         long hijasAhora = contarHijas(idView);
@@ -387,7 +387,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
         dataSet.add("AppUserFormViewColumn", unaLista(aBorrar));
 
         long marca = marcarLog();
-        IDataResult resultado = dao.update(null, dataSet);
+        IDataResult resultado = dao.save(null, dataSet);
         String tramo = guardarTramoLog(caso, marca);
 
         long hijasAhora = contarHijas(idView);
@@ -424,7 +424,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
         dataSet.add("AppUserFormViewColumn", unaLista(fantasma));
 
         long marca = marcarLog();
-        IDataResult resultado = dao.update(null, dataSet);
+        IDataResult resultado = dao.save(null, dataSet);
         String tramo = guardarTramoLog(caso, marca);
 
         long hijasAhora = contarHijas(idView);
@@ -445,7 +445,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
 
     /**
      * Borrado individual por {@code IGenericDAO.remove}, que delega en la misma
-     * rama DELETE de {@code update}: la hija viaja sola, sin el padre.
+     * rama DELETE de {@code save}: la hija viaja sola, sin el padre.
      */
     @Test
     public void test07RemoveIndividual() throws Exception {
@@ -490,7 +490,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
 
         IDataSet alta = new DataSet();
         alta.add("AppTablesRelation", unaLista(relacion));
-        IDataResult resultadoAlta = dao.update(null, alta);
+        IDataResult resultadoAlta = dao.save(null, alta);
         assertTrue(resultadoAlta != null && Boolean.TRUE.equals(resultadoAlta.isSuccessFul()),
                 "FIXTURE: no se pudo dar de alta la fila de clave compuesta: "
                 + ((resultadoAlta == null) ? "null" : resultadoAlta.getErrorMsg()));
@@ -506,7 +506,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
         baja.add("AppTablesRelation", unaLista(aBorrar));
 
         long marca = marcarLog();
-        IDataResult resultado = dao.update(null, baja);
+        IDataResult resultado = dao.save(null, baja);
         String tramo = guardarTramoLog(caso, marca);
 
         long ahora = contarRelaciones();
@@ -554,7 +554,7 @@ public class AbstractDAODeleteChildTest extends TestClass {
         dataSet.add("AppUserFormView", unaLista(padre));
         dataSet.add("AppUserFormViewColumn", hijas);
 
-        IDataResult resultado = dao.update(null, dataSet);
+        IDataResult resultado = dao.save(null, dataSet);
         assertTrue(resultado != null && Boolean.TRUE.equals(resultado.isSuccessFul()),
                 "FIXTURE: no se pudo crear la vista de prueba " + form + " - "
                 + ((resultado == null) ? "null" : resultado.getErrorMsg()));

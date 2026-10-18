@@ -24,8 +24,8 @@ package org.javabeanstack.messaging.mail;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Implementación de {@link IMailSendResult}. Se construye con las fábricas
@@ -38,7 +38,7 @@ public class MailSendResult implements IMailSendResult {
     private boolean successful;
     private boolean retryable;
     private String messageId;
-    private IErrorReg errorReg;
+    private IErrorInfo errorInfo;
     private final List<String> invalidAddresses = new ArrayList<>();
 
     /**
@@ -70,7 +70,7 @@ public class MailSendResult implements IMailSendResult {
         MailSendResult r = new MailSendResult();
         r.successful = false;
         r.retryable = true;
-        r.errorReg = new ErrorReg(message, 0, "");
+        r.errorInfo = new ErrorInfo(message, 0, "");
         return r;
     }
 
@@ -84,7 +84,7 @@ public class MailSendResult implements IMailSendResult {
         MailSendResult r = new MailSendResult();
         r.successful = false;
         r.retryable = false;
-        r.errorReg = new ErrorReg(message, 0, "");
+        r.errorInfo = new ErrorInfo(message, 0, "");
         return r;
     }
 
@@ -104,8 +104,8 @@ public class MailSendResult implements IMailSendResult {
     }
 
     @Override
-    public IErrorReg getErrorReg() {
-        return errorReg;
+    public IErrorInfo getErrorInfo() {
+        return errorInfo;
     }
 
     @Override

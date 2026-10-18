@@ -27,7 +27,7 @@ import java.util.List;
 import org.javabeanstack.data.IDBFilter;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.data.services.IDataService;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.model.IAppAuthConsumerToken;
@@ -267,7 +267,7 @@ public interface IOAuthConsumer {
      * @return el error encontrado, un error con número 0 si todo está bien, o
      * {@code null} si la implementación no valida.
      */
-    default IErrorReg checkTokenOwner(String consumerKey, String userCode, Long idcompany) {
+    default IErrorInfo checkTokenOwner(String consumerKey, String userCode, Long idcompany) {
         return null;
     }
 
@@ -352,7 +352,7 @@ public interface IOAuthConsumer {
      * @param token token de acceso.
      * @return registro de error, o {@code null} si es válido.
      */
-    IErrorReg checkToken(String token);
+    IErrorInfo checkToken(String token);
 
     /**
      * Verifica una entidad token y devuelve el error correspondiente si no es válida.
@@ -360,7 +360,7 @@ public interface IOAuthConsumer {
      * @param authToken entidad token.
      * @return registro de error, o {@code null} si es válida.
      */
-    IErrorReg checkToken(IAppAuthConsumerToken authToken);
+    IErrorInfo checkToken(IAppAuthConsumerToken authToken);
 
     /**
      * Verifica un token, con opción de omitir la verificación de credenciales.
@@ -369,7 +369,7 @@ public interface IOAuthConsumer {
      * @param noCheckCredentials verdadero para no verificar las credenciales.
      * @return registro de error, o {@code null} si es válido.
      */
-    IErrorReg checkToken(String token, boolean noCheckCredentials);
+    IErrorInfo checkToken(String token, boolean noCheckCredentials);
 
     /**
      * Verifica una entidad token, con opción de omitir la verificación de
@@ -379,7 +379,7 @@ public interface IOAuthConsumer {
      * @param noCheckCredentials verdadero para no verificar las credenciales.
      * @return registro de error, o {@code null} si es válida.
      */
-    IErrorReg checkToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials);
+    IErrorInfo checkToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials);
 
     /**
      * Devuelve el valor de una propiedad de los datos incluidos en un token.

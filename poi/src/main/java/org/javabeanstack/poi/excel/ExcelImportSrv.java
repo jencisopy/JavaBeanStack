@@ -44,7 +44,7 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.services.IDataService;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
@@ -699,7 +699,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                         continue;
                     }
                     //Validar
-                    Map<String, IErrorReg> errorInfo = getDataService().checkDataRow(sessionId, target);
+                    Map<String, IErrorInfo> errorInfo = getDataService().checkDataRow(sessionId, target);
                     if (!errorInfo.isEmpty()) {
                         source.setErrors(errorInfo);
                         dataRowsError.add(source);
@@ -952,7 +952,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * {@link #getOverWriteData()} sea {@code true}, contabilizados en
      * {@link #getRowsExistCount()}), {@link #onAfterRowConvert(IDataRow, IDataRow)},
      * validación con {@code IDataService.checkDataRow} y persistencia con
-     * {@code IDataService.update} (los grabados se contabilizan en
+     * {@code IDataService.save} (los grabados se contabilizan en
      * {@link #getRowsMigratedCount()}). Los registros con error se acumulan en
      * {@link #getDataRowsError()}. Si los registros ya fueron validados en la
      * pasada de {@link #checkValidation(Sheet)}, el {@code checkDataRow} no se
@@ -1055,7 +1055,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                 }
                 //Validar
                 if (!reviewed) {
-                    Map<String, IErrorReg> errorInfo = getDataService().checkDataRow(sessionId, target);
+                    Map<String, IErrorInfo> errorInfo = getDataService().checkDataRow(sessionId, target);
                     if (!errorInfo.isEmpty()) {
                         source.setErrors(errorInfo);
                         getDataRowsError().add(source);
@@ -1066,7 +1066,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     target.setRowChecked(true);
                 }
                 //Grabar
-                IDataResult result = getDataService().update(sessionId, target);
+                IDataResult result = getDataService().save(sessionId, target);
                 if (!result.isSuccessFul()) {
                     source.setErrors(result.getErrorsMap());
                     getDataRowsError().add(source);

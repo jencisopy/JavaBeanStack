@@ -42,7 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.log.ILogManager;
 import org.javabeanstack.model.IAppLogRecord;
 import org.javabeanstack.util.Dates;
@@ -401,7 +401,7 @@ public class DBManager implements IDBManager {
             boolean continueWithError, boolean logRowOwned, String logRowOwner, boolean legacy) throws Exception {
         List<Element> sqlScriptNodes = DomW3cParser.getChildren(domScript, "/ROOT/SCRIPTS");
         DbScriptUpdateResult result = new DbScriptUpdateResult();
-        IErrorReg errorReturn;
+        IErrorInfo errorReturn;
 
         String logTable = "applogdbupdate";
         Class clazz = (Class) parameters.get("classLog");
@@ -515,7 +515,7 @@ public class DBManager implements IDBManager {
                         //Revertir proceso==================================
                         String revertCommand = "delete from {schema}." + logTable
                                 + " where dbversion = :dbversion and sequence = :sequence" + ownerFilter;
-                        IErrorReg reverted = dao.sqlExec(logSessionId, revertCommand, parameters);
+                        IErrorInfo reverted = dao.sqlExec(logSessionId, revertCommand, parameters);
                         result.logRowDeleted(reverted == null || reverted.getErrorNumber() == 0);
                         //Registrar en el log de la base
                         writeErrorLog(logMngr, logSessionId, errorReturn, message);
@@ -529,7 +529,7 @@ public class DBManager implements IDBManager {
                 + " SET finished = {true} "
                 + " where dbversion = :dbversion and sequence = :sequence" + ownerFilter;
 
-        IErrorReg closed = dao.sqlExec(logSessionId, endCommand, parameters);
+        IErrorInfo closed = dao.sqlExec(logSessionId, endCommand, parameters);
         boolean closedOk = closed == null || closed.getErrorNumber() == 0;
         if (closedOk && logRowOwner != null) {
             //sqlExec no informa las filas afectadas: se relee la fila del dueño
@@ -591,7 +591,7 @@ public class DBManager implements IDBManager {
      * @param errorReturn error devuelto por la sentencia.
      * @param message mensaje a registrar.
      */
-    private static void writeErrorLog(ILogManager logMngr, String sessionId, IErrorReg errorReturn, String message) {
+    private static void writeErrorLog(ILogManager logMngr, String sessionId, IErrorInfo errorReturn, String message) {
         if (logMngr == null) {
             return;
         }

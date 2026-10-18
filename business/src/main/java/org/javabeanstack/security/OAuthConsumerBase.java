@@ -52,8 +52,8 @@ import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.data.services.IDataService;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.exceptions.TokenGenericException;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
@@ -412,7 +412,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * después se aplica sola al grabar.</p>
      */
     @Override
-    public IErrorReg checkTokenOwner(String consumerKey, String userCode, Long idcompany) {
+    public IErrorInfo checkTokenOwner(String consumerKey, String userCode, Long idcompany) {
         if (getAuthConsumerTokenSrv() == null) {
             LOGGER.error("No está declarado el servicio de tokens (AppAuthConsumerTokenSrv)");
             return null;
@@ -518,7 +518,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
         }
         StringBuilder motivo = new StringBuilder(nvl(resultado.getErrorMsg(), ""));
         if (resultado.getErrorsMap() != null) {
-            for (Map.Entry<String, IErrorReg> entry : resultado.getErrorsMap().entrySet()) {
+            for (Map.Entry<String, IErrorInfo> entry : resultado.getErrorsMap().entrySet()) {
                 if (motivo.length() > 0) {
                     motivo.append(" · ");
                 }
@@ -1022,7 +1022,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return verdadero si es válido y falso si no.
      */
     @Override
-    public IErrorReg checkToken(String token) {
+    public IErrorInfo checkToken(String token) {
         return checkToken(token, false);
     }
 
@@ -1033,7 +1033,7 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return verdadero si es válido y falso si no.
      */
     @Override
-    public IErrorReg checkToken(IAppAuthConsumerToken authToken) {
+    public IErrorInfo checkToken(IAppAuthConsumerToken authToken) {
         return checkToken(authToken, false);
     }
 
@@ -1045,9 +1045,9 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return verdadero si es válido y falso si no.
      */
     @Override
-    public IErrorReg checkToken(String token, boolean noCheckCredentials) {
+    public IErrorInfo checkToken(String token, boolean noCheckCredentials) {
         IAppAuthConsumerToken result = findAuthToken(token);
-        IErrorReg errorReturn = new ErrorReg();
+        IErrorInfo errorReturn = new ErrorInfo();
         if (result == null) {
             errorReturn.setErrorNumber(50000);
             errorReturn.setMessage("Token: " + Fn.nvl(token, "") + ", no existe");
@@ -1113,8 +1113,8 @@ public abstract class OAuthConsumerBase implements IOAuthConsumer {
      * @return verdadero si es válido y falso si no.
      */
     @Override
-    public IErrorReg checkToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials) {
-        IErrorReg errorReturn = new ErrorReg();
+    public IErrorInfo checkToken(IAppAuthConsumerToken authToken, boolean noCheckCredentials) {
+        IErrorInfo errorReturn = new ErrorInfo();
         if (authToken == null) {
             errorReturn.setErrorNumber(50000);
             errorReturn.setMessage("Authtoken es nulo");

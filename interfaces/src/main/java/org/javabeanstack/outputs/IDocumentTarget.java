@@ -22,7 +22,7 @@
  */
 package org.javabeanstack.outputs;
 
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Contrato de un <b>destino</b> de documentos: la pieza que sabe entregar un
@@ -58,7 +58,7 @@ public interface IDocumentTarget {
      * Entrega el documento por el canal de este destino.
      *
      * <p>
-     * Devuelve el resultado como {@link IErrorReg} en lugar de propagar la
+     * Devuelve el resultado como {@link IErrorInfo} en lugar de propagar la
      * excepción cuando el fallo es propio del canal (SMTP caído, carpeta sin
      * permisos): así una entrega a varios destinos puede continuar con los
      * demás y el llamador decide qué informar. Las condiciones de programación
@@ -71,7 +71,7 @@ public interface IDocumentTarget {
      * @throws Exception ante condiciones de uso inválido (documento nulo o
      * vacío, destino sin configurar).
      */
-    IErrorReg deliver(IOutputDocument document) throws Exception;
+    IErrorInfo deliver(IOutputDocument document) throws Exception;
 
     /**
      * Devuelve el nombre corto del canal ({@code download}, {@code mail},

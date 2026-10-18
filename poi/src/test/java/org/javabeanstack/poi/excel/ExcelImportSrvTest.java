@@ -199,7 +199,7 @@ public class ExcelImportSrvTest {
     /**
      * Servicio simulado que declara <b>existente</b> la fila cuyo {@code code}
      * es {@code u1} (devuelve una entidad ya persistida con id 100 y datos
-     * previos), y registra las entidades que recibe {@code update}.
+     * previos), y registra las entidades que recibe {@code save}.
      */
     static class ExistingRowSrv extends ExcelImportSrvTest01 {
 
@@ -252,7 +252,7 @@ public class ExcelImportSrvTest {
                                 return existing;
                             }
                             return null;
-                        case "update":
+                        case "save":
                             updated.add((IDataRow) args[1]);
                             return stub(org.javabeanstack.data.IDataResult.class);
                         default:
@@ -543,7 +543,7 @@ public class ExcelImportSrvTest {
      * Cierre con error cuando una fila se descarta <b>durante la grabación</b>:
      * antes, {@code finishWithError()} solo se disparaba por la validación de
      * {@code checkDataRow}; una fila que {@code onBeforeRowConvert} manda a la
-     * lista de errores, o un {@code update} fallido, terminaban en
+     * lista de errores, o un {@code save} fallido, terminaban en
      * {@code finish()} aunque el proceso tuviera errores (observación de
      * XLSGEN §6.2). También se prueba que una fila que la subclase descarta
      * SIN marcarla como error sigue cerrando con {@code finish()}.

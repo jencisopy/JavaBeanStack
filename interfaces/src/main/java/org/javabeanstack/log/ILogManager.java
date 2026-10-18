@@ -22,7 +22,7 @@
 package org.javabeanstack.log;
 
 import java.util.List;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.model.IAppMessage;
 import org.javabeanstack.model.IAppLogRecord;
 
@@ -54,10 +54,10 @@ public interface ILogManager {
     /**
      * Persiste un error en el log.
      *
-     * @param errorReg registro de error.
+     * @param errorInfo registro de error.
      * @return verdadero si se persistió, falso si no.
      */
-    boolean dbWrite(IErrorReg errorReg);
+    boolean dbWrite(IErrorInfo errorInfo);
 
     /**
      * Persiste un error en un tipo de log específico.
@@ -65,10 +65,10 @@ public interface ILogManager {
      * @param <T> tipo del registro de log.
      * @param logType clase del registro de log.
      * @param sessionId identificador de la sesión del usuario.
-     * @param errorReg registro de error.
+     * @param errorInfo registro de error.
      * @return verdadero si se persistió, falso si no.
      */
-    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg errorReg);
+    <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorInfo errorInfo);
 
     /**
      * Persiste un registro de log ya construido.

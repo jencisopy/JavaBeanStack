@@ -52,9 +52,9 @@ import org.javabeanstack.crypto.DigestUtil;
 import org.javabeanstack.data.DBLinkInfo;
 import org.javabeanstack.data.IDBLinkInfo;
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.error.ErrorInfo;
 import org.javabeanstack.data.IGenericDAO;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.log.ILogManagerSecurity;
 import org.javabeanstack.model.IAppCompany;
@@ -304,7 +304,7 @@ public class Sessions implements ISessions {
                 String mensaje = session.getUser().getLogin().trim().toUpperCase() + " tiene una sesión activa";
                 session.setUser(null);
                 LOGGER.debug(mensaje);
-                session.setError(new ErrorReg(mensaje, 4, ""));
+                session.setError(new ErrorInfo(mensaje, 4, ""));
                 session.getError().setEntity(getClass().getName());
                 session.getError().setEvent(EVENT_CREATESESSION);
                 session.getError().setLevel(LEVEL_ALERT);
@@ -318,7 +318,7 @@ public class Sessions implements ISessions {
             String mensaje = session.getUser().getLogin().trim().toUpperCase() + " no tiene autorización para acceder a esta empresa";
             session.setUser(null);
             LOGGER.debug(mensaje);
-            session.setError(new ErrorReg(mensaje, 4, ""));
+            session.setError(new ErrorInfo(mensaje, 4, ""));
             session.getError().setEntity(getClass().getName());
             session.getError().setEvent(EVENT_CREATESESSION);
             session.getError().setLevel(LEVEL_ALERT);
@@ -337,7 +337,7 @@ public class Sessions implements ISessions {
             String mensaje = session.getUser().getLogin().trim().toUpperCase() + " no tiene autorización para acceder a esta aplicación";
             session.setUser(null);
             LOGGER.debug(mensaje);
-            session.setError(new ErrorReg(mensaje, 5, ""));
+            session.setError(new ErrorInfo(mensaje, 5, ""));
             session.getError().setEntity(getClass().getName());
             session.getError().setEvent(EVENT_CREATESESSION);
             session.getError().setLevel(LEVEL_ALERT);
@@ -419,7 +419,7 @@ public class Sessions implements ISessions {
             //Buscar el Token
             IAppAuthConsumerToken authToken = oAuthConsumer.findAuthToken(token);
             //Verificar válidez del token
-            IErrorReg error = oAuthConsumer.checkToken(token);
+            IErrorInfo error = oAuthConsumer.checkToken(token);
             if (error.getErrorNumber() > 0) {
                 LOGGER.error(error.getMessage());
                 throw new SessionError(error.getMessage());
@@ -510,7 +510,7 @@ public class Sessions implements ISessions {
             if (Fn.nvl(appUser.getLoginBlocked(), false)) {
                 motivo = "la cuenta esta bloqueada por intentos fallidos";
             } else {
-                IErrorReg error = checkUser(appUser.getIduser());
+                IErrorInfo error = checkUser(appUser.getIduser());
                 if (error != null) {
                     motivo = error.getMessage();
                 }
@@ -672,10 +672,10 @@ public class Sessions implements ISessions {
      * Verifica si el iduser proporcionado es válido
      *
      * @param iduser id del usuario
-     * @return una variable ErrorReg si es nulo es válido si no hubo algún error
+     * @return una variable ErrorInfo si es nulo es válido si no hubo algún error
      * @throws Exception
      */
-    protected ErrorReg checkUser(Long iduser) throws Exception {
+    protected ErrorInfo checkUser(Long iduser) throws Exception {
         LOGGER.debug("IsUserValid IN");
         String mensaje;
         Map<String, Object> params = new HashMap<>();
@@ -690,25 +690,25 @@ public class Sessions implements ISessions {
             if (usuario == null) {
                 mensaje = "Este usuario " + iduser + " no existe";
                 LOGGER.debug(mensaje);
-                return new ErrorReg(mensaje, 1, "");
+                return new ErrorInfo(mensaje, 1, "");
             }
             // Verificar que el usuario este activo.
             if (usuario.getDisabled()) {
                 mensaje = "La cuenta " + usuario.getLogin().trim() + " esta inactivo";
                 LOGGER.info(mensaje);
-                return new ErrorReg(mensaje, 2, "");
+                return new ErrorInfo(mensaje, 2, "");
             }
             // Verificar que no expiro la cuenta
             if (usuario.getExpiredDate().isBefore(LocalDates.now())) {
                 mensaje = "La cuenta " + usuario.getLogin() + " expiro";
                 LOGGER.debug(mensaje);
-                return new ErrorReg(mensaje, 2, "");
+                return new ErrorInfo(mensaje, 2, "");
             }
             return null;
         }
         mensaje = "Este usuario " + iduser + " no existe";
         LOGGER.debug(mensaje);
-        return new ErrorReg(mensaje, 1, "");
+        return new ErrorInfo(mensaje, 1, "");
     }
 
     /**
@@ -739,27 +739,27 @@ public class Sessions implements ISessions {
             if (usuario == null) {
                 mensaje = "Este usuario " + userLogin + " no existe";
                 LOGGER.debug(mensaje);
-                userSession.setError(new ErrorReg(mensaje, 1, ""));
+                userSession.setError(new ErrorInfo(mensaje, 1, ""));
                 return userSession;
             }
             // Verificar que el usuario este activo.
             if (usuario.getDisabled()) {
                 mensaje = "La cuenta " + usuario.getLogin().trim() + " esta inactivo";
                 LOGGER.info(mensaje);
-                userSession.setError(new ErrorReg(mensaje, 2, ""));
+                userSession.setError(new ErrorInfo(mensaje, 2, ""));
                 return userSession;
             }
             // Verificar que no expiro la cuenta
             if (usuario.getExpiredDate().isBefore(LocalDates.now())) {
                 mensaje = "La cuenta " + usuario.getLogin() + " expiro";
                 LOGGER.debug(mensaje);
-                userSession.setError(new ErrorReg(mensaje, 2, ""));
+                userSession.setError(new ErrorInfo(mensaje, 2, ""));
                 return userSession;
             }
             // Verificar que la contraseña sea correcta
             String claveEncriptada = getEncryptedPass(usuario, password);
             if (!claveEncriptada.equals(usuario.getPass())) {
-                userSession.setError(new ErrorReg("Contraseña incorrecta", 3, ""));
+                userSession.setError(new ErrorInfo("Contraseña incorrecta", 3, ""));
                 return userSession;
             }
             userSession.setUser(usuario);
@@ -859,7 +859,7 @@ public class Sessions implements ISessions {
                 sesion.setClientAuthRequestInfo(null);
                 sesion.setEmpresa(null);
                 String mensaje = "La sesión expiro";
-                sesion.setError(new ErrorReg(mensaje, 6, ""));
+                sesion.setError(new ErrorInfo(mensaje, 6, ""));
                 return sesion;
             }
             sesion.setLastReference(LocalDates.now());

@@ -21,6 +21,6 @@
 */
 /**
  * Contrato de la representación unificada de errores y advertencias
- * ({@link org.javabeanstack.error.IErrorReg}).
+ * ({@link org.javabeanstack.error.IErrorInfo}).
  */
 package org.javabeanstack.error;

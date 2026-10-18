@@ -22,7 +22,7 @@
 package org.javabeanstack.security;
 
 import java.time.LocalDateTime;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.model.appcatalog.AppAuthConsumer;
 import org.javabeanstack.model.appcatalog.AppAuthConsumerToken;
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,14 +53,14 @@ public class OAuthConsumerCheckTokenTest {
     @Test
     @DisplayName("Token sano: sin error")
     public void tokenSano() {
-        IErrorReg e = new OAuthConsumer().checkToken(token(false, false, LocalDateTime.now().plusDays(1)), true);
+        IErrorInfo e = new OAuthConsumer().checkToken(token(false, false, LocalDateTime.now().plusDays(1)), true);
         assertEquals(0, e.getErrorNumber());
     }
 
     @Test
     @DisplayName("Token marcado deleted: se rechaza como inexistente")
     public void tokenEliminado() {
-        IErrorReg e = new OAuthConsumer().checkToken(token(false, true, LocalDateTime.now().plusDays(1)), true);
+        IErrorInfo e = new OAuthConsumer().checkToken(token(false, true, LocalDateTime.now().plusDays(1)), true);
         assertEquals(50000, e.getErrorNumber());
         assertTrue(e.getMessage().contains("no existe"), e.getMessage());
         assertFalse(new OAuthConsumer().isValidToken(token(false, true, LocalDateTime.now().plusDays(1)), true));
@@ -69,7 +69,7 @@ public class OAuthConsumerCheckTokenTest {
     @Test
     @DisplayName("deleted nulo cuenta como no eliminado")
     public void deletedNulo() {
-        IErrorReg e = new OAuthConsumer().checkToken(token(false, null, LocalDateTime.now().plusDays(1)), true);
+        IErrorInfo e = new OAuthConsumer().checkToken(token(false, null, LocalDateTime.now().plusDays(1)), true);
         assertEquals(0, e.getErrorNumber());
     }
 

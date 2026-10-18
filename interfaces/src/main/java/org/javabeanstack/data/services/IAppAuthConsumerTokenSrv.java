@@ -21,7 +21,7 @@
 */
 package org.javabeanstack.data.services;
 
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Servicio de datos de los <b>tokens de acceso</b>
@@ -68,5 +68,5 @@ public interface IAppAuthConsumerTokenSrv extends IDataService {
      * @return el error encontrado, o un error con número 0 si los tres datos
      * son correctos.
      */
-    IErrorReg checkTokenOwner(String consumerKey, String userCode, Long idcompany);
+    IErrorInfo checkTokenOwner(String consumerKey, String userCode, Long idcompany);
 }

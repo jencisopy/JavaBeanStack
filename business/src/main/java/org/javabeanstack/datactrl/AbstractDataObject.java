@@ -46,7 +46,7 @@ import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
 
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.events.IDataEvents;
 import org.javabeanstack.exceptions.FieldException;
 import org.javabeanstack.security.model.IUserSession;
@@ -257,7 +257,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         }
         if (ejb.getErrors() != null && !ejb.getErrors().isEmpty()) {
             Iterator iterator = ejb.getErrors().keySet().iterator();
-            IErrorReg error;
+            IErrorInfo error;
             String key;
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
@@ -1815,7 +1815,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @throws Exception
      */
     @Override
-    public Map<String, IErrorReg> checkDataRow() throws Exception {
+    public Map<String, IErrorInfo> checkDataRow() throws Exception {
         if (row == null) {
             return null;
         }
@@ -1823,7 +1823,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             return null;
         }
         if (this.getDAO().getDataService() == null) {
-            this.row.setErrors((Map<String, IErrorReg>) null);
+            this.row.setErrors((Map<String, IErrorInfo>) null);
             this.row.setRowChecked(true);
             return null;
         }
@@ -1832,10 +1832,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (getDAO().getUserSession() != null) {
             sessionId = getDAO().getUserSession().getSessionId();
         }
-        this.row.setErrors((Map<String, IErrorReg>) null);
-        Map<String, IErrorReg> errorMap = this.getDAO().getDataService().checkDataRow(sessionId, row);
+        this.row.setErrors((Map<String, IErrorInfo>) null);
+        Map<String, IErrorInfo> errorMap = this.getDAO().getDataService().checkDataRow(sessionId, row);
         if (errorMap == null || errorMap.isEmpty()) {
-            this.row.setErrors((Map<String, IErrorReg>) null);
+            this.row.setErrors((Map<String, IErrorInfo>) null);
             this.row.setRowChecked(true);
             return null;
         }
@@ -1850,7 +1850,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      * @throws Exception si ocurre un error durante la validación.
      */
     @Override
-    public Map<String, IErrorReg> checkDataRow(IDataRow row) throws Exception {
+    public Map<String, IErrorInfo> checkDataRow(IDataRow row) throws Exception {
         if (row == null) {
             return null;
         }
@@ -1858,7 +1858,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             return null;
         }
         if (this.getDAO().getDataService() == null) {
-            row.setErrors((Map<String, IErrorReg>) null);
+            row.setErrors((Map<String, IErrorInfo>) null);
             row.setRowChecked(true);
             return null;
         }
@@ -1867,10 +1867,10 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
         if (getDAO().getUserSession() != null) {
             sessionId = getDAO().getUserSession().getSessionId();
         }
-        row.setErrors((Map<String, IErrorReg>) null);
-        Map<String, IErrorReg> errorMap = this.getDAO().getDataService().checkDataRow(sessionId, row);
+        row.setErrors((Map<String, IErrorInfo>) null);
+        Map<String, IErrorInfo> errorMap = this.getDAO().getDataService().checkDataRow(sessionId, row);
         if (errorMap == null || errorMap.isEmpty()) {
-            row.setErrors((Map<String, IErrorReg>) null);
+            row.setErrors((Map<String, IErrorInfo>) null);
             row.setRowChecked(true);
             return null;
         }
@@ -2066,7 +2066,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             //
             if (allRows) {
-                dataResult = getDAO().update(dataRows);
+                dataResult = getDAO().save(dataRows);
                 row = dataRows.get(recno);
                 if (!dataResult.isSuccessFul()) {
                     errorApp = new Exception(dataResult.getErrorMsg());
@@ -2074,7 +2074,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 }
                 row.setOldValues();
             } else {
-                dataResult = getDAO().update(row);
+                dataResult = getDAO().save(row);
                 if (!dataResult.isSuccessFul()) {
                     errorApp = new Exception(dataResult.getErrorMsg());
                     return false;
@@ -2123,7 +2123,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             if (!this.checkData(dataSet)) {
                 return false;
             }
-            dataResult = getDAO().update(dataSet);
+            dataResult = getDAO().save(dataSet);
             if (!dataResult.isSuccessFul()) {
                 errorApp = new Exception(dataResult.getErrorMsg());
                 return false;

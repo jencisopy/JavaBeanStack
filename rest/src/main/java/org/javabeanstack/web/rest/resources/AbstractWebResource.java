@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.security.ISecManager;
 import org.javabeanstack.data.services.IDataService;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.IOAuthConsumer;
@@ -301,7 +301,7 @@ public abstract class AbstractWebResource implements IWebResource {
      * @param token token a verificar.
      * @return error si el token no es válido, o {@code null} si es válido.
      */
-    public IErrorReg verifyToken(String token) {
+    public IErrorInfo verifyToken(String token) {
         return getOAuthConsumer().checkToken(token);
     }
 

@@ -36,7 +36,7 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
@@ -278,7 +278,7 @@ public class FacesContextUtil {
      * @param title título.
      * @param errors mapa de errores por campo.
      */
-    public void showError(String title, Map<String, IErrorReg> errors) {
+    public void showError(String title, Map<String, IErrorInfo> errors) {
         if (errors != null && !errors.isEmpty()) {
             Iterator iterator = errors.keySet().iterator();
             String key;
@@ -359,7 +359,7 @@ public class FacesContextUtil {
      * @param title título.
      * @param errors mapa de advertencias por campo.
      */
-    public void showWarn(String title, Map<String, IErrorReg> errors) {
+    public void showWarn(String title, Map<String, IErrorInfo> errors) {
         if (errors != null && !errors.isEmpty()) {
             Iterator iterator = errors.keySet().iterator();
             String key;

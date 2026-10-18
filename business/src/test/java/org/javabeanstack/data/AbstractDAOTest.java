@@ -293,20 +293,20 @@ public class AbstractDAOTest extends TestClass {
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
-        dao.update(sessionid, relation);
+        dao.save(sessionid, relation);
         
         // Merge
         List<AppTablesRelation>  relations = dao.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
         relations.get(0).setIncluded(true);
         relations.get(0).setAction(IDataRow.UPDATE);
-        dao.update(sessionid, relations);
+        dao.save(sessionid, relations);
 
         relation = dao.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNotNull(relation);
 
         //Remove
         relation.setAction(IDataRow.DELETE);
-        dao.update(sessionid, relation);
+        dao.save(sessionid, relation);
         
         relation = dao.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNull(relation);

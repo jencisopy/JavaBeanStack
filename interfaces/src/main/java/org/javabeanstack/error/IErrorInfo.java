@@ -29,11 +29,11 @@ import java.io.Serializable;
  * capas del framework: reúne el mensaje, el número de error, la entidad y campo
  * afectados, la excepción de origen y datos de contexto (evento, ip, nivel).
  *
- * <p>La implementación de referencia es {@code org.javabeanstack.error.ErrorReg}.</p>
+ * <p>La implementación de referencia es {@code org.javabeanstack.error.ErrorInfo}.</p>
  *
  * @author Jorge Enciso
  */
-public interface IErrorReg extends Serializable {
+public interface IErrorInfo extends Serializable {
     /**
      * Devuelve la entidad afectada por el error.
      *

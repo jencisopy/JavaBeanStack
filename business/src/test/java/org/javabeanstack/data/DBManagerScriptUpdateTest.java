@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.log.ILogManager;
 import org.javabeanstack.model.IAppLogRecord;
 import org.javabeanstack.xml.DomW3cParser;
@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * <p>El DAO es un {@link Proxy} de {@link IGenericDAO} que registra cada
  * {@code sqlExec(sessionId, sql, parameters)} (con una copia de los
- * parámetros) y devuelve un {@link ErrorReg} configurable por sentencia. La
+ * parámetros) y devuelve un {@link ErrorInfo} configurable por sentencia. La
  * fila de la bitácora se simula en memoria: el {@code INSERT} la crea, el
  * cierre y el {@code DELETE} respetan el filtro {@code appuser = :logRowOwner}
  * y {@code findByNativeQuery} la devuelve para la relectura del dueño
@@ -134,7 +134,7 @@ public class DBManagerScriptUpdateTest {
     private final List<String> dataEngineArgs = new ArrayList<>();
     private final List<String> dbLinkInfoArgs = new ArrayList<>();
     private final List<String> nativeQuerySessions = new ArrayList<>();
-    private final Map<String, ErrorReg> failures = new HashMap<>();
+    private final Map<String, ErrorInfo> failures = new HashMap<>();
     private final Map<String, String> unitBySession = new HashMap<>();
     private final Map<String, String> engineByUnit = new HashMap<>();
     private final List<String> logSessions = new ArrayList<>();
@@ -225,10 +225,10 @@ public class DBManagerScriptUpdateTest {
     }
 
     /** sqlExec simulado: registra la llamada y aplica las sentencias de la bitácora a {@link #logRow}. */
-    private ErrorReg sqlExec(String sessionId, String sql, Map<String, Object> params) {
+    private ErrorInfo sqlExec(String sessionId, String sql, Map<String, Object> params) {
         calls.add(new Call(sessionId, sql, new HashMap<>(params), params == parameters));
         String label = label(sql);
-        ErrorReg failure = failures.get(label);
+        ErrorInfo failure = failures.get(label);
         if (failure != null) {
             return failure;
         }
@@ -251,7 +251,7 @@ public class DBManagerScriptUpdateTest {
             default:
                 break;
         }
-        return new ErrorReg();
+        return new ErrorInfo();
     }
 
     private ILogManager fakeLogManager() {
@@ -371,8 +371,8 @@ public class DBManagerScriptUpdateTest {
         return result;
     }
 
-    private ErrorReg failOn(String statement, Exception exception) {
-        ErrorReg err = new ErrorReg("rejected " + statement, 50000, "sql");
+    private ErrorInfo failOn(String statement, Exception exception) {
+        ErrorInfo err = new ErrorInfo("rejected " + statement, 50000, "sql");
         if (exception != null) {
             err.setException(exception);
         }
@@ -659,14 +659,14 @@ public class DBManagerScriptUpdateTest {
 
     @Test
     void continueWithError_toleratesEveryFailureInOrderAndClosesTheRow() throws Exception {
-        ErrorReg catError = failOn("CAT2", new RuntimeException("boom on catalog"));
-        ErrorReg dataError = failOn("DAT1", null);
+        ErrorInfo catError = failOn("CAT2", new RuntimeException("boom on catalog"));
+        ErrorInfo dataError = failOn("DAT1", null);
 
         DbScriptUpdateResult result = execute(fullRequest(PACKAGE_XML).continueWithError(true), logMngr);
 
         assertEquals(legacyFullTrace(), trace());
         assertEquals(7, result.getStatementsExecuted());
-        List<IErrorReg> tolerated = result.getToleratedErrors();
+        List<IErrorInfo> tolerated = result.getToleratedErrors();
         assertEquals(2, tolerated.size());
         assertSame(catError, tolerated.get(0));
         assertSame(dataError, tolerated.get(1));
@@ -681,7 +681,7 @@ public class DBManagerScriptUpdateTest {
         assertEquals(List.of(
                 "ERROR en unidad de persistencia PU1, SCRIPT " + FILENAME + ", rejected CAT2",
                 "ERROR en unidad de persistencia PU1, SCRIPT " + FILENAME + ", rejected DAT1"), logMessages);
-        assertThrows(UnsupportedOperationException.class, () -> tolerated.add(new ErrorReg()));
+        assertThrows(UnsupportedOperationException.class, () -> tolerated.add(new ErrorInfo()));
     }
 
     @Test
@@ -699,7 +699,7 @@ public class DBManagerScriptUpdateTest {
     @Test
     void deleteRejected_reportsRowNotDeleted() throws Exception {
         failOn("DAT1", null);
-        failures.put("DELETE", new ErrorReg("delete rejected", 50000, "sql"));
+        failures.put("DELETE", new ErrorInfo("delete rejected", 50000, "sql"));
 
         DbScriptUpdateException thrown = executeExpectingFailure(fullRequest(PACKAGE_XML), logMngr);
 
@@ -710,7 +710,7 @@ public class DBManagerScriptUpdateTest {
 
     @Test
     void closeRejected_reportsRowNotClosed() throws Exception {
-        failures.put("FINISHED", new ErrorReg("update rejected", 50000, "sql"));
+        failures.put("FINISHED", new ErrorInfo("update rejected", 50000, "sql"));
 
         DbScriptUpdateResult result = execute(request(PACKAGE_XML).section(CATALOGO, null), null);
 

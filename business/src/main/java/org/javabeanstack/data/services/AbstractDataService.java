@@ -47,7 +47,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.data.DataInfo;
@@ -64,7 +64,7 @@ import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.data.IDataSet;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.data.model.DataSet;
-import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.error.ErrorInfo;
 import org.javabeanstack.exceptions.CheckException;
 import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.util.Fn;
@@ -707,9 +707,9 @@ public abstract class AbstractDataService implements IDataService {
      * @return error del campo, o {@code null} si es válido.
      */
     @Override
-    public <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName) {
-        IErrorReg result = new ErrorReg();
-        IErrorReg resultWarning = new ErrorReg();
+    public <T extends IDataRow> IErrorInfo checkFieldValue(String sessionId, T row, String fieldName) {
+        IErrorInfo result = new ErrorInfo();
+        IErrorInfo resultWarning = new ErrorInfo();
         if (row == null) {
             return result;
         }
@@ -727,7 +727,7 @@ public abstract class AbstractDataService implements IDataService {
                 method.setAccessible(true);
                 // La validación se ejecuta dependiendo de la operación (agregar, modificar, borrar)
                 if (Fn.inArrayInteger(row.getAction(), operacion)) {
-                    result = (IErrorReg) method.invoke(this, sessionId, row);
+                    result = (IErrorInfo) method.invoke(this, sessionId, row);
                     //Si el resultado es un error guardar información en el objeto errors
                     if (result != null && !result.isWarning() && !"".equals(result.getMessage())) {
                         row.setFieldChecked(fieldName, false);
@@ -742,7 +742,7 @@ public abstract class AbstractDataService implements IDataService {
                 }
             } catch (Exception ex) {
                 row.setFieldChecked(fieldName, false);
-                result = new ErrorReg(ErrorManager.getStackCause(ex), 50000, fieldName);
+                result = new ErrorInfo(ErrorManager.getStackCause(ex), 50000, fieldName);
                 ErrorManager.showError(ex, LOGGER);
                 break;
             }
@@ -764,18 +764,18 @@ public abstract class AbstractDataService implements IDataService {
      * operaciones sobre la base de datos.
      * @return un objeto map conteniendo el resultado de las validaciones de
      * todos los campos, en caso de existir algún error, existe su objeto de
-     * error (IErrorReg) asociado a una clave que en este caso es el nombre del
+     * error (IErrorInfo) asociado a una clave que en este caso es el nombre del
      * campo.
      */
     @Override
-    public <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row) {
-        Map<String, IErrorReg> errors = new HashMap<>();
+    public <T extends IDataRow> Map<String, IErrorInfo> checkDataRow(String sessionId, T row) {
+        Map<String, IErrorInfo> errors = new HashMap<>();
         if (row == null) {
             return errors;
         }
         String fieldName, level;
         int[] operacion;
-        IErrorReg result;
+        IErrorInfo result;
         CheckMethod anotation;
         row.setRowChecked(false);
         Map<String, Object> properties = row.getProperties();
@@ -801,7 +801,7 @@ public abstract class AbstractDataService implements IDataService {
                         uniqueKeyFields = DataInfo.getUniqueFields(row.getClass());
                     }
                     errors.put("UNIQUEKEY",
-                            new ErrorReg("Este registro ya existe - " + row.toString(),
+                            new ErrorInfo("Este registro ya existe - " + row.toString(),
                                     50001,
                                     uniqueKeyFields));
                     return errors;
@@ -826,7 +826,7 @@ public abstract class AbstractDataService implements IDataService {
                             message = annotation.message();
                         }
                         errors.put(fieldName.toLowerCase(),
-                                new ErrorReg(message,
+                                new ErrorInfo(message,
                                         50013,
                                         fieldName));
                     }
@@ -858,7 +858,7 @@ public abstract class AbstractDataService implements IDataService {
                 method.setAccessible(true);
                 // La validación se ejecuta dependiendo de la operación (agregar, modificar, borrar)
                 if (Fn.inArrayInteger(row.getAction(), operacion)) {
-                    result = (IErrorReg) method.invoke(this, sessionId, row);
+                    result = (IErrorInfo) method.invoke(this, sessionId, row);
                     //Si el resultado es un error guardar información en el objeto errors
                     if (result != null
                             && !"".equals(result.getMessage())
@@ -872,7 +872,7 @@ public abstract class AbstractDataService implements IDataService {
                 }
             } catch (Exception ex) {
                 row.setFieldChecked(fieldName, false);
-                result = new ErrorReg(ErrorManager.getStackCause(ex), 50000, fieldName);
+                result = new ErrorInfo(ErrorManager.getStackCause(ex), 50000, fieldName);
                 errors.put(fieldName.toLowerCase(), result);
                 ErrorManager.showError(ex, LOGGER);
             }
@@ -881,7 +881,7 @@ public abstract class AbstractDataService implements IDataService {
         //Eliminar warnings si asi se configuro
         boolean warnings = Fn.nvl((Boolean) properties.get("WARNINGS"), true);
         if (!warnings) {
-            Iterator<Map.Entry<String, IErrorReg>> it = errors.entrySet().iterator();
+            Iterator<Map.Entry<String, IErrorInfo>> it = errors.entrySet().iterator();
             while (it.hasNext()) {
                 if (it.next().getValue().isWarning()) {
                     it.remove();
@@ -889,7 +889,7 @@ public abstract class AbstractDataService implements IDataService {
             }
         }
         boolean error = false;
-        for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+        for (Map.Entry<String, IErrorInfo> entry : errors.entrySet()) {
             if (!entry.getValue().isWarning()) {
                 error = true;
                 break;
@@ -902,7 +902,7 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
-     * Se ejecuta en el metodo save, valida los datos del registro
+     * Se ejecuta en el metodo checkAndSave, valida los datos del registro
      * (checkDataRow) y devuelve el resultado en un objeto IDataResult
      *
      * @param <T>
@@ -915,7 +915,7 @@ public abstract class AbstractDataService implements IDataService {
         dataResult.setSuccess(Boolean.TRUE);
         List<IDataRow> ejbsRes = new ArrayList();
         // Validar el registro
-        Map<String, IErrorReg> errors = this.checkDataRow(sessionId, row);
+        Map<String, IErrorInfo> errors = this.checkDataRow(sessionId, row);
         ejbsRes.add(row);
         if (!errors.isEmpty()) {
             // Devolver el error si lo hubo
@@ -936,7 +936,7 @@ public abstract class AbstractDataService implements IDataService {
      * @throws SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult save(String sessionId, T row) throws SessionError {
+    public <T extends IDataRow> IDataResult checkAndSave(String sessionId, T row) throws SessionError {
         checkUserSession(sessionId);
         IDataResult dataResult;
         // Validar registro
@@ -955,7 +955,7 @@ public abstract class AbstractDataService implements IDataService {
                 setKey = row.getClass().getSimpleName();
             }
             dataSet.add(setKey, (List<IDataRow>) rows);
-            dataResult = update(sessionId, dataSet);
+            dataResult = save(sessionId, dataSet);
             return dataResult;
         } catch (Exception ex) {
             dataResult.setSuccess(false);
@@ -978,7 +978,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> IDataResult persist(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.INSERT);
-        return save(sessionId, row);
+        return checkAndSave(sessionId, row);
     }
 
     /**
@@ -993,7 +993,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> IDataResult merge(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.UPDATE);
-        return save(sessionId, row);
+        return checkAndSave(sessionId, row);
     }
 
     /**
@@ -1008,7 +1008,7 @@ public abstract class AbstractDataService implements IDataService {
     @Override
     public <T extends IDataRow> IDataResult remove(String sessionId, T row) throws SessionError {
         row.setAction(IDataRow.DELETE);
-        return save(sessionId, row);
+        return checkAndSave(sessionId, row);
     }
 
     /**
@@ -1095,11 +1095,11 @@ public abstract class AbstractDataService implements IDataService {
      *
      */
     @Override
-    public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
+    public <T extends IDataRow> IDataResult save(String sessionId, T ejb) {
         isChecked(ejb);
         List<T> ejbs = new ArrayList<>();
         ejbs.add(ejb);
-        return update(sessionId, ejbs);
+        return save(sessionId, ejbs);
     }
 
     /**
@@ -1111,9 +1111,9 @@ public abstract class AbstractDataService implements IDataService {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(String sessionId, IDataObject ejbs) {
+    public IDataResult save(String sessionId, IDataObject ejbs) {
         isChecked(ejbs.getDataRows());
-        return update(sessionId, ejbs.getDataRows());
+        return save(sessionId, ejbs.getDataRows());
     }
 
     /**
@@ -1126,7 +1126,7 @@ public abstract class AbstractDataService implements IDataService {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
+    public <T extends IDataRow> IDataResult save(String sessionId, List<T> ejbs) {
         isChecked(ejbs);
         IDataSet dataSet = new DataSet();
         String setKey = "1";
@@ -1134,7 +1134,7 @@ public abstract class AbstractDataService implements IDataService {
             setKey = ejbs.get(0).getClass().getSimpleName();
         }
         dataSet.add(setKey, (List<IDataRow>) ejbs);
-        return update(sessionId, dataSet);
+        return save(sessionId, dataSet);
     }
 
     /**
@@ -1146,10 +1146,10 @@ public abstract class AbstractDataService implements IDataService {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(String sessionId, IDataSet dataSet) {
+    public IDataResult save(String sessionId, IDataSet dataSet) {
         // Verificar que el rol del usuario tenga permitido escribir en esta
         // aplicación. Es el punto por el que pasan todas las escrituras:
-        // save, persist, merge, remove y las demás sobrecargas de update.
+        // checkAndSave, persist, merge, remove y las demás sobrecargas de save.
         IDataResult notAllowed = checkWriteAllowed(sessionId, dataSet);
         if (notAllowed != null) {
             return notAllowed;
@@ -1158,7 +1158,7 @@ public abstract class AbstractDataService implements IDataService {
         dataSet.getMapListSet().entrySet().forEach((entry) -> {
             isChecked(entry.getValue());
         });
-        return dao.update(sessionId, dataSet);
+        return dao.save(sessionId, dataSet);
     }
 
     /**
@@ -1315,7 +1315,7 @@ public abstract class AbstractDataService implements IDataService {
      */
     @Deprecated
     @Override
-    public IErrorReg sqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+    public IErrorInfo sqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
 
@@ -1343,7 +1343,7 @@ public abstract class AbstractDataService implements IDataService {
      * @throws java.lang.Exception
      */
     @Override
-    public IErrorReg jpqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
+    public IErrorInfo jpqlExec(String sessionId, String queryString, Map<String, Object> parameters) throws Exception {
         throw new UnsupportedOperationException("Not supported");
     }
 
@@ -1601,7 +1601,7 @@ public abstract class AbstractDataService implements IDataService {
         Files.writeString(file, log, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 
         //Recorrer y grabar solo los que estaban marcados para agregar
-        Map<String, IErrorReg> errors;
+        Map<String, IErrorInfo> errors;
         IDataResult result;
         int migrados = 0;
         int conErrores = 0;
@@ -1619,7 +1619,7 @@ public abstract class AbstractDataService implements IDataService {
                 errors = checkDataRow(sessionId, data);
                 if (!errors.isEmpty()) {
                     log = "";
-                    for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+                    for (Map.Entry<String, IErrorInfo> entry : errors.entrySet()) {
                         String key = entry.getKey();
                         String message = entry.getValue().getMessage();
                         if (!key.equals("UNIQUEKEY")) {
@@ -1636,7 +1636,7 @@ public abstract class AbstractDataService implements IDataService {
                     continue;
                 }
             }
-            result = dao.update(sessionId, data);
+            result = dao.save(sessionId, data);
 
             if (!result.isSuccessFul()) {
                 //log
@@ -1770,7 +1770,7 @@ public abstract class AbstractDataService implements IDataService {
      * @return registro de error.
      */
     @Override
-    public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
+    public IErrorInfo getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
         return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName);
     }
 
@@ -1785,7 +1785,7 @@ public abstract class AbstractDataService implements IDataService {
      * @return registro de error.
      */
     @Override
-    public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {
+    public IErrorInfo getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {
         return dao.getErrorMessage(messageNumber, alternativeMsg, fieldName, params);
     }
 

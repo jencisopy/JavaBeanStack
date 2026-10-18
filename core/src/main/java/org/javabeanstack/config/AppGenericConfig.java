@@ -37,8 +37,8 @@ import org.javabeanstack.data.IDataRow;
 import org.w3c.dom.Document;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.log.ILogManagerData;
 import org.javabeanstack.model.IAppSystemParam;
@@ -419,7 +419,7 @@ public class AppGenericConfig implements IAppConfig {
         if (global == null || !global.isCompanyAllowed()) {
             String msg = "El parámetro " + param.getParam()
                     + " no admite un valor por empresa (alcance global)";
-            IErrorReg error = new ErrorReg();
+            IErrorInfo error = new ErrorInfo();
             error.setErrorNumber(50000);
             error.setFieldName("idcompany");
             error.setMessage(msg);
@@ -497,7 +497,7 @@ public class AppGenericConfig implements IAppConfig {
      * @throws Exception si ocurre un error durante la verificación.
      */
     @Override
-    public IErrorReg checkDatabase(String sessionId) throws Exception {
+    public IErrorInfo checkDatabase(String sessionId) throws Exception {
         return null;
     }
 
@@ -509,7 +509,7 @@ public class AppGenericConfig implements IAppConfig {
      * @throws Exception si ocurre un error durante la actualización.
      */
     @Override
-    public IErrorReg updateDatabase(String sessionId) throws Exception {
+    public IErrorInfo updateDatabase(String sessionId) throws Exception {
         return null;
     }
     

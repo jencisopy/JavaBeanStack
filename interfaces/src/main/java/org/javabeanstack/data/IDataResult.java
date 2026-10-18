@@ -24,7 +24,7 @@ package org.javabeanstack.data;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Contrato del resultado de una operación de persistencia sobre un
@@ -88,14 +88,14 @@ public interface IDataResult extends Serializable{
      *
      * @return primer error, o {@code null} si no hubo.
      */
-    public IErrorReg getFirstError();
+    public IErrorInfo getFirstError();
 
     /**
      * Devuelve el mapa de errores por campo/registro.
      *
      * @return mapa clave → error.
      */
-    public Map<String, IErrorReg> getErrorsMap();
+    public Map<String, IErrorInfo> getErrorsMap();
 
     /**
      * Devuelve la excepción capturada durante la operación, si la hubo.
@@ -157,7 +157,7 @@ public interface IDataResult extends Serializable{
      *
      * @param error mapa clave → error.
      */
-    public void setErrorsMap(Map<String, IErrorReg> error);
+    public void setErrorsMap(Map<String, IErrorInfo> error);
 
     /**
      * Asigna si los registros borrados deben removerse de las listas de resultado.

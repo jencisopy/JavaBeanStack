@@ -28,7 +28,7 @@ import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IGenericDAO;
 import org.javabeanstack.data.events.IDAOEvents;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Contrato del servicio de datos: extiende el DAO genérico
@@ -85,7 +85,7 @@ public interface IDataService extends IGenericDAO{
      * @param row registro a validar.
      * @return mapa campo → error (vacío si el registro es válido).
      */
-    <T extends IDataRow> Map<String, IErrorReg> checkDataRow(String sessionId, T row);
+    <T extends IDataRow> Map<String, IErrorInfo> checkDataRow(String sessionId, T row);
 
     /**
      * Valida un único campo del registro.
@@ -96,7 +96,7 @@ public interface IDataService extends IGenericDAO{
      * @param fieldName campo a validar.
      * @return error del campo, o {@code null} si es válido.
      */
-    <T extends IDataRow> IErrorReg checkFieldValue(String sessionId, T row, String fieldName);
+    <T extends IDataRow> IErrorInfo checkFieldValue(String sessionId, T row, String fieldName);
 
     /**
      * Persiste el registro aplicando previamente la validación de negocio.
@@ -107,7 +107,7 @@ public interface IDataService extends IGenericDAO{
      * @return resultado de la operación con el estado y los registros actualizados.
      * @throws Exception si la validación o la persistencia falla.
      */
-    <T extends IDataRow> IDataResult save(String sessionId, T row) throws Exception;
+    <T extends IDataRow> IDataResult checkAndSave(String sessionId, T row) throws Exception;
 
     /**
      * Recupera una lista de registros según orden, filtro, parámetros y paginación.

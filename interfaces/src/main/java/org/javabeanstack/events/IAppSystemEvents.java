@@ -24,7 +24,7 @@ package org.javabeanstack.events;
 import java.io.Serializable;
 
 import org.apache.logging.log4j.Logger;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Contrato de los eventos de sistema de la aplicación: puntos de extensión que
@@ -44,7 +44,7 @@ public interface IAppSystemEvents extends Serializable{
      *
      * @param error registro del error de creación.
      */
-    void onCreateSession(IErrorReg error);
+    void onCreateSession(IErrorInfo error);
 
     /**
      * Se ejecuta al iniciar sesión (login).

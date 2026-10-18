@@ -22,8 +22,8 @@
  */
 package org.javabeanstack.outputs;
 
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.util.Strings;
 
@@ -63,7 +63,7 @@ public class FolderTarget implements IDocumentTarget {
      * configurada (uso inválido).
      */
     @Override
-    public IErrorReg deliver(IOutputDocument document) throws Exception {
+    public IErrorInfo deliver(IOutputDocument document) throws Exception {
         if (document == null || document.getSize() == 0) {
             throw new Exception("El documento a guardar es nulo o está vacío");
         }
@@ -73,7 +73,7 @@ public class FolderTarget implements IDocumentTarget {
         if (Strings.isNullorEmpty(document.getFileName())) {
             throw new Exception("El documento no tiene nombre de archivo");
         }
-        IErrorReg result = new ErrorReg();
+        IErrorInfo result = new ErrorInfo();
         String filePath = IOUtil.addbs(folder.trim()) + document.getFileName();
         if (!IOUtil.writeBytesToFile(document.getContent(), filePath)) {
             result.setErrorNumber(1);

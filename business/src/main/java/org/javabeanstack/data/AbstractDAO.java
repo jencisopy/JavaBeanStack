@@ -25,7 +25,7 @@ import org.javabeanstack.data.model.DataResult;
 import org.javabeanstack.data.model.DataSet;
 import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.events.IDAOEvents;
 
-import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.error.ErrorInfo;
 import org.javabeanstack.exceptions.CompanyError;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.log.ILogManager;
@@ -1020,7 +1020,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return un objeto error si no se ejecuto la sentencia con exito
      */
     @Override
-    public IErrorReg sqlExec(String sessionId, String sqlString,
+    public IErrorInfo sqlExec(String sessionId, String sqlString,
             Map<String, Object> parameters) throws Exception {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("sqlExec");
@@ -1036,7 +1036,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         LOGGER.debug(sqlString);
 
         EntityManager em = getEntityManager(getEntityManagerId(dbLinkInfo));
-        ErrorReg error = new ErrorReg();
+        ErrorInfo error = new ErrorInfo();
         try {
             Query sql = em.createNativeQuery(sqlString);
             if (parameters != null && !parameters.isEmpty()) {
@@ -1096,7 +1096,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return un objeto error si no se ejecuto la sentencia con exito
      */
     @Override
-    public IErrorReg jpqlExec(String sessionId, String sqlString,
+    public IErrorInfo jpqlExec(String sessionId, String sqlString,
             Map<String, Object> parameters) throws Exception {
         LOGGER.debug(Strings.replicate("-", 50));
         LOGGER.debug("jpqlExec");
@@ -1111,7 +1111,7 @@ public abstract class AbstractDAO implements IGenericDAO {
         sqlString = Strings.textMerge(sqlString, getQueryConstants(persistUnit));
         LOGGER.debug(sqlString);
 
-        ErrorReg error = new ErrorReg();
+        ErrorInfo error = new ErrorInfo();
         try {
             Query jpql = createQuery(sessionId, sqlString, parameters);
             jpql.executeUpdate();
@@ -1134,10 +1134,10 @@ public abstract class AbstractDAO implements IGenericDAO {
      *
      */
     @Override
-    public <T extends IDataRow> IDataResult update(String sessionId, T ejb) {
+    public <T extends IDataRow> IDataResult save(String sessionId, T ejb) {
         List<T> ejbs = new ArrayList<>();
         ejbs.add(ejb);
-        return update(sessionId, ejbs);
+        return save(sessionId, ejbs);
     }
 
     /**
@@ -1149,8 +1149,8 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(String sessionId, IDataObject ejbs) {
-        return update(sessionId, ejbs.getDataRows());
+    public IDataResult save(String sessionId, IDataObject ejbs) {
+        return save(sessionId, ejbs.getDataRows());
     }
 
     /**
@@ -1163,14 +1163,14 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs) {
+    public <T extends IDataRow> IDataResult save(String sessionId, List<T> ejbs) {
         IDataSet dataSet = new DataSet();
         String setKey = "1";
         if (ejbs.get(0) != null) {
             setKey = ejbs.get(0).getClass().getSimpleName();
         }
         dataSet.add(setKey, (List<IDataRow>) ejbs);
-        return update(sessionId, dataSet);
+        return save(sessionId, dataSet);
     }
 
     /**
@@ -1193,7 +1193,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      * @return Devuelve un objeto con el resultado de la grabación
      */
     @Override
-    public IDataResult update(String sessionId, IDataSet dataSet) {
+    public IDataResult save(String sessionId, IDataSet dataSet) {
         if (dataSet == null || dataSet.size() == 0) {
             return null;
         }
@@ -1250,7 +1250,7 @@ public abstract class AbstractDAO implements IGenericDAO {
                         default:
                             break;
                     }
-                    ejb.setErrors((Map<String, IErrorReg>) null);
+                    ejb.setErrors((Map<String, IErrorInfo>) null);
                     //Ejecutar evento post grabación
                     if (event != null) {
                         event.afterSave(sessionId, ejb);
@@ -1679,7 +1679,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> IDataResult persist(String sessionId, T ejb) {
         ejb.setAction(IDataRow.INSERT);
-        return update(sessionId, ejb);
+        return save(sessionId, ejb);
     }
 
     /**
@@ -1695,7 +1695,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> IDataResult merge(String sessionId, T ejb) {
         ejb.setAction(IDataRow.UPDATE);
-        return update(sessionId, ejb);
+        return save(sessionId, ejb);
     }
 
     /**
@@ -1710,7 +1710,7 @@ public abstract class AbstractDAO implements IGenericDAO {
     @Override
     public <T extends IDataRow> IDataResult remove(String sessionId, T ejb) {
         ejb.setAction(IDataRow.DELETE);
-        return update(sessionId, ejb);
+        return save(sessionId, ejb);
     }
 
     @Override
@@ -2291,7 +2291,7 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
+    public IErrorInfo getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName) {
         return getErrorMessage(messageNumber, alternativeMsg, fieldName, null);
     }
 
@@ -2307,9 +2307,9 @@ public abstract class AbstractDAO implements IGenericDAO {
      */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public IErrorReg getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {
+    public IErrorInfo getErrorMessage(Integer messageNumber, String alternativeMsg, String fieldName, Map<String, String> params) {
         IAppMessage appMessage = logMngr.getAppMessage(messageNumber);
-        ErrorReg errorReturn = new ErrorReg(alternativeMsg, messageNumber, fieldName);
+        ErrorInfo errorReturn = new ErrorInfo(alternativeMsg, messageNumber, fieldName);
         if (appMessage == null && !Fn.nvl(alternativeMsg, "").isEmpty() && messageNumber != 50000){
             try {
                 appMessage = (IAppMessage)logMngr.getAppMessage(50001).clone();

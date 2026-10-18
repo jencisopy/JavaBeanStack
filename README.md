@@ -6,7 +6,7 @@ Es una **librería/framework**, no una aplicación ejecutable por sí sola: se c
 
 - **Grupo Maven:** `org.javabeanstack`
 - **Artefacto padre:** `jbs-parent`
-- **Versión actual (rama `master`):** `2.0.0-SNAPSHOT`
+- **Versión actual (rama `master`):** `2.1.0-SNAPSHOT`
 - **Licencia:** GNU Lesser General Public License v3.0 (LGPL v3.0)
 
 ## Prerrequisitos
@@ -72,7 +72,7 @@ Utilidades de propósito general sin dependencias de negocio: manejo de strings,
 Manejo de errores, log de eventos, utilidades XML, configuración de la aplicación y gestión de recursos.
 
 Componentes clave:
-- **`IErrorReg` / `ErrorReg`** — representación unificada de errores entre capas.
+- **`IErrorInfo` / `ErrorInfo`** — representación unificada de errores entre capas.
 - **`ErrorManager`** — utilidad estática de log de errores (`ErrorManager.showError(ex, LOGGER)`).
 - **`LogManager`** — persiste mensajes/eventos en la tabla `AppMessage`.
 

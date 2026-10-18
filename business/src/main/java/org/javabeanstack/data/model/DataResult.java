@@ -28,8 +28,8 @@ import java.util.Map;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
 
@@ -48,7 +48,7 @@ public class DataResult implements IDataResult {
     private IDataRow rowUpdated;
     private Exception exception;
     private Boolean removeDeleted = false;
-    private Map<String, IErrorReg> errorsMap = new HashMap();
+    private Map<String, IErrorInfo> errorsMap = new HashMap();
 
     /**
      * Asigna al conjunto una lista ejb que ha sido procesado.
@@ -200,7 +200,7 @@ public class DataResult implements IDataResult {
                 && errorsMap != null && !errorsMap.isEmpty()) {
             String retornar = "";
             for (Map.Entry entry : errorsMap.entrySet()) {
-                IErrorReg error = (IErrorReg) entry.getValue();
+                IErrorInfo error = (IErrorInfo) entry.getValue();
                 if (!error.isWarning()) {
                     retornar += error.getMessage() + " - " + error.getFieldName() + "\n";
                 }
@@ -216,8 +216,8 @@ public class DataResult implements IDataResult {
      * @return primer error, o {@code null} si no hubo.
      */
     @Override
-    public IErrorReg getFirstError() {
-        IErrorReg errorReturn = new ErrorReg();
+    public IErrorInfo getFirstError() {
+        IErrorInfo errorReturn = new ErrorInfo();
         if (errorsMap != null && !errorsMap.isEmpty()) {
             return errorsMap.entrySet().iterator().next().getValue();
         }
@@ -244,7 +244,7 @@ public class DataResult implements IDataResult {
      * @return map con los errores.
      */
     @Override
-    public Map<String, IErrorReg> getErrorsMap() {
+    public Map<String, IErrorInfo> getErrorsMap() {
         return errorsMap;
     }
 
@@ -254,7 +254,7 @@ public class DataResult implements IDataResult {
      * @param error
      */
     @Override
-    public void setErrorsMap(Map<String, IErrorReg> error) {
+    public void setErrorsMap(Map<String, IErrorInfo> error) {
         errorsMap = error;
     }
 

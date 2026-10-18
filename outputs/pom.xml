@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.javabeanstack</groupId>
         <artifactId>jbs-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.1.0-SNAPSHOT</version>
     </parent>
     <artifactId>jbs-outputs</artifactId>
     <name>JavaBeanStack-Outputs</name>
@@ -19,7 +19,7 @@
             Núcleo del subsistema de salida de documentos: SOLO el orquestador
             (OutputDispatcher), el documento en memoria (OutputDocument) y el
             destino a carpeta del servidor (FolderTarget). Depende únicamente de
-            jbs-core (arrastra commons + interfaces): ErrorReg (core),
+            jbs-core (arrastra commons + interfaces): ErrorInfo (core),
             IOUtil (commons) y los contratos org.javabeanstack.outputs
             (interfaces). Las fuentes y destinos con dependencias pesadas viven
             en el módulo dueño de cada una — JasperReportSource en jbs-jasper,

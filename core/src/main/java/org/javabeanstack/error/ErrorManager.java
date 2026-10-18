@@ -62,23 +62,23 @@ public class ErrorManager {
 
     /**
      * Busca en AppMessage el nro. de mensaje y devuelve el registro en formato
-     * IErrorReg
+     * IErrorInfo
      *
      * @param msgNumber nro. de mensaje
      * @param fieldName nombre del campo
      * @param logManager objeto que gestiona el acceso a la base de datos
-     * @return objeto IErrorReg con el registro del mensaje
+     * @return objeto IErrorInfo con el registro del mensaje
      */
-    public IErrorReg getErrorReg(Integer msgNumber, String fieldName, ILogManager logManager) {
+    public IErrorInfo getErrorInfo(Integer msgNumber, String fieldName, ILogManager logManager) {
         IAppMessage message = logManager.getAppMessage(msgNumber);
         if (message == null) {
             return null;
         }
-        IErrorReg errorReg = new ErrorReg();
-        errorReg.setErrorNumber(msgNumber);
-        errorReg.setFieldName(fieldName);
-        errorReg.setMessage(message.getText());
-        return errorReg;
+        IErrorInfo errorInfo = new ErrorInfo();
+        errorInfo.setErrorNumber(msgNumber);
+        errorInfo.setFieldName(fieldName);
+        errorInfo.setMessage(message.getText());
+        return errorInfo;
     }
 
     /**

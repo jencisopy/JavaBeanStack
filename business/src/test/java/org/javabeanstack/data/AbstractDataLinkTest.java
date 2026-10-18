@@ -33,7 +33,7 @@ import static org.javabeanstack.data.TestClass.context;
 import static org.javabeanstack.data.TestClass.error;
 import org.javabeanstack.data.services.IAppCompanySrv;
 import org.javabeanstack.data.services.IDataService;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.model.IAppAuthConsumer;
 import org.javabeanstack.model.appcatalog.AppResource;
 import org.javabeanstack.model.appcatalog.AppTablesRelation;
@@ -265,7 +265,7 @@ public class AbstractDataLinkTest extends TestClass {
         assertNull(monedaResult);
         assertFalse(monedasResult.get(0).getErrors().isEmpty());
 
-        for (Map.Entry<String, IErrorReg> entry : monedasResult.get(0).getErrors().entrySet()) {
+        for (Map.Entry<String, IErrorInfo> entry : monedasResult.get(0).getErrors().entrySet()) {
             System.out.println("Key: " + entry.getKey()
                     + " fieldName: " + entry.getValue().getFieldName()
                     + " Msg: " + entry.getValue().getMessage());
@@ -296,7 +296,7 @@ public class AbstractDataLinkTest extends TestClass {
         assertFalse(monedasResult.get(0).getErrors().isEmpty());
         assertFalse(dataResult.getErrorMsg().isEmpty());
 
-        for (Map.Entry<String, IErrorReg> entry : monedasResult.get(0).getErrors().entrySet()) {
+        for (Map.Entry<String, IErrorInfo> entry : monedasResult.get(0).getErrors().entrySet()) {
             System.out.println("Key: " + entry.getKey()
                     + " fieldName: " + entry.getValue().getFieldName()
                     + " Msg: " + entry.getValue().getMessage());
@@ -323,7 +323,7 @@ public class AbstractDataLinkTest extends TestClass {
         Moneda monedaResult = dataResult.getRowUpdated();
         List<Moneda> monedasResult = dataResult.getRowsUpdated();
         if (!dataResult.isSuccessFul()) {
-            for (Map.Entry<String, IErrorReg> entry : monedasResult.get(0).getErrors().entrySet()) {
+            for (Map.Entry<String, IErrorInfo> entry : monedasResult.get(0).getErrors().entrySet()) {
                 System.out.println("Key: " + entry.getKey()
                         + " fieldName: " + entry.getValue().getFieldName()
                         + " Msg: " + entry.getValue().getMessage());
@@ -535,20 +535,20 @@ public class AbstractDataLinkTest extends TestClass {
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
-        dataLinkCat.update(relation);
+        dataLinkCat.save(relation);
 
         // Merge
         List<AppTablesRelation> relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         relations.get(0).setIncluded(true);
         relations.get(0).setAction(IDataRow.UPDATE);
-        dataLinkCat.update(relations);
+        dataLinkCat.save(relations);
 
         relation = dataLinkCat.findByQuery("select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNotNull(relation);
 
         //Remove
         relation.setAction(IDataRow.DELETE);
-        dataLinkCat.update(relation);
+        dataLinkCat.save(relation);
 
         relation = dataLinkCat.findByQuery("select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNull(relation);
@@ -579,7 +579,7 @@ public class AbstractDataLinkTest extends TestClass {
             relations.add(relation);
         }
 
-        dataLinkCat.update(relations);
+        dataLinkCat.save(relations);
 
         // Merge
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
@@ -587,7 +587,7 @@ public class AbstractDataLinkTest extends TestClass {
             relations.get(i).setIncluded(true);
             relations.get(i).setAction(IDataRow.UPDATE);
         }
-        dataLinkCat.update(relations);
+        dataLinkCat.save(relations);
 
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         for (int i = 0; i < 5; i++) {
@@ -595,7 +595,7 @@ public class AbstractDataLinkTest extends TestClass {
             relations.get(i).setAction(IDataRow.DELETE);
         }
         //Remove
-        dataLinkCat.update(relations);
+        dataLinkCat.save(relations);
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         assertTrue(relations.isEmpty());
     }
@@ -627,7 +627,7 @@ public class AbstractDataLinkTest extends TestClass {
             relations.add(relation);
         }
         dataSet.add("relacion", relations);
-        dataLinkCat.update(dataSet);
+        dataLinkCat.save(dataSet);
 
         // Merge
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
@@ -636,7 +636,7 @@ public class AbstractDataLinkTest extends TestClass {
             relations.get(i).setIncluded(true);
             relations.get(i).setAction(IDataRow.UPDATE);
         }
-        dataLinkCat.update(dataSet);
+        dataLinkCat.save(dataSet);
 
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         dataSet.add("relacion", relations);
@@ -645,7 +645,7 @@ public class AbstractDataLinkTest extends TestClass {
             relations.get(i).setAction(IDataRow.DELETE);
         }
         //Remove
-        dataLinkCat.update(dataSet);
+        dataLinkCat.save(dataSet);
         relations = dataLinkCat.findListByQuery("select o from AppTablesRelation o where entityPK = 'xx1'", null);
         assertTrue(relations.isEmpty());
 

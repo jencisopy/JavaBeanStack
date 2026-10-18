@@ -36,8 +36,8 @@ import org.apache.logging.log4j.Logger;
 import org.javabeanstack.annotation.AuditEntity;
 import org.javabeanstack.annotation.SignatureField;
 
-import org.javabeanstack.error.IErrorReg;
-import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.error.IErrorInfo;
+import org.javabeanstack.error.ErrorInfo;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.exceptions.FieldException;
 import org.javabeanstack.util.Fn;
@@ -73,7 +73,7 @@ public class DataRow implements IDataRow, Cloneable {
     @XmlTransient
     private Map<String, Boolean> fieldsChecked = null;
     @XmlTransient
-    private Map<String, IErrorReg> errors = new HashMap();
+    private Map<String, IErrorInfo> errors = new HashMap();
     @XmlTransient
     protected IDataRow fieldsOldValues;
     @XmlTransient
@@ -348,13 +348,13 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @XmlTransient
     @Override
-    public Map<String, IErrorReg> getWarnings() {
+    public Map<String, IErrorInfo> getWarnings() {
         if (this.errors == null) {
             this.errors = new HashMap();
             return this.errors;
         }
-        Map<String, IErrorReg> warnings = new HashMap();
-        for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+        Map<String, IErrorInfo> warnings = new HashMap();
+        for (Map.Entry<String, IErrorInfo> entry : errors.entrySet()) {
             if (!entry.getValue().isWarning()) {
                 warnings.put(entry.getKey(), entry.getValue());
             }
@@ -370,13 +370,13 @@ public class DataRow implements IDataRow, Cloneable {
      */
     @XmlTransient
     @Override
-    public Map<String, IErrorReg> getErrors() {
+    public Map<String, IErrorInfo> getErrors() {
         if (this.errors == null) {
             this.errors = new HashMap();
             return this.errors;
         }
-        Map<String, IErrorReg> errorNoWarns = new HashMap();
-        for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+        Map<String, IErrorInfo> errorNoWarns = new HashMap();
+        for (Map.Entry<String, IErrorInfo> entry : errors.entrySet()) {
             if (!entry.getValue().isWarning()) {
                 errorNoWarns.put(entry.getKey(), entry.getValue());
             }
@@ -387,14 +387,14 @@ public class DataRow implements IDataRow, Cloneable {
     /**
      * Asigna un map con los errores ocurridos por campo.
      *
-     * @param errorReg
+     * @param errorInfo
      */
     @Override
-    public void setErrors(Map<String, IErrorReg> errorReg) {
-        this.errors = errorReg;
+    public void setErrors(Map<String, IErrorInfo> errorInfo) {
+        this.errors = errorInfo;
         if (getErrors() != null && !getErrors().isEmpty()) {
             boolean error = false;
-            for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+            for (Map.Entry<String, IErrorInfo> entry : errors.entrySet()) {
                 if (!entry.getValue().isWarning()) {
                     error = true;
                     break;
@@ -409,18 +409,18 @@ public class DataRow implements IDataRow, Cloneable {
     /**
      * Agrega un error al map de errores.
      *
-     * @param errorReg objeto conteniendo datos del error.
+     * @param errorInfo objeto conteniendo datos del error.
      * @param fieldName el campo sobre el cual se genero el error.
      */
     @Override
-    public void setErrors(IErrorReg errorReg, String fieldName) {
+    public void setErrors(IErrorInfo errorInfo, String fieldName) {
         if (fieldName == null) {
             fieldName = "datageneric";
         }
         if (errors == null) {
             errors = new HashMap<>();
         }
-        this.errors.put(fieldName.toLowerCase(), errorReg);
+        this.errors.put(fieldName.toLowerCase(), errorInfo);
     }
 
     /**
@@ -435,7 +435,7 @@ public class DataRow implements IDataRow, Cloneable {
         if (fieldname == null) {
             fieldname = "datageneric";
         }
-        IErrorReg error = new ErrorReg();
+        IErrorInfo error = new ErrorInfo();
         error.setMessage(errorMsg);
         error.setFieldName(fieldname);
         error.setErrorNumber(errorNumber);
@@ -454,7 +454,7 @@ public class DataRow implements IDataRow, Cloneable {
             return "";
         }
         String retornar = "";
-        for (Map.Entry<String, IErrorReg> entry : errors.entrySet()) {
+        for (Map.Entry<String, IErrorInfo> entry : errors.entrySet()) {
             if (!entry.getValue().isWarning()) {
                 retornar += entry.getValue().getMessage()+"\n";
             }

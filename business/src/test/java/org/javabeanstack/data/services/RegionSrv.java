@@ -29,8 +29,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.IDataRow;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.model.tables.Region;
 import org.javabeanstack.util.Strings;
 
@@ -48,33 +48,33 @@ public class RegionSrv extends DataService implements IRegionSrv {
                              IDataRow.MODIFICAR,
                              IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo(String sessionId, Region row){
-        IErrorReg errorReg = new ErrorReg(); 
+    public IErrorInfo checkCodigo(String sessionId, Region row){
+        IErrorInfo errorInfo = new ErrorInfo(); 
         LOGGER.info("IN validCodigo");
         if (Strings.isNullorEmpty(row.getCodigo())){
-            errorReg.setMessage("No deje en blanco el campo código");
+            errorInfo.setMessage("No deje en blanco el campo código");
         }
-        return errorReg;
+        return errorInfo;
     }
 
     @CheckMethod(fieldName = "codigo",
                  action = {IDataRow.BORRAR}) 
     @Override
-    public IErrorReg checkCodigo2(String sessionId, Region row){
-        IErrorReg errorReg = new ErrorReg(); 
+    public IErrorInfo checkCodigo2(String sessionId, Region row){
+        IErrorInfo errorInfo = new ErrorInfo(); 
         LOGGER.info("IN validCodigo2");
-        return errorReg;
+        return errorInfo;
     }
     
     @CheckMethod(fieldName = "nombre", action = {IDataRow.AGREGAR, IDataRow.MODIFICAR})
     @Override
-    public IErrorReg checkNombre(String sessionId, Region row){
-        IErrorReg errorReg = new ErrorReg();
+    public IErrorInfo checkNombre(String sessionId, Region row){
+        IErrorInfo errorInfo = new ErrorInfo();
         LOGGER.info("IN checkNombre");
         if (Strings.isNullorEmpty(row.getNombre())){
-            errorReg.setMessage("No deje en blanco el campo nombre");
+            errorInfo.setMessage("No deje en blanco el campo nombre");
         }
-        return errorReg;
+        return errorInfo;
     }
     
     

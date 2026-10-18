@@ -27,7 +27,7 @@ package org.javabeanstack.error;
  * Clase que acondiciona propiedades necesarias para guardar información de errores ocurridos.
  * @author jenciso
  */
-public class ErrorReg implements IErrorReg{
+public class ErrorInfo implements IErrorInfo{
     /** Texto del mensaje */
     private String message  = "";
     /** Nro del error, ver en AppMessage */
@@ -45,7 +45,7 @@ public class ErrorReg implements IErrorReg{
     /**
      * Constructor por defecto.
      */
-    public ErrorReg(){
+    public ErrorInfo(){
     }
     
     /**
@@ -55,7 +55,7 @@ public class ErrorReg implements IErrorReg{
      * @param errorNumber número de error.
      * @param fieldName campo afectado.
      */
-    public ErrorReg(String message, int errorNumber, String fieldName){
+    public ErrorInfo(String message, int errorNumber, String fieldName){
         this.message = message;
         this.errorNumber = errorNumber;
         this.fieldName = fieldName;
@@ -68,7 +68,7 @@ public class ErrorReg implements IErrorReg{
      * @param errorNumber número de error.
      * @param fieldNames campos afectados.
      */
-    public ErrorReg(String message, int errorNumber, String[] fieldNames){
+    public ErrorInfo(String message, int errorNumber, String[] fieldNames){
         this.message = message;
         this.errorNumber = errorNumber;
         this.fieldNames = fieldNames;

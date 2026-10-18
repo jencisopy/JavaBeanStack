@@ -22,7 +22,7 @@
 package org.javabeanstack.config;
 
 import jakarta.ejb.ApplicationException;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Se intentó grabar un valor por empresa de un parámetro del sistema que no lo
@@ -32,7 +32,7 @@ import org.javabeanstack.error.IErrorReg;
  * excepción <b>checked</b> y {@code @ApplicationException(rollback = false)}.
  * El contenedor la entrega tal cual al llamador —sin envolverla en
  * {@code EJBException} ni registrarla como error del sistema— y no deshace lo
- * que el llamador estuviera haciendo. Lleva el {@link IErrorReg} (número
+ * que el llamador estuviera haciendo. Lleva el {@link IErrorInfo} (número
  * 50000, campo {@code idcompany}) para que la capa que la reciba lo muestre
  * como cualquier otro error de validación.</p>
  *
@@ -43,17 +43,17 @@ public class SystemParamScopeException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    private final IErrorReg errorReg;
+    private final IErrorInfo errorInfo;
 
     /**
      * Crea la excepción con el error de validación; su mensaje es el de la
      * excepción.
      *
-     * @param errorReg error de validación (número, campo y mensaje).
+     * @param errorInfo error de validación (número, campo y mensaje).
      */
-    public SystemParamScopeException(IErrorReg errorReg) {
-        super(errorReg.getMessage());
-        this.errorReg = errorReg;
+    public SystemParamScopeException(IErrorInfo errorInfo) {
+        super(errorInfo.getMessage());
+        this.errorInfo = errorInfo;
     }
 
     /**
@@ -61,7 +61,7 @@ public class SystemParamScopeException extends Exception {
      *
      * @return el error de validación (número 50000, campo {@code idcompany}).
      */
-    public IErrorReg getErrorReg() {
-        return errorReg;
+    public IErrorInfo getErrorInfo() {
+        return errorInfo;
     }
 }

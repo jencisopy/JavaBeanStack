@@ -36,8 +36,8 @@ import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.data.services.IAppCompanySrv;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.events.IAppSystemEvents;
 import org.javabeanstack.util.Parameters;
 
@@ -386,7 +386,7 @@ public abstract class AbstractAuthController extends AbstractController {
         } else {
             getFacesCtx().showError("", "Empresa no válida.");
             //Error en evento de creación de sessión
-            IErrorReg error = new ErrorReg();
+            IErrorInfo error = new ErrorInfo();
             error.setErrorNumber(50000);
             error.setMessage("Empresa no válida");
             error.setFieldName("idcompany");

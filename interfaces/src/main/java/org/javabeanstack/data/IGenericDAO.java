@@ -27,7 +27,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import jakarta.persistence.Query;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.security.IOAuthConsumerData;
 import org.javabeanstack.security.model.IUserSession;
 
@@ -55,7 +55,7 @@ public interface IGenericDAO extends Serializable {
      * @return Devuelve un objeto con el resultado de la grabación
      *
      */
-    public <T extends IDataRow> IDataResult update(String sessionId, T ejb);
+    public <T extends IDataRow> IDataResult save(String sessionId, T ejb);
 
     /**
      * Sincroniza una lista de ejbs con la base de datos.
@@ -64,7 +64,7 @@ public interface IGenericDAO extends Serializable {
      * @param sessionId identificador de la sesión del usuario
      * @return Devuelve un objeto con el resultado de la grabación
      */
-    public IDataResult update(String sessionId, IDataObject ejbs);
+    public IDataResult save(String sessionId, IDataObject ejbs);
 
     /**
      * Sincroniza una lista de ejbs con la base de datos.
@@ -74,7 +74,7 @@ public interface IGenericDAO extends Serializable {
      * @param sessionId identificador de la sesión del usuario 
      * @return Devuelve un objeto con el resultado de la grabación
      */
-    public <T extends IDataRow> IDataResult update(String sessionId, List<T> ejbs);
+    public <T extends IDataRow> IDataResult save(String sessionId, List<T> ejbs);
 
     /**
      * Sincroniza una lista de ejbs con la base de datos.
@@ -84,7 +84,7 @@ public interface IGenericDAO extends Serializable {
      * correcta (unidad de persistencia, sesión id etc).
      * @return Devuelve un objeto con el resultado de la grabación
      */
-    public IDataResult update(String sessionId, IDataSet dataSet);
+    public IDataResult save(String sessionId, IDataSet dataSet);
     
     //
     /**
@@ -364,7 +364,7 @@ public interface IGenericDAO extends Serializable {
      * @return un objeto error si no se ejecuto la sentencia con exito
      * @throws java.lang.Exception
      */
-    public IErrorReg sqlExec(String sessionId, String sqlCommand, Map<String, Object> parameters) throws Exception;
+    public IErrorInfo sqlExec(String sessionId, String sqlCommand, Map<String, Object> parameters) throws Exception;
 
     /**
      * Ejecuta un procedimiento almacenado
@@ -386,7 +386,7 @@ public interface IGenericDAO extends Serializable {
      * @return un objeto error si no se ejecuto la sentencia con exito
      * @throws java.lang.Exception
      */
-    public IErrorReg jpqlExec(String sessionId, String jpaCommand, Map<String, Object> parameters) throws Exception;
+    public IErrorInfo jpqlExec(String sessionId, String jpaCommand, Map<String, Object> parameters) throws Exception;
 
     /**
      * Selecciona datos de la base de datos y los convierte en una lista de
@@ -566,7 +566,7 @@ public interface IGenericDAO extends Serializable {
      * @param fieldName campo asociado al error.
      * @return registro de error.
      */
-    public IErrorReg getErrorMessage(Integer messageNumber,String alternativeMsg, String fieldName);
+    public IErrorInfo getErrorMessage(Integer messageNumber,String alternativeMsg, String fieldName);
     /**
      * Construye un registro de error del catálogo de mensajes sustituyendo los
      * parámetros indicados en el texto del mensaje.
@@ -577,7 +577,7 @@ public interface IGenericDAO extends Serializable {
      * @param params parámetros de sustitución del mensaje.
      * @return registro de error.
      */
-    public IErrorReg getErrorMessage(Integer messageNumber,String alternativeMsg, String fieldName, Map<String, String> params);
+    public IErrorInfo getErrorMessage(Integer messageNumber,String alternativeMsg, String fieldName, Map<String, String> params);
     
     /**
      * Devuelve las constantes de consulta definidas para la unidad de persistencia.

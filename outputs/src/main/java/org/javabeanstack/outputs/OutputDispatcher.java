@@ -28,8 +28,8 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.log.ILogManager;
 import org.javabeanstack.model.IAppLogRecord;
 import org.javabeanstack.security.model.IUserSession;
@@ -47,7 +47,7 @@ import org.javabeanstack.util.Strings;
  * {@code JasperReportUtil}:</p>
  *
  * <pre>
- * List&lt;IErrorReg&gt; results = new OutputDispatcher(getUserSession())
+ * List&lt;IErrorInfo&gt; results = new OutputDispatcher(getUserSession())
  *     .source(wordSource)                      // o jasperSource, excelSource...
  *     .fileName("transferencia_12.docx")       // opcional, pisa el de la fuente
  *     .to(new DownloadTarget())                // uno o más destinos
@@ -58,7 +58,7 @@ import org.javabeanstack.util.Strings;
  *
  * <p>
  * {@link #execute()} nunca lanza (al estilo de {@code MailSender.send()}):
- * todo fallo —de generación o de entrega— vuelve como {@link IErrorReg} y el
+ * todo fallo —de generación o de entrega— vuelve como {@link IErrorInfo} y el
  * llamador decide qué mostrar. Un fallo de generación no ejecuta ningún
  * destino; un fallo en un destino no impide los demás.
  * </p>
@@ -162,7 +162,7 @@ public class OutputDispatcher {
      * destino en el orden en que fueron agregados.
      *
      * <p>
-     * Nunca lanza: los fallos vuelven como {@link IErrorReg}. Si la generación
+     * Nunca lanza: los fallos vuelven como {@link IErrorInfo}. Si la generación
      * falla, devuelve un único resultado con ese error y ningún destino se
      * ejecuta. Si un destino falla, los siguientes se ejecutan igual.
      * </p>
@@ -170,8 +170,8 @@ public class OutputDispatcher {
      * @return un resultado por destino ejecutado (o uno solo si falló la
      * generación o la configuración); sin error los exitosos.
      */
-    public List<IErrorReg> execute() {
-        List<IErrorReg> results = new ArrayList();
+    public List<IErrorInfo> execute() {
+        List<IErrorInfo> results = new ArrayList();
         if (source == null) {
             results.add(error("No se asignó la fuente del documento (source)"));
             return results;
@@ -190,9 +190,9 @@ public class OutputDispatcher {
                 document.setFileName(fileName);
             }
         } catch (Exception ex) {
-            //Fallo manejado: vuelve como IErrorReg; en el log técnico va como WARN.
+            //Fallo manejado: vuelve como IErrorInfo; en el log técnico va como WARN.
             LOGGER.warn("Falló la generación del documento", ex);
-            IErrorReg generationError = error(ex.getMessage());
+            IErrorInfo generationError = error(ex.getMessage());
             generationError.setException(ex);
             writeLog("generate", generationError);
             results.add(generationError);
@@ -200,14 +200,14 @@ public class OutputDispatcher {
         }
         //2) Entregar a cada destino; el fallo de uno no detiene a los demás.
         for (IDocumentTarget target : targets) {
-            IErrorReg result;
+            IErrorInfo result;
             try {
                 result = target.deliver(document);
                 if (result == null) {
-                    result = new ErrorReg();
+                    result = new ErrorInfo();
                 }
             } catch (Exception ex) {
-                //Fallo manejado: vuelve como IErrorReg; en el log técnico va como WARN.
+                //Fallo manejado: vuelve como IErrorInfo; en el log técnico va como WARN.
                 LOGGER.warn("Falló la entrega por el canal " + target.getChannelName(), ex);
                 result = error(ex.getMessage());
                 result.setException(ex);
@@ -225,8 +225,8 @@ public class OutputDispatcher {
      *
      * @return resultado de la impresión; sin error si fue exitosa.
      */
-    public IErrorReg toPrinter() {
-        IErrorReg result;
+    public IErrorInfo toPrinter() {
+        IErrorInfo result;
         if (source == null) {
             return error("No se asignó la fuente del documento (source)");
         }
@@ -236,9 +236,9 @@ public class OutputDispatcher {
         }
         try {
             ((IPrintableSource) source).printDirect();
-            result = new ErrorReg();
+            result = new ErrorInfo();
         } catch (Exception ex) {
-            //Fallo manejado: vuelve como IErrorReg; en el log técnico va como WARN.
+            //Fallo manejado: vuelve como IErrorInfo; en el log técnico va como WARN.
             LOGGER.warn("Falló la impresión directa", ex);
             result = error(ex.getMessage());
             result.setException(ex);
@@ -264,11 +264,11 @@ public class OutputDispatcher {
      * @param message mensaje del error.
      * @return registro de error.
      */
-    private IErrorReg error(String message) {
-        IErrorReg errorReg = new ErrorReg();
-        errorReg.setErrorNumber(1);
-        errorReg.setMessage(Strings.isNullorEmpty(message) ? "Error no especificado" : message);
-        return errorReg;
+    private IErrorInfo error(String message) {
+        IErrorInfo errorInfo = new ErrorInfo();
+        errorInfo.setErrorNumber(1);
+        errorInfo.setMessage(Strings.isNullorEmpty(message) ? "Error no especificado" : message);
+        return errorInfo;
     }
 
     /**
@@ -279,7 +279,7 @@ public class OutputDispatcher {
      * @param channel canal de la entrega (o "generate" si falló la generación).
      * @param result resultado de la entrega.
      */
-    private void writeLog(String channel, IErrorReg result) {
+    private void writeLog(String channel, IErrorInfo result) {
         if (logMngr == null || logType == null || userSession == null) {
             return;
         }

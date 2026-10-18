@@ -104,7 +104,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult persist(T ejb) throws SessionError {
         ejb.setAction(IDataRow.INSERT);
-        return update(ejb);
+        return save(ejb);
     }
 
     /**
@@ -120,7 +120,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         ejbs.forEach(ejb -> {
             ejb.setAction(IDataRow.INSERT);
         });
-        return update(ejbs);
+        return save(ejbs);
     }
 
     /**
@@ -134,7 +134,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult merge(T ejb) throws SessionError {
         ejb.setAction(IDataRow.UPDATE);
-        return update(ejb);
+        return save(ejb);
     }
 
     /**
@@ -150,7 +150,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         ejbs.forEach((ejb) -> {
             ejb.setAction(IDataRow.UPDATE);
         });
-        return update(ejbs);
+        return save(ejbs);
     }
 
     /**
@@ -164,7 +164,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
     @Override
     public <T extends IDataRow> IDataResult remove(T ejb) throws SessionError {
         ejb.setAction(IDataRow.DELETE);
-        return update(ejb);
+        return save(ejb);
     }
 
     /**
@@ -180,7 +180,7 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
         ejbs.forEach((ejb) -> {
             ejb.setAction(IDataRow.DELETE);
         });
-        return update(ejbs);
+        return save(ejbs);
     }
 
     /**
@@ -189,13 +189,13 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      * @param <T> tipo de dato generalemente hereda de DataRow
      * @param ejb el objeto con los valores del registro
      * @throws org.javabeanstack.exceptions.SessionError
-     * @return dataResult (resultado del update)
+     * @return dataResult (resultado del save)
      */
     @Override
-    public <T extends IDataRow> IDataResult update(T ejb) throws SessionError {
+    public <T extends IDataRow> IDataResult save(T ejb) throws SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
-        IDataResult dataResult = getDao().update(getSessionId(), ejb);
+        IDataResult dataResult = getDao().save(getSessionId(), ejb);
         if (dataResult.isSuccessFul() && (dataResult.isRemoveDeleted() || ejb.getAction() == IDataRow.DELETE)) {
             dataResult.setRowsUpdated(ejb);
         }
@@ -207,16 +207,16 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      *
      * @param <T> tipo de dato generalmente hereda de DataRow
      * @param ejbs lista con los objetos con los valores de los registros
-     * @return dataResult (resultado del update)
+     * @return dataResult (resultado del save)
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public <T extends IDataRow> IDataResult update(List<T> ejbs) throws SessionError {
+    public <T extends IDataRow> IDataResult save(List<T> ejbs) throws SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
         //Procesar solo los registros modificados
         List<T> ejbs2 = this.getRowsChanged(ejbs);
-        IDataResult dataResult = getDao().update(getSessionId(), ejbs2);
+        IDataResult dataResult = getDao().save(getSessionId(), ejbs2);
         if (dataResult.isSuccessFul()) {
             dataResult.setRowsUpdated(ejbs);
             // Eliminar registros borrados de la lista            
@@ -231,16 +231,16 @@ public abstract class AbstractDataLink implements IDataLink, Serializable {
      *
      * @param dataSet cada elemento del dataSet contiene una lista con los
      * objetos mapeados a los registros de cada tabla
-     * @return dataResult (resultado del update)
+     * @return dataResult (resultado del save)
      * @throws org.javabeanstack.exceptions.SessionError
      */
     @Override
-    public IDataResult update(IDataSet dataSet) throws SessionError {
+    public IDataResult save(IDataSet dataSet) throws SessionError {
         // Verificar si la sesión es válida
         checkUserSession();
         // Procesar solo registros modificados.
         IDataSet dataSetChanged = dataSet.getChanged();
-        IDataResult dataResult = getDao().update(getSessionId(), dataSetChanged);
+        IDataResult dataResult = getDao().save(getSessionId(), dataSetChanged);
         if (dataResult.isSuccessFul()) {
             dataResult.setRowsUpdated(dataSet);
             // Eliminar registros borrados de la lista                    

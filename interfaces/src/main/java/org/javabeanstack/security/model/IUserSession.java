@@ -26,7 +26,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
 import org.javabeanstack.data.IDBFilter;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 
@@ -59,7 +59,7 @@ public interface IUserSession extends Serializable {
      *
      * @return Devuelve un objeto error si la creación de la sesión no fue exitosa
      */
-    IErrorReg getError();
+    IErrorInfo getError();
 
     /**
      * Devuelve el host del cliente.
@@ -173,7 +173,7 @@ public interface IUserSession extends Serializable {
      *
      * @param error registro de error.
      */
-    void setError(IErrorReg error);
+    void setError(IErrorInfo error);
 
     /**
      * Asigna el nombre de la máquina desde la cual se creó la sesión.

@@ -36,8 +36,8 @@ import org.javabeanstack.data.TestClass;
 import org.javabeanstack.data.model.DataSet;
 import org.javabeanstack.datactrl.DataObject;
 import org.javabeanstack.datactrl.IDataObject;
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.model.appcatalog.AppResource;
 import org.javabeanstack.model.appcatalog.AppTablesRelation;
 import org.javabeanstack.model.appcatalog.AppUser;
@@ -131,7 +131,7 @@ public class AbstractDataServiceTest extends TestClass{
         }
         Moneda moneda = dataService.find(Moneda.class,sessionId).get(0);
         
-        Map<String, IErrorReg> errors;
+        Map<String, IErrorInfo> errors;
 
         moneda.setAction(IDataRow.MODIFICAR);
         errors = dataService.checkDataRow(sessionId, moneda);
@@ -184,7 +184,7 @@ public class AbstractDataServiceTest extends TestClass{
             System.out.println(error);
             return;
         }
-        Map<String, IErrorReg> errors;        
+        Map<String, IErrorInfo> errors;        
         Pais pais = dataService.find(Pais.class,sessionId).get(0);
         pais.setAction(IDataRow.MODIFICAR);
         // Necesita del parametro sessionId para acceder a la unidad de persistencia adecuado        
@@ -205,7 +205,7 @@ public class AbstractDataServiceTest extends TestClass{
         AppUserMember usuarioMiembro = dataService.find(AppUserMember.class,null).get(0);
         usuarioMiembro.setAction(IDataRow.MODIFICAR);
         
-        Map<String, IErrorReg> errors = dataService.checkDataRow("", usuarioMiembro);
+        Map<String, IErrorInfo> errors = dataService.checkDataRow("", usuarioMiembro);
         assertTrue(errors.isEmpty());
     }
     
@@ -241,7 +241,7 @@ public class AbstractDataServiceTest extends TestClass{
         if (region.find("codigo", "ZZZ")){
             region.refreshRow();
             region.deleteRow();
-            IDataResult dataResult = dataServiceRegion.save(sessionId, region.getRow());
+            IDataResult dataResult = dataServiceRegion.checkAndSave(sessionId, region.getRow());
             assertTrue(dataResult.getRowUpdated().isFieldChecked("codigo"));
             assertTrue(dataResult.getRowUpdated().isFieldChecked("nombre"));
         }
@@ -249,7 +249,7 @@ public class AbstractDataServiceTest extends TestClass{
         region.setField("codigo", "ZZZ");
         region.setField("nombre", "ZZZ BORRAR");
         
-        IDataResult dataResult = dataServiceRegion.save(sessionId, region.getRow());
+        IDataResult dataResult = dataServiceRegion.checkAndSave(sessionId, region.getRow());
         assertTrue(dataResult.isSuccessFul());
         assertTrue(dataResult.getRowUpdated().isRowChecked());
         assertTrue(dataResult.getRowUpdated().isFieldChecked("codigo"));
@@ -259,7 +259,7 @@ public class AbstractDataServiceTest extends TestClass{
         region.open();
         if (region.find("codigo", "ZZZ")){
             region.deleteRow();
-            dataResult = dataServiceRegion.save(sessionId, region.getRow());
+            dataResult = dataServiceRegion.checkAndSave(sessionId, region.getRow());
             assertTrue(dataResult.isSuccessFul());
             assertTrue(dataResult.getRowUpdated().isFieldChecked("codigo"));
             assertTrue(dataResult.getRowUpdated().isFieldChecked("nombre"));
@@ -646,7 +646,7 @@ public class AbstractDataServiceTest extends TestClass{
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
         relation.setRowChecked(true);  //Si no va a dar error en update
-        dataService.update(sessionid, relation);
+        dataService.save(sessionid, relation);
         
         // Merge
         List<AppTablesRelation>  relations = dataService.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
@@ -655,7 +655,7 @@ public class AbstractDataServiceTest extends TestClass{
         for (AppTablesRelation relation1:relations){
             relation1.setRowChecked(true); //Si no va a dar error en update
         }
-        dataService.update(sessionid, relations);
+        dataService.save(sessionid, relations);
 
         relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNotNull(relation);
@@ -663,7 +663,7 @@ public class AbstractDataServiceTest extends TestClass{
         //Remove
         relation.setAction(IDataRow.DELETE);
         relation.setRowChecked(true); //Si no va a dar error en update
-        dataService.update(sessionid, relation);
+        dataService.save(sessionid, relation);
         
         relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNull(relation);
@@ -732,7 +732,7 @@ public class AbstractDataServiceTest extends TestClass{
             region.refreshRow();
             region.deleteRow();
             region.checkDataRow();
-            IDataResult dataResult = dataService.update(sessionId, region.getDataRows());
+            IDataResult dataResult = dataService.save(sessionId, region.getDataRows());
             assertTrue(dataResult.isSuccessFul());
         }
         region.insertRow();
@@ -740,7 +740,7 @@ public class AbstractDataServiceTest extends TestClass{
         region.setField("nombre", "ZZZ BORRAR");
         region.checkDataRow();
         
-        IDataResult dataResult = dataService.update(sessionId, region.getDataRows());
+        IDataResult dataResult = dataService.save(sessionId, region.getDataRows());
         assertTrue(dataResult.isSuccessFul());
 
         region.close();
@@ -748,7 +748,7 @@ public class AbstractDataServiceTest extends TestClass{
         if (region.find("codigo", "ZZZ")){
             region.deleteRow();
             region.checkDataRow();
-            dataResult = dataService.update(sessionId, region.getDataRows());
+            dataResult = dataService.save(sessionId, region.getDataRows());
             assertTrue(dataResult.isSuccessFul());
         }
     }
@@ -799,11 +799,11 @@ public class AbstractDataServiceTest extends TestClass{
     }
 
     /**
-     * Test of save method, of class AbstractDataService.
+     * Test of checkAndSave method, of class AbstractDataService.
      */
     @Test
     public void test28Save() throws Exception{
-        System.out.println("28-DataService - save");
+        System.out.println("28-DataService - checkAndSave");
         // Cuando sessionId es null solo se puede acceder al schema catalogo
         String sessionid = null;
         //No hubo conexión con el servidor de aplicaciones
@@ -821,20 +821,20 @@ public class AbstractDataServiceTest extends TestClass{
         relation.setFieldsPK("id");
         relation.setIncluded(false);
         relation.setAction(IDataRow.INSERT);
-        dataService.save(sessionid, relation);
+        dataService.checkAndSave(sessionid, relation);
         
         // Merge
         List<AppTablesRelation>  relations = dataService.findListByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1'", null);
         relations.get(0).setIncluded(true);
         relations.get(0).setAction(IDataRow.UPDATE);
-        dataService.save(sessionid, relations.get(0));
+        dataService.checkAndSave(sessionid, relations.get(0));
 
         relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNotNull(relation);
 
         //Remove
         relation.setAction(IDataRow.DELETE);
-        dataService.save(sessionid, relation);
+        dataService.checkAndSave(sessionid, relation);
         
         relation = dataService.findByQuery(sessionid, "select o from AppTablesRelation o where entityPK = 'xx1' and entityFK = 'xx2' and included = true", null);
         assertNull(relation);
@@ -962,27 +962,27 @@ public class AbstractDataServiceTest extends TestClass{
     
     public class AbstractDataServiceImpl extends AbstractDataService {
         @CheckMethod(fieldName = "codigo", action   = {IDataRow.INSERT, IDataRow.UPDATE, IDataRow.DELETE}) 
-        public IErrorReg checkCodigo(String sessionId, Region row){
-            IErrorReg errorReg = new ErrorReg(); 
-            return errorReg;
+        public IErrorInfo checkCodigo(String sessionId, Region row){
+            IErrorInfo errorInfo = new ErrorInfo(); 
+            return errorInfo;
         }
 
         @CheckMethod(fieldName = "codigo", action = {IDataRow.DELETE}) 
-        public IErrorReg checkCodigo2(String sessionId, Region row){
-            IErrorReg errorReg = new ErrorReg(); 
-            return errorReg;
+        public IErrorInfo checkCodigo2(String sessionId, Region row){
+            IErrorInfo errorInfo = new ErrorInfo(); 
+            return errorInfo;
         }
 
         @CheckMethod(fieldName = "nombre", action = {IDataRow.INSERT, IDataRow.UPDATE})
-        public IErrorReg checkNombre(String sessionId, Region row){
-            IErrorReg errorReg = new ErrorReg();
-            //errorReg.setMessage("prueba de error");
-            return errorReg;
+        public IErrorInfo checkNombre(String sessionId, Region row){
+            IErrorInfo errorInfo = new ErrorInfo();
+            //errorInfo.setMessage("prueba de error");
+            return errorInfo;
         }
 
-        public IErrorReg checkVarios(String sessionId, Region row){
-            IErrorReg errorReg = new ErrorReg();
-            return errorReg;
+        public IErrorInfo checkVarios(String sessionId, Region row){
+            IErrorInfo errorInfo = new ErrorInfo();
+            return errorInfo;
         }
         
         public String hello(){

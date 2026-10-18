@@ -47,7 +47,7 @@ import org.javabeanstack.datactrl.IDataObject;
 import org.javabeanstack.datactrl.uicomponents.IDatatable;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Fn;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.events.IAppSystemEvents;
 import org.javabeanstack.util.Strings;
 import org.javabeanstack.xml.IXmlDom;
@@ -789,11 +789,11 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         if (getErrorApp() != null) {
             facesCtx.showError("Error", getErrorApp().getMessage());
         } else if (getRow() != null) {
-            Map<String, IErrorReg> warnings = getRow().getWarnings();
+            Map<String, IErrorInfo> warnings = getRow().getWarnings();
             if (warnings != null && !warnings.isEmpty()) {
                 facesCtx.showWarn("Warn", warnings);
             }
-            Map<String, IErrorReg> errors = getRow().getErrors();
+            Map<String, IErrorInfo> errors = getRow().getErrors();
             if (errors != null && !errors.isEmpty()) {
                 facesCtx.showError("Error", getRow().getErrors());
             }

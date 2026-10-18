@@ -26,7 +26,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
 
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -73,14 +73,14 @@ public class OutputDispatcherTest {
      */
     @Test
     public void testExecuteEntregaMultiple(@TempDir File carpeta1, @TempDir File carpeta2) throws Exception {
-        List<IErrorReg> results = new OutputDispatcher()
+        List<IErrorInfo> results = new OutputDispatcher()
                 .source(new FuenteOk())
                 .to(new FolderTarget(carpeta1.getAbsolutePath()))
                 .to(new FolderTarget(carpeta2.getAbsolutePath()))
                 .execute();
 
         assertEquals(2, results.size());
-        for (IErrorReg result : results) {
+        for (IErrorInfo result : results) {
             assertEquals(0, result.getErrorNumber());
         }
         assertArrayEquals(CONTENIDO, Files.readAllBytes(new File(carpeta1, "prueba.pdf").toPath()));
@@ -111,7 +111,7 @@ public class OutputDispatcherTest {
         OutputDispatcher salida = new OutputDispatcher()
                 .source(new FuenteRota())
                 .to(new FolderTarget(carpeta.getAbsolutePath()));
-        List<IErrorReg> results = salida.execute();
+        List<IErrorInfo> results = salida.execute();
 
         assertEquals(1, results.size());
         assertNotEquals(0, results.get(0).getErrorNumber());
@@ -125,12 +125,12 @@ public class OutputDispatcherTest {
      */
     @Test
     public void testConfiguracionIncompleta() {
-        List<IErrorReg> sinFuente = new OutputDispatcher()
+        List<IErrorInfo> sinFuente = new OutputDispatcher()
                 .to(new FolderTarget("/tmp")).execute();
         assertEquals(1, sinFuente.size());
         assertNotEquals(0, sinFuente.get(0).getErrorNumber());
 
-        List<IErrorReg> sinDestino = new OutputDispatcher()
+        List<IErrorInfo> sinDestino = new OutputDispatcher()
                 .source(new FuenteOk()).execute();
         assertEquals(1, sinDestino.size());
         assertNotEquals(0, sinDestino.get(0).getErrorNumber());
@@ -142,7 +142,7 @@ public class OutputDispatcherTest {
      */
     @Test
     public void testToPrinterConFuenteNoImprimible() {
-        IErrorReg result = new OutputDispatcher()
+        IErrorInfo result = new OutputDispatcher()
                 .source(new FuenteOk())
                 .toPrinter();
         assertNotEquals(0, result.getErrorNumber());
@@ -156,7 +156,7 @@ public class OutputDispatcherTest {
     public void testFalloDeUnDestinoNoDetieneLosDemas(@TempDir File carpeta) throws Exception {
         IDocumentTarget roto = new IDocumentTarget() {
             @Override
-            public IErrorReg deliver(IOutputDocument document) throws Exception {
+            public IErrorInfo deliver(IOutputDocument document) throws Exception {
                 throw new Exception("canal caído");
             }
 
@@ -165,7 +165,7 @@ public class OutputDispatcherTest {
                 return "roto";
             }
         };
-        List<IErrorReg> results = new OutputDispatcher()
+        List<IErrorInfo> results = new OutputDispatcher()
                 .source(new FuenteOk())
                 .to(roto)
                 .to(new FolderTarget(carpeta.getAbsolutePath()))

@@ -40,7 +40,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
@@ -621,9 +621,9 @@ public class ExcelRowProcessorTest {
             AppUser user = new SpecProcessor(wb.getSheetAt(0).getRow(1), columns, null).process();
 
             assertNull(user.getDescription());
-            Map<String, IErrorReg> errores = user.getErrors();
+            Map<String, IErrorInfo> errores = user.getErrors();
             assertNotNull(errores);
-            IErrorReg error = errores.get("description");
+            IErrorInfo error = errores.get("description");
             assertNotNull(error, String.valueOf(errores));
             assertEquals(Integer.valueOf(50000), error.getErrorNumber());
             assertTrue(error.getMessage().contains("«Descripción»"), error.getMessage());
@@ -639,7 +639,7 @@ public class ExcelRowProcessorTest {
             columns.add("Descripción", "description").require(ColumnRequirement.VALUE);
             AppUser user = new SpecProcessor(wb.getSheetAt(0).getRow(1), columns, null).process();
 
-            IErrorReg error = user.getErrors().get("description");
+            IErrorInfo error = user.getErrors().get("description");
             assertNotNull(error);
             assertEquals(Integer.valueOf(50000), error.getErrorNumber());
         }
@@ -694,7 +694,7 @@ public class ExcelRowProcessorTest {
             AppUser user = new SpecProcessor(wb.getSheetAt(0).getRow(1), columns, null).process();
 
             assertNull(user.getCode());
-            IErrorReg error = user.getErrors().get("code");
+            IErrorInfo error = user.getErrors().get("code");
             assertNotNull(error, String.valueOf(user.getErrors()));
             assertEquals(Integer.valueOf(50000), error.getErrorNumber());
             assertTrue(error.getMessage().contains("«code»"), error.getMessage());
@@ -894,14 +894,14 @@ public class ExcelRowProcessorTest {
             assertEquals("jenciso", user.getCode());
             assertNull(user.getIdcompany());
             assertNull(user.getDescription());
-            Map<String, IErrorReg> errores = user.getErrors();
+            Map<String, IErrorInfo> errores = user.getErrors();
             assertNotNull(errores);
-            IErrorReg deLaConversion = errores.get("idcompany");
+            IErrorInfo deLaConversion = errores.get("idcompany");
             assertNotNull(deLaConversion, String.valueOf(errores));
             assertEquals(Integer.valueOf(50000), deLaConversion.getErrorNumber());
             assertTrue(deLaConversion.getMessage().contains("«idcompany»"), deLaConversion.getMessage());
             assertTrue(deLaConversion.getMessage().contains("no se pudo aplicar"), deLaConversion.getMessage());
-            IErrorReg delProveedor = errores.get("description");
+            IErrorInfo delProveedor = errores.get("description");
             assertNotNull(delProveedor, String.valueOf(errores));
             assertEquals(Integer.valueOf(50000), delProveedor.getErrorNumber());
             assertTrue(delProveedor.getMessage().contains("sin sesión"), delProveedor.getMessage());

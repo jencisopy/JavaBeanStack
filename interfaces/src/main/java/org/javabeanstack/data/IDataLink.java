@@ -33,7 +33,7 @@ import org.javabeanstack.data.services.IDataService;
  * persistencia, esquema, empresa/período y sesión de usuario).
  *
  * <p>Expone las operaciones de búsqueda (por id, clave única, JPQL, named query
- * y SQL nativo), de persistencia (persist/merge/remove/update) y la creación de
+ * y SQL nativo), de persistencia (persist/merge/remove/save) y la creación de
  * consultas nativas ({@link IDataNativeQuery}). La implementación de referencia
  * es {@code org.javabeanstack.data.AbstractDataLink}.</p>
  *
@@ -266,7 +266,7 @@ public interface IDataLink  {
      * @return resultado de la operación.
      * @throws Exception si la persistencia falla.
      */
-    <T extends IDataRow> IDataResult update(T ejb) throws Exception;
+    <T extends IDataRow> IDataResult save(T ejb) throws Exception;
 
     /**
      * Graba una lista de entidades (persist o merge según su estado).
@@ -276,7 +276,7 @@ public interface IDataLink  {
      * @return resultado de la operación.
      * @throws Exception si la persistencia falla.
      */
-    <T extends IDataRow> IDataResult update(List<T> ejbs) throws Exception;
+    <T extends IDataRow> IDataResult save(List<T> ejbs) throws Exception;
 
     /**
      * Graba un conjunto de datos completo.
@@ -285,7 +285,7 @@ public interface IDataLink  {
      * @return resultado de la operación.
      * @throws Exception si la persistencia falla.
      */
-    IDataResult update(IDataSet dataSet) throws Exception;
+    IDataResult save(IDataSet dataSet) throws Exception;
 
     /**
      * Inserta (persist) una entidad nueva.

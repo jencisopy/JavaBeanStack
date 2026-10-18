@@ -23,7 +23,7 @@ package org.javabeanstack.data;
 
 
 import java.io.Serializable;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import java.util.Map;
 
 /**
@@ -166,14 +166,14 @@ public interface IDataRow extends Serializable{
      *
      * @return mapa campo → error.
      */
-    public Map<String, IErrorReg> getErrors();
+    public Map<String, IErrorInfo> getErrors();
 
     /**
      * Devuelve las advertencias de validación registradas por campo.
      *
      * @return mapa campo → advertencia.
      */
-    public Map<String, IErrorReg> getWarnings();
+    public Map<String, IErrorInfo> getWarnings();
 
     /**
      * Devuelve el valor identificador (clave primaria) del registro.
@@ -283,17 +283,17 @@ public interface IDataRow extends Serializable{
     /**
      * Reemplaza el mapa completo de errores por campo.
      *
-     * @param errorReg mapa campo → error.
+     * @param errorInfo mapa campo → error.
      */
-    public void      setErrors(Map<String, IErrorReg> errorReg);
+    public void      setErrors(Map<String, IErrorInfo> errorInfo);
 
     /**
      * Agrega un error asociado a un campo.
      *
-     * @param errorReg objeto con los datos del error.
+     * @param errorInfo objeto con los datos del error.
      * @param fieldName campo sobre el cual se generó el error.
      */
-    public void      setErrors(IErrorReg errorReg, String fieldName);
+    public void      setErrors(IErrorInfo errorInfo, String fieldName);
 
     /**
      * Agrega un error a un campo a partir de sus datos.

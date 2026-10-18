@@ -21,7 +21,7 @@
 */
 package org.javabeanstack.datactrl;
 
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import java.util.List;
 import java.util.Map;
 import org.javabeanstack.data.IDataLink;
@@ -624,7 +624,7 @@ public interface IDataObject <T extends IDataRow>{
      * @return mapa campo → error (vacío si es válido).
      * @throws Exception si ocurre un error durante la validación.
      */
-    public Map<String, IErrorReg> checkDataRow() throws Exception;
+    public Map<String, IErrorInfo> checkDataRow() throws Exception;
 
     /**
      * Valida el registro indicado y devuelve los errores por campo.
@@ -633,7 +633,7 @@ public interface IDataObject <T extends IDataRow>{
      * @return mapa campo → error (vacío si es válido).
      * @throws Exception si ocurre un error durante la validación.
      */
-    public Map<String, IErrorReg> checkDataRow(T row) throws Exception;
+    public Map<String, IErrorInfo> checkDataRow(T row) throws Exception;
 
     /**
      * Valida los registros del cursor.

@@ -179,7 +179,7 @@ public class AppGenericConfigSystemParamTest {
         nuevo.setIdcompany(EMPRESA);
         SystemParamScopeException ex = assertThrows(SystemParamScopeException.class,
                 () -> config.setSystemParam(nuevo));
-        assertEquals(50000, ex.getErrorReg().getErrorNumber());
+        assertEquals(50000, ex.getErrorInfo().getErrorNumber());
         assertEquals(50000, nuevo.getErrors().get("idcompany").getErrorNumber());
         assertTrue(operaciones.isEmpty());
     }

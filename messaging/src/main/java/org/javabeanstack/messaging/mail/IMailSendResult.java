@@ -23,7 +23,7 @@
 package org.javabeanstack.messaging.mail;
 
 import java.util.List;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 
 /**
  * Resultado de un intento de envío de correo.
@@ -60,7 +60,7 @@ public interface IMailSendResult {
      * Devuelve el error del intento fallido.
      * @return registro de error, o nulo si el envío fue exitoso.
      */
-    IErrorReg getErrorReg();
+    IErrorInfo getErrorInfo();
 
     /**
      * Devuelve las direcciones que el servidor rechazó.

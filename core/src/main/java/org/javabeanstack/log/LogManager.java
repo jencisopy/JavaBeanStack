@@ -34,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorManager;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.security.ISessions;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.util.Strings;
@@ -102,12 +102,12 @@ public class LogManager implements ILogManager {
     /**
      * Escribe información de un evento en una tabla de la base de datos.
      *
-     * @param errorReg objeto error conteniendo la información del evento.
+     * @param errorInfo objeto error conteniendo la información del evento.
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public boolean dbWrite(IErrorReg errorReg) {
-        return dbWrite(null, null, errorReg);
+    public boolean dbWrite(IErrorInfo errorInfo) {
+        return dbWrite(null, null, errorInfo);
     }
 
     /**
@@ -120,7 +120,7 @@ public class LogManager implements ILogManager {
      * @return verdadero si tuvo exito y falso si no.
      */
     @Override
-    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorReg error) {
+    public <T extends IAppLogRecord> boolean dbWrite(Class<T> logType, String sessionId, IErrorInfo error) {
         try {
             IAppLogRecord logRecord = getNewAppLogRecord(logType);
             String messageInfo = "";
@@ -276,7 +276,7 @@ public class LogManager implements ILogManager {
             //El error no se registra aca, pero no porque asi salga una sola
             //vez: al cruzar el limite de este bean el contenedor ya la deja en
             //el log (en WildFly, WFLYEJB0034) y despues la vuelve a dejar el
-            //update() del DAO que la atrapa, asi que la traza sale dos veces
+            //save() del DAO que la atrapa, asi que la traza sale dos veces
             //igual. Registrarla aca seria una tercera copia de lo mismo.
             throw new IllegalStateException(
                     "No se pudo determinar si la entidad se audita (" + clave + ")", e);

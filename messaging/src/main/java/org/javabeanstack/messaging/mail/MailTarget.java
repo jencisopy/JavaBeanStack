@@ -25,8 +25,8 @@ package org.javabeanstack.messaging.mail;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.messaging.IMailAccount;
 import org.javabeanstack.outputs.IDocumentTarget;
 import org.javabeanstack.outputs.IOutputDocument;
@@ -172,7 +172,7 @@ public class MailTarget implements IDocumentTarget {
      * hay destinatarios (uso inválido).
      */
     @Override
-    public IErrorReg deliver(IOutputDocument document) throws Exception {
+    public IErrorInfo deliver(IOutputDocument document) throws Exception {
         if (document == null || document.getSize() == 0) {
             throw new Exception("El documento a enviar es nulo o está vacío");
         }
@@ -203,15 +203,15 @@ public class MailTarget implements IDocumentTarget {
         }
         IMailSendResult sendResult = new MailSender().send(account, message);
         if (sendResult.isSuccessful()) {
-            return new ErrorReg();
+            return new ErrorInfo();
         }
-        IErrorReg errorReg = sendResult.getErrorReg();
-        if (errorReg == null) {
-            errorReg = new ErrorReg();
-            errorReg.setErrorNumber(1);
-            errorReg.setMessage("El envío del correo falló");
+        IErrorInfo errorInfo = sendResult.getErrorInfo();
+        if (errorInfo == null) {
+            errorInfo = new ErrorInfo();
+            errorInfo.setErrorNumber(1);
+            errorInfo.setMessage("El envío del correo falló");
         }
-        return errorReg;
+        return errorInfo;
     }
 
     @Override

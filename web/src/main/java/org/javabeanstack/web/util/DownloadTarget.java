@@ -26,8 +26,8 @@ import jakarta.faces.context.FacesContext;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.javabeanstack.error.ErrorReg;
-import org.javabeanstack.error.IErrorReg;
+import org.javabeanstack.error.ErrorInfo;
+import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.outputs.IDocumentTarget;
 import org.javabeanstack.outputs.IOutputDocument;
 
@@ -85,7 +85,7 @@ public class DownloadTarget implements IDocumentTarget {
      * Faces activo (uso inválido).
      */
     @Override
-    public IErrorReg deliver(IOutputDocument document) throws Exception {
+    public IErrorInfo deliver(IOutputDocument document) throws Exception {
         if (document == null || document.getSize() == 0) {
             throw new Exception("El documento a descargar es nulo o está vacío");
         }
@@ -104,7 +104,7 @@ public class DownloadTarget implements IDocumentTarget {
             outputStream.flush();
         }
         facesContext.responseComplete();
-        return new ErrorReg();
+        return new ErrorInfo();
     }
 
     @Override

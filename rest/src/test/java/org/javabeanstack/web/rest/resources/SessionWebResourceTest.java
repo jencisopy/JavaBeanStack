@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
-import org.javabeanstack.error.ErrorReg;
+import org.javabeanstack.error.ErrorInfo;
 import org.javabeanstack.model.IAppCompany;
 import org.javabeanstack.model.IAppUser;
 import org.javabeanstack.security.ISessions;
@@ -229,7 +229,7 @@ public class SessionWebResourceTest {
     public void testSesionExpiradaRechazada() {
         Map<String, IUserSession> pool = new HashMap<>();
         UserSession session = sesionDeLogin(pool);
-        session.setError(new ErrorReg("La sesión expiro", 6, ""));
+        session.setError(new ErrorInfo("La sesión expiro", 6, ""));
         RecursoStub recurso = new RecursoStub(sessionsCon(pool),
                 request("GET", null, new HashMap<>()));
 
