@@ -98,7 +98,8 @@ public class DomW3cParser {
             = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
     /**
      * Protecciones que la implementación JAXP en uso no admitió, para avisar
-     * una sola vez por protección y no en cada fábrica (hay una por hilo).
+     * una sola vez por protección y no en cada fábrica (la de transformación
+     * se crea en cada {@code getXmlText}).
      */
     private static final Set<String> PROTECCIONES_NO_ADMITIDAS = ConcurrentHashMap.newKeySet();
     /**
@@ -125,14 +126,31 @@ public class DomW3cParser {
         }
     };
     /**
-     * Fábricas por hilo: JAXP no garantiza que {@code DocumentBuilderFactory}
-     * ni {@code XPathFactory} sean seguras para hilos, y estas son estáticas y
-     * se usan desde beans concurrentes.
+     * Fábrica de documentos única, con las protecciones de XMLSEC.
+     *
+     * <p>JAXP no garantiza que {@code DocumentBuilderFactory} ni
+     * {@code XPathFactory} sean seguras para hilos, y estas se usan desde beans
+     * concurrentes. Por eso cada {@code DocumentBuilder} y cada {@code XPath} se
+     * crea <b>sincronizando sobre su fábrica</b> ({@link #newDocumentBuilder()},
+     * {@link #newXPath()}) y no se comparte: es por llamada.</p>
+     *
+     * <p>Hasta el 2026-10-19 eran una por hilo ({@code ThreadLocal}, I1-07), y
+     * eso fugaba: los hilos son del servidor y sobreviven al redespliegue, y en
+     * los WAR que embeben Xerces la fábrica es una clase del WAR. Cada hilo
+     * retenía su fábrica, la fábrica el classloader y el classloader el WAR
+     * entero (plan TLLEAK, XMLSEC M1-01). Un campo estático, en cambio, muere
+     * con su propia clase.</p>
+     *
+     * <p><b>Invariante del que depende:</b> cada despliegue lleva su propio
+     * {@code jbs-core} (en {@code WEB-INF/lib} o en el {@code lib/} del EAR),
+     * así que hay una clase {@code DomW3cParser} por despliegue. Si
+     * {@code jbs-core} pasara a un módulo compartido del servidor, esta fábrica
+     * única —resuelta con el classloader de contexto de la primera llamada—
+     * retendría para siempre el Xerces del primer WAR que la usara.</p>
      */
-    private static final ThreadLocal<DocumentBuilderFactory> FACTORY
-            = ThreadLocal.withInitial(DomW3cParser::newDocumentBuilderFactory);
-    private static final ThreadLocal<XPathFactory> XPATHFACTORY
-            = ThreadLocal.withInitial(XPathFactory::newInstance);
+    private static final DocumentBuilderFactory FACTORY = newDocumentBuilderFactory();
+    /** Fábrica de XPath única; ver {@link #FACTORY}. */
+    private static final XPathFactory XPATHFACTORY = XPathFactory.newInstance();
     private static final String DEFAULTCHARSET = "UTF-8";
 
     private DomW3cParser() {
@@ -182,17 +200,35 @@ public class DomW3cParser {
     }
 
     /**
-     * Constructor de documentos de la fábrica del hilo, con un
+     * Constructor de documentos nuevo de la fábrica única, con un
      * {@code ErrorHandler} que no escribe en stderr: el de Xerces por defecto
      * vuelca {@code [Fatal Error] ...} a la consola (en WildFly, una línea
      * {@code ERROR [stderr]} en server.log) además de lanzar. Mismo criterio
      * que el de Xerces —los errores recuperables no cortan la lectura y los
      * fatales sí—, pero el fatal llega solo por la excepción.
+     *
+     * @return un constructor nuevo, por llamada (no se comparte).
+     * @throws ParserConfigurationException si la fábrica no puede crearlo.
      */
     private static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
-        DocumentBuilder builder = FACTORY.get().newDocumentBuilder();
+        DocumentBuilder builder;
+        synchronized (FACTORY) {
+            builder = FACTORY.newDocumentBuilder();
+        }
         builder.setErrorHandler(SILENCIOSO);
         return builder;
+    }
+
+    /**
+     * Un {@code XPath} nuevo, creado sincronizando sobre la fábrica (ver
+     * {@link #FACTORY}). Es por llamada: no se comparte.
+     *
+     * @return un {@code XPath} nuevo.
+     */
+    private static XPath newXPath() {
+        synchronized (XPATHFACTORY) {
+            return XPATHFACTORY.newXPath();
+        }
     }
 
     /**
@@ -244,7 +280,7 @@ public class DomW3cParser {
      * @throws ParserConfigurationException
      */
     public static Document newDocument() throws ParserConfigurationException {
-        return FACTORY.get().newDocumentBuilder().newDocument();
+        return newDocumentBuilder().newDocument();
     }
 
     /**
@@ -529,7 +565,7 @@ public class DomW3cParser {
         if (!nodePath.startsWith("/")) {
             nodePath = "//" + nodePath;
         }
-        XPath xpath = XPATHFACTORY.get().newXPath();
+        XPath xpath = newXPath();
         xpathExpr = xpath.compile(nodePath);
 
         return (Node) xpathExpr.evaluate(document, XPathConstants.NODE);
@@ -548,7 +584,7 @@ public class DomW3cParser {
         if (!nodePath.startsWith("/")) {
             nodePath = "//" + nodePath;
         }
-        XPath xpath = XPATHFACTORY.get().newXPath();        
+        XPath xpath = newXPath();
         xpathExpr = xpath.compile(nodePath);
         return (NodeList) xpathExpr.evaluate(document, XPathConstants.NODESET);
     }

@@ -28,6 +28,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.List;
 
 import org.w3c.dom.Document;
@@ -265,5 +270,61 @@ public class DomW3cParserTest {
         assertEquals("\u00a9", p.getAttribute("t"));
         //Y la serialización sigue funcionando
         assertTrue(DomW3cParser.getXmlText(dom, "UTF-8").contains("SQLCOMMAND"));
+    }
+
+    /**
+     * TLLEAK §1.2.2: con las fábricas únicas (ya no una por hilo), muchos hilos
+     * parsean y consultan por XPath a la vez sin errores ni resultados
+     * cruzados: cada uno lee el valor de su propio documento.
+     */
+    @Test
+    public void testConcurrenciaSinCruces() throws Exception {
+        int hilos = 16;
+        int vueltas = 200;
+        ExecutorService pool = Executors.newFixedThreadPool(hilos);
+        try {
+            List<Future<Integer>> tareas = new ArrayList<>();
+            for (int h = 0; h < hilos; h++) {
+                final int hilo = h;
+                Callable<Integer> tarea = () -> {
+                    int bien = 0;
+                    for (int v = 0; v < vueltas; v++) {
+                        String valor = hilo + "-" + v;
+                        Document dom = DomW3cParser.loadXml(bytes("<XML><NODO valor=\"" + valor + "\"/></XML>"));
+                        String leido = DomW3cParser.getPropertyValue(dom, "valor", "/XML/NODO");
+                        //Si se cruzan, el mensaje dice qué hilo leyó el valor de cuál
+                        assertEquals(valor, leido, "cruce en el hilo " + hilo + ", vuelta " + v);
+                        assertEquals(1, DomW3cParser.getElements(dom, "/XML/NODO").size());
+                        assertTrue(DomW3cParser.getXmlText(dom, "UTF-8").contains(valor));
+                        DomW3cParser.newDocument();
+                        bien++;
+                    }
+                    return bien;
+                };
+                tareas.add(pool.submit(tarea));
+            }
+            //Con timeout: un bloqueo sobre las fábricas no puede colgar el build
+            assertTimeoutPreemptively(Duration.ofSeconds(60), () -> {
+                for (Future<Integer> tarea : tareas) {
+                    assertEquals(vueltas, tarea.get().intValue());
+                }
+            });
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    /**
+     * TLLEAK (guardia de O1): {@code DomW3cParser} no vuelve a guardar nada
+     * en un {@code ThreadLocal}. Una fábrica por hilo retiene, en los hilos
+     * del servidor, el classloader del WAR que la creó (XMLSEC M1-01), y las
+     * pruebas funcionales no lo detectan.
+     */
+    @Test
+    public void testSinThreadLocal() {
+        for (java.lang.reflect.Field campo : DomW3cParser.class.getDeclaredFields()) {
+            assertFalse(ThreadLocal.class.isAssignableFrom(campo.getType()),
+                    "DomW3cParser volvió a usar un ThreadLocal: " + campo.getName());
+        }
     }
 }
