@@ -22,17 +22,12 @@
 package org.javabeanstack.log;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import jakarta.ejb.EJB;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import org.apache.logging.log4j.Logger;
 import org.javabeanstack.data.IDataResult;
-import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.security.ISessions;
@@ -47,11 +42,8 @@ import org.javabeanstack.util.LocalDates;
 /**
  * Su función es gestionar la escritura y lectura del log del sistema.
  *
- * <p>También resuelve, con caché, si una entidad debe auditarse
- * ({@link #isEntityAuditAble(String, String, String)}). Vive acá y no en la
- * configuración por una razón de arranque, explicada en el javadoc de ese
- * método: este bean es {@code Stateless} y no se lo puede reentrar mientras se
- * construye.</p>
+ * <p>La consulta de si una entidad se audita, que vivió acá desde el
+ * 2026-10-14, pasó a {@code AuditManager} (plan AUDMGR).</p>
  *
  * @author Jorge Enciso
  */
@@ -231,67 +223,5 @@ public class LogManager implements ILogManager {
             ErrorManager.showError(exp, LOGGER);
         }
         return new ArrayList();
-    }
-
-    /**
-     * Cache de {@link #isEntityAuditAble(String, String, String)}. La clave es
-     * la terna de nombres; el valor, la respuesta del catalogo.
-     *
-     * <p>Es estatico a proposito: este bean es {@code Stateless} y el
-     * contenedor lo sirve desde un pool, asi que un campo de instancia daria
-     * un cache por instancia agrupada y la consulta se repetiria sin
-     * necesidad. Estatico equivale a <b>uno por despliegue</b>, que es el mismo
-     * alcance que tenia cuando vivia en el singleton de configuracion.</p>
-     *
-     * <p>Es un mapa concurrente y no un cache con vencimiento porque la tabla
-     * de auditoria se toca cuando se reconfigura el sistema, no durante la
-     * operacion. Para verlo actualizado sin reiniciar esta
-     * {@link #clearAuditCache()}.</p>
-     */
-    private static final ConcurrentMap<String, Boolean> AUDIT_CACHE = new ConcurrentHashMap<>();
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public boolean isEntityAuditAble(String entity1, String entity2, String entity3) {
-        String clave = entity1 + "\u0001" + entity2 + "\u0001" + entity3;
-        Boolean cacheado = AUDIT_CACHE.get(clave);
-        if (cacheado != null) {
-            return cacheado;
-        }
-        List<IDataRow> result;
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("entity1", entity1);
-            params.put("entity2", entity2);
-            params.put("entity3", entity3);
-            result = dao.findListByQuery(null, "select o from AppAudit o "
-                    + "where entity in (:entity1, :entity2, :entity3) "
-                    + "and audit = true", params);
-        } catch (Exception e) {
-            //Deliberadamente NO se devuelve falso: con el catalogo caido eso
-            //dejaba de auditar sin que nadie se entere. Que falle y se vea.
-            //El error no se registra aca, pero no porque asi salga una sola
-            //vez: al cruzar el limite de este bean el contenedor ya la deja en
-            //el log (en WildFly, WFLYEJB0034) y despues la vuelve a dejar el
-            //save() del DAO que la atrapa, asi que la traza sale dos veces
-            //igual. Registrarla aca seria una tercera copia de lo mismo.
-            throw new IllegalStateException(
-                    "No se pudo determinar si la entidad se audita (" + clave + ")", e);
-        }
-        boolean auditable = result != null && !result.isEmpty();
-        AUDIT_CACHE.put(clave, auditable);
-        return auditable;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void clearAuditCache() {
-        AUDIT_CACHE.clear();
     }
 }

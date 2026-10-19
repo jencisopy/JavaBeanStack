@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
  * del modelo de la aplicación.
  *
  * <p>
- * {@code AbstractDAO.auditSave} escribe {@code iprequest} y {@code device}
+ * {@code AuditManager.write} (antes {@code AbstractDAO.auditSave}) escribe {@code iprequest} y {@code device}
  * solo si el atributo existe en la clase de auditoría. Esta prueba reproduce
  * las dos formas posibles de esa clase —la vieja, con un único atributo
  * {@code ipRequest} sobre la columna {@code maquina}, y la nueva, con
