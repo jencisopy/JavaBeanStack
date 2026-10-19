@@ -23,7 +23,11 @@ package org.javabeanstack.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 
 import org.w3c.dom.Document;
@@ -31,6 +35,7 @@ import org.w3c.dom.Element;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Pruebas unitarias de DomW3cParser.
@@ -187,5 +192,78 @@ public class DomW3cParserTest {
         assertEquals("root", document2.getDocumentElement().getNodeName());
         // Contenido nulo
         assertNull(DomW3cParser.getXmlText(null, "UTF-8"));
+    }
+
+    private static InputStream bytes(String xml) {
+        return new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * XMLSEC §1.2.1: una entidad externa no se resuelve. El XML apunta a un
+     * archivo con un texto testigo; la lectura se rechaza y el testigo no
+     * llega a ningún lado.
+     */
+    @Test
+    public void testEntidadExternaNoSeResuelve(@TempDir Path carpeta) throws Exception {
+        Path secreto = carpeta.resolve("secreto.txt");
+        Files.writeString(secreto, "TESTIGO-XMLSEC");
+        String xml = "<?xml version=\"1.0\"?><!DOCTYPE r [<!ENTITY x SYSTEM \""
+                + secreto.toUri() + "\">]><r><HELP>&x;</HELP></r>";
+        Exception ex = assertThrows(Exception.class, () -> DomW3cParser.loadXml(bytes(xml)));
+        assertFalse(String.valueOf(ex.getMessage()).contains("TESTIGO-XMLSEC"));
+        assertThrows(Exception.class, () -> DomW3cParser.loadXml(xml));
+    }
+
+    /**
+     * XMLSEC §1.2.2: la expansión exponencial de entidades («billion laughs»)
+     * se corta enseguida en vez de colgar el hilo.
+     */
+    @Test
+    public void testExpansionDeEntidadesSeCorta() {
+        StringBuilder dtd = new StringBuilder("<!DOCTYPE r [<!ENTITY e0 \"ja\">");
+        for (int i = 1; i <= 10; i++) {
+            dtd.append("<!ENTITY e").append(i).append(" \"");
+            for (int j = 0; j < 10; j++) {
+                dtd.append("&e").append(i - 1).append(';');
+            }
+            dtd.append("\">");
+        }
+        String xml = dtd.append("]><r>&e10;</r>").toString();
+        assertTimeoutPreemptively(Duration.ofSeconds(5),
+                () -> assertThrows(Exception.class, () -> DomW3cParser.loadXml(bytes(xml))));
+    }
+
+    /**
+     * XMLSEC §1.2.3: también un {@code <!DOCTYPE>} inofensivo, sin entidades,
+     * se rechaza. Es el cambio de comportamiento del plan: ningún XML del
+     * sistema lo declara.
+     */
+    @Test
+    public void testDoctypeSinEntidadesTambienSeRechaza() {
+        assertThrows(Exception.class,
+                () -> DomW3cParser.loadXml(bytes("<?xml version=\"1.0\"?><!DOCTYPE r><r/>")));
+    }
+
+    /**
+     * XMLSEC §1.2.4: los XML como los del sistema se siguen leyendo igual:
+     * comentarios, CDATA, entidades predefinidas, referencias de carácter y la
+     * codificación declarada (los paquetes de actualización van en
+     * Windows-1252).
+     */
+    @Test
+    public void testXmlLegitimosSeLeenIgual() throws Exception {
+        String xml = "<?xml version=\"1.0\" encoding=\"windows-1252\"?>\n"
+                + "<!-- comentario -->\n<XML><SQLCOMMAND dataconex=\"DATOS\">"
+                + "<![CDATA[select 1 where a < b and c > d]]></SQLCOMMAND>"
+                + "<P descrip=\"Contraseña &amp; acceso\" validvalues=\"{&gt;=0 and &lt;=64}\" t=\"&#169;\"/></XML>";
+        Document dom = DomW3cParser.loadXml(new ByteArrayInputStream(xml.getBytes(Charset.forName("windows-1252"))));
+        Element raiz = dom.getDocumentElement();
+        assertEquals("select 1 where a < b and c > d", DomW3cParser.getChildren(raiz).get(0).getTextContent());
+        Element p = DomW3cParser.getChildren(raiz).get(1);
+        assertEquals("Contraseña & acceso", p.getAttribute("descrip"));
+        assertEquals("{>=0 and <=64}", p.getAttribute("validvalues"));
+        assertEquals("\u00a9", p.getAttribute("t"));
+        //Y la serialización sigue funcionando
+        assertTrue(DomW3cParser.getXmlText(dom, "UTF-8").contains("SQLCOMMAND"));
     }
 }

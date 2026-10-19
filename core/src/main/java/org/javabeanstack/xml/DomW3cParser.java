@@ -32,6 +32,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.xml.XMLConstants;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.OutputKeys;
@@ -47,7 +50,9 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.util.Fn;
 import org.javabeanstack.util.Strings;
@@ -73,6 +78,53 @@ public class DomW3cParser {
     private static final String DEFER_NODE_EXPANSION
             = "http://apache.org/xml/features/dom/defer-node-expansion";
     /**
+     * Rechaza toda declaración {@code <!DOCTYPE>} (plan XMLSEC). Es la defensa
+     * principal contra XXE —una entidad externa que lee un archivo del
+     * servidor o hace una petición— y contra la expansión exponencial de
+     * entidades: sin DOCTYPE no hay entidades. Ningún XML del sistema declara
+     * DOCTYPE (relevamiento del 2026-10-19), y por este parser pasan archivos
+     * que viven fuera del artefacto ({@code configs/rptwizard.xml},
+     * {@code configs/systemparam_init.xml}, {@code PortalConfig.xml}, los XML de
+     * pantallas e informes de la instalación y de cada empresa). Mismo criterio
+     * que {@code DBManagerV30.loadConfigs()}.
+     */
+    private static final String DISALLOW_DOCTYPE
+            = "http://apache.org/xml/features/disallow-doctype-decl";
+    private static final String EXTERNAL_GENERAL_ENTITIES
+            = "http://xml.org/sax/features/external-general-entities";
+    private static final String EXTERNAL_PARAMETER_ENTITIES
+            = "http://xml.org/sax/features/external-parameter-entities";
+    private static final String LOAD_EXTERNAL_DTD
+            = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    /**
+     * Protecciones que la implementación JAXP en uso no admitió, para avisar
+     * una sola vez por protección y no en cada fábrica (hay una por hilo).
+     */
+    private static final Set<String> PROTECCIONES_NO_ADMITIDAS = ConcurrentHashMap.newKeySet();
+    /**
+     * {@code ErrorHandler} de los constructores de documentos (ver
+     * {@link #newDocumentBuilder()}): no escribe en stderr. Un error
+     * recuperable no corta la lectura, como en Xerces, pero deja un
+     * {@code WARN} (antes se veía en stderr); los fatales llegan solo por la
+     * excepción.
+     */
+    private static final ErrorHandler SILENCIOSO = new ErrorHandler() {
+        @Override
+        public void warning(SAXParseException ex) {
+            LOGGER.debug("Aviso al leer XML: " + ex.getMessage());
+        }
+
+        @Override
+        public void error(SAXParseException ex) {
+            LOGGER.warn("Error recuperable al leer XML: " + ex.getMessage());
+        }
+
+        @Override
+        public void fatalError(SAXParseException ex) throws SAXException {
+            throw ex;
+        }
+    };
+    /**
      * Fábricas por hilo: JAXP no garantiza que {@code DocumentBuilderFactory}
      * ni {@code XPathFactory} sean seguras para hilos, y estas son estáticas y
      * se usan desde beans concurrentes.
@@ -87,10 +139,21 @@ public class DomW3cParser {
     }
 
     /**
-     * Crea la fábrica de documentos con la expansión diferida desactivada. Si la
-     * implementación JAXP en uso no reconoce la característica, se sigue con la
-     * fábrica por defecto: la seguridad entre hilos la garantiza igual quien
-     * comparta el documento sincronizando sobre él.
+     * Crea la fábrica de documentos con la expansión diferida desactivada y
+     * las protecciones contra XXE y expansión de entidades (plan XMLSEC).
+     *
+     * <p>Si la implementación JAXP en uso no reconoce la expansión diferida,
+     * se sigue sin ella: la seguridad entre hilos la garantiza igual quien
+     * comparta el documento sincronizando sobre él.</p>
+     *
+     * <p>Cada protección se aplica por separado: una que la implementación
+     * no admita no impide aplicar las demás. Con que rija
+     * {@link #DISALLOW_DOCTYPE} alcanza; las otras son defensa en profundidad
+     * por si una implementación la ignorara. Por eso solo las dos principales
+     * avisan con {@code WARN} (una vez por protección) si no se admiten; las
+     * demás, en {@code DEBUG}: el Xerces de WildFly, por ejemplo, no admite
+     * los atributos {@code ACCESS_EXTERNAL_*}, y un aviso en cada arranque
+     * sería ruido.</p>
      *
      * @return fábrica de documentos.
      */
@@ -102,7 +165,76 @@ public class DomW3cParser {
             LOGGER.debug("La implementación JAXP " + factory.getClass().getName()
                     + " no admite " + DEFER_NODE_EXPANSION);
         }
+        proteger(factory, DISALLOW_DOCTYPE, true, true);
+        proteger(factory, XMLConstants.FEATURE_SECURE_PROCESSING, true, true);
+        proteger(factory, EXTERNAL_GENERAL_ENTITIES, false, false);
+        proteger(factory, EXTERNAL_PARAMETER_ENTITIES, false, false);
+        proteger(factory, LOAD_EXTERNAL_DTD, false, false);
+        protegerAtributo(factory, XMLConstants.ACCESS_EXTERNAL_DTD);
+        protegerAtributo(factory, XMLConstants.ACCESS_EXTERNAL_SCHEMA);
+        try {
+            factory.setXIncludeAware(false);
+            factory.setExpandEntityReferences(false);
+        } catch (RuntimeException ex) {
+            avisarNoAdmitida(factory, "XInclude/ExpandEntityReferences", false);
+        }
         return factory;
+    }
+
+    /**
+     * Constructor de documentos de la fábrica del hilo, con un
+     * {@code ErrorHandler} que no escribe en stderr: el de Xerces por defecto
+     * vuelca {@code [Fatal Error] ...} a la consola (en WildFly, una línea
+     * {@code ERROR [stderr]} en server.log) además de lanzar. Mismo criterio
+     * que el de Xerces —los errores recuperables no cortan la lectura y los
+     * fatales sí—, pero el fatal llega solo por la excepción.
+     */
+    private static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
+        DocumentBuilder builder = FACTORY.get().newDocumentBuilder();
+        builder.setErrorHandler(SILENCIOSO);
+        return builder;
+    }
+
+    /**
+     * Activa o desactiva una característica de seguridad de la fábrica; si la
+     * implementación no la admite, lo avisa una vez y sigue.
+     *
+     * @param principal verdadero si es una de las protecciones principales
+     * (avisa en {@code WARN}); falso si es defensa en profundidad
+     * ({@code DEBUG}).
+     */
+    private static void proteger(DocumentBuilderFactory factory, String feature, boolean valor,
+            boolean principal) {
+        try {
+            factory.setFeature(feature, valor);
+        } catch (ParserConfigurationException | RuntimeException ex) {
+            avisarNoAdmitida(factory, feature, principal);
+        }
+    }
+
+    /**
+     * Deja vacío (ningún protocolo permitido) un atributo de acceso externo
+     * de la fábrica; si la implementación no lo admite, lo avisa una vez y
+     * sigue.
+     */
+    private static void protegerAtributo(DocumentBuilderFactory factory, String atributo) {
+        try {
+            factory.setAttribute(atributo, "");
+        } catch (RuntimeException ex) {
+            avisarNoAdmitida(factory, atributo, false);
+        }
+    }
+
+    private static void avisarNoAdmitida(Object factory, String proteccion, boolean principal) {
+        if (PROTECCIONES_NO_ADMITIDAS.add(factory.getClass().getName() + ":" + proteccion)) {
+            String mensaje = "La implementación JAXP " + factory.getClass().getName()
+                    + " no admite la protección " + proteccion + "; rigen las demás";
+            if (principal) {
+                LOGGER.warn(mensaje);
+            } else {
+                LOGGER.debug(mensaje);
+            }
+        }
     }
 
     /**
@@ -130,7 +262,7 @@ public class DomW3cParser {
         if (Fn.nvl(xml,"").isEmpty()){
             return null;
         }
-        DocumentBuilder builder = FACTORY.get().newDocumentBuilder();
+        DocumentBuilder builder = newDocumentBuilder();
         InputStream stream;
         String charSet = getXmlFileCharSet(xml);
         if (!charSet.isEmpty()) {
@@ -153,7 +285,7 @@ public class DomW3cParser {
     public static Document loadXml(InputStream xml)
             throws ParserConfigurationException, SAXException, IOException {
 
-        DocumentBuilder builder = FACTORY.get().newDocumentBuilder();
+        DocumentBuilder builder = newDocumentBuilder();
         return builder.parse(xml);
     }
 
@@ -494,6 +626,16 @@ public class DomW3cParser {
         String indent_amount = Fn.nvl(properties.get("indent_amount"),"10");
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        //Solo serializa un DOM ya leído, pero es la otra fábrica JAXP del
+        //parser: sin acceso externo a DTD ni hojas de estilo (plan XMLSEC).
+        for (String atributo : new String[]{XMLConstants.ACCESS_EXTERNAL_DTD,
+            XMLConstants.ACCESS_EXTERNAL_STYLESHEET}) {
+            try {
+                transformerFactory.setAttribute(atributo, "");
+            } catch (RuntimeException ex) {
+                avisarNoAdmitida(transformerFactory, atributo, false);
+            }
+        }
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, indent);
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", indent_amount);
