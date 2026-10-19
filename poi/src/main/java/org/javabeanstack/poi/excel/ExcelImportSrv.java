@@ -99,6 +99,17 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     private transient Workbook excelWorkbook;
 
     /**
+     * Hoja a procesar por nombre; tiene prioridad sobre {@link #sheetIndex}.
+     */
+    private String sheetName;
+
+    /**
+     * Hoja a procesar por posición, <b>base 0</b> como en POI; {@code null} =
+     * la primera.
+     */
+    private Integer sheetIndex;
+
+    /**
      * Indica si los errores deben revisarse antes de importar (ver la guarda
      * de revisión previa en {@link #importData()}).
      */
@@ -481,6 +492,136 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     }
 
     /**
+     * Nombre de la hoja a procesar.
+     *
+     * @return el nombre, o {@code null} si la hoja se elige por posición
+     * ({@link #getSheetIndex()}).
+     */
+    public String getSheetName() {
+        return sheetName;
+    }
+
+    /**
+     * Asigna la hoja a procesar por su nombre; tiene prioridad sobre
+     * {@link #setSheetIndex(Integer)}.
+     *
+     * @param sheetName nombre de la hoja; {@code null} o vacío para elegirla
+     * por posición.
+     */
+    public void setSheetName(String sheetName) {
+        this.sheetName = sheetName;
+    }
+
+    /**
+     * Posición de la hoja a procesar, <b>base 0</b> (la convención de POI).
+     *
+     * @return la posición, o {@code null} para la primera hoja.
+     */
+    public Integer getSheetIndex() {
+        return sheetIndex;
+    }
+
+    /**
+     * Asigna la hoja a procesar por su posición, <b>base 0</b>. Solo se usa si
+     * no hay nombre de hoja ({@link #getSheetName()}).
+     *
+     * @param sheetIndex posición base 0; {@code null} para la primera hoja.
+     */
+    public void setSheetIndex(Integer sheetIndex) {
+        this.sheetIndex = sheetIndex;
+    }
+
+    /**
+     * Ubica en el libro asignado la hoja a procesar: por nombre
+     * ({@link #getSheetName()}) si se indicó, si no por posición
+     * ({@link #getSheetIndex()}, base 0) y, sin ninguna de las dos, la
+     * primera. Es el único punto en que se elige la hoja: lo usan las dos
+     * pasadas ({@link #checkValidation(Sheet)} e {@link #importData()}) y las
+     * subclases para leer la fila de encabezados, de modo que validan e
+     * importan siempre la misma hoja. Las subclases pueden sobrescribir los
+     * getters para tomar la hoja de otra fuente (p. ej. la configuración de
+     * la pantalla).
+     *
+     * @return la hoja; nunca {@code null}.
+     * @throws IllegalStateException si no se asignó el libro o no tiene hojas.
+     * @throws IllegalArgumentException si la hoja pedida no existe; el mensaje
+     * nombra la hoja pedida y las disponibles.
+     */
+    public Sheet resolveSheet() {
+        return findSheet(getExcelWorkbook(), getSheetName(), getSheetIndex());
+    }
+
+    /**
+     * Ubica una hoja en un libro con las reglas de {@link #resolveSheet()}:
+     * por nombre (sin distinguir mayúsculas, como Excel y
+     * {@link Workbook#getSheet(String)}) si se indica, si no por posición
+     * base 0 y, sin ninguna, la primera. Es la misma regla y los mismos
+     * mensajes para quien muestre la hoja antes de procesar (p. ej. el
+     * asistente de carga).
+     *
+     * @param workbook libro Excel.
+     * @param name nombre de la hoja; {@code null} o vacío para usar la
+     * posición.
+     * @param index posición base 0; {@code null} para la primera.
+     * @return la hoja; nunca {@code null}.
+     * @throws IllegalStateException si el libro es nulo o no tiene hojas.
+     * @throws IllegalArgumentException si la hoja pedida no existe; el mensaje
+     * nombra la hoja pedida y las disponibles.
+     */
+    public static Sheet findSheet(Workbook workbook, String name, Integer index) {
+        if (workbook == null) {
+            throw new IllegalStateException("No se definio la planilla a procesar");
+        }
+        int sheets = workbook.getNumberOfSheets();
+        if (sheets == 0) {
+            throw new IllegalStateException("La planilla no tiene hojas para procesar");
+        }
+        if (name != null && !name.trim().isEmpty()) {
+            Sheet sheet = workbook.getSheet(name.trim());
+            if (sheet == null) {
+                throw new IllegalArgumentException("La planilla no tiene la hoja «" + name.trim()
+                        + "». Hojas: " + String.join(", ", getSheetNames(workbook)));
+            }
+            return sheet;
+        }
+        int position = Fn.nvl(index, 0);
+        if (position < 0 || position >= sheets) {
+            throw new IllegalArgumentException("La planilla tiene " + sheets + " hoja(s); se pidió la "
+                    + (position + 1) + ". Hojas: " + String.join(", ", getSheetNames(workbook)));
+        }
+        return workbook.getSheetAt(position);
+    }
+
+    /**
+     * Descarta la revisión previa ({@link #checkValidation(Sheet)}): la
+     * siguiente {@link #importData()} vuelve a leer y validar la planilla. Se
+     * llama cuando cambia lo que se va a importar después de validar (otra
+     * hoja u otro archivo); si no, la importación grabaría las filas leídas
+     * de la hoja anterior.
+     */
+    public void invalidateReview() {
+        errorsReviewed = false;
+        dataRows = new ArrayList();
+        dataRowsError = new ArrayList();
+    }
+
+    /**
+     * Nombres de las hojas de un libro, en orden.
+     *
+     * @param workbook libro Excel.
+     * @return lista de nombres; vacía si el libro es nulo.
+     */
+    public static List<String> getSheetNames(Workbook workbook) {
+        List<String> names = new ArrayList<>();
+        if (workbook != null) {
+            for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+                names.add(workbook.getSheetName(i));
+            }
+        }
+        return names;
+    }
+
+    /**
      * Retorna los registros que no pudieron procesarse por contener errores de
      * validación o conversión.
      *
@@ -575,8 +716,8 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * los errores antes de importar) el método no hace nada: la lectura y la
      * validación completa se realizan recién en {@link #importData()}.
      *
-     * @param sheet hoja a procesar; si es {@code null} se utiliza la primera
-     * hoja del libro asignado.
+     * @param sheet hoja a procesar; si es {@code null} se utiliza la de
+     * {@link #resolveSheet()} (la primera, si no se indicó otra).
      */
     @Override
     public void checkValidation(Sheet sheet) {
@@ -616,8 +757,15 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * solo convierte las filas: los hooks y la validación corren después, en el
      * bucle de grabación.
      *
-     * @param sheet hoja a procesar; si es {@code null} se utiliza la primera
-     * hoja del libro asignado con {@link #setExcelWorkbook(Workbook)}.
+     * <p>
+     * Se leen las filas <b>posteriores</b> a la de encabezados
+     * ({@code getHeaderRowIndex()}): las de arriba (títulos, logos) no son
+     * datos, y el límite {@code EXCEL_IMPORT_ROWS_LIMIT} cuenta desde la
+     * primera fila de datos.
+     *
+     * @param sheet hoja a procesar; si es {@code null} se utiliza la de
+     * {@link #resolveSheet()} sobre el libro asignado con
+     * {@link #setExcelWorkbook(Workbook)}.
      * @return registros de datos convertidos; lista vacía si la planilla no
      * tiene filas de datos.
      * @throws Exception si no se asignó el procesador o la planilla, o si la
@@ -634,15 +782,9 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         if (processor == null) {
             throw new Exception("No se definio el processor");
         }
-        //Planilla a procesar (si no se indica, se toma la primera hoja del libro)
+        //Planilla a procesar (si no se indica, la que resuelve la configuración)
         if (sheet == null) {
-            if (getExcelWorkbook() == null) {
-                throw new Exception("No se definio la planilla a procesar");
-            }
-            sheet = getExcelWorkbook().getSheetAt(0);
-        }
-        if (sheet == null) {
-            throw new Exception("La planilla no tiene hojas para procesar");
+            sheet = resolveSheet();
         }
         //Posiciona el processor en la fila de encabezados y valida la estructura
         processor.setRow(sheet.getRow(processor.getHeaderRowIndex()));
@@ -656,8 +798,10 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             rowCount = Fn.nvl(appConfig.getSystemParam("EXCEL_IMPORT_ROWS_LIMIT").getValueNumber().intValue(), 5000);
         }
         T source;
-        int firstRow = 0;
-        int lastRow = (rowCount <= 0) ? sheet.getLastRowNum() : firstRow + rowCount - 1;
+        //Las filas de datos empiezan después de la de encabezados (E0-01 de XLSSEQ).
+        int firstRow = processor.getHeaderRowIndex() + 1;
+        int lastRow = (rowCount <= 0) ? sheet.getLastRowNum()
+                : Math.min(sheet.getLastRowNum(), firstRow + rowCount - 1);
         rowsReadedCount = 0;
         //Validación de la lógica de negocios solo si se pidió revisar los
         //errores antes de importar y aún no se hizo la revisión.
@@ -665,10 +809,6 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         IDataRow target;
         String sessionId = checkBusinessLogic ? getUserSession().getSessionId() : null;
         for (int r = firstRow; r <= lastRow; r++) {
-            // No se procesa la fila de encabezados
-            if (r == processor.getHeaderRowIndex()) {
-                continue;
-            }
             Row row = sheet.getRow(r);
             if (row == null) {
                 continue;

@@ -27,6 +27,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -106,6 +107,111 @@ public class ExcelImportSrvTest {
             assertEquals(2, data.size());
             assertEquals("u1", data.get(0).getCode());
             assertEquals("User One", data.get(0).getFullName());
+            assertEquals("u2", data.get(1).getCode());
+            assertTrue(srv.getDataRowsError().isEmpty());
+        }
+    }
+
+    // ---- Hoja a procesar y filas sobre la cabecera (plan XLSSEQ de Maker, Fase 2) ----------
+
+    /**
+     * Procesador con la fila de encabezados en la posición indicada (base 0).
+     */
+    private IExcelRowProcessor<AppUser> processor(Row row, int headerRowIndex) {
+        return new ExcelRowProcessor<AppUser>(row, AppUser.class, (Map<String, String>) null,
+                headerRowIndex, null, null, null) {
+        };
+    }
+
+    /**
+     * Libro con tres hojas: «Portada» (sin datos), «Usuarios» (2 títulos, la
+     * cabecera en la fila 3 de Excel y dos filas de datos) y «Otros» (una
+     * fila de datos).
+     */
+    private Workbook buildWorkbookMultiHoja() {
+        Workbook wb = new XSSFWorkbook();
+        wb.createSheet("Portada").createRow(0).createCell(0).setCellValue("Planilla de prueba");
+        Sheet usuarios = wb.createSheet("Usuarios");
+        usuarios.createRow(0).createCell(0).setCellValue("code");      // título que parece dato
+        usuarios.createRow(1).createCell(0).setCellValue("Listado");
+        Row header = usuarios.createRow(2);
+        header.createCell(0).setCellValue("code");
+        header.createCell(1).setCellValue("fullName");
+        Row r1 = usuarios.createRow(3);
+        r1.createCell(0).setCellValue("u1");
+        r1.createCell(1).setCellValue("User One");
+        Row r2 = usuarios.createRow(4);
+        r2.createCell(0).setCellValue("u2");
+        r2.createCell(1).setCellValue("User Two");
+        Sheet otros = wb.createSheet("Otros");
+        Row h = otros.createRow(0);
+        h.createCell(0).setCellValue("code");
+        h.createCell(1).setCellValue("fullName");
+        Row o1 = otros.createRow(1);
+        o1.createCell(0).setCellValue("o1");
+        o1.createCell(1).setCellValue("Other");
+        return wb;
+    }
+
+    @Test
+    public void testResolveSheetPorNombrePosicionYPrimera() throws Exception {
+        TestImportSrv srv = new TestImportSrv();
+        try (Workbook wb = buildWorkbookMultiHoja()) {
+            srv.setExcelWorkbook(wb);
+            assertEquals("Portada", srv.resolveSheet().getSheetName(), "sin indicar nada, la primera");
+            srv.setSheetIndex(2);
+            assertEquals("Otros", srv.resolveSheet().getSheetName(), "posición base 0");
+            srv.setSheetName("Usuarios");
+            assertEquals("Usuarios", srv.resolveSheet().getSheetName(), "el nombre gana a la posición");
+            assertEquals(List.of("Portada", "Usuarios", "Otros"), ExcelImportSrv.getSheetNames(wb));
+        }
+    }
+
+    @Test
+    public void testResolveSheetInexistenteNombraLasHojas() throws Exception {
+        TestImportSrv srv = new TestImportSrv();
+        try (Workbook wb = buildWorkbookMultiHoja()) {
+            srv.setExcelWorkbook(wb);
+            srv.setSheetName("Monedas");
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, srv::resolveSheet);
+            assertEquals("La planilla no tiene la hoja «Monedas». Hojas: Portada, Usuarios, Otros", ex.getMessage());
+            srv.setSheetName(null);
+            srv.setSheetIndex(3);
+            ex = assertThrows(IllegalArgumentException.class, srv::resolveSheet);
+            assertEquals("La planilla tiene 3 hoja(s); se pidió la 4. Hojas: Portada, Usuarios, Otros", ex.getMessage());
+        }
+        TestImportSrv sinLibro = new TestImportSrv();
+        assertThrows(IllegalStateException.class, sinLibro::resolveSheet);
+    }
+
+    @Test
+    public void testFindSheetSinDistinguirMayusculasEInvalidateReview() throws Exception {
+        try (Workbook wb = buildWorkbookMultiHoja()) {
+            assertEquals("Usuarios", ExcelImportSrv.findSheet(wb, "usuarios", null).getSheetName());
+            assertEquals("Otros", ExcelImportSrv.findSheet(wb, " ", 2).getSheetName());
+        }
+        TestImportSrv srv = new TestImportSrv();
+        srv.getDataRows().add(new AppUser());
+        srv.invalidateReview();
+        assertFalse(srv.getErrorsReviewed());
+        assertTrue(srv.getDataRows().isEmpty());
+    }
+
+    @Test
+    public void testLecturaUsaLaHojaResueltaYSaltaLasFilasSobreLaCabecera() throws Exception {
+        TestImportSrv srv = new TestImportSrv();
+        try (Workbook wb = buildWorkbookMultiHoja()) {
+            srv.setExcelWorkbook(wb);
+            srv.setSheetName("Usuarios");
+            srv.setExcelRowProcessor(processor(wb.getSheet("Usuarios").getRow(2), 2));
+            srv.setCheckBeforeErrors(false);
+
+            List<AppUser> data = srv.readSheet(null);
+
+            //E0-01: las dos filas de arriba de la cabecera no se leen como datos.
+            assertEquals(2, data.size());
+            assertEquals(2, srv.getRowsReadedCount());
+            assertEquals("u1", data.get(0).getCode());
             assertEquals("u2", data.get(1).getCode());
             assertTrue(srv.getDataRowsError().isEmpty());
         }
