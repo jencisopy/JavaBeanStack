@@ -314,6 +314,12 @@ public class ExcelImportSrvTest {
         final List<IDataRow> deleted = new ArrayList<>();
         /** Respuesta del gancho de autorización de bajas. */
         boolean deleteAuthorized = true;
+        /** Errores que devuelve {@code checkDataRow} para una baja (vacío = válida). */
+        Map<String, org.javabeanstack.error.IErrorInfo> deleteCheckErrors = new HashMap<>();
+        /** Si {@code checkAndSave} rechaza la baja. */
+        boolean deleteFails = false;
+        /** Empresa del existente {@code u1} (null = sin empresa). */
+        Long companyOfU1;
         int lookups = 0;
 
         @Override
@@ -338,6 +344,9 @@ public class ExcelImportSrvTest {
                                 throw new IllegalStateException(e);
                             }
                         case "checkDataRow":
+                            if (((IDataRow) args[1]).getAction() == IDataRow.DELETE) {
+                                return new HashMap<>(deleteCheckErrors);
+                            }
                             return new HashMap<>();
                         case "findById":
                             lookups++;
@@ -361,6 +370,7 @@ public class ExcelImportSrvTest {
                                 existing.setCode("u1");
                                 existing.setFullName("Nombre previo");
                                 existing.setEmail1("previo@dominio.com");
+                                existing.setIdcompany(companyOfU1);
                                 if (memberOfU1 != null) {
                                     existing.getUserMemberList().add(memberOfU1);
                                 }
@@ -371,6 +381,9 @@ public class ExcelImportSrvTest {
                             updated.add((IDataRow) args[1]);
                             return stub(org.javabeanstack.data.IDataResult.class);
                         case "checkAndSave":
+                            if (deleteFails) {
+                                return failedResult("La tabla tiene registros relacionados");
+                            }
                             deleted.add((IDataRow) args[1]);
                             return stub(org.javabeanstack.data.IDataResult.class);
                         default:
@@ -402,6 +415,49 @@ public class ExcelImportSrvTest {
     }
 
     // ---- Operaciones permitidas y bajas por marca (plan XLSOPS de Maker) -------------
+
+    /** Resultado de grabación fallido con un error genérico. */
+    private static org.javabeanstack.data.IDataResult failedResult(String message) {
+        return (org.javabeanstack.data.IDataResult) Proxy.newProxyInstance(
+                org.javabeanstack.data.IDataResult.class.getClassLoader(),
+                new Class[]{org.javabeanstack.data.IDataResult.class}, (proxy, method, args) -> {
+                    switch (method.getName()) {
+                        case "isSuccessFul":
+                            return false;
+                        case "getErrorsMap":
+                            Map<String, org.javabeanstack.error.IErrorInfo> errors = new HashMap<>();
+                            errors.put("datageneric", new org.javabeanstack.error.ErrorInfo(message, 50000, "datageneric"));
+                            return errors;
+                        default:
+                            Class<?> type = method.getReturnType();
+                            if (type == boolean.class || type == Boolean.class) {
+                                return false;
+                            }
+                            return null;
+                    }
+                });
+    }
+
+    /**
+     * Planilla para las bajas con valores a medida: cabeceras y filas tal cual.
+     */
+    private Workbook buildWorkbook(String[] cabeceras, String[]... filas) {
+        Workbook wb = new XSSFWorkbook();
+        Sheet sheet = wb.createSheet("data");
+        Row header = sheet.createRow(0);
+        for (int c = 0; c < cabeceras.length; c++) {
+            if (cabeceras[c] != null) {
+                header.createCell(c).setCellValue(cabeceras[c]);
+            }
+        }
+        for (int i = 0; i < filas.length; i++) {
+            Row row = sheet.createRow(i + 1);
+            for (int c = 0; c < filas[i].length; c++) {
+                row.createCell(c).setCellValue(filas[i][c]);
+            }
+        }
+        return wb;
+    }
 
     /**
      * Planilla con la columna de marca de baja «accion»: u1 marcada con «b»
@@ -544,6 +600,243 @@ public class ExcelImportSrvTest {
             sinPermiso.checkValidation(null);
             assertEquals(1, sinPermiso.getDataRowsError().size());
             assertTrue(sinPermiso.getDataRowsError().get(0).getErrorMsg().contains("No está autorizado para eliminar"));
+        }
+    }
+
+    /**
+     * E-01: una fila marcada solo necesita los valores que ubican el registro;
+     * una columna obligatoria vacía que no hace a la clave no frena la baja. Si
+     * el registro no aparece, se informa junto con los errores de lectura.
+     */
+    @Test
+    public void testBajaNoExigeLasColumnasObligatoriasAjenasALaClave() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName", "accion"},
+                new String[]{"u1", "", "B"}, new String[]{"", "", "B"})) {
+            srv.setExcelWorkbook(wb);
+            ExcelColumns columns = new ExcelColumns();
+            columns.add("code", "code").require(ColumnRequirement.VALUE);
+            columns.add("fullName", "fullName").require(ColumnRequirement.VALUE);
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, columns) {
+            });
+            srv.setAllowDelete(true);
+            srv.checkValidation(null);
+            assertEquals(1, srv.getDataRowsError().size(), String.valueOf(srv.getDataRowsError()));
+            String msg = srv.getDataRowsError().get(0).getErrorMsg();
+            assertTrue(msg.contains("«code» no puede estar vacía"), msg);
+            assertTrue(msg.contains(ExcelImportSrv.DELETE_NOT_FOUND), msg);
+            srv.importData();
+            assertEquals(1, srv.getRowsDeletedCount(), "u1 se elimina aunque falte fullName");
+        }
+    }
+
+    /**
+     * E-02: la revisión previa valida la baja con la acción DELETE, así la
+     * grilla muestra lo que el servicio rechazaría al grabar.
+     */
+    @Test
+    public void testRevisionPreviaValidaLaBajaConDelete() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.deleteCheckErrors.put("iduser", new org.javabeanstack.error.ErrorInfo(
+                "No se puede eliminar: tiene movimientos", 50000, "iduser"));
+        try (Workbook wb = buildWorkbookConBajas(true, false)) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+            srv.checkValidation(null);
+            assertEquals(1, srv.getDataRowsError().size());
+            assertTrue(srv.getDataRowsError().get(0).getErrorMsg().contains("tiene movimientos"));
+            srv.importData();
+            assertTrue(srv.deleted.isEmpty(), "la baja rechazada en la revisión no se intenta");
+            assertEquals(1, srv.updated.size(), "u2, válida, se graba igual");
+        }
+    }
+
+    /**
+     * E-03: el registro de otra empresa (p. ej. resuelto en un catálogo
+     * compartido) no se elimina.
+     */
+    @Test
+    public void testBajaDeOtraEmpresaEsError() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.companyOfU1 = 5L;
+        try (Workbook wb = buildWorkbookConBajas(true, false)) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+            srv.checkValidation(null);
+            assertEquals(1, srv.getDataRowsError().size());
+            assertEquals(ExcelImportSrv.DELETE_OTHER_COMPANY, srv.getDataRowsError().get(0).getErrorMsg().trim());
+        }
+    }
+
+    /** Cabecera con empresa propia (como una moneda). */
+    public static class Cabecera extends org.javabeanstack.data.DataRow {
+        private Long idempresa;
+
+        public Long getIdempresa() {
+            return idempresa;
+        }
+
+        public void setIdempresa(Long idempresa) {
+            this.idempresa = idempresa;
+        }
+    }
+
+    /** Detalle sin empresa propia (como una cotización de una moneda). */
+    public static class Detalle extends org.javabeanstack.data.DataRow {
+        @jakarta.persistence.ManyToOne
+        private Cabecera cabecera;
+
+        public Cabecera getCabecera() {
+            return cabecera;
+        }
+
+        public void setCabecera(Cabecera cabecera) {
+            this.cabecera = cabecera;
+        }
+    }
+
+    /** Servicio con una sesión de empresa de datos 50 (la máscara) y de catálogo 7. */
+    static ExistingRowSrv conSesion() {
+        return new ExistingRowSrv() {
+            @Override
+            protected IUserSession getUserSession() {
+                return (IUserSession) Proxy.newProxyInstance(IUserSession.class.getClassLoader(),
+                        new Class[]{IUserSession.class}, (proxy, method, args) -> {
+                            switch (method.getName()) {
+                                case "getIdCompany":
+                                    return 50L;
+                                case "getCompany":
+                                    return Proxy.newProxyInstance(org.javabeanstack.model.IAppCompany.class.getClassLoader(),
+                                            new Class[]{org.javabeanstack.model.IAppCompany.class},
+                                            (p2, m2, a2) -> "getIdcompany".equals(m2.getName()) ? 7L : null);
+                                default:
+                                    return null;
+                            }
+                        });
+            }
+        };
+    }
+
+    /**
+     * E-04/I-04: la empresa se busca en {@code idempresa} (contra la máscara),
+     * en {@code idcompany} (contra el id del catálogo) o, si la entidad no
+     * tiene ninguno, en sus asociaciones {@code @ManyToOne}.
+     */
+    @Test
+    public void testEmpresaDelRegistroAEliminar() {
+        ExistingRowSrv srv = conSesion();
+        AppUser deCatalogo = new AppUser();
+        deCatalogo.setIdcompany(7L);
+        assertNull(srv.checkDeleteRow("s", deCatalogo), "idcompany contra la empresa del catálogo, no la máscara");
+        deCatalogo.setIdcompany(50L);
+        assertEquals(ExcelImportSrv.DELETE_OTHER_COMPANY, srv.checkDeleteRow("s", deCatalogo));
+
+        Cabecera propia = new Cabecera();
+        propia.setIdempresa(50L);
+        Cabecera ajena = new Cabecera();
+        ajena.setIdempresa(41L);
+        assertNull(srv.checkDeleteRow("s", propia));
+        assertEquals(ExcelImportSrv.DELETE_OTHER_COMPANY, srv.checkDeleteRow("s", ajena));
+
+        Detalle detalle = new Detalle();
+        detalle.setCabecera(propia);
+        assertNull(srv.checkDeleteRow("s", detalle), "detalle de una cabecera propia");
+        detalle.setCabecera(ajena);
+        assertEquals(ExcelImportSrv.DELETE_OTHER_COMPANY, srv.checkDeleteRow("s", detalle),
+                "detalle de una cabecera de otra empresa");
+        detalle.setCabecera(null);
+        assertNull(srv.checkDeleteRow("s", detalle), "sin cabecera no hay con qué comparar");
+    }
+
+    /**
+     * Baja sin revisión previa: el permiso, la existencia y el contador se
+     * resuelven en la importación; los eliminados cuentan como procesados.
+     */
+    @Test
+    public void testBajaSinRevisionPrevia() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbookConBajas(true, true)) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+            srv.setCheckBeforeErrors(false);
+            srv.importData();
+            assertEquals(1, srv.getRowsDeletedCount());
+            assertEquals(1, srv.getRowsMigratedCount(), "u2 se da de alta");
+            assertEquals(1, srv.getDataRowsError().size());
+            assertTrue(srv.getDataRowsError().get(0).getErrorMsg().contains(ExcelImportSrv.DELETE_NOT_FOUND));
+            assertEquals(3, srv.getRowsProcessedCount());
+        }
+        ExistingRowSrv sinPermiso = new ExistingRowSrv();
+        sinPermiso.deleteAuthorized = false;
+        try (Workbook wb = buildWorkbookConBajas(true, false)) {
+            sinPermiso.setExcelWorkbook(wb);
+            sinPermiso.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            sinPermiso.setAllowDelete(true);
+            sinPermiso.setCheckBeforeErrors(false);
+            sinPermiso.importData();
+            assertTrue(sinPermiso.deleted.isEmpty());
+            assertTrue(sinPermiso.getDataRowsError().get(0).getErrorMsg().contains(ExcelImportSrv.DELETE_NOT_AUTHORIZED));
+        }
+    }
+
+    /** Una baja que el servicio rechaza al grabar es error de fila y no cuenta. */
+    @Test
+    public void testBajaRechazadaAlGrabar() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.deleteFails = true;
+        try (Workbook wb = buildWorkbookConBajas(true, false)) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+            srv.checkValidation(null);
+            srv.importData();
+            assertEquals(0, srv.getRowsDeletedCount());
+            assertEquals(1, srv.getDataRowsError().size());
+            assertTrue(srv.getDataRowsError().get(0).getErrorMsg().contains("registros relacionados"));
+        }
+    }
+
+    /**
+     * La marca y su cabecera se comparan sin espacios alrededor ni mayúsculas;
+     * sin altas, una fila marcada inexistente es «no existe» (la baja gana).
+     */
+    @Test
+    public void testMarcaConEspaciosYSinAltas() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName", " Accion "},
+                new String[]{"u1", "User One", " b "}, new String[]{"u9", "Nadie", "B"})) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+            srv.setAllowInsert(false);
+            srv.checkValidation(null);
+            assertEquals(1, srv.getDataRowsError().size());
+            assertTrue(srv.getDataRowsError().get(0).getErrorMsg().contains(ExcelImportSrv.DELETE_NOT_FOUND));
+            srv.importData();
+            assertEquals(1, srv.getRowsDeletedCount());
+        }
+    }
+
+    /**
+     * Como en {@code checkMetaData}, la primera cabecera en blanco termina las
+     * columnas: una «accion» después de ella no marca nada.
+     */
+    @Test
+    public void testColumnaDeMarcaDespuesDeUnaCabeceraEnBlanco() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName", null, "accion"},
+                new String[]{"u1", "User One", "", "B"})) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+            srv.checkValidation(null);
+            srv.importData();
+            assertTrue(srv.deleted.isEmpty());
+            assertEquals(1, srv.getRowsExistCount());
         }
     }
 

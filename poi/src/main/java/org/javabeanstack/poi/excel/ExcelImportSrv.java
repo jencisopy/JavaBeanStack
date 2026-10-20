@@ -180,6 +180,21 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     public static final String DELETE_MARK = "EXCEL_DELETE_MARK";
 
     /**
+     * Propiedad de la fila marcada para eliminar con los errores de lectura
+     * que se dejaron de lado: se informan solo si el registro no aparece.
+     */
+    static final String DELETE_READ_ERRORS = "EXCEL_DELETE_READ_ERRORS";
+
+    /** Mensaje de la fila marcada sin permiso de baja. */
+    static final String DELETE_NOT_AUTHORIZED = "No está autorizado para eliminar registros";
+
+    /** Mensaje de la fila marcada cuyo registro no existe. */
+    static final String DELETE_NOT_FOUND = "No existe el registro a eliminar";
+
+    /** Mensaje de la fila marcada cuyo registro es de otra empresa. */
+    static final String DELETE_OTHER_COMPANY = "El registro a eliminar pertenece a otra empresa";
+
+    /**
      * Mensaje de error del último proceso de importación.
      */
     private String errorMessage;
@@ -611,6 +626,109 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     }
 
     /**
+     * Verificación propia del registro que se va a eliminar, además de las
+     * reglas del servicio de datos. La base rechaza el registro de <b>otra
+     * empresa</b>: el que resuelve por id la fórmula de la vista puede venir
+     * de un catálogo compartido ({@code fn_empresashared}) y {@code findById}
+     * no filtra por empresa.
+     * <ul>
+     * <li>Si la entidad tiene {@code idempresa}, se compara con
+     * {@code getIdCompany()} de la sesión (la empresa de los datos).</li>
+     * <li>Si tiene {@code idcompany} (tablas del catálogo), con
+     * {@code getCompany().getIdcompany()}: {@code getIdCompany()} devuelve la
+     * máscara, que no es un id del catálogo.</li>
+     * <li>Si no tiene ninguno (un detalle, como la cotización de una moneda),
+     * se mira el {@code idempresa} de sus asociaciones {@code @ManyToOne}, un
+     * nivel: basta una de otra empresa para rechazar la baja.</li>
+     * </ul>
+     * Un valor nulo o que no sea numérico no se puede comparar y no frena la
+     * baja; las demás reglas las aplica el servicio al grabar. No se usa
+     * {@link IDataRow#checkFieldIdcompany}: con uno solo de los dos atributos
+     * da por buena cualquier empresa (el que falta vale 0).
+     *
+     * @param sessionId identificador de la sesión.
+     * @param existing registro existente que se eliminaría.
+     * @return el mensaje de error, o {@code null} si se puede eliminar.
+     */
+    protected String checkDeleteRow(String sessionId, IDataRow existing) {
+        IUserSession session = getUserSession();
+        if (session == null) {
+            return null;
+        }
+        Long idempresa = session.getIdCompany();
+        Long idcompany = session.getCompany() == null ? null : session.getCompany().getIdcompany();
+        Class<?> type = existing.getClass();
+        if (DataInfo.isFieldExist((Class) type, "idempresa")) {
+            return isOtherCompany(existing.getValue("idempresa"), idempresa) ? DELETE_OTHER_COMPANY : null;
+        }
+        if (DataInfo.isFieldExist((Class) type, "idcompany")) {
+            return isOtherCompany(existing.getValue("idcompany"), idcompany) ? DELETE_OTHER_COMPANY : null;
+        }
+        for (Field field : DataInfo.getDeclaredFields(type)) {
+            if (field.getAnnotation(jakarta.persistence.ManyToOne.class) == null) {
+                continue;
+            }
+            Object parent = existing.getValue(field.getName());
+            if (parent instanceof IDataRow
+                    && DataInfo.isFieldExist((Class) parent.getClass(), "idempresa")
+                    && isOtherCompany(((IDataRow) parent).getValue("idempresa"), idempresa)) {
+                return DELETE_OTHER_COMPANY;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Indica si el valor de empresa de un registro es distinto del de la
+     * sesión; un valor ausente o no numérico no se puede comparar.
+     */
+    private static boolean isOtherCompany(Object value, Long sessionCompany) {
+        return value instanceof Number && sessionCompany != null
+                && ((Number) value).longValue() != sessionCompany;
+    }
+
+    /**
+     * Resuelve el registro que elimina una fila marcada: lo busca por id o por
+     * clave única, aplica {@link #checkDeleteRow} y, si se pide, lo valida con
+     * la acción {@code DELETE} ({@code checkDataRow}), para que la revisión
+     * previa muestre las bajas que el servicio rechazaría al grabar.
+     *
+     * @param sessionId identificador de la sesión.
+     * @param source fila marcada de la vista.
+     * @param check {@code true} para validar con {@code checkDataRow}.
+     * @return el registro con acción {@code DELETE}, o {@code null} si la fila
+     * no se puede eliminar (el error queda en {@code source}).
+     * @throws Exception si falla la conversión de la fila.
+     */
+    @SuppressWarnings("unchecked")
+    private IDataRow resolveDeleteRow(String sessionId, T source, boolean check) throws Exception {
+        IDataRow target = getDataService().copyTo(sessionId, source, getTargetType().getConstructor().newInstance());
+        IDataRow existing = findExistingRow(sessionId, target);
+        if (existing == null) {
+            //Sin registro: se informan también los errores de lectura, que
+            //pueden explicarlo (p. ej. una columna de la clave vacía).
+            Map<String, IErrorInfo> readErrors = (Map<String, IErrorInfo>) source.getProperties().get(DELETE_READ_ERRORS);
+            source.setErrors(readErrors != null ? new HashMap<>(readErrors) : new HashMap<>());
+            source.setErrors(DELETE_NOT_FOUND, deleteColumn, 50000);
+            return null;
+        }
+        String error = checkDeleteRow(sessionId, existing);
+        if (error != null) {
+            source.setErrors(error, deleteColumn, 50000);
+            return null;
+        }
+        existing.setAction(IDataRow.DELETE);
+        if (check) {
+            Map<String, IErrorInfo> errorInfo = getDataService().checkDataRow(sessionId, existing);
+            if (!errorInfo.isEmpty()) {
+                source.setErrors(errorInfo);
+                return null;
+            }
+        }
+        return existing;
+    }
+
+    /**
      * Establece si durante la importación deben sobrescribirse los registros ya
      * existentes. El valor recibido se normaliza con
      * {@code Fn.toLogical} (nulo se interpreta como {@code false}).
@@ -966,6 +1084,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         //Columna de marca de baja: opcional en la planilla; sin ella no se elimina nada.
         int deleteIndex = isAllowDelete() ? findDeleteColumn(sheet.getRow(processor.getHeaderRowIndex())) : -1;
         Boolean deleteAllowed = null;
+        DataFormatter formatter = new DataFormatter();
         for (int r = firstRow; r <= lastRow; r++) {
             Row row = sheet.getRow(r);
             if (row == null) {
@@ -975,32 +1094,36 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             source = processor.process();
             rowsReadedCount++;
             if (source != null) {
-                if (source.getErrors() != null && !source.getErrors().isEmpty()) {
-                    dataRowsError.add(source);
-                    continue;
-                }
-                if (deleteIndex >= 0 && isDeleteMark(row, deleteIndex)) {
+                if (deleteIndex >= 0 && isDeleteMark(row, deleteIndex, formatter)) {
+                    //Una baja solo necesita los valores que ubican el registro:
+                    //los errores de lectura (p. ej. una columna obligatoria vacía
+                    //que no hace a la clave) no la frenan; se guardan por si el
+                    //registro no aparece.
                     source.getProperties().put(DELETE_MARK, Boolean.TRUE);
+                    source.getProperties().put(DELETE_READ_ERRORS, new HashMap<>(source.getErrors()));
+                    source.setErrors(new HashMap<>());
                     if (checkBusinessLogic) {
                         if (deleteAllowed == null) {
                             deleteAllowed = checkDeleteAuthorization();
                         }
                         if (!deleteAllowed) {
-                            source.setErrors("No está autorizado para eliminar registros", deleteColumn, 50000);
+                            source.setErrors(DELETE_NOT_AUTHORIZED, deleteColumn, 50000);
                             dataRowsError.add(source);
                             continue;
                         }
                         if (!onBeforeRowConvert(source)) {
                             continue;
                         }
-                        target = getDataService().copyTo(sessionId, source, getTargetType().getConstructor().newInstance());
-                        if (findExistingRow(sessionId, target) == null) {
-                            source.setErrors("No existe el registro a eliminar", deleteColumn, 50000);
+                        if (resolveDeleteRow(sessionId, source, true) == null) {
                             dataRowsError.add(source);
                             continue;
                         }
                     }
                     dataRows.add(source);
+                    continue;
+                }
+                if (source.getErrors() != null && !source.getErrors().isEmpty()) {
+                    dataRowsError.add(source);
                     continue;
                 }
                 // Verificación de la logica de negocios si es que asi esta seteado en la importacion
@@ -1051,10 +1174,18 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         if (header == null || deleteColumn == null || deleteColumn.trim().isEmpty()) {
             return -1;
         }
-        for (Cell cell : header) {
+        //Mismo criterio que checkMetaData: la primera cabecera en blanco
+        //marca el fin de las columnas útiles.
+        short last = header.getLastCellNum();
+        for (int c = 0; c < last; c++) {
+            Cell cell = header.getCell(c, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+            if (cell.getCellType() == CellType.BLANK
+                    || (cell.getCellType() == CellType.STRING && cell.getStringCellValue().trim().isEmpty())) {
+                break;
+            }
             if (cell.getCellType() == CellType.STRING
                     && deleteColumn.trim().equalsIgnoreCase(cell.getStringCellValue().trim())) {
-                return cell.getColumnIndex();
+                return c;
             }
         }
         return -1;
@@ -1063,12 +1194,12 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     /**
      * Indica si la celda de la columna de marca tiene el valor de baja.
      */
-    private boolean isDeleteMark(Row row, int index) {
+    private boolean isDeleteMark(Row row, int index, DataFormatter formatter) {
         Cell cell = row.getCell(index);
         if (cell == null) {
             return false;
         }
-        String value = new DataFormatter().formatCellValue(cell);
+        String value = formatter.formatCellValue(cell);
         return value != null && deleteValue != null && deleteValue.trim().equalsIgnoreCase(value.trim());
     }
 
@@ -1418,30 +1549,25 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             int erroresPrevios = getDataRowsError().size();
             Boolean deleteAllowed = null;
             for (T source : getDataRows()) {
-                if (isMarkedForDelete(source)) {
-                    //Baja de una fila marcada (solo con allowDelete).
-                    if (!isAllowDelete()) {
-                        continue;
-                    }
+                if (isAllowDelete() && isMarkedForDelete(source)) {
+                    //Baja de una fila marcada.
                     if (deleteAllowed == null) {
                         deleteAllowed = checkDeleteAuthorization();
                     }
                     if (!deleteAllowed) {
-                        source.setErrors("No está autorizado para eliminar registros", deleteColumn, 50000);
+                        source.setErrors(DELETE_NOT_AUTHORIZED, deleteColumn, 50000);
                         getDataRowsError().add(source);
                         continue;
                     }
                     if (!onBeforeRowConvert(source)) {
                         continue;
                     }
-                    target = getDataService().copyTo(sessionId, source, getTargetType().getConstructor().newInstance());
-                    IDataRow existing = findExistingRow(sessionId, target);
+                    //checkAndSave valida con la acción DELETE: no hace falta antes.
+                    IDataRow existing = resolveDeleteRow(sessionId, source, false);
                     if (existing == null) {
-                        source.setErrors("No existe el registro a eliminar", deleteColumn, 50000);
                         getDataRowsError().add(source);
                         continue;
                     }
-                    existing.setAction(IDataRow.DELETE);
                     IDataResult deleted = getDataService().checkAndSave(sessionId, existing);
                     if (!deleted.isSuccessFul()) {
                         source.setErrors(deleted.getErrorsMap());
