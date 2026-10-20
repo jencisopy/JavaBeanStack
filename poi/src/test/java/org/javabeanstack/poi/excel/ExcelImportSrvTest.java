@@ -310,7 +310,16 @@ public class ExcelImportSrvTest {
     static class ExistingRowSrv extends ExcelImportSrvTest01 {
 
         final List<IDataRow> updated = new ArrayList<>();
+        /** Entidades que recibe {@code checkAndSave} (las bajas). */
+        final List<IDataRow> deleted = new ArrayList<>();
+        /** Respuesta del gancho de autorización de bajas. */
+        boolean deleteAuthorized = true;
         int lookups = 0;
+
+        @Override
+        protected boolean checkDeleteAuthorization() {
+            return deleteAuthorized;
+        }
         /** Miembro que tiene cargado el existente {@code u1} (null = ninguno). */
         IAppUserMember memberOfU1;
 
@@ -361,6 +370,9 @@ public class ExcelImportSrvTest {
                         case "save":
                             updated.add((IDataRow) args[1]);
                             return stub(org.javabeanstack.data.IDataResult.class);
+                        case "checkAndSave":
+                            deleted.add((IDataRow) args[1]);
+                            return stub(org.javabeanstack.data.IDataResult.class);
                         default:
                             break;
                     }
@@ -386,6 +398,152 @@ public class ExcelImportSrvTest {
         @Override
         protected Class<? extends IDataRow> getTargetType() {
             return AppUser.class;
+        }
+    }
+
+    // ---- Operaciones permitidas y bajas por marca (plan XLSOPS de Maker) -------------
+
+    /**
+     * Planilla con la columna de marca de baja «accion»: u1 marcada con «b»
+     * (sin distinguir mayúsculas), u2 sin marca, u9 marcada y sin existir.
+     */
+    private Workbook buildWorkbookConBajas(boolean conColumna, boolean conInexistente) {
+        Workbook wb = new XSSFWorkbook();
+        Sheet sheet = wb.createSheet("data");
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("code");
+        header.createCell(1).setCellValue("fullName");
+        if (conColumna) {
+            header.createCell(2).setCellValue("Accion");
+        }
+        String[][] filas = conInexistente
+                ? new String[][]{{"u1", "User One", "b"}, {"u2", "User Two", ""}, {"u9", "Nadie", "B"}}
+                : new String[][]{{"u1", "User One", "b"}, {"u2", "User Two", ""}};
+        for (int i = 0; i < filas.length; i++) {
+            Row row = sheet.createRow(i + 1);
+            row.createCell(0).setCellValue(filas[i][0]);
+            row.createCell(1).setCellValue(filas[i][1]);
+            if (conColumna) {
+                row.createCell(2).setCellValue(filas[i][2]);
+            }
+        }
+        return wb;
+    }
+
+    @Test
+    public void testAllowUpdateFalseNuncaSobrescribe() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowUpdate(false);
+            srv.setOverWriteData(true);
+            assertFalse(srv.getOverWriteData(), "sin modificaciones, sobrescribir queda apagado");
+            assertTrue(srv.isOverWriteLocked());
+
+            srv.checkValidation(null);
+            srv.importData();
+            assertEquals(1, srv.getRowsExistCount(), "u1 existe y no se toca");
+            assertEquals(1, srv.getRowsMigratedCount());
+            assertEquals(IDataRow.INSERT, srv.updated.get(0).getAction());
+        }
+    }
+
+    @Test
+    public void testAllowInsertFalseSoloActualizaYRechazaLosNuevos() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowInsert(false);
+            srv.setOverWriteData(false);
+            assertTrue(srv.getOverWriteData(), "sin altas, sobrescribir queda forzado");
+            assertTrue(srv.isOverWriteLocked());
+
+            srv.checkValidation(null);
+            assertEquals(1, srv.getDataRowsError().size());
+            assertEquals(ExcelImportSrv.INSERT_NOT_ALLOWED, srv.getDataRowsError().get(0).getErrorMsg().trim());
+            assertEquals("u2", ((AppUser) srv.getDataRowsError().get(0)).getCode());
+
+            srv.importData();
+            assertEquals(1, srv.getRowsMigratedCount());
+            assertEquals(IDataRow.UPDATE, srv.updated.get(0).getAction());
+            assertEquals("u1", ((AppUser) srv.updated.get(0)).getCode());
+        }
+    }
+
+    @Test
+    public void testAllowDeleteEliminaLasFilasMarcadas() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbookConBajas(true, false)) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+
+            srv.checkValidation(null);
+            assertTrue(srv.getDataRowsError().isEmpty(), String.valueOf(srv.getDataRowsError()));
+            assertTrue(ExcelImportSrv.isMarkedForDelete(srv.getDataRows().get(0)));
+
+            srv.importData();
+            assertEquals(1, srv.getRowsDeletedCount());
+            assertEquals(1, srv.deleted.size());
+            assertEquals(IDataRow.DELETE, srv.deleted.get(0).getAction());
+            assertEquals(100L, ((AppUser) srv.deleted.get(0)).getIduser(), "se elimina el existente");
+            assertEquals(1, srv.getRowsMigratedCount(), "u2 se da de alta");
+            assertTrue(srv.getResultLog().contains("Eliminado:"));
+            assertTrue(srv.getResultLog().contains("eliminados: 1"));
+        }
+    }
+
+    @Test
+    public void testSinColumnaDeMarcaNoSeEliminaNada() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbookConBajas(false, false)) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+            srv.checkValidation(null);
+            srv.importData();
+            assertEquals(0, srv.getRowsDeletedCount());
+            assertTrue(srv.deleted.isEmpty());
+            assertEquals(1, srv.getRowsExistCount(), "u1 se trata como una fila más");
+        }
+    }
+
+    @Test
+    public void testMarcaSinAllowDeleteSeIgnora() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbookConBajas(true, false)) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.checkValidation(null);
+            srv.importData();
+            assertTrue(srv.deleted.isEmpty());
+            assertEquals(1, srv.getRowsExistCount());
+        }
+    }
+
+    @Test
+    public void testBajaDeUnInexistenteOSinPermisoEsError() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbookConBajas(true, true)) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowDelete(true);
+            srv.checkValidation(null);
+            assertEquals(1, srv.getDataRowsError().size());
+            assertEquals("u9", ((AppUser) srv.getDataRowsError().get(0)).getCode());
+            assertTrue(srv.getDataRowsError().get(0).getErrorMsg().contains("No existe el registro a eliminar"));
+        }
+        ExistingRowSrv sinPermiso = new ExistingRowSrv();
+        sinPermiso.deleteAuthorized = false;
+        try (Workbook wb = buildWorkbookConBajas(true, false)) {
+            sinPermiso.setExcelWorkbook(wb);
+            sinPermiso.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            sinPermiso.setAllowDelete(true);
+            sinPermiso.checkValidation(null);
+            assertEquals(1, sinPermiso.getDataRowsError().size());
+            assertTrue(sinPermiso.getDataRowsError().get(0).getErrorMsg().contains("No está autorizado para eliminar"));
         }
     }
 

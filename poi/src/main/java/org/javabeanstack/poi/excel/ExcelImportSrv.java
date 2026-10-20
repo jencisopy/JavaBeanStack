@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.Set;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.Dependent;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -141,6 +144,40 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * Indica si la importación debe sobrescribir los registros ya existentes.
      */
     private Boolean overWriteData = false;
+
+    /**
+     * Operaciones que permite la importación: altas y modificaciones por
+     * omisión; bajas no. Sin altas, los registros que no existen quedan con
+     * error; sin modificaciones, los existentes nunca se sobrescriben.
+     */
+    private boolean allowInsert = true;
+    private boolean allowUpdate = true;
+    private boolean allowDelete = false;
+
+    /**
+     * Columna de la planilla que marca las filas a eliminar (solo con
+     * {@link #isAllowDelete()}); es opcional en la planilla: sin ella no se
+     * elimina nada.
+     */
+    private String deleteColumn = DEFAULT_DELETE_COLUMN;
+
+    /** Valor de {@link #deleteColumn} que marca la fila a eliminar. */
+    private String deleteValue = DEFAULT_DELETE_VALUE;
+
+    /** Registros eliminados en la última importación. */
+    private int rowsDeletedCount = 0;
+
+    /** Columna de marca de baja por omisión. */
+    public static final String DEFAULT_DELETE_COLUMN = "accion";
+
+    /** Valor de la marca de baja por omisión. */
+    public static final String DEFAULT_DELETE_VALUE = "B";
+
+    /**
+     * Propiedad de la fila (en {@code getProperties()}) que la marca para
+     * eliminar.
+     */
+    public static final String DELETE_MARK = "EXCEL_DELETE_MARK";
 
     /**
      * Mensaje de error del último proceso de importación.
@@ -299,7 +336,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      */
     @Override
     public int getRowsProcessedCount() {
-        return rowsMigratedCount + rowsExistCount + getRowsErrorCount();
+        return rowsMigratedCount + rowsExistCount + rowsDeletedCount + getRowsErrorCount();
     }
 
     /**
@@ -452,7 +489,125 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      */
     @Override
     public Boolean getOverWriteData() {
+        if (!isAllowUpdate()) {
+            return false;
+        }
+        if (!isAllowInsert()) {
+            //Sin altas, sobrescribir es lo único que tiene sentido.
+            return true;
+        }
         return Fn.toLogical(overWriteData);
+    }
+
+    /**
+     * Indica si la opción «sobrescribir» está fijada por las operaciones
+     * permitidas (sin modificaciones: siempre {@code false}; sin altas:
+     * siempre {@code true}) y el usuario no puede cambiarla.
+     *
+     * @return {@code true} si la opción está fijada.
+     */
+    public boolean isOverWriteLocked() {
+        return !isAllowUpdate() || !isAllowInsert();
+    }
+
+    /**
+     * Indica si la importación da de alta los registros que no existen.
+     *
+     * @return {@code true} por omisión.
+     */
+    public boolean isAllowInsert() {
+        return allowInsert;
+    }
+
+    public void setAllowInsert(boolean allowInsert) {
+        this.allowInsert = allowInsert;
+    }
+
+    /**
+     * Indica si la importación puede modificar (sobrescribir) registros
+     * existentes.
+     *
+     * @return {@code true} por omisión.
+     */
+    public boolean isAllowUpdate() {
+        return allowUpdate;
+    }
+
+    public void setAllowUpdate(boolean allowUpdate) {
+        this.allowUpdate = allowUpdate;
+    }
+
+    /**
+     * Indica si la importación elimina las filas marcadas en la columna
+     * {@link #getDeleteColumn()} con {@link #getDeleteValue()}.
+     *
+     * @return {@code false} por omisión.
+     */
+    public boolean isAllowDelete() {
+        return allowDelete;
+    }
+
+    public void setAllowDelete(boolean allowDelete) {
+        this.allowDelete = allowDelete;
+    }
+
+    /**
+     * Cabecera de la columna que marca las filas a eliminar (sin distinguir
+     * mayúsculas). Opcional en la planilla.
+     *
+     * @return la cabecera; por omisión {@value #DEFAULT_DELETE_COLUMN}.
+     */
+    public String getDeleteColumn() {
+        return deleteColumn;
+    }
+
+    public void setDeleteColumn(String deleteColumn) {
+        this.deleteColumn = deleteColumn;
+    }
+
+    /**
+     * Valor que marca una fila a eliminar (sin distinguir mayúsculas ni
+     * espacios).
+     *
+     * @return el valor; por omisión {@value #DEFAULT_DELETE_VALUE}.
+     */
+    public String getDeleteValue() {
+        return deleteValue;
+    }
+
+    public void setDeleteValue(String deleteValue) {
+        this.deleteValue = deleteValue;
+    }
+
+    /**
+     * Registros eliminados en la última importación.
+     *
+     * @return la cantidad.
+     */
+    public int getRowsDeletedCount() {
+        return rowsDeletedCount;
+    }
+
+    /**
+     * Indica si la fila leída de la planilla está marcada para eliminar.
+     *
+     * @param row fila de la vista.
+     * @return {@code true} si se la marcó con la columna de baja.
+     */
+    public static boolean isMarkedForDelete(IDataRow row) {
+        return row != null && row.getProperties() != null
+                && Boolean.TRUE.equals(row.getProperties().get(DELETE_MARK));
+    }
+
+    /**
+     * Gancho de autorización de las bajas: se consulta una vez por pasada,
+     * antes de la primera fila marcada para eliminar. La base las permite;
+     * las subclases contrastan el permiso de eliminación.
+     *
+     * @return {@code true} si se pueden eliminar registros.
+     */
+    protected boolean checkDeleteAuthorization() {
+        return true;
     }
 
     /**
@@ -808,6 +963,9 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         boolean checkBusinessLogic = !errorsReviewed && getCheckBeforeErrors();
         IDataRow target;
         String sessionId = checkBusinessLogic ? getUserSession().getSessionId() : null;
+        //Columna de marca de baja: opcional en la planilla; sin ella no se elimina nada.
+        int deleteIndex = isAllowDelete() ? findDeleteColumn(sheet.getRow(processor.getHeaderRowIndex())) : -1;
+        Boolean deleteAllowed = null;
         for (int r = firstRow; r <= lastRow; r++) {
             Row row = sheet.getRow(r);
             if (row == null) {
@@ -819,6 +977,30 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             if (source != null) {
                 if (source.getErrors() != null && !source.getErrors().isEmpty()) {
                     dataRowsError.add(source);
+                    continue;
+                }
+                if (deleteIndex >= 0 && isDeleteMark(row, deleteIndex)) {
+                    source.getProperties().put(DELETE_MARK, Boolean.TRUE);
+                    if (checkBusinessLogic) {
+                        if (deleteAllowed == null) {
+                            deleteAllowed = checkDeleteAuthorization();
+                        }
+                        if (!deleteAllowed) {
+                            source.setErrors("No está autorizado para eliminar registros", deleteColumn, 50000);
+                            dataRowsError.add(source);
+                            continue;
+                        }
+                        if (!onBeforeRowConvert(source)) {
+                            continue;
+                        }
+                        target = getDataService().copyTo(sessionId, source, getTargetType().getConstructor().newInstance());
+                        if (findExistingRow(sessionId, target) == null) {
+                            source.setErrors("No existe el registro a eliminar", deleteColumn, 50000);
+                            dataRowsError.add(source);
+                            continue;
+                        }
+                    }
+                    dataRows.add(source);
                     continue;
                 }
                 // Verificación de la logica de negocios si es que asi esta seteado en la importacion
@@ -834,6 +1016,11 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     //sobre el existente, para que la revisión no lo rechace
                     //como duplicado.
                     target = resolveExistingRow(sessionId, source, target);
+                    if (target.getAction() == IDataRow.INSERT && !isAllowInsert()) {
+                        source.setErrors(INSERT_NOT_ALLOWED, "", 50000);
+                        dataRowsError.add(source);
+                        continue;
+                    }
                     //Despues de convertir
                     if (!onAfterRowConvert(source, target)) {
                         continue;
@@ -850,6 +1037,61 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             }
         }
         return dataRows;
+    }
+
+    /** Mensaje de la fila que no existe cuando la importación no permite altas. */
+    static final String INSERT_NOT_ALLOWED = "No existe el registro y la importación no permite altas";
+
+    /**
+     * Ubica en la fila de cabeceras la columna de marca de baja.
+     *
+     * @return el índice de la columna, o {@code -1} si la planilla no la trae.
+     */
+    private int findDeleteColumn(Row header) {
+        if (header == null || deleteColumn == null || deleteColumn.trim().isEmpty()) {
+            return -1;
+        }
+        for (Cell cell : header) {
+            if (cell.getCellType() == CellType.STRING
+                    && deleteColumn.trim().equalsIgnoreCase(cell.getStringCellValue().trim())) {
+                return cell.getColumnIndex();
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Indica si la celda de la columna de marca tiene el valor de baja.
+     */
+    private boolean isDeleteMark(Row row, int index) {
+        Cell cell = row.getCell(index);
+        if (cell == null) {
+            return false;
+        }
+        String value = new DataFormatter().formatCellValue(cell);
+        return value != null && deleteValue != null && deleteValue.trim().equalsIgnoreCase(value.trim());
+    }
+
+    /**
+     * Busca el registro existente de la entidad convertida, por id o por clave
+     * única, sin modificarlo.
+     *
+     * @param sessionId identificador de la sesión.
+     * @param target entidad convertida desde la fila.
+     * @return el registro existente, o {@code null} si no existe o no se pudo
+     * buscar.
+     */
+    protected IDataRow findExistingRow(String sessionId, IDataRow target) {
+        try {
+            if (target.getId() != null) {
+                return getDataService().findById(getTargetType(), sessionId, target.getId());
+            }
+            return getDataService().findByUk(sessionId, target);
+        } catch (Exception e) {
+            logResult("  No se pudo buscar el registro existente ("
+                    + getTargetType().getSimpleName() + "): " + e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -1124,6 +1366,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         importOk = false;
         rowsMigratedCount = 0;
         rowsExistCount = 0;
+        rowsDeletedCount = 0;
         resultLog.setLength(0);
         logResult("Inicio del proceso: " + LocalDateTime.now().format(LOG_TS));
         try {
@@ -1173,7 +1416,42 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             //onAfterRowConvert, o update fallido) también cuenta como error del
             //proceso para el cierre.
             int erroresPrevios = getDataRowsError().size();
+            Boolean deleteAllowed = null;
             for (T source : getDataRows()) {
+                if (isMarkedForDelete(source)) {
+                    //Baja de una fila marcada (solo con allowDelete).
+                    if (!isAllowDelete()) {
+                        continue;
+                    }
+                    if (deleteAllowed == null) {
+                        deleteAllowed = checkDeleteAuthorization();
+                    }
+                    if (!deleteAllowed) {
+                        source.setErrors("No está autorizado para eliminar registros", deleteColumn, 50000);
+                        getDataRowsError().add(source);
+                        continue;
+                    }
+                    if (!onBeforeRowConvert(source)) {
+                        continue;
+                    }
+                    target = getDataService().copyTo(sessionId, source, getTargetType().getConstructor().newInstance());
+                    IDataRow existing = findExistingRow(sessionId, target);
+                    if (existing == null) {
+                        source.setErrors("No existe el registro a eliminar", deleteColumn, 50000);
+                        getDataRowsError().add(source);
+                        continue;
+                    }
+                    existing.setAction(IDataRow.DELETE);
+                    IDataResult deleted = getDataService().checkAndSave(sessionId, existing);
+                    if (!deleted.isSuccessFul()) {
+                        source.setErrors(deleted.getErrorsMap());
+                        getDataRowsError().add(source);
+                    } else {
+                        rowsDeletedCount++;
+                        logResult("  Eliminado: " + getRowLogIdentifier(source));
+                    }
+                    continue;
+                }
                 //Antes de la conversion a la instancia targetType
                 if (!onBeforeRowConvert(source)) {
                     continue;
@@ -1183,6 +1461,12 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                 //Definir tipo de persitencia en la base (INSERT, o UPDATE sobre
                 //el registro existente resuelto por id o por clave única).
                 target = resolveExistingRow(sessionId, source, target);
+                //Si no existe y no se permiten altas.
+                if (target.getAction() == IDataRow.INSERT && !isAllowInsert()) {
+                    source.setErrors(INSERT_NOT_ALLOWED, "", 50000);
+                    getDataRowsError().add(source);
+                    continue;
+                }
                 //Si existe el registro y no se permite sobreescribir.
                 if (target.getAction() == IDataRow.UPDATE && !getOverWriteData()) {
                     rowsExistCount++;
@@ -1232,6 +1516,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             logResult("Registros procesados: " + getRowsProcessedCount()
                     + " (migrados: " + rowsMigratedCount
                     + ", ya existentes: " + rowsExistCount
+                    + (rowsDeletedCount > 0 || isAllowDelete() ? ", eliminados: " + rowsDeletedCount : "")
                     + ", con errores: " + getRowsErrorCount() + ")");
             logResult("Fin del proceso: " + LocalDateTime.now().format(LOG_TS));
             saveResultLogToFile();
