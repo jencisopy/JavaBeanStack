@@ -22,7 +22,6 @@
 
 package org.javabeanstack.data.services;
 
-import org.javabeanstack.data.services.IDataService;
 import org.javabeanstack.annotation.CheckMethod;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.error.IErrorInfo;

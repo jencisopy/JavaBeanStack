@@ -43,8 +43,6 @@ import org.javabeanstack.security.model.ClientAuthRequestInfo;
 import org.javabeanstack.security.model.IUserSession;
 import org.javabeanstack.security.model.UserSession;
 
-import org.javabeanstack.web.rest.model.SessionCredential;
-
 /**
  * Pruebas del guard de sesión de login: la única puerta por la que una sesión
  * de login entra a la capa REST.

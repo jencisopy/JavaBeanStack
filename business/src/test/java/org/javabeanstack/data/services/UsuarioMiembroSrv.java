@@ -21,7 +21,6 @@
  */
 package org.javabeanstack.data.services;
 
-import org.javabeanstack.data.services.DataService;
 import org.javabeanstack.data.DBManager;
 
 /**
