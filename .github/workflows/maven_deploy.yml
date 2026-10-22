@@ -22,10 +22,23 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           architecture: x64
+          # Cachea ~/.m2/repository entre corridas: reduce la cantidad de
+          # descargas desde Maven Central y con ella la probabilidad de un
+          # corte de red (Connection reset) a mitad del reactor.
+          cache: 'maven'
 
       - name: Maven Deploy
         env:
           OYM_USERNAME: ${{ secrets.OYM_USERNAME }}
           OYM_PASSWORD: ${{ secrets.OYM_PASSWORD }}
 
-        run: mvn deploy -s maven-settings.xml -DskipTests -P javadoc
+        # Reintenta hasta 3 veces: los fallos de transporte contra Maven
+        # Central son transitorios y el deploy de SNAPSHOTs es idempotente
+        # (la re-subida sobreescribe).
+        run: |
+          for intento in 1 2 3; do
+            mvn deploy -s maven-settings.xml -DskipTests -P javadoc && exit 0
+            echo "::warning::Intento $intento falló; reintentando en 30 s"
+            sleep 30
+          done
+          exit 1
