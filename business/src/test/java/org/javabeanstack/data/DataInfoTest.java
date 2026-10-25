@@ -23,6 +23,7 @@
 package org.javabeanstack.data;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import org.javabeanstack.model.appcatalog.AppResource;
 import org.javabeanstack.model.appcatalog.AppTablesRelation;
@@ -352,6 +353,98 @@ public class DataInfoTest {
         result = (String) DataInfo.getFieldValue(infoPrb, "childGetter.publicCodigoNombre");
         assertEquals(expResult, result);
     }
+
+    /**
+     * Test of getDeclaredFieldIgnoreCase method, of class DataInfo.
+     */
+    @Test
+    public void test19GetDeclaredFieldIgnoreCase() {
+        System.out.println("19-DataInfo - getDeclaredFieldIgnoreCase");
+        //Coincidencia exacta y sin distinguir mayusculas
+        Field result = DataInfo.getDeclaredFieldIgnoreCase(AppUser.class, "iduser");
+        assertNotNull(result);
+        assertEquals("iduser", result.getName());
+
+        result = DataInfo.getDeclaredFieldIgnoreCase(AppUser.class, "IDUSER");
+        assertNotNull(result);
+        assertEquals("iduser", result.getName());
+
+        result = DataInfo.getDeclaredFieldIgnoreCase(AppUser.class, "fullname");
+        assertNotNull(result);
+        assertEquals("fullName", result.getName());
+
+        //A diferencia de getDeclaredField busca tambien en las superclases
+        assertNull(DataInfo.getDeclaredField(AppUser.class, "action"));
+        result = DataInfo.getDeclaredFieldIgnoreCase(AppUser.class, "ACTION");
+        assertNotNull(result);
+        assertEquals("action", result.getName());
+        assertEquals(DataRow.class, result.getDeclaringClass());
+
+        //Campo de un miembro (notacion con punto)
+        result = DataInfo.getDeclaredFieldIgnoreCase(AppUserMember.class, "USERMEMBER.FULLNAME");
+        assertNotNull(result);
+        assertEquals("fullName", result.getName());
+
+        //Lo que no existe devuelve nulo, igual que los argumentos nulos
+        assertNull(DataInfo.getDeclaredFieldIgnoreCase(AppUser.class, "noexiste"));
+        assertNull(DataInfo.getDeclaredFieldIgnoreCase(AppUser.class, "usermember.noexiste"));
+        assertNull(DataInfo.getDeclaredFieldIgnoreCase(null, "iduser"));
+        assertNull(DataInfo.getDeclaredFieldIgnoreCase(AppUser.class, null));
+    }
+
+
+    /**
+     * Test of getMethod method, of class DataInfo (XMLMAP M3-01).
+     */
+    @Test
+    public void test20GetMethodNombreExacto() {
+        System.out.println("20-DataInfo - getMethod prioriza el nombre exacto");
+        //Lector sin argumentos: coincidencia exacta de siempre
+        Method result = DataInfo.getMethod(DataInfoPrbAmbiguo.class, "getIdcliente");
+        assertNotNull(result);
+        assertEquals("getIdcliente", result.getName());
+        assertEquals(0, result.getParameterCount());
+
+        //Modificador: el nombre exacto gana aunque exista otro que solo
+        //difiere en mayusculas (antes dependia del orden de getMethods)
+        result = DataInfo.getMethod(DataInfoPrbAmbiguo.class, "setIdcliente");
+        assertNotNull(result);
+        assertEquals("setIdcliente", result.getName());
+        assertEquals(Long.class, result.getParameterTypes()[0]);
+
+        result = DataInfo.getMethod(DataInfoPrbAmbiguo.class, "setIdCliente");
+        assertNotNull(result);
+        assertEquals("setIdCliente", result.getName());
+        assertEquals(String.class, result.getParameterTypes()[0]);
+
+        //Sin coincidencia exacta sigue valiendo la que no distingue mayusculas
+        result = DataInfo.getMethod(DataInfoPrbAmbiguo.class, "SETIDCLIENTE");
+        assertNotNull(result);
+        assertTrue("setIdcliente".equalsIgnoreCase(result.getName()));
+
+        //Lo que no existe sigue devolviendo nulo
+        assertNull(DataInfo.getMethod(DataInfoPrbAmbiguo.class, "setNoExiste"));
+    }
+
+    /**
+     * Test of setFieldValue method, of class DataInfo, con dos atributos que
+     * solo difieren en mayusculas (XMLMAP M3-01).
+     */
+    @Test
+    public void test21SetFieldValueNombreAmbiguo() {
+        System.out.println("21-DataInfo - setFieldValue con nombres ambiguos");
+        DataInfoPrbAmbiguo ejb = new DataInfoPrbAmbiguo();
+
+        assertTrue(DataInfo.setFieldValue(ejb, "idcliente", 15L));
+        assertEquals(Long.valueOf(15L), ejb.getIdcliente());
+        assertNull(ejb.getIdClienteTexto());
+
+        assertTrue(DataInfo.setFieldValue(ejb, "idCliente", "texto"));
+        assertEquals("texto", ejb.getIdClienteTexto());
+        //El valor anterior del otro atributo no se toco
+        assertEquals(Long.valueOf(15L), ejb.getIdcliente());
+    }
+
 }
 
 class DataInfoPrb extends DataRow{
@@ -399,6 +492,7 @@ class DataInfoPrb extends DataRow{
     public DataInfoPrbChild getChildGetter(){
         return child;
     }
+
 }
 
 
@@ -436,5 +530,27 @@ class DataInfoPrbChild {
 
     protected String getProtectedCodigoNombre() {
         return codigo.trim() + " " + nombre.trim();
+    }
+}
+
+
+class DataInfoPrbAmbiguo {
+    private Long idcliente;
+    private String idCliente;
+
+    public Long getIdcliente() {
+        return idcliente;
+    }
+
+    public void setIdcliente(Long idcliente) {
+        this.idcliente = idcliente;
+    }
+
+    public String getIdClienteTexto() {
+        return idCliente;
+    }
+
+    public void setIdCliente(String idCliente) {
+        this.idCliente = idCliente;
     }
 }

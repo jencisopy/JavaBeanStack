@@ -68,6 +68,9 @@ Solo contratos (interfaces Java), sin implementaciones. Es la base de la que dep
 ### `commons`
 Utilidades de propósito general sin dependencias de negocio: manejo de strings, archivos, criptografía y fechas. Sus tests son unitarios puros, ejecutables sin infraestructura externa.
 
+Componentes clave:
+- **`ValueConverter`** — conversión de texto al tipo de dato pedido (`fromString(texto, tipo)`): textos, lógicos (`T`/`F`, `true`/`false`, `1`/`0`), numéricos, fechas ISO-8601 o con formato propio y enumeraciones. Es la pieza que usan las importaciones (XML, planillas, parámetros) antes de asignar un valor con `IDataRow.setValue`, que no convierte tipos.
+
 ### `core`
 Manejo de errores, log de eventos, utilidades XML, configuración de la aplicación y gestión de recursos.
 
@@ -88,6 +91,32 @@ Componentes clave:
 - **`IUserSession`** — contexto del usuario autenticado (login, empresa, roles, permisos).
 - **`ISecManager` / `Sessions`** — autenticación vía EJB, gestión de contraseñas, OAuth.
 - **`JwtManager` / `DigestAuth`** — soporte de autenticación JWT y HTTP Digest.
+- **`XmlRowMapper`** — mapeo de datos XML al modelo (ver abajo).
+
+#### Mapeo XML → modelo (`XmlRowMapper`)
+
+`org.javabeanstack.xml.XmlRowMapper` (contrato `IXmlRowMapper` en `interfaces`) lleva los datos de un nodo XML a una entidad del modelo: cada atributo del nodo se asigna al atributo del modelo que se llame igual **sin distinguir mayúsculas**, convirtiendo el texto al tipo del atributo con `ValueConverter`. Un elemento hijo simple —sin atributos ni hijos propios— se trata como un atributo cuyo valor es su texto (`childElementsAsFields`, encendido por defecto), que es la forma natural de llevar textos largos.
+
+```java
+IXmlRowMapper mapper = new XmlRowMapper()
+        .ignore("idappobject")                                  // en un UPDATE la clave primaria no se pisa
+        .resolver("idappobjecttype", (f, texto, nodo, fila) -> tipos.idPorNombre(texto));
+
+Document dom = DomW3cParser.loadXml(new File("catalogo.xml"));
+List<AppObject> filas = mapper.toRows(dom, "/DATA/ROW", AppObject.class);   // nuevas, en INSERT
+
+AppObject existente = ...;        // leída de la base por su clave natural
+mapper.fill(nodo, existente);     // solo pisa lo que el nodo trae
+if (!existente.getErrors().isEmpty()) { /* la fila se reporta y no se graba */ }
+```
+
+- Los atributos considerados son los de la clase y sus superclases **hasta `DataRow` exclusive**, sin los `static` ni los `transient`: los campos propios de `DataRow` (`action`, `errors`…) no son alcanzables desde el XML.
+- Un dato inválido **no interrumpe** el proceso: la fila acumula el error (`setErrors`, número 50000, con el nombre del atributo) y el mapeo sigue. Solo se lanza excepción ante un error de programación (nodo nulo, clase sin constructor sin argumentos).
+- Un atributo sin propiedad se ignora por defecto; `strict(true)` lo convierte en error de la fila y `onUnmapped(listener)` avisa sin fallar. `ignore(...)` declara los que nunca se asignan: es **acumulativo y sin reversa**, así que un cargador con dos políticas (tomar del XML el identificador en el alta y no pisarlo en la modificación) usa **dos mapeadores**.
+- El texto de un elemento hijo simple se asigna **tal cual**: los saltos de línea, los tabuladores y la sangría son parte del dato, porque el mapeador lleva datos y no ayudas. `normalizeChildText(true)` recupera el recorte y el colapso de blancos, que sirve para un texto de una sola línea escrito en varias por comodidad del archivo. Normalizar por omisión hacía perder el formato de los `authdef` del catálogo de Maker —un XML de autorizaciones con CRLF y tabuladores— y reescribía esas filas en la primera carga de toda instalación.
+- Casos dudosos resueltos: dos atributos del modelo que **solo difieren en mayúsculas** hacen que el nombre sea ambiguo y no se asigna ninguno (la capa que asigna no los distingue); entre un atributo y un elemento hijo **homónimos** gana el atributo y el hijo se reporta como no mapeado; un texto vacío sobre un atributo **primitivo** es error de la fila, no un nulo; los campos anotados `@Transient` (JPA) quedan fuera del índice.
+- `resolver(campo, IXmlFieldResolver)` es el punto de extensión para los valores que solo la aplicación sabe interpretar (claves foráneas por clave natural).
+- No lee archivos (recibe `Element`/`Document`/`IXmlDom` ya parseados por `DomW3cParser`) y no persiste nada. La sobrecarga `toRows(IXmlDom, nodePath, type)` es la que aprovecha la herencia de textos XML (`clase`/`src`).
 
 ### `web`
 Controllers JSF, converters y filtros web. Es el único módulo con dependencia de PrimeFaces; quedó libre de POI, JasperReports y JAX-RS.

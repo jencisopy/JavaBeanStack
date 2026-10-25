@@ -125,6 +125,7 @@ Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (
 - **`AbstractDataLink`** — envuelve el DAO y gestiona el contexto de unidad de persistencia, sesión de usuario y contexto empresa/schema. Implementa `IDataLink`.
 - **`AbstractDataService`** — extiende el DAO con validación de negocio (claves únicas, foreign keys, validación por campo).
 - **`DBManager`** — singleton EJB que administra los `EntityManager` por unidad de persistencia (lookup JNDI global).
+- **`XmlRowMapper`** (`org.javabeanstack.xml`, contrato `IXmlRowMapper` en `interfaces`) — lleva los atributos de un nodo XML a los atributos del mismo nombre de un `IDataRow`, sin distinguir mayúsculas y convirtiendo los tipos con `ValueConverter` (commons). Atributos de la clase y sus superclases **hasta `DataRow` exclusive**; hijos simples como atributos; un dato inválido queda como error de la fila (número 50000) y no corta el lote; `IXmlFieldResolver` resuelve las FK por clave natural. Nombre ambiguo (dos atributos que solo difieren en la caja) ⇒ no se asigna ninguno; atributo gana al hijo homónimo; vacío en primitivo ⇒ error. No lee archivos ni persiste.
 
 ### Seguridad (`interfaces` + `business`)
 - **`IUserSession`** — contexto del usuario autenticado (login, empresa, roles, permisos).

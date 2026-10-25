@@ -784,6 +784,54 @@ public class DataInfo {
     }
 
     /**
+     * Devuelve un campo o miembro de una clase buscandolo en toda su jerarquia
+     * de herencia sin distinguir mayusculas de minusculas.
+     *
+     * <p>Se diferencia de {@link #getDeclaredField(Class, String)} en que
+     * recorre tambien las superclases: aquel solo mira los campos declarados
+     * en la clase recibida. Si hay dos campos cuyos nombres solo difieren en
+     * mayusculas gana el que coincide exactamente, en cualquier nivel de la
+     * jerarquia; si ninguno coincide exacto se devuelve el primero que
+     * coincida sin distinguir mayusculas, empezando por la clase recibida.</p>
+     *
+     * <p>Admite la notacion con punto para llegar a un campo de un miembro
+     * ({@code persona.idpersona}), igual que {@code getDeclaredField}.</p>
+     *
+     * @param classType clase
+     * @param fieldname nombre del campo o atributo.
+     * @return campo o miembro solicitado, nulo si no existe.
+     */
+    public static Field getDeclaredFieldIgnoreCase(Class classType, String fieldname) {
+        if (classType == null || fieldname == null) {
+            return null;
+        }
+        if (fieldname.contains(".")) {
+            String memberName = fieldname.substring(0, Strings.findString(".", fieldname));
+            Field member = getDeclaredFieldIgnoreCase(classType, memberName);
+            if (member == null) {
+                return null;
+            }
+            return getDeclaredFieldIgnoreCase(member.getType(),
+                    fieldname.substring(Strings.findString(".", fieldname) + 1));
+        }
+        Field found = null;
+        Class classSearch = classType;
+        while (classSearch != null && !Object.class.equals(classSearch)) {
+            for (Field field : getDeclaredFields(classSearch)) {
+                if (field.getName().equals(fieldname)) {
+                    //El nombre exacto gana sobre cualquier coincidencia anterior
+                    return field;
+                }
+                if (found == null && field.getName().equalsIgnoreCase(fieldname)) {
+                    found = field;
+                }
+            }
+            classSearch = classSearch.getSuperclass();
+        }
+        return found;
+    }
+
+    /**
      * Devuelve la lista de campos/atributos de una clase
      *
      * @param classType clase DataRow
@@ -803,6 +851,19 @@ public class DataInfo {
      * Devuelve un metodo solicitado de una clase sin importar si el nombre esta
      * en mayuscula o minuscula.
      *
+     * <p>El nombre <b>exacto</b> tiene prioridad: primero se busca el metodo
+     * que se llame igual y no reciba argumentos (el caso de un lector
+     * {@code get}) y, si no existe, el que se llame igual y reciba uno (el de
+     * un modificador {@code set}); recien entonces se acepta una coincidencia
+     * que no distinga mayusculas, como se hacia siempre.</p>
+     *
+     * <p>Sin esa prioridad el metodo quedaba a merced del orden en que
+     * {@code getMethods()} devuelve los metodos, que la maquina virtual no
+     * especifica: en una clase con dos atributos que solo difieren en la caja
+     * ({@code idcliente} e {@code idCliente}) el valor podia terminar
+     * asignandose al atributo equivocado y sin error (plan {@code XMLMAP},
+     * hallazgo {@code M3-01}).</p>
+     *
      * @param classType clase
      * @param methodName Nombre del metodo
      * @return objeto metodo
@@ -819,7 +880,27 @@ public class DataInfo {
         if (method != null) {
             return method;
         }
+        if (classType == null || methodName == null) {
+            return null;
+        }
         Method[] methods = classType.getMethods();
+        // Nombre exacto. El de aridad 0 ya se busco arriba, asi que entre las
+        // sobrecargas gana el de un solo argumento (un modificador "set").
+        Method exact = null;
+        for (Method method1 : methods) {
+            if (method1.getName().equals(methodName)) {
+                if (method1.getParameterCount() == 1) {
+                    return method1;
+                }
+                if (exact == null) {
+                    exact = method1;
+                }
+            }
+        }
+        if (exact != null) {
+            return exact;
+        }
+        // Sin coincidencia exacta se acepta la que no distingue mayusculas
         for (Method method1 : methods) {
             if (method1.getName().equalsIgnoreCase(methodName.toLowerCase())) {
                 return method1;

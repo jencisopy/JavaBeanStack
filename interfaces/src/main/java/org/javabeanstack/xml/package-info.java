@@ -23,5 +23,14 @@
  * Contratos del motor de documentos XML: administrador, buscador, DOM y caché
  * ({@link org.javabeanstack.xml.IXmlManager},
  * {@link org.javabeanstack.xml.IXmlSearcher}, {@link org.javabeanstack.xml.IXmlDom}).
+ *
+ * <p>Incluye además el contrato del mapeador de datos XML al modelo
+ * ({@link org.javabeanstack.xml.IXmlRowMapper} y su punto de extensión
+ * {@link org.javabeanstack.xml.IXmlFieldResolver}), que lleva los atributos de
+ * un nodo a los atributos del mismo nombre de un
+ * {@link org.javabeanstack.data.IDataRow}. La implementación vive en el módulo
+ * {@code jbs-business} ({@code org.javabeanstack.xml.XmlRowMapper}), que es
+ * donde están la reflexión sobre el modelo y la clase base de las
+ * entidades.</p>
  */
 package org.javabeanstack.xml;
