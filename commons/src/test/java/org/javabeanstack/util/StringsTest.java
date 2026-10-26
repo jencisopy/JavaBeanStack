@@ -356,6 +356,27 @@ public class StringsTest {
     }
 
     /**
+     * Los valores se sustituyen literales: un "$" o una "\" en el valor no son
+     * referencias de grupo de la expresión regular, y un nulo se escribe como
+     * "null", igual que en una concatenación con "+" (plan APPMSG, E2-12/E2-13).
+     */
+    @Test
+    public void testTextMergeValoresLiteralesYNulos() {
+        assertEquals("El correo a$b@x.com ya existe",
+                Strings.textMerge("El correo {email} ya existe", "email", "a$b@x.com"));
+        assertEquals("ruta c:\\temp\\x",
+                Strings.textMerge("ruta {ruta}", "ruta", "c:\\temp\\x"));
+        assertEquals("doc 001-null",
+                Strings.textMerge("doc {sec}-{nro}", "sec", "001", "nro", null));
+        Map<String, String> params = new HashMap<>();
+        params.put("valor", null);
+        assertEquals("xxnullxx", Strings.textMerge("xx{valor}xx", params));
+        params.put("valor", "$1");
+        assertEquals("xx$1xx", Strings.textMerge("xx{valor}xx", params));
+        assertEquals("xx $1 xx", Strings.textMerge("xx ${valor} xx", params, "$"));
+    }
+
+    /**
      * Test of textMerge method, of class Strings.
      */
     @Test

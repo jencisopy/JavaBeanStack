@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -285,7 +286,10 @@ public class Strings {
         String regexSearch;
         for (Map.Entry<String, String> entry : params.entrySet()) {
             regexSearch = "(?i)\\{" + entry.getKey() + "\\}";
-            result = result.replaceAll(regexSearch, entry.getValue());
+            // El valor se sustituye literal (un "$" o una "\" en el valor no son
+            // referencias de grupo) y un nulo se escribe como "null", igual que
+            // en una concatenación con "+".
+            result = result.replaceAll(regexSearch, Matcher.quoteReplacement(String.valueOf(entry.getValue())));
         }
         return result;
     }
@@ -309,7 +313,7 @@ public class Strings {
                     caracter = "\\" + substr(iniPattern, i, 1);
                 }
                 regexSearch = "(?i)" + caracter + "\\{" + entry.getKey() + "\\}";
-                result = result.replaceAll(regexSearch, entry.getValue());
+                result = result.replaceAll(regexSearch, Matcher.quoteReplacement(String.valueOf(entry.getValue())));
             }
         }
         return result;
@@ -328,9 +332,11 @@ public class Strings {
         String expr1, expr2;
         if (keyParamList != null && keyParamList.length >= 1) {
             while (true) {
-                expr1 = keyParamList[i].toString();
+                expr1 = String.valueOf(keyParamList[i]);
                 if (i + 1 < keyParamList.length) {
-                    expr2 = keyParamList[i + 1].toString();
+                    // Un valor nulo no debe cortar el armado del mensaje:
+                    // se escribe "null", como en una concatenación con "+".
+                    expr2 = String.valueOf(keyParamList[i + 1]);
                 } else {
                     expr2 = null;
                 }

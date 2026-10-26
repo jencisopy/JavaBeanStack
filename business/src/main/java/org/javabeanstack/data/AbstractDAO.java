@@ -2168,8 +2168,13 @@ public abstract class AbstractDAO implements IGenericDAO {
      * Construye un registro de error del catálogo de mensajes sustituyendo los
      * parámetros indicados en el texto del mensaje.
      *
+     * <p>Si el texto alternativo trae marcadores de sustitución ({@code {clave}})
+     * que el texto del catálogo no tiene, se usa el alternativo: así el llamador
+     * puede pasar valores por parámetro sin necesidad de modificar el catálogo.</p>
+     *
      * @param messageNumber número de mensaje en el catálogo.
-     * @param alternativeMsg mensaje a usar si el número no se encuentra.
+     * @param alternativeMsg mensaje a usar si el número no se encuentra o si trae
+     * marcadores {@code {clave}} que el texto del catálogo no tiene.
      * @param fieldName campo asociado al error.
      * @param params parámetros de sustitución del mensaje.
      * @return registro de error.
@@ -2195,10 +2200,32 @@ public abstract class AbstractDAO implements IGenericDAO {
             }
         }
         else if (appMessage != null) {
-            String messageText = Strings.textMerge(appMessage.getText(), params);
+            // Si el texto alternativo trae marcadores de sustitución ({clave})
+            // y el texto del catálogo no, se usa el alternativo: el llamador
+            // puede pasar valores por parámetro sin modificar el catálogo.
+            String text = appMessage.getText();
+            if (hasVariables(alternativeMsg) && !hasVariables(text)) {
+                text = alternativeMsg;
+            }
+            String messageText = Strings.textMerge(text, params);
             errorReturn.setMessage(messageText);
         } 
         return errorReturn;
+    }
+
+    /**
+     * Indica si el texto contiene al menos un marcador de sustitución
+     * ({@code {clave}}) del estilo de {@link Strings#textMerge}.
+     *
+     * @param text texto a inspeccionar.
+     * @return verdadero si contiene un marcador {@code {clave}}.
+     */
+    private static boolean hasVariables(String text) {
+        if (text == null) {
+            return false;
+        }
+        int apertura = text.indexOf('{');
+        return apertura >= 0 && text.indexOf('}', apertura) > apertura;
     }
     
     
