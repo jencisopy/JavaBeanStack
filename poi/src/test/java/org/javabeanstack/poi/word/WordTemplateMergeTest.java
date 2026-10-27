@@ -24,7 +24,10 @@ package org.javabeanstack.poi.word;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.poi.wp.usermodel.HeaderFooterType;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
@@ -187,6 +190,34 @@ public class WordTemplateMergeTest {
 
             assertEquals("JUAN PEREZ", celda.getParagraphs().get(0).getRuns().get(0).getText(0));
             assertEquals("SANTA MARIA", interno.getRuns().get(0).getText(0));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Reemplaza dentro de los encabezados y pies de pagina")
+    public void marcadoresEnEncabezadosYPieDePagina() {
+        try (XWPFDocument doc = new XWPFDocument()) {
+            XWPFHeader header = doc.createHeader(HeaderFooterType.DEFAULT);
+            XWPFParagraph pHeader = header.createParagraph();
+            pHeader.createRun().setText("Operador: <<operador>> Vendedor: <<vendedor>>", 0);
+
+            XWPFFooter footer = doc.createFooter(HeaderFooterType.DEFAULT);
+            XWPFParagraph pFooter = footer.createParagraph();
+            pFooter.createRun().setText("Fecha: <<fecha>>", 0);
+
+            Map<String, String> data = datos();
+            data.put("operador", "admin");
+            data.put("vendedor", "CARLOS BENITEZ");
+            data.put("fecha", "27/10/2026");
+
+            WordTemplateMerge.merge(doc, data);
+
+            assertEquals("Operador: admin Vendedor: CARLOS BENITEZ",
+                    pHeader.getRuns().get(0).getText(0));
+            assertEquals("Fecha: 27/10/2026",
+                    pFooter.getRuns().get(0).getText(0));
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

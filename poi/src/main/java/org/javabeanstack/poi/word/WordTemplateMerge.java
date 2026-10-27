@@ -23,11 +23,18 @@
 package org.javabeanstack.poi.word;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
+import org.apache.poi.xwpf.usermodel.XWPFHeaderFooter;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
@@ -86,10 +93,54 @@ public class WordTemplateMerge {
      * @param data valores a mergear, indexados por nombre de campo.
      */
     public static void merge(XWPFDocument doc, Map<String, String> data) {
+        if (doc == null || data == null) {
+            return;
+        }
         for (XWPFParagraph parrafo : doc.getParagraphs()) {
             mergeParagraph(parrafo, data);
         }
         mergeTables(doc.getTables(), data);
+
+        Set<XWPFHeaderFooter> procesados = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (doc.getHeaderList() != null) {
+            for (XWPFHeader header : doc.getHeaderList()) {
+                mergeHeaderFooter(header, data, procesados);
+            }
+        }
+        if (doc.getFooterList() != null) {
+            for (XWPFFooter footer : doc.getFooterList()) {
+                mergeHeaderFooter(footer, data, procesados);
+            }
+        }
+        XWPFHeaderFooterPolicy policy = doc.getHeaderFooterPolicy();
+        if (policy != null) {
+            mergeHeaderFooter(policy.getDefaultHeader(), data, procesados);
+            mergeHeaderFooter(policy.getFirstPageHeader(), data, procesados);
+            mergeHeaderFooter(policy.getEvenPageHeader(), data, procesados);
+            mergeHeaderFooter(policy.getOddPageHeader(), data, procesados);
+            mergeHeaderFooter(policy.getDefaultFooter(), data, procesados);
+            mergeHeaderFooter(policy.getFirstPageFooter(), data, procesados);
+            mergeHeaderFooter(policy.getEvenPageFooter(), data, procesados);
+            mergeHeaderFooter(policy.getOddPageFooter(), data, procesados);
+        }
+    }
+
+    /**
+     * Reemplaza los marcadores en un encabezado o pie de página (párrafos y
+     * tablas), asegurando que no se procese más de una vez.
+     *
+     * @param hf encabezado o pie de página.
+     * @param data valores a mergear.
+     * @param procesados conjunto de elementos ya procesados.
+     */
+    private static void mergeHeaderFooter(XWPFHeaderFooter hf, Map<String, String> data, Set<XWPFHeaderFooter> procesados) {
+        if (hf == null || !procesados.add(hf)) {
+            return;
+        }
+        for (XWPFParagraph parrafo : hf.getParagraphs()) {
+            mergeParagraph(parrafo, data);
+        }
+        mergeTables(hf.getTables(), data);
     }
 
     /**
