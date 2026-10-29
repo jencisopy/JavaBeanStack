@@ -45,6 +45,7 @@ import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.data.IDataSet;
 
+import org.javabeanstack.error.ErrorInfo;
 import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.events.IDataEvents;
@@ -140,6 +141,18 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
      */
     private Exception errorApp;
     /**
+     * Registro del error que origino {@link #errorApp}, con su numero de
+     * mensaje. Se completa donde el error viene de una validacion (que si lo
+     * tiene) y la excepcion lo iba a perder.
+     */
+    private IErrorInfo errorAppInfo;
+    /**
+     * Excepcion a la que corresponde {@link #errorAppInfo}. Se compara por
+     * identidad para no devolver el numero de un error anterior: errorApp se
+     * asigna en muchos lugares y no todos saben de este registro.
+     */
+    private Exception errorAppInfoOwner;
+    /**
      * Es el objeto responsable de los eventos
      */
     private IDataEvents dataEvents;
@@ -220,6 +233,71 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
     @Override
     public Exception getErrorApp() {
         return errorApp;
+    }
+
+    /**
+     * Devuelve el último error de aplicación con su número de mensaje.
+     *
+     * <p>Busca el número en tres lugares, en este orden: el registro que se
+     * guardó junto con la excepción (una validación del servidor), los errores
+     * del registro actual (una validación local, que {@code checkData} dejó
+     * ahí) y, si ninguno aporta, arma uno con el texto de la excepción y número
+     * {@code 0} —que por convención significa «sin número que mostrar»—. Así
+     * quien lo despliega no tiene que preguntar de dónde salió.</p>
+     *
+     * @return error de aplicación, o {@code null} si no hubo.
+     */
+    @Override
+    public IErrorInfo getErrorAppInfo() {
+        if (errorApp == null) {
+            return null;
+        }
+        if (errorAppInfo != null && errorAppInfoOwner == errorApp) {
+            return errorAppInfo;
+        }
+        IErrorInfo deLaFila = getFirstError(row);
+        if (deLaFila != null) {
+            return deLaFila;
+        }
+        IErrorInfo info = new ErrorInfo();
+        info.setMessage(errorApp.getMessage());
+        return info;
+    }
+
+    /**
+     * Devuelve el primer error (no advertencia) con número de un registro.
+     *
+     * @param ejb registro.
+     * @return error con número, o {@code null} si no hay.
+     */
+    private IErrorInfo getFirstError(IDataRow ejb) {
+        if (ejb == null || ejb.getErrors() == null) {
+            return null;
+        }
+        for (IErrorInfo error : ejb.getErrors().values()) {
+            if (!error.isWarning() && error.getErrorNumber() != null
+                    && error.getErrorNumber() != 0) {
+                return error;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Asigna la excepción de aplicación junto con el registro de error que la
+     * originó, para no perder su número de mensaje.
+     *
+     * @param ex excepción.
+     * @param info registro de error de origen (puede ser nulo).
+     */
+    private void setErrorApp(Exception ex, IErrorInfo info) {
+        errorApp = ex;
+        //getFirstError() de IDataResult nunca devuelve nulo: ante un resultado
+        //sin errores cargados entrega un registro vacio. Ese no sirve -se
+        //llevaria puesto el texto de la excepcion-, asi que se descarta y el
+        //mensaje lo arma getErrorAppInfo() con la excepcion.
+        errorAppInfo = (info == null || Strings.isNullorEmpty(info.getMessage())) ? null : info;
+        errorAppInfoOwner = ex;
     }
 
     /**
@@ -2060,7 +2138,9 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             //Chequear las filas en busca de errores
             if (!this.checkData(allRows)) {
                 if (errorApp != null){
-                    errorApp = new Exception(getErrorMsg(true));
+                    //El numero de estos errores queda en la fila; lo recupera
+                    //getErrorAppInfo(), que los consulta.
+                    setErrorApp(new Exception(getErrorMsg(true)), null);
                 }
                 return false;
             }
@@ -2069,14 +2149,14 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
                 dataResult = getDAO().save(dataRows);
                 row = dataRows.get(recno);
                 if (!dataResult.isSuccessFul()) {
-                    errorApp = new Exception(dataResult.getErrorMsg());
+                    setErrorApp(new Exception(dataResult.getErrorMsg()), dataResult.getFirstError());
                     return false;
                 }
                 row.setOldValues();
             } else {
                 dataResult = getDAO().save(row);
                 if (!dataResult.isSuccessFul()) {
-                    errorApp = new Exception(dataResult.getErrorMsg());
+                    setErrorApp(new Exception(dataResult.getErrorMsg()), dataResult.getFirstError());
                     return false;
                 }
                 // Asignar el registro resultante de la actualización
@@ -2125,7 +2205,7 @@ public abstract class AbstractDataObject<T extends IDataRow> implements IDataObj
             }
             dataResult = getDAO().save(dataSet);
             if (!dataResult.isSuccessFul()) {
-                errorApp = new Exception(dataResult.getErrorMsg());
+                setErrorApp(new Exception(dataResult.getErrorMsg()), dataResult.getFirstError());
                 return false;
             }
             row.setOldValues();

@@ -588,7 +588,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
                 break;
         }
         if (getErrorApp() != null) {
-            facesCtx.showError("Error", getErrorApp().getMessage());
+            facesCtx.showError("Error", getErrorAppInfo());
             result = false;
             action = "";
         } else if (!result) {
@@ -787,7 +787,7 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
     protected void afterAction(boolean success) {
         facesCtx.addCallbackParam("result", success);
         if (getErrorApp() != null) {
-            facesCtx.showError("Error", getErrorApp().getMessage());
+            facesCtx.showError("Error", getErrorAppInfo());
         } else if (getRow() != null) {
             Map<String, IErrorInfo> warnings = getRow().getWarnings();
             if (warnings != null && !warnings.isEmpty()) {

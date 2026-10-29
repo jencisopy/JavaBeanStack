@@ -110,6 +110,22 @@ public interface IDataObject <T extends IDataRow>{
     public Exception    getErrorApp();
 
     /**
+     * Devuelve el último error de aplicación como {@link IErrorInfo}, es decir
+     * con su número de mensaje cuando se lo conoce.
+     *
+     * <p>Existe porque {@link #getErrorApp()} devuelve una {@code Exception},
+     * que solo lleva el texto: el número del catálogo que traía la validación
+     * se perdía al construirla. Nunca devuelve nulo si hubo error; cuando no
+     * hay número, el registro llega con el mensaje y número {@code 0}, que por
+     * convención significa «sin número que mostrar».</p>
+     *
+     * @return error de aplicación, o {@code null} si no hubo.
+     */
+    default IErrorInfo  getErrorAppInfo() {
+        return null;
+    }
+
+    /**
      * Devuelve el mensaje de error del cursor.
      *
      * @param all verdadero para incluir todos los errores, falso solo el último.

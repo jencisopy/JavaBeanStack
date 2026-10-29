@@ -221,6 +221,30 @@ public class FacesContextUtil {
     }
 
     /**
+     * Antepone al mensaje su número del catálogo de mensajes
+     * ({@code catalogo.appmessage}), en el formato {@code nro: mensaje}, para
+     * que quien lee el aviso —o soporte, al que se lo transcriben— pueda
+     * buscar la ficha del mensaje.
+     *
+     * <p>Sin número no hay nada que anteponer y devuelve el mensaje tal cual:
+     * el número {@code 0} significa «sin error» por convención del framework,
+     * así que un {@code "0: ..."} sería ruido.</p>
+     *
+     * @param error registro de error o advertencia.
+     * @return mensaje a desplegar, con el número adelante si lo tiene.
+     */
+    private String messageWithNumber(IErrorInfo error) {
+        if (error == null) {
+            return "";
+        }
+        String message = Fn.nvl(error.getMessage(), "");
+        if (error.getErrorNumber() == null || error.getErrorNumber() == 0) {
+            return message;
+        }
+        return  message + " - (" + error.getErrorNumber() + ")";
+    }
+
+    /**
      * Muestra un mensaje de error a partir de una excepción y la registra en el log.
      *
      * @param exception excepción.
@@ -243,6 +267,19 @@ public class FacesContextUtil {
      */
     public void showError(String message) {
         showError("Error", message);
+    }
+
+    /**
+     * Muestra un mensaje de error a partir de un registro de error, con su
+     * número de mensaje adelante ({@code nro: mensaje}).
+     *
+     * @param error registro de error.
+     */
+    public void showError(IErrorInfo error) {
+        if (error == null) {
+            return;
+        }
+        showError("Error", messageWithNumber(error));
     }
 
     /**
@@ -273,6 +310,44 @@ public class FacesContextUtil {
     }
 
     /**
+     * Muestra un mensaje de error asociado a un componente, a partir de un
+     * registro de error y con su número de mensaje adelante
+     * ({@code nro: mensaje}).
+     *
+     * <p>Es la que usan las validaciones a nivel de campo, que necesitan
+     * conservar el componente al que se asocia el mensaje.</p>
+     *
+     * @param title título.
+     * @param error registro de error.
+     * @param clientId identificador del componente.
+     */
+    public void showError(String title, IErrorInfo error, String clientId) {
+        if (error == null) {
+            return;
+        }
+        showError(title, messageWithNumber(error), clientId);
+    }
+
+    /**
+     * Muestra un mensaje de error a partir de un registro de error, con su
+     * número de mensaje adelante ({@code nro: mensaje}).
+     *
+     * <p>Es el reemplazo de {@code showError(title, error.getMessage())}: el
+     * registro trae el número y así no se pierde. El mensaje se despliega
+     * como global (no asociado al campo) igual que las sobrecargas de
+     * texto.</p>
+     *
+     * @param title título.
+     * @param error registro de error.
+     */
+    public void showError(String title, IErrorInfo error) {
+        if (error == null) {
+            return;
+        }
+        showError(title, messageWithNumber(error));
+    }
+
+    /**
      * Muestra los errores contenidos en un mapa.
      *
      * @param title título.
@@ -286,7 +361,7 @@ public class FacesContextUtil {
                 key = (String) iterator.next();
                 if (!errors.get(key).isWarning()) {
                     String titleShow = Fn.nvl(title, "Error ") + " en " + key;
-                    getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, titleShow, errors.get(key).getMessage()));
+                    getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, titleShow, messageWithNumber(errors.get(key))));
                 }
             }
             if (!Strings.isNullorEmpty(messageView)) {
@@ -305,6 +380,19 @@ public class FacesContextUtil {
     }
 
     /**
+     * Muestra un mensaje informativo a partir de un registro de error, con su
+     * número de mensaje adelante ({@code nro: mensaje}).
+     *
+     * @param error registro con el mensaje a desplegar.
+     */
+    public void showInfo(IErrorInfo error) {
+        if (error == null) {
+            return;
+        }
+        showInfo("Información", messageWithNumber(error));
+    }
+
+    /**
      * Muestra un mensaje informativo con título.
      *
      * @param title título.
@@ -318,12 +406,43 @@ public class FacesContextUtil {
     }
 
     /**
+     * Muestra un mensaje informativo a partir de un registro de error, con su
+     * número de mensaje adelante ({@code nro: mensaje}).
+     *
+     * <p>Es el reemplazo de {@code showInfo(title, error.getMessage())}: hay
+     * mensajes del catálogo que no son error ni advertencia sino el resultado
+     * normal de una operación, y también tienen número.</p>
+     *
+     * @param title título.
+     * @param error registro con el mensaje a desplegar.
+     */
+    public void showInfo(String title, IErrorInfo error) {
+        if (error == null) {
+            return;
+        }
+        showInfo(title, messageWithNumber(error));
+    }
+
+    /**
      * Muestra un mensaje de advertencia.
      *
      * @param message mensaje.
      */
     public void showWarn(String message) {
         showWarn("Aviso", message);
+    }
+
+    /**
+     * Muestra un mensaje de advertencia a partir de un registro de error, con
+     * su número de mensaje adelante ({@code nro: mensaje}).
+     *
+     * @param error registro de advertencia.
+     */
+    public void showWarn(IErrorInfo error) {
+        if (error == null) {
+            return;
+        }
+        showWarn("Aviso", messageWithNumber(error));
     }
 
     /**
@@ -354,6 +473,41 @@ public class FacesContextUtil {
     }
 
     /**
+     * Muestra un mensaje de advertencia asociado a un componente, a partir de
+     * un registro de error y con su número de mensaje adelante
+     * ({@code nro: mensaje}).
+     *
+     * <p>Es la que usan las validaciones a nivel de campo, que necesitan
+     * conservar el componente al que se asocia el mensaje.</p>
+     *
+     * @param title título.
+     * @param error registro de advertencia.
+     * @param clientId identificador del componente.
+     */
+    public void showWarn(String title, IErrorInfo error, String clientId) {
+        if (error == null) {
+            return;
+        }
+        showWarn(title, messageWithNumber(error), clientId);
+    }
+
+    /**
+     * Muestra un mensaje de advertencia a partir de un registro de error, con
+     * su número de mensaje adelante ({@code nro: mensaje}).
+     *
+     * <p>Es el reemplazo de {@code showWarn(title, error.getMessage())}.</p>
+     *
+     * @param title título.
+     * @param error registro de advertencia.
+     */
+    public void showWarn(String title, IErrorInfo error) {
+        if (error == null) {
+            return;
+        }
+        showWarn(title, messageWithNumber(error));
+    }
+
+    /**
      * Muestra las advertencias contenidas en un mapa.
      *
      * @param title título.
@@ -367,7 +521,7 @@ public class FacesContextUtil {
                 key = (String) iterator.next();
                 if (errors.get(key).isWarning()) {
                     String titleShow = Fn.nvl(title, "Advertencia ") + " en " + key;
-                    getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_WARN, titleShow, errors.get(key).getMessage()));
+                    getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_WARN, titleShow, messageWithNumber(errors.get(key))));
                 }
             }
             if (!Strings.isNullorEmpty(messageView)) {

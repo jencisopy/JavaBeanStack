@@ -338,7 +338,7 @@ public abstract class AbstractAuthController extends AbstractController {
                     }
                     logged = true;
                 } else {
-                    getFacesCtx().showError("", userSession.getError().getMessage());
+                    getFacesCtx().showError("", userSession.getError());
                 }
             } catch (Exception ex) {
                 getFacesCtx().showError(ex, LOGGER);
@@ -374,7 +374,7 @@ public abstract class AbstractAuthController extends AbstractController {
             if (userSession.getError() != null) {
                 result = false;
                 //Error en evento de creación de sessión
-                getFacesCtx().showError("", userSession.getError().getMessage());
+                getFacesCtx().showError("", userSession.getError());
                 userSession.getError().setIpRequest(userSession.getIp());
                 getAppSysEvents().onCreateSession(userSession.getError());
             } else {

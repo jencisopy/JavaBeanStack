@@ -71,7 +71,7 @@ public abstract class DataController<T extends IDataRow> extends AbstractDataCon
             getDAO().setUserSession(userSession);
             open(getOrder(), getFilter(), true, getMaxRows());
             if (getErrorApp() != null){
-                getFacesCtx().showError(getErrorApp().getMessage());
+                getFacesCtx().showError(getErrorAppInfo());
             }
         } catch (SessionError ex) {
             getFacesCtx().showError(ex.getMessage());
