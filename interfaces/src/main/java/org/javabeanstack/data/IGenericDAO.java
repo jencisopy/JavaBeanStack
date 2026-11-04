@@ -595,6 +595,29 @@ public interface IGenericDAO extends Serializable {
      * @return verdadero si es auditable, falso si no.
      */
     public <T extends IDataRow> boolean isAuditAble(T ejb);
+
+    /**
+     * Saca una fila del contexto de persistencia de la sesión sin tocar la
+     * base: deja de estar administrada y los cambios que no se hayan volcado
+     * se descartan. No confirma ni revierte nada de la transacción.
+     *
+     * <p>Sirve para las grabaciones de muchas filas en una sola transacción:
+     * cada fila grabada queda administrada y el {@code flush} de la siguiente
+     * —el de {@code save} y el automático antes de cada consulta— recorre todo
+     * el contexto, así que el costo crece con el cuadrado de la cantidad de
+     * filas. Desprender la fila apenas se graba (ya volcada) mantiene el
+     * contexto acotado. Agregado el 2026-11-04 (Maker FINPER, M5-15).</p>
+     *
+     * <p>La implementación por omisión no hace nada (es solo una
+     * optimización): así las implementaciones existentes y los dobles de
+     * prueba siguen compilando. {@code AbstractDAO} la implementa.</p>
+     *
+     * @param <T> tipo de la fila.
+     * @param sessionId identificador de la sesión.
+     * @param row fila a desprender; nula o no administrada, no hace nada.
+     */
+    public default <T extends IDataRow> void detach(String sessionId, T row) {
+    }
     /**
      * Indica si la entidad (por nombre) es auditable.
      *

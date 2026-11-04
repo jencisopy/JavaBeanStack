@@ -1463,6 +1463,28 @@ public abstract class AbstractDAO implements IGenericDAO {
     }
 
     /**
+     * Saca la fila del contexto de persistencia de la sesión (ver
+     * {@link IGenericDAO#detach(String, IDataRow)}). Solo la fila: sin
+     * {@code cascade} no alcanza a sus relaciones. Quien la llama debe haberla
+     * volcado antes ({@code save} ya lo hace): lo no volcado se descarta.
+     *
+     * @param <T> tipo de la fila.
+     * @param sessionId identificador de la sesión.
+     * @param row fila a desprender; nula o no administrada, no hace nada.
+     */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public <T extends IDataRow> void detach(String sessionId, T row) {
+        if (row == null) {
+            return;
+        }
+        EntityManager em = getEntityManager(getEntityManagerId(getDBLinkInfo(sessionId)));
+        if (em.contains(row)) {
+            em.detach(row);
+        }
+    }
+
+    /**
      * Deshace (rollback) la transacción activa de la unidad de persistencia.
      */
     @Override

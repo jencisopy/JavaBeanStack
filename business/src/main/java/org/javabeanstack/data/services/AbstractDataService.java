@@ -1813,6 +1813,19 @@ public abstract class AbstractDataService implements IDataService {
     }
 
     /**
+     * Saca la fila del contexto de persistencia (delega en el DAO, ver
+     * {@link IGenericDAO#detach(String, IDataRow)}).
+     *
+     * @param <T> tipo de la fila.
+     * @param sessionId identificador de la sesión.
+     * @param row fila a desprender.
+     */
+    @Override
+    public <T extends IDataRow> void detach(String sessionId, T row) {
+        dao.detach(sessionId, row);
+    }
+
+    /**
      * Indica si la entidad (por su clase) es auditable.
      *
      * @param <T> tipo de la entidad.
