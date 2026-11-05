@@ -801,7 +801,7 @@ public abstract class AbstractDataService implements IDataService {
                         uniqueKeyFields = DataInfo.getUniqueFields(row.getClass());
                     }
                     errors.put("UNIQUEKEY",
-                            new ErrorInfo("Este registro ya existe - " + row.toString(),
+                            new ErrorInfo("Este registro ya existe",
                                     50001,
                                     uniqueKeyFields));
                     return errors;

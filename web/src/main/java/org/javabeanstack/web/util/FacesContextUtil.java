@@ -221,19 +221,24 @@ public class FacesContextUtil {
     }
 
     /**
-     * Antepone al mensaje su número del catálogo de mensajes
-     * ({@code catalogo.appmessage}), en el formato {@code nro: mensaje}, para
+     * Agrega al final del mensaje su número del catálogo de mensajes
+     * ({@code catalogo.appmessage}), en el formato {@code mensaje - (nro)}, para
      * que quien lee el aviso —o soporte, al que se lo transcriben— pueda
      * buscar la ficha del mensaje.
      *
-     * <p>Sin número no hay nada que anteponer y devuelve el mensaje tal cual:
+     * <p>Sin número no hay nada que agregar y devuelve el mensaje tal cual:
      * el número {@code 0} significa «sin error» por convención del framework,
-     * así que un {@code "0: ..."} sería ruido.</p>
+     * así que un {@code "... - (0)"} sería ruido.</p>
+     *
+     * <p>Es pública para que la aplicación arme con la misma regla los avisos
+     * que dibuja en la página fuera de las alertas (un solo lugar para el
+     * formato).</p>
      *
      * @param error registro de error o advertencia.
-     * @return mensaje a desplegar, con el número adelante si lo tiene.
+     * @return mensaje a desplegar, con el número al final si lo tiene; vacío
+     * si el registro es nulo.
      */
-    private String messageWithNumber(IErrorInfo error) {
+    public static String messageWithNumber(IErrorInfo error) {
         if (error == null) {
             return "";
         }
@@ -271,7 +276,7 @@ public class FacesContextUtil {
 
     /**
      * Muestra un mensaje de error a partir de un registro de error, con su
-     * número de mensaje adelante ({@code nro: mensaje}).
+     * número de mensaje al final ({@code mensaje - (nro)}).
      *
      * @param error registro de error.
      */
@@ -311,8 +316,8 @@ public class FacesContextUtil {
 
     /**
      * Muestra un mensaje de error asociado a un componente, a partir de un
-     * registro de error y con su número de mensaje adelante
-     * ({@code nro: mensaje}).
+     * registro de error y con su número de mensaje al final
+     * ({@code mensaje - (nro)}).
      *
      * <p>Es la que usan las validaciones a nivel de campo, que necesitan
      * conservar el componente al que se asocia el mensaje.</p>
@@ -330,7 +335,7 @@ public class FacesContextUtil {
 
     /**
      * Muestra un mensaje de error a partir de un registro de error, con su
-     * número de mensaje adelante ({@code nro: mensaje}).
+     * número de mensaje al final ({@code mensaje - (nro)}).
      *
      * <p>Es el reemplazo de {@code showError(title, error.getMessage())}: el
      * registro trae el número y así no se pierde. El mensaje se despliega
@@ -360,7 +365,9 @@ public class FacesContextUtil {
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
                 if (!errors.get(key).isWarning()) {
-                    String titleShow = Fn.nvl(title, "Error ") + " en " + key;
+                    //La clave no siempre es un campo: "*" y UNIQUEKEY no le dicen nada al usuario
+                    boolean esCampo = !Fn.inList(key, "*", "UNIQUEKEY");
+                    String titleShow = Fn.nvl(title, "Error ") + (esCampo ? " en " + key : "");
                     getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, titleShow, messageWithNumber(errors.get(key))));
                 }
             }
@@ -381,7 +388,7 @@ public class FacesContextUtil {
 
     /**
      * Muestra un mensaje informativo a partir de un registro de error, con su
-     * número de mensaje adelante ({@code nro: mensaje}).
+     * número de mensaje al final ({@code mensaje - (nro)}).
      *
      * @param error registro con el mensaje a desplegar.
      */
@@ -407,7 +414,7 @@ public class FacesContextUtil {
 
     /**
      * Muestra un mensaje informativo a partir de un registro de error, con su
-     * número de mensaje adelante ({@code nro: mensaje}).
+     * número de mensaje al final ({@code mensaje - (nro)}).
      *
      * <p>Es el reemplazo de {@code showInfo(title, error.getMessage())}: hay
      * mensajes del catálogo que no son error ni advertencia sino el resultado
@@ -434,7 +441,7 @@ public class FacesContextUtil {
 
     /**
      * Muestra un mensaje de advertencia a partir de un registro de error, con
-     * su número de mensaje adelante ({@code nro: mensaje}).
+     * su número de mensaje al final ({@code mensaje - (nro)}).
      *
      * @param error registro de advertencia.
      */
@@ -474,8 +481,8 @@ public class FacesContextUtil {
 
     /**
      * Muestra un mensaje de advertencia asociado a un componente, a partir de
-     * un registro de error y con su número de mensaje adelante
-     * ({@code nro: mensaje}).
+     * un registro de error y con su número de mensaje al final
+     * ({@code mensaje - (nro)}).
      *
      * <p>Es la que usan las validaciones a nivel de campo, que necesitan
      * conservar el componente al que se asocia el mensaje.</p>
@@ -493,7 +500,7 @@ public class FacesContextUtil {
 
     /**
      * Muestra un mensaje de advertencia a partir de un registro de error, con
-     * su número de mensaje adelante ({@code nro: mensaje}).
+     * su número de mensaje al final ({@code mensaje - (nro)}).
      *
      * <p>Es el reemplazo de {@code showWarn(title, error.getMessage())}.</p>
      *

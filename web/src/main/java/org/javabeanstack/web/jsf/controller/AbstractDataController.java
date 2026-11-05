@@ -782,6 +782,10 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
      * Se ejecuta al finalizar toda operación, normalmente al final de Update()
      * o Revert()
      *
+     * <p>El aviso de operación exitosa se muestra salvo que la propiedad
+     * {@code AFTERACTION_SHOW_MESSAGE} sea falsa: la apaga quien llama a este
+     * controller y muestra su propio aviso.</p>
+     *
      * @param success verdadero o falso en las operaciones update o revert.
      */
     protected void afterAction(boolean success) {
@@ -803,12 +807,8 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
         // en caso de que se actualize un dataTable
         getFacesCtx().setAttribute("nolazyload", Boolean.TRUE);
         if (success) {
-            if (Fn.inList(action, "3", "delete", "borrar")) {
-                facesCtx.showWarn("Borrado realizado con exito");
-            } else if (action.equals("revert")) {
-                facesCtx.showInfo("Operación cancelada");
-            } else {
-                facesCtx.showInfo("Operación realizada con exito");
+            if (Fn.toLogical(Fn.nvl(getProperty("AFTERACTION_SHOW_MESSAGE"), true))) {
+                showActionMessage();
             }
             if (getRow() != null) {
                 setRowSelected(getRow());
@@ -837,6 +837,20 @@ public abstract class AbstractDataController<T extends IDataRow> extends Abstrac
             }
         }
         noLazyRowsLoad = false;
+    }
+
+    /**
+     * Muestra el aviso de la operación que terminó con éxito: borrado,
+     * cancelación o grabación.
+     */
+    private void showActionMessage() {
+        if (Fn.inList(action, "3", "delete", "borrar")) {
+            facesCtx.showWarn("Borrado realizado con exito");
+        } else if (action.equals("revert")) {
+            facesCtx.showInfo("Operación cancelada");
+        } else {
+            facesCtx.showInfo("Operación realizada con exito");
+        }
     }
 
     /**
