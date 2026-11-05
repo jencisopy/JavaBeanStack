@@ -365,9 +365,7 @@ public class FacesContextUtil {
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
                 if (!errors.get(key).isWarning()) {
-                    //La clave no siempre es un campo: "*" y UNIQUEKEY no le dicen nada al usuario
-                    boolean esCampo = !Fn.inList(key, "*", "UNIQUEKEY");
-                    String titleShow = Fn.nvl(title, "Error ") + (esCampo ? " en " + key : "");
+                    String titleShow = titleWithField(Fn.nvl(title, "Error "), key);
                     getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_ERROR, titleShow, messageWithNumber(errors.get(key))));
                 }
             }
@@ -527,7 +525,7 @@ public class FacesContextUtil {
             while (iterator.hasNext()) {
                 key = (String) iterator.next();
                 if (errors.get(key).isWarning()) {
-                    String titleShow = Fn.nvl(title, "Advertencia ") + " en " + key;
+                    String titleShow = titleWithField(Fn.nvl(title, "Advertencia "), key);
                     getFacesContext().addMessage(key, new FacesMessage(FacesMessage.SEVERITY_WARN, titleShow, messageWithNumber(errors.get(key))));
                 }
             }
@@ -535,6 +533,18 @@ public class FacesContextUtil {
                 refreshView(messageView);
             }
         }
+    }
+
+    /**
+     * Título de un mensaje de un campo. La clave no siempre es un campo:
+     * {@code *} y {@code UNIQUEKEY} no le dicen nada al usuario.
+     *
+     * @param title título.
+     * @param key clave del error.
+     * @return el título, con el campo si lo es.
+     */
+    private String titleWithField(String title, String key) {
+        return Fn.inList(key, "*", "UNIQUEKEY") ? title : title + " en " + key;
     }
 
     /**
