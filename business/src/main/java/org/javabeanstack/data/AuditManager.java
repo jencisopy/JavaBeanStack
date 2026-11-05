@@ -222,6 +222,11 @@ public class AuditManager implements IAuditManager {
      * {@code EJBException} y marca la transacción para rollback, igual que
      * antes hacía el {@code save()} del DAO al atraparlo.</p>
      *
+     * <p>Desde el 2026-11-05 la fila de auditoría sale del contexto de
+     * persistencia apenas se inserta (id {@code IDENTITY} en una transacción):
+     * no cambia qué se escribe ni cuándo, pero evita que una grabación de
+     * muchas filas auditadas recorra todas las anteriores en cada flush.</p>
+     *
      * @param <T> tipo de la entidad.
      * @param em entity manager de la grabación.
      * @param sessionId identificador de la sesión del usuario.
@@ -278,7 +283,50 @@ public class AuditManager implements IAuditManager {
             auditEjb.setValue("appuser", appUser);
         }
         em.persist(auditEjb);
+        //Fuera del contexto una vez insertada: el registro de auditoría no se vuelve a leer ni a modificar, y si
+        //queda administrado cada flush siguiente de la transacción lo recorre (una grabación de N filas auditadas
+        //se vuelve cuadrática; FINPER CA5-07, 2026-11-05). Solo cuando el persist ya ejecutó el INSERT (id
+        //IDENTITY en una transacción): sacarla antes cancelaría la escritura.
+        if (insertaAlPersistir(auditEjb.getClass()) && em.isJoinedToTransaction()) {
+            em.detach(auditEjb);
+        }
         //DEBUG y no INFO (D6): vuelca el registro completo de cada fila.
         LOGGER.debug(auditEjb);
+    }
+
+    /** Por clase de auditoría: si su id es {@code IDENTITY} (el persist inserta en el acto). */
+    private static final ConcurrentMap<Class<?>, Boolean> IDENTITY_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * Si el {@code persist} de una fila de esta clase ejecuta el INSERT en el
+     * acto: su {@code @Id} es {@code @GeneratedValue(strategy = IDENTITY)}
+     * (con secuencia o id asignado el INSERT espera al flush). Se mira la
+     * clase y sus superclases, campos y getters.
+     *
+     * @param clase clase de auditoría.
+     * @return si el persist inserta en el acto.
+     */
+    static boolean insertaAlPersistir(Class<?> clase) {
+        return IDENTITY_CACHE.computeIfAbsent(clase, c -> {
+            for (Class<?> k = c; k != null && k != Object.class; k = k.getSuperclass()) {
+                for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                    if (esIdIdentity(f.getAnnotation(jakarta.persistence.Id.class),
+                            f.getAnnotation(jakarta.persistence.GeneratedValue.class))) {
+                        return true;
+                    }
+                }
+                for (java.lang.reflect.Method m : k.getDeclaredMethods()) {
+                    if (esIdIdentity(m.getAnnotation(jakarta.persistence.Id.class),
+                            m.getAnnotation(jakarta.persistence.GeneratedValue.class))) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    private static boolean esIdIdentity(jakarta.persistence.Id id, jakarta.persistence.GeneratedValue gen) {
+        return id != null && gen != null && gen.strategy() == jakarta.persistence.GenerationType.IDENTITY;
     }
 }

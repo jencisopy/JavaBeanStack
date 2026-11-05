@@ -58,6 +58,10 @@ public class AuditManagerTest {
     private final List<String> auditadas = new ArrayList<>();
     /** Lo que persistió el EntityManager. */
     private final List<Object> persistidos = new ArrayList<>();
+    /** Lo que sacó del contexto, después de persistir. */
+    private final List<Object> desprendidos = new ArrayList<>();
+    /** Si el EntityManager está unido a una transacción. */
+    private boolean enTransaccion = true;
     private boolean catalogoCaido;
     private IUserSession sesion;
     private AuditManager manager;
@@ -67,6 +71,8 @@ public class AuditManagerTest {
         consultas.clear();
         auditadas.clear();
         persistidos.clear();
+        desprendidos.clear();
+        enTransaccion = true;
         catalogoCaido = false;
         sesion = sesion("10.0.0.5", false);
         manager = new AuditManager();
@@ -130,6 +136,14 @@ public class AuditManagerTest {
                 (proxy, method, args) -> {
                     if ("persist".equals(method.getName())) {
                         persistidos.add(args[0]);
+                        return null;
+                    }
+                    if ("isJoinedToTransaction".equals(method.getName())) {
+                        return enTransaccion;
+                    }
+                    if ("detach".equals(method.getName())) {
+                        assertTrue(persistidos.contains(args[0]), "detach antes del persist");
+                        desprendidos.add(args[0]);
                         return null;
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -241,6 +255,28 @@ public class AuditManagerTest {
         assertEquals("I", fila.getOperacion());
         assertEquals("10.0.0.5", fila.getIpRequest());
         assertEquals("Ana", fila.getNombre());
+    }
+
+    @Test
+    @DisplayName("write: con id IDENTITY la fila sale del contexto después del persist; con otro id o sin transacción, no")
+    void desprendeTrasInsertar() throws Exception {
+        ClienteIdentity alta = new ClienteIdentity();
+        alta.setAction(IDataRow.INSERT);
+        manager.write(em(), "S1", alta);
+        assertEquals(1, persistidos.size());
+        assertEquals(persistidos, desprendidos, "la misma fila, después de persistirla");
+        assertEquals("I", ((AuditClienteIdentity) persistidos.get(0)).getOperacion());
+        Cliente sinIdentity = new Cliente();
+        sinIdentity.setAction(IDataRow.UPDATE);
+        manager.write(em(), "S1", sinIdentity);
+        assertEquals(1, desprendidos.size(), "sin IDENTITY el INSERT espera al flush: no se desprende");
+        enTransaccion = false;
+        ClienteIdentity fuera = new ClienteIdentity();
+        fuera.setAction(IDataRow.INSERT);
+        manager.write(em(), "S1", fuera);
+        assertEquals(1, desprendidos.size(), "fuera de una transacción el persist no insertó: no se desprende");
+        assertTrue(AuditManager.insertaAlPersistir(AuditClienteIdentity.class));
+        assertTrue(!AuditManager.insertaAlPersistir(AuditCliente.class));
     }
 
     @Test
@@ -448,5 +484,21 @@ public class AuditManagerTest {
         public void setDevice(String device) {
             this.device = device;
         }
+    }
+
+    /** Entidad cuya auditoría tiene id IDENTITY (como las de Maker). */
+    public static class ClienteIdentity extends Cliente {
+
+        public ClienteIdentity() {
+            setAuditClass(AuditClienteIdentity.class);
+        }
+    }
+
+    /** Auditoría con {@code @GeneratedValue(strategy = IDENTITY)}. */
+    public static class AuditClienteIdentity extends AuditCliente {
+
+        @jakarta.persistence.Id
+        @jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+        private Long idauditIdentity;
     }
 }
