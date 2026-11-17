@@ -40,6 +40,7 @@ import org.primefaces.model.FilterMeta;
 
 import org.javabeanstack.data.DataRow;
 import org.javabeanstack.data.IDataLink;
+import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.events.IAppSystemEvents;
 import org.javabeanstack.util.LocalDates;
 import org.javabeanstack.web.model.ColumnModel;
@@ -509,5 +510,123 @@ public class LazyDataRowsTest {
 
         lazyRows = createLazyRows();
         assertEquals(ArticuloTest.class, lazyRows.getEntityClass());
+    }
+
+    /**
+     * Controller con una página en memoria y sin volver a consultar
+     * (noLazyRowsLoad), como queda después de grabar un alta.
+     */
+    static class ControllerEnMemoria extends ControllerStub {
+        private final List<ArticuloTest> filas;
+
+        ControllerEnMemoria(List<ArticuloTest> filas) {
+            this.filas = filas;
+        }
+
+        @Override
+        protected boolean beforeLazyRowsLoad() {
+            return true;
+        }
+
+        @Override
+        public boolean isOpen() {
+            return true;
+        }
+
+        @Override
+        public Boolean getNoLazyRowsLoad() {
+            return true;
+        }
+
+        @Override
+        public List<ArticuloTest> getDataRows() {
+            return filas;
+        }
+    }
+
+    private static ArticuloTest articulo(int accion) {
+        ArticuloTest articulo = new ArticuloTest();
+        articulo.setAction(accion);
+        return articulo;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<ArticuloTest> invokeLoad(LazyDataRows<ArticuloTest> lazyRows, int first, int pageSize)
+            throws Exception {
+        Method load = LazyDataRows.class.getDeclaredMethod("load", int.class, int.class, String.class, Map.class);
+        load.setAccessible(true);
+        return (List<ArticuloTest>) load.invoke(lazyRows, first, pageSize, "", null);
+    }
+
+    /**
+     * Grilla que estaba vacía (total 0): después de grabar el alta la página en
+     * memoria trae el registro grabado y la fila en blanco del alta siguiente.
+     * El total tiene que pasar a 1 (antes quedaba en 0 y PrimeFaces mostraba
+     * «no contiene datos»); la fila en blanco no cuenta.
+     */
+    @Test
+    public void testLoadEnMemoriaGrillaVaciaTrasAlta() throws Exception {
+        List<ArticuloTest> filas = new ArrayList<>(Arrays.asList(articulo(IDataRow.INSERT), articulo(0)));
+        LazyDataRows<ArticuloTest> lazyRows = new LazyDataRows<>(new ControllerEnMemoria(filas));
+        lazyRows.setRowCount(0);
+        assertSame(filas, invokeLoad(lazyRows, 0, 10));
+        assertEquals(1, lazyRows.getRowCount());
+    }
+
+    /**
+     * Al cancelar el alta o borrar la única fila la página queda vacía: el
+     * total baja a 0 y la grilla vuelve a mostrar el mensaje de vacía.
+     */
+    @Test
+    public void testLoadEnMemoriaCancelarOBorrar() throws Exception {
+        LazyDataRows<ArticuloTest> lazyRows = new LazyDataRows<>(new ControllerEnMemoria(new ArrayList<>()));
+        lazyRows.setRowCount(1);
+        invokeLoad(lazyRows, 0, 10);
+        assertEquals(0, lazyRows.getRowCount());
+    }
+
+    /**
+     * En una página que no es la última el total no se toca: la página en
+     * memoria no dice cuántos registros hay después.
+     */
+    @Test
+    public void testLoadEnMemoriaPaginaIntermedia() throws Exception {
+        List<ArticuloTest> filas = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            filas.add(articulo(0));
+        }
+        LazyDataRows<ArticuloTest> lazyRows = new LazyDataRows<>(new ControllerEnMemoria(filas));
+        lazyRows.setRowCount(50);
+        invokeLoad(lazyRows, 0, 10);
+        assertEquals(50, lazyRows.getRowCount());
+    }
+
+    /**
+     * Al paginar con la caché activa (alta encadenada) PrimeFaces pide otra
+     * página pero se devuelve la que está en memoria: el total no se toca
+     * (antes de este control se inflaba en cada página).
+     */
+    @Test
+    public void testLoadEnMemoriaOtraPagina() throws Exception {
+        List<ArticuloTest> filas = new ArrayList<>();
+        for (int i = 0; i < 11; i++) {
+            filas.add(articulo(0));
+        }
+        LazyDataRows<ArticuloTest> lazyRows = new LazyDataRows<>(new ControllerEnMemoria(filas));
+        lazyRows.setRowCount(11);
+        invokeLoad(lazyRows, 10, 10);
+        assertEquals(11, lazyRows.getRowCount());
+    }
+
+    /**
+     * Una fila marcada para borrar todavía existe en la base: se cuenta.
+     */
+    @Test
+    public void testLoadEnMemoriaFilaPorBorrar() throws Exception {
+        List<ArticuloTest> filas = new ArrayList<>(Arrays.asList(articulo(IDataRow.DELETE), articulo(0)));
+        LazyDataRows<ArticuloTest> lazyRows = new LazyDataRows<>(new ControllerEnMemoria(filas));
+        lazyRows.setRowCount(2);
+        invokeLoad(lazyRows, 0, 10);
+        assertEquals(2, lazyRows.getRowCount());
     }
 }

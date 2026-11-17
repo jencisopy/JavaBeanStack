@@ -298,14 +298,14 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
                 return new ArrayList<>();
             }
             if (context.getNoLazyRowsLoad()) {
-                return context.getDataRows();
+                return cachedRows(first, pageSize);
             }
             //Con el atributo "nolazyload" se evita re-ejecutar la consulta cuando
             //solo se refresca el componente (ver AbstractDataController.update)
             if (context.getFacesCtx().getFacesContext().getAttributes().get("nolazyload") != null) {
                 Boolean noLazyLoad = (Boolean) context.getFacesCtx().getFacesContext().getAttributes().get("nolazyload");
                 if (timesLoaded > 0 && noLazyLoad) {
-                    return context.getDataRows();
+                    return cachedRows(first, pageSize);
                 }
                 context.getFacesCtx().getFacesContext().getAttributes().put("nolazyload", false);
             }
@@ -349,6 +349,34 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             ErrorManager.showError(ex, LOGGER);
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * Devuelve la página que el controller tiene en memoria, sin volver a
+     * consultar, y en la última página ajusta el total de registros a lo que
+     * esa lista tiene grabado. Sin el ajuste, después de agregar o borrar
+     * sobre la página cacheada el total quedaba con el valor anterior: con una
+     * grilla que estaba vacía (total 0) PrimeFaces decide que no hay datos y
+     * no muestra el registro recién grabado. No cuenta las filas en alta
+     * todavía sin grabar (la fila en blanco del alta), así que cancelar o
+     * borrar también bajan el total. Solo ajusta si la página pedida es la que
+     * está en memoria: al paginar con la caché activa (alta encadenada) se
+     * devuelve la misma lista y el total no se toca.
+     *
+     * @param first primer registro de la página (base 0).
+     * @param pageSize cantidad de registros por página.
+     * @return los registros que el controller tiene en memoria.
+     */
+    private List<T> cachedRows(int first, int pageSize) {
+        List<T> rows = context.getDataRows();
+        if (rows != null && first == context.getFirstRow()
+                && first + pageSize >= getRowCount()) {
+            int grabadas = (int) rows.stream()
+                    .filter(row -> row != null && row.getAction() != IDataRow.INSERT)
+                    .count();
+            setRowCount(first + grabadas);
+        }
+        return rows;
     }
 
     /**
@@ -631,7 +659,8 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
      * por lo que aquí se devuelve el último total conocido y load lo corrige
      * luego vía setRowCount/recalculateFirst. No se devuelve 0 porque los
      * caminos que reutilizan la página cacheada (noLazyRowsLoad, atributo
-     * "nolazyload") retornan sin recalcular el total y vaciarían el paginador.
+     * "nolazyload") no consultan: solo ajustan el total en la última página
+     * (ver cachedRows) y en las demás vaciarían el paginador.
      *
      * @param filterBy filtros activos del dataTable (no se utiliza).
      * @return el último total de registros conocido.
