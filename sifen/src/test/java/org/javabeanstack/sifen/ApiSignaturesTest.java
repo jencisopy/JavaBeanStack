@@ -95,6 +95,9 @@ public class ApiSignaturesTest {
             R + "api.DEQueryResult", R + "api.RucQueryResult", R + "api.EventResult", R + "api.ResultStatus",
             R + "api.BatchStatus", R + "api.SifenMessage", R + "api.NumberRange", R + "api.CertificateInfo",
             R + "api.ConnectionDiagnosis", R + "api.SignatureVerification",
+            // §8.8 (M3-30): conciliación, PROVISIONAL (todo en api_v1_provisional.txt)
+            R + "SifenReconciler", R + "api.ReconciliationStatus", R + "api.ReconciliationItem",
+            R + "api.ReconciliationResult",
             R + "spi.ISendRegistry",
             R + "core.SifenConfig",
             R + "core.exceptions.SifenException", R + "core.exceptions.SifenConnectionException",
@@ -241,7 +244,7 @@ public class ApiSignaturesTest {
                 ? nombre.substring(0, nombre.length() - 4) + "_provisional.txt" : nombre + "_provisional");
         List<String> lp = new ArrayList<>();
         lp.add("# Contrato de API v1 de jbs-sifen: firmas PROVISIONALES (@Provisional; plan JBSSIF, D43). Generado por ApiSignaturesTest.");
-        lp.add("# Puede cambiar hasta la 2.2.0: una diferencia obliga a regenerarla y anotarlo (ApiSignaturesTest.laFotoProvisionalEsLaFijada).");
+        lp.add("# Sigue provisional en la 2.2.0 y puede cambiar dentro de 2.x (Provisional): una diferencia obliga a regenerarla y anotarlo (ApiSignaturesTest.laFotoProvisionalEsLaFijada).");
         lp.addAll(fotoProvisional());
         Files.write(provisional, lp, StandardCharsets.UTF_8);
     }

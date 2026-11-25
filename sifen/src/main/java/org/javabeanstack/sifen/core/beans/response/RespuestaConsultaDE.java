@@ -33,6 +33,10 @@ import java.time.LocalDateTime;
 
 /**
  * Clase principal que contiene la respuesta de Sifen a la consulta de un Documento Electrónico.
+ *
+ * <p>Deprecada en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): se mantiene sin cambios de
+ * firma en 2.x y se retira en 3.0; no recibe operaciones nuevas. Su reemplazo es {@link
+ * org.javabeanstack.sifen.api.DEQueryResult}.</p>
  */
 public class RespuestaConsultaDE extends BaseResponse {
     private LocalDateTime dFecProc;

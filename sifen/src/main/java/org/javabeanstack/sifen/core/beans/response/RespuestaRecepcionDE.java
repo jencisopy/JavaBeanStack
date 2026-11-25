@@ -30,6 +30,10 @@ import org.w3c.dom.Node;
 
 /**
  * Clase principal que contiene la respuesta de Sifen al envío para aprobación de un Documento Electrónico.
+ *
+ * <p>Deprecada en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): se mantiene sin cambios de
+ * firma en 2.x y se retira en 3.0; no recibe operaciones nuevas. Su reemplazo es {@link
+ * org.javabeanstack.sifen.api.SendResult}.</p>
  */
 public class RespuestaRecepcionDE extends BaseResponse {
     private TxProtDe xProtDE;

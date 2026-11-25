@@ -35,6 +35,10 @@ import java.util.List;
 
 /**
  * Clase principal que contiene la respuesta de Sifen a la consulta de estado de un lote de Documentos Electrónicos.
+ *
+ * <p>Deprecada en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): se mantiene sin cambios de
+ * firma en 2.x y se retira en 3.0; no recibe operaciones nuevas. Su reemplazo es {@link
+ * org.javabeanstack.sifen.api.BatchQueryResult}.</p>
  */
 public class RespuestaConsultaLoteDE extends BaseResponse {
     private LocalDateTime dFecProc;

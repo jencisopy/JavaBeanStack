@@ -79,11 +79,18 @@ public enum ErrorCode {
      * sin tipo de documento (plan JBSSIF, §10.3). El resto del rango lo revisan las reglas del evento.
      */
     JBS_ENT_10("JBS-ENT-10", ErrorCategory.INPUT, null),
-    /** El lote de {@code ISifenClient.sendBatch} está vacío o tiene un elemento nulo (plan JBSSIF, §10.3). */
+    /**
+     * El lote de {@code ISifenClient.sendBatch} está vacío o tiene un elemento nulo (plan JBSSIF, §10.3). También
+     * lo emite {@code SifenReconciler.reconcile} con una lista nula o con un elemento nulo, con un texto propio de
+     * la conciliación (§8.8, I8-19); la acción sugerida es común a los dos caminos y no habla del envío.
+     */
     JBS_ENT_11("JBS-ENT-11", ErrorCategory.INPUT, null),
     /**
      * El documento se firmó para otro ambiente que el del cliente, o el ambiente no se puede determinar por su
-     * QR (plan JBSSIF, §10.7, D43): {@code send}, {@code resolve} y {@code sendBatch} no lo transmiten.
+     * QR (plan JBSSIF, §10.7, D43): {@code send}, {@code resolve} y {@code sendBatch} no lo transmiten. También va
+     * en el veredicto de {@code SifenReconciler.reconcile} (sin consultar, con un texto propio de la conciliación;
+     * §8.8, I8-19), y allí también cuando el ambiente del cliente no se puede leer. La acción sugerida es común a
+     * los dos caminos y no habla del envío.
      */
     JBS_ENT_12("JBS-ENT-12", ErrorCategory.INPUT, null),
     /**
