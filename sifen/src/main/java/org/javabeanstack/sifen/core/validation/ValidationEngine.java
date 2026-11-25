@@ -234,9 +234,24 @@ final class ValidationEngine<T> {
      * @throws IllegalStateException como {@link #validar(Object, GenerationCtx)}.
      */
     ValidationResult validar(T raizValidada, GenerationCtx generationCtx, LocalDateTime fechaFirmaPorOmision) {
+        return validar(raizValidada, generationCtx, fechaFirmaPorOmision, null);
+    }
+
+    /**
+     * Valida una raíz suponiendo la fecha de firma y el {@code Id} de evento que no trae (I8-27, I8-34).
+     *
+     * @param raizValidada         raíz a validar; puede ser {@code null}.
+     * @param generationCtx        contexto de generación; puede ser {@code null}.
+     * @param fechaFirmaPorOmision {@link ValidationContext#getDefaultSignatureDate()}; {@code null} = ninguna.
+     * @param idEventoPorOmision   {@link ValidationContext#getDefaultEventId()}; {@code null} = ninguno.
+     * @return el resultado; nunca {@code null}.
+     * @throws IllegalStateException como {@link #validar(Object, GenerationCtx)}.
+     */
+    ValidationResult validar(T raizValidada, GenerationCtx generationCtx, LocalDateTime fechaFirmaPorOmision,
+            String idEventoPorOmision) {
         T raiz = raizValidada;
         ValidationContext ctx = new ValidationContext(generationCtx, reloj, desactivadas, fechaReglas, this.raiz,
-                fechaFirmaPorOmision);
+                fechaFirmaPorOmision, idEventoPorOmision);
         if (raiz == null) {
             ctx.report(ValidationRule.JBS_VAL_01, this.raiz, null);
             return ctx.resultado();

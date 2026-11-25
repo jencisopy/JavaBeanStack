@@ -28,6 +28,12 @@ import org.w3c.dom.Node;
 
 /**
  * Clase abstracta heredada por las clases de respuestas a las peticiones.
+ *
+ * <p>Es de un paquete interno ({@code internal.*}: «no utilizar»), pero es la superclase de los
+ * {@code core.beans.response.Respuesta*}, deprecados en favor de {@link org.javabeanstack.sifen.ISifenClient}
+ * (D42), y sus miembros públicos se ven a través de ellos. Por eso, como excepción a lo interno, sus firmas
+ * públicas se mantienen sin cambios en toda la línea 2.x, sin {@code @Deprecated} (decisión del usuario ESC-36,
+ * I8-35). No es contrato v1: no se usa directamente.</p>
  */
 public abstract class BaseResponse extends SifenObjectBase {
     private int codigoEstado;

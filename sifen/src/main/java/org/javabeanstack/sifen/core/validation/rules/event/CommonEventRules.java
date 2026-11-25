@@ -24,6 +24,7 @@ package org.javabeanstack.sifen.core.validation.rules.event;
 
 import static org.javabeanstack.sifen.core.validation.support.ValueChecks.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.javabeanstack.sifen.core.fields.request.event.TrGesEve;
 import org.javabeanstack.sifen.core.validation.support.ValueChecks;
@@ -45,12 +46,14 @@ final class CommonEventRules extends RuleSet<TrGesEve, TrGesEve> {
 
     CommonEventRules() {
         super("EVENTO-comunes", RuleGroup.EVENTO, "rEve");
+        // I8-34: Id y dFecFirma evalúan los del evento o, si faltan, los que supone la corrida
+        // (ValidationContext#getDefaultEventId/getDefaultSignatureDate, los de ISifenClient.validateEvents)
         declare(rule("JBS-EVENTO-01").field("Id").error().showValue(),
-                passes(s -> present(s.e().getId()) && digits(s.e().getId(), 1, 10), s -> s.e().getId()));
+                passes(s -> present(idEvento(s)) && digits(idEvento(s), 1, 10), CommonEventRules::idEvento));
         declare(rule("JBS-EVENTO-02").field("dFecFirma").error().showValue(),
-                required(TrGesEve::getdFecFirma));
+                passes(s -> fechaFirma(s) != null));
         declare(rule("GDE004").field("dFecFirma").warning().dCodRes("4008/4071").showValue(),
-                passes(s -> s.e().getdFecFirma() == null || !s.e().getdFecFirma().isAfter(s.ctx().getNow()), s -> s.e().getdFecFirma()));
+                passes(s -> fechaFirma(s) == null || !fechaFirma(s).isAfter(s.ctx().getNow()), CommonEventRules::fechaFirma));
         declareNotEvaluated(rule("GDE005").field("dVerFor").error().dCodRes("4000").showValue(),
                 NotEvaluatedReason.CONSTANT);
         declare(rule("JBS-EVENTO-03").field("gGroupTiEvt").error().showValue(),
@@ -60,6 +63,22 @@ final class CommonEventRules extends RuleSet<TrGesEve, TrGesEve> {
     @Override
     protected List<Subject<TrGesEve, TrGesEve>> subjects(TrGesEve raiz) {
         return unique(raiz);
+    }
+
+    /**
+     * {@code Id} del evento o, si no lo trae (nulo o en blanco, como lo completa {@code sendEvents}), el que supone
+     * la corrida (I8-34); el del evento si la corrida no supone ninguno.
+     */
+    private static String idEvento(Subject<TrGesEve, TrGesEve> s) {
+        String id = s.e().getId();
+        String supuesto = s.ctx().getDefaultEventId();
+        return (id == null || id.isBlank()) && supuesto != null ? supuesto : id;
+    }
+
+    /** {@code dFecFirma} del evento o, si no la trae, la que supone la corrida (I8-34); {@code null} si ninguna. */
+    private static LocalDateTime fechaFirma(Subject<TrGesEve, TrGesEve> s) {
+        LocalDateTime f = s.e().getdFecFirma();
+        return f != null ? f : s.ctx().getDefaultSignatureDate();
     }
 
     /** Eventos cargados en el grupo (la librería escribe solo el primero de los ocho que conoce). */

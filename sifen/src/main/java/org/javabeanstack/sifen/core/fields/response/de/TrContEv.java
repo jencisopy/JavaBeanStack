@@ -30,6 +30,16 @@ import org.javabeanstack.sifen.internal.response.SifenObjectFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+/**
+ * Un evento del DE consultado ({@code rContEv}: el evento y la respuesta a su recepción).
+ *
+ * <p>Lo expone {@link org.javabeanstack.sifen.core.fields.response.de.TxContenEv#getrContEvList()}, que cuelga de
+ * {@link org.javabeanstack.sifen.core.beans.response.RespuestaConsultaDE#getxContenDE()}, deprecada en favor de
+ * {@link org.javabeanstack.sifen.ISifenClient} (D42): por eso sus firmas públicas se mantienen sin cambios en toda
+ * la línea 2.x, sin {@code @Deprecated} (decisión del usuario ESC-36, I8-35). No es contrato v1: la aplicación usa
+ * {@link org.javabeanstack.sifen.ISifenClient} y sus resultados de {@code api}. Su reemplazo es {@link
+ * org.javabeanstack.sifen.api.DEQueryResult#getEvents()}.</p>
+ */
 public class TrContEv extends SifenObjectBase {
     private EventosDE xEvento;
     private RespuestaRecepcionEvento rResEnviEventoDe;

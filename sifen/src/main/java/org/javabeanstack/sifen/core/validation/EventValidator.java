@@ -24,6 +24,7 @@ package org.javabeanstack.sifen.core.validation;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -104,13 +105,34 @@ public final class EventValidator {
      * @return el resultado combinado; nunca {@code null}.
      */
     public ValidationResult validate(EventosDE eventos, GenerationCtx generationCtx) {
+        return validate(eventos, generationCtx, null, null);
+    }
+
+    /**
+     * Valida todos los eventos de un envío suponiendo la fecha de firma y el {@code Id} con que los enviaría
+     * {@code ISifenClient.sendEvents} si no los traen: es la validación previa de
+     * {@code ISifenClient.validateEvents} (I8-34, decisión del usuario ESC-35). En cada evento, si trae
+     * {@code dFecFirma} se valida la suya y si no las reglas de {@code dFecFirma} ({@code JBS-EVENTO-02},
+     * {@code GDE004}) evalúan la supuesta; si trae {@code Id} (no nulo ni en blanco) se valida el suyo y si no
+     * {@code JBS-EVENTO-01} evalúa el supuesto. Los eventos <b>no se modifican</b>.
+     *
+     * @param eventos              envío de eventos; {@code null} o sin eventos da {@code JBS-VAL-01}.
+     * @param generationCtx        contexto de generación.
+     * @param defaultSignatureDate {@code dFecFirma} supuesta si un evento no la cargó; {@code null} = ninguna.
+     * @param defaultEventId       {@code Id} supuesto si un evento no lo cargó; {@code null} = ninguno (con los dos
+     *                             nulos es igual que {@link #validate(EventosDE, GenerationCtx)}).
+     * @return el resultado combinado; nunca {@code null}.
+     */
+    public ValidationResult validate(EventosDE eventos, GenerationCtx generationCtx, LocalDateTime defaultSignatureDate,
+            String defaultEventId) {
         if (eventos == null || eventos.getrGesEveList() == null || eventos.getrGesEveList().isEmpty()) {
             return motor.validar(null, generationCtx);
         }
         List<ValidationResult> resultados = new ArrayList<>();
         List<TrGesEve> lista = eventos.getrGesEveList();
         for (int i = 0; i < lista.size(); i++) {
-            resultados.add(motor.validar(lista.get(i), generationCtx).withPrefix("rGesEve[" + i + "]"));
+            resultados.add(motor.validar(lista.get(i), generationCtx, defaultSignatureDate, defaultEventId)
+                    .withPrefix("rGesEve[" + i + "]"));
         }
         return ValidationResult.combine(resultados);
     }

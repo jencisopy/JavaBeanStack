@@ -74,11 +74,27 @@ final class SifenClientShared {
      */
     String nextEventId(Clock clock) {
         long now = Math.floorMod(clock.millis(), MAX_EVENT_ID + 1);
-        long next = eventSequence.updateAndGet(prev -> {
-            long n = Math.max(prev + 1, now);
-            // al pasar de diez dígitos vuelve al reloj (o a 1 si el reloj marca justo el anterior)
-            return n > MAX_EVENT_ID ? (now == prev ? 1 : Math.max(1, now)) : n;
-        });
-        return String.valueOf(next);
+        return String.valueOf(eventSequence.updateAndGet(prev -> following(prev, now)));
+    }
+
+    /**
+     * El {@code Id} que daría ahora {@link #nextEventId(Clock)}, <b>sin avanzar la secuencia</b> (I8-34, ESC-35):
+     * es el que supone {@code ISifenClient.validateEvents} para un evento sin {@code Id}. No lo reserva: otra
+     * operación puede tomarlo antes, así que {@code sendEvents} puede enviar otro; los dos cumplen la misma
+     * regla ({@code JBS-EVENTO-01}: de 1 a 10 dígitos).
+     *
+     * @param clock reloj.
+     * @return el {@code Id} supuesto, de 1 a 10 dígitos.
+     */
+    String peekNextEventId(Clock clock) {
+        long now = Math.floorMod(clock.millis(), MAX_EVENT_ID + 1);
+        return String.valueOf(following(eventSequence.get(), now));
+    }
+
+    /** Regla única del siguiente {@code Id} (la usan {@code nextEventId} y {@code peekNextEventId}). */
+    private static long following(long prev, long now) {
+        long n = Math.max(prev + 1, now);
+        // al pasar de diez dígitos vuelve al reloj (o a 1 si el reloj marca justo el anterior)
+        return n > MAX_EVENT_ID ? (now == prev ? 1 : Math.max(1, now)) : n;
     }
 }

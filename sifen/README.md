@@ -24,8 +24,12 @@ repositorio; el módulo se publica bajo la LGPL v3, como el resto de JavaBeanSta
 - **Deprecado, se mantiene en `2.x`**: la fachada estática `Sifen`, los `Respuesta*` y
   `ValidezFirmaDigital`, heredados de `rshk-jsifenlib`. No se quitan ni cambian de firma dentro de `2.x`,
   no reciben operaciones nuevas y no están en la foto de firmas; se retiran en la `3.0`. No llevan la
-  anotación `@Deprecated`: el reemplazo es `ISifenClient`. La misma garantía alcanza a `TxProtDe`,
-  `TxContenDE` y `GenerationCtx`, que aparecen en sus firmas.
+  anotación `@Deprecated`: el reemplazo es `ISifenClient`. Los 11 tipos que aparecen en sus firmas
+  mantienen sus firmas públicas en `2.x`: `TxProtDe` y `TxContenDE`, que además se retiran en la `3.0` con lo
+  que los expone, y `TgResProc`, `TgResProcLote`, `TgResProcEVe`, `TxContRuc`, `TxContenEv`, `TrContEv`,
+  `BaseResponse`, `SifenObjectBase` y `GenerationCtx`, de los que no se promete más (de `GenerationCtx`, en la
+  `3.0` se retiran las sobrecargas de `Sifen` que lo reciben, no el tipo). El motor de validación (`DEValidator`, `EventValidator`, `ValidationContext`) no es API pública: se
+  valida con `ISifenClient.validateDE` y `validateEvents`.
 
 Qué ofrece:
 

@@ -26,6 +26,17 @@ import org.javabeanstack.sifen.internal.response.SifenObjectBase;
 import org.javabeanstack.sifen.internal.util.ResponseUtil;
 import org.w3c.dom.Node;
 
+/**
+ * Resultado de procesamiento ({@code gResProc}: código y mensaje) de las respuestas de SIFEN.
+ *
+ * <p>Lo exponen {@link org.javabeanstack.sifen.core.fields.response.TxProtDe#getgResProc()}, {@link
+ * org.javabeanstack.sifen.core.fields.response.batch.TgResProcLote#getgResProc()} y {@link
+ * org.javabeanstack.sifen.core.fields.response.event.TgResProcEVe#getgResProc()}, que cuelgan de los {@code
+ * Respuesta*} deprecados en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): por eso sus firmas
+ * públicas se mantienen sin cambios en toda la línea 2.x, sin {@code @Deprecated} (decisión del usuario ESC-36,
+ * I8-35). No es contrato v1: la aplicación usa {@link org.javabeanstack.sifen.ISifenClient} y sus resultados de
+ * {@code api}.</p>
+ */
 public class TgResProc extends SifenObjectBase {
     private String dCodRes;
     private String dMsgRes;

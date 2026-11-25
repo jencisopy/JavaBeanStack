@@ -60,6 +60,7 @@ public final class ValidationContext {
     private final LocalDate fechaReglas;
     private final String raiz;
     private final LocalDateTime fechaFirmaPorOmision;
+    private final String idEventoPorOmision;
     private final List<ValidationError> reportados = new ArrayList<>();
 
     /**
@@ -103,18 +104,22 @@ public final class ValidationContext {
      */
     ValidationContext(GenerationCtx generationCtx, Clock reloj, Set<String> desactivadas, LocalDate fechaReglas,
             String raiz) {
-        this(generationCtx, reloj, desactivadas, fechaReglas, raiz, null);
+        this(generationCtx, reloj, desactivadas, fechaReglas, raiz, null, null);
     }
 
     /**
-     * Crea el contexto de una corrida con la fecha de firma que se supone cuando el documento no la trae
-     * (I8-27: la validación previa del cliente valida como firmaría {@code sign}).
+     * Crea el contexto de una corrida con los valores que se suponen cuando el documento o el evento no los
+     * trae: la validación previa del cliente valida como firmaría {@code sign} (I8-27) o como enviaría
+     * {@code sendEvents} (I8-34).
      *
-     * @param fechaFirmaPorOmision {@code dFecFirma} supuesta si el documento no la cargó; {@code null} = ninguna.
+     * @param fechaFirmaPorOmision {@code dFecFirma} supuesta si el documento o el evento no la cargó; {@code null} =
+     *                             ninguna.
+     * @param idEventoPorOmision   {@code Id} supuesto si el evento no lo cargó ({@code rEve}); {@code null} = ninguno.
      */
     ValidationContext(GenerationCtx generationCtx, Clock reloj, Set<String> desactivadas, LocalDate fechaReglas,
-            String raiz, LocalDateTime fechaFirmaPorOmision) {
+            String raiz, LocalDateTime fechaFirmaPorOmision, String idEventoPorOmision) {
         this.fechaFirmaPorOmision = fechaFirmaPorOmision;
+        this.idEventoPorOmision = idEventoPorOmision;
         this.raiz = raiz == null ? ValidationRule.DE_ROOT : raiz;
         this.generationCtx = generationCtx;
         this.ahora = LocalDateTime.now(reloj == null ? RELOJ_PARAGUAY : reloj);
@@ -183,16 +188,32 @@ public final class ValidationContext {
     }
 
     /**
-     * Devuelve la fecha de firma ({@code dFecFirma}) que esta corrida supone cuando el documento no la trae: la
-     * hora con que la completaría {@code ISifenClient.sign}. La fija
-     * {@link DEValidator#validate(org.javabeanstack.sifen.core.beans.DocumentoElectronico, GenerationCtx, LocalDateTime)},
-     * que es la que usa {@code ISifenClient.validateDE} (I8-27); en las demás corridas es {@code null} y la falta
-     * de {@code dFecFirma} se reporta ({@code JBS-A-03}). Las reglas de {@code dFecFirma} usan la del documento si está cargada y esta si no.
+     * Devuelve la fecha de firma ({@code dFecFirma}) que esta corrida supone cuando el documento o el evento no la
+     * trae: la hora con que la completaría {@code ISifenClient.sign} o {@code ISifenClient.sendEvents}. La fija
+     * {@link DEValidator#validate(org.javabeanstack.sifen.core.beans.DocumentoElectronico, GenerationCtx,
+     * LocalDateTime)}, que es la que usa {@code ISifenClient.validateDE} (I8-27), o
+     * {@link EventValidator#validate(org.javabeanstack.sifen.core.beans.EventosDE, GenerationCtx, LocalDateTime,
+     * String)}, la de {@code ISifenClient.validateEvents} (I8-34); en las demás corridas es {@code null} y la
+     * falta de {@code dFecFirma} se reporta ({@code JBS-A-03}, {@code JBS-EVENTO-02}). Las reglas de
+     * {@code dFecFirma} usan la del documento o del evento si está cargada y esta si no.
      *
      * @return la fecha supuesta, o {@code null} si la corrida no supone ninguna.
      */
     public LocalDateTime getDefaultSignatureDate() {
         return fechaFirmaPorOmision;
+    }
+
+    /**
+     * Devuelve el {@code Id} de evento ({@code rEve@Id}) que esta corrida supone cuando el evento no lo trae
+     * (nulo o en blanco, el mismo criterio con que lo completa {@code ISifenClient.sendEvents}). Lo fija
+     * {@link EventValidator#validate(org.javabeanstack.sifen.core.beans.EventosDE, GenerationCtx, LocalDateTime,
+     * String)}, la de {@code ISifenClient.validateEvents} (I8-34); en las demás corridas es {@code null} y la falta
+     * del {@code Id} se reporta ({@code JBS-EVENTO-01}).
+     *
+     * @return el {@code Id} supuesto, o {@code null} si la corrida no supone ninguno.
+     */
+    public String getDefaultEventId() {
+        return idEventoPorOmision;
     }
 
     /**
