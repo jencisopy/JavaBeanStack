@@ -30,6 +30,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.JoinTable;
@@ -37,6 +38,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.PrimaryKeyJoinColumns;
 
 import org.javabeanstack.model.tables.Ciudad;
 import org.junit.jupiter.api.Test;
@@ -315,9 +317,83 @@ public class AssociationOrderByTest {
         String codigo;
     }
 
+    /**
+     * Raíz para las guardas de la correlación por la clave foránea: una
+     * asociación por cada motivo para volver a la raíz, cada una con un solo
+     * motivo, y una de control que sí se correlaciona.
+     */
+    static class RaizGuardas {
+
+        @Id
+        Long idraiz;
+        // Control: columna simple hacia la clave simple del destino.
+        @ManyToOne
+        Opcional opcional;
+        // Destino con la clave anotada en el método, no en el atributo.
+        @ManyToOne
+        ClaveEnMetodo porMetodo;
+        // Destinos con identidad derivada: dos @Id con una asociación, o una sola asociación como clave.
+        @ManyToOne
+        ClaveDerivada derivada;
+        @ManyToOne
+        ClaveMuchosAUno derivadaUnaAsociacion;
+        // Destino sin ningún @Id.
+        @ManyToOne
+        SinClave sinClave;
+        // Destino con @IdClass unido por una sola columna: solo falla la clave del destino.
+        @ManyToOne
+        @JoinColumn(name = "idparte1", referencedColumnName = "parte1")
+        ConIdClass conIdClass;
+        // Dos columnas de unión hacia un destino de clave simple, sin referencedColumnName: solo
+        // falla la cantidad de columnas.
+        @ManyToOne
+        @JoinColumns({
+            @JoinColumn(name = "idopcional1"),
+            @JoinColumn(name = "idopcional2")})
+        Opcional dosColumnas;
+        // targetEntity en un @OneToOne: el tipo del atributo tiene clave simple, pero el destino es otro.
+        @OneToOne(targetEntity = Obligatoria.class)
+        Opcional unoAUnoPorTipo;
+        @ManyToOne(targetEntity = Obligatoria.class)
+        Opcional muchosAUnoPorTipo;
+        // Clave primaria compartida declarada con la forma plural.
+        @OneToOne
+        @PrimaryKeyJoinColumns({
+            @PrimaryKeyJoinColumn(name = "idraiz", referencedColumnName = "idopcional")})
+        Opcional porClavesPrimarias;
+    }
+
+    /** Destino con la clave en el método (acceso por propiedad). */
+    static class ClaveEnMetodo {
+
+        Long idclave;
+        String nombre;
+
+        @Id
+        public Long getIdclave() {
+            return idclave;
+        }
+    }
+
+    /** Destino con {@code @IdClass}: dos atributos {@code @Id} simples. */
+    @IdClass(ClaveDosPartes.class)
+    static class ConIdClass {
+
+        @Id
+        Long parte1;
+        @Id
+        Long parte2;
+        String nombre;
+    }
+
     /** Forma de respaldo: subconsulta correlacionada sobre la raíz. */
     private static String sub(String alias, String path) {
-        return "(select " + alias + "." + path + " from Raiz " + alias + " where " + alias + " = o)";
+        return sub("Raiz", alias, path);
+    }
+
+    /** Forma de respaldo sobre una raíz dada. */
+    private static String sub(String root, String alias, String path) {
+        return "(select " + alias + "." + path + " from " + root + " " + alias + " where " + alias + " = o)";
     }
 
     /** Forma por la clave foránea del primer salto. */
@@ -689,6 +765,71 @@ public class AssociationOrderByTest {
         // Destino con @EmbeddedId: no tiene una clave simple.
         assertEquals(sub("jbs_ob1", "incrustada.nombre") + " desc nulls first, o.idraiz desc",
                 AssociationOrderBy.rewrite(Raiz.class, "o", "incrustada.nombre desc"));
+    }
+
+    /**
+     * Una prueba por cada guarda de la vuelta a la raíz, con la asociación
+     * de control al lado: si una guarda se quitara, ese término pasaría a la
+     * forma por la clave foránea y la prueba fallaría.
+     */
+    @Test
+    public void testEachGuardFallsBackToRoot() {
+        // Control: la misma forma de camino se correlaciona por la clave foránea.
+        assertEquals(fk("jbs_ob1", "Opcional", "nombre", "opcional") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "opcional.nombre"));
+        // Destino con la clave en el método: no se encuentra por los atributos.
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "porMetodo.nombre") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "porMetodo.nombre"));
+        // Destino con identidad derivada: dos @Id con una asociación, o la asociación sola como clave.
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "derivada.nombre") + " desc nulls first, o.idraiz desc",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "derivada.nombre desc"));
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "derivadaUnaAsociacion.nombre") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "derivadaUnaAsociacion.nombre"));
+        // Destino sin clave.
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "sinClave.opcional.nombre") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "sinClave.opcional.nombre"));
+        // targetEntity (en @OneToOne y en @ManyToOne) y @PrimaryKeyJoinColumns.
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "muchosAUnoPorTipo.nombre") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "muchosAUnoPorTipo.nombre"));
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "unoAUnoPorTipo.nombre") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "unoAUnoPorTipo.nombre"));
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "porClavesPrimarias.nombre") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "porClavesPrimarias.nombre"));
+    }
+
+    /**
+     * {@code @IdClass} y {@code @JoinColumns} por separado: cada regla basta
+     * sola para volver a la raíz (la prueba de arriba de la clase las junta).
+     */
+    @Test
+    public void testIdClassAndJoinColumnsAreIndependent() {
+        // Una sola columna de unión, pero el destino tiene dos @Id.
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "conIdClass.nombre") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "conIdClass.nombre"));
+        // Destino de clave simple, pero unido por dos columnas.
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "dosColumnas.nombre") + " desc nulls first, o.idraiz desc",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "dosColumnas.nombre desc"));
+        // Los dos términos en el mismo orden: cada uno con su alias y su forma.
+        assertEquals(sub("RaizGuardas", "jbs_ob1", "conIdClass.nombre") + " asc nulls last, "
+                + fk("jbs_ob2", "Opcional", "nombre", "opcional") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(RaizGuardas.class, "o", "conIdClass.nombre, opcional.nombre"));
+    }
+
+    /**
+     * Primer salto que es la clave de la raíz ({@code @Id @OneToOne} con su
+     * columna de unión): se correlaciona por esa columna y el desempate es la
+     * clave derivada, una sola vez.
+     */
+    @Test
+    public void testFirstHopIsTheDerivedKey() {
+        assertEquals(fk("jbs_ob1", "Purchase", "number", "purchase") + " desc nulls first, o.purchase.idpurchase desc",
+                AssociationOrderBy.rewrite(Delivery.class, "o", "purchase.number desc"));
+        assertEquals(fk("jbs_ob1", "Purchase", "number", "purchase") + " asc nulls last, o.purchase.idpurchase",
+                AssociationOrderBy.rewrite(Delivery.class, "o", "o.purchase.number"));
+        // Sin la columna de unión declarada: la unión por omisión apunta a la clave del destino, así que
+        // se correlaciona igual; pero sin columna conocida no hay desempate por la clave derivada.
+        assertEquals(fk("jbs_ob1", "Opcional", "nombre", "origen") + " asc nulls last",
+                AssociationOrderBy.rewrite(ClaveUnoAUnoSinColumna.class, "o", "origen.nombre"));
     }
 
     /**

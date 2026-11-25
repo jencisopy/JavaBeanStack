@@ -83,10 +83,18 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
     /**
      * Clave de {@link IDataRow#getProperties()} de la fila procesada bajo la
      * que se guarda el conjunto ({@code Set<String>}) de atributos que se
-     * completaron con el valor por defecto de una columna <b>ausente</b> en la
-     * planilla. La importación lo usa para no pisar con esos valores un
-     * registro que ya existe (decisión del usuario, 2026-09-16: si el
-     * registro existe y la columna no vino, se conserva lo que hay).
+     * completaron con el valor por defecto de la columna: porque la columna
+     * está <b>ausente</b> en la planilla, o porque la celda vino <b>vacía</b>
+     * y la columna declaró {@code defaultWhenBlank}. La importación lo usa
+     * para no pisar con esos valores un registro que ya existe (decisión del
+     * usuario, 2026-09-16: si el registro existe y la columna no vino, se
+     * conserva lo que hay; extendida a la celda vacía el 2026-11-25, D59 del
+     * plan XLSEXP de Maker). En un alta el valor por defecto se graba igual.
+     * Excepción: si lo guardado es NULL en un atributo {@code @NotNull}, el
+     * valor por defecto sí se graba, para que el dato quede válido; vale para
+     * la columna ausente y para la celda vacía, también en una columna
+     * {@code noOverwrite()} (D61 y D63 del plan XLSEXP de Maker, hallazgo
+     * E4-24).
      */
     public static final String DEFAULTED_FIELDS = "EXCEL_DEFAULTED_FIELDS";
 
@@ -378,14 +386,22 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
      * columna «X» no se pudo aplicar: …» (número 50000) en vez de abortar la
      * importación entera en la primera fila;</li>
      * <li>si la celda está vacía y la columna declaró
-     * {@code defaultWhenBlank} con valor por defecto, se asigna ese valor; si
+     * {@code defaultWhenBlank} con valor por defecto, se asigna ese valor y el
+     * atributo se anota en {@link #DEFAULTED_FIELDS}, como el de la columna
+     * ausente (al sobreescribir no pisa lo guardado, salvo que sea un NULL
+     * obligatorio: D61 y D63); si
      * la columna es {@link ColumnRequirement#VALUE}, se marca el registro con
      * el error «La columna «X» no puede estar vacía» (número 50000) y se sigue
      * con la columna siguiente;</li>
      * <li>si la celda trae valor, se aplica la transformación de la columna
      * (si declaró una) y se asigna el resultado convertido. Una excepción de
      * la transformación marca el registro con el error «Error al convertir la
-     * columna «X»: …» (número 50000) y no asigna el atributo.</li>
+     * columna «X»: …» (número 50000) y no asigna el atributo. En una columna
+     * {@code Boolean}, la celda numérica 1 se lee como {@code true} y 0 como
+     * {@code false} (también 1.0 y 0.0); cualquier otro número marca el
+     * registro con el error «La columna «X» no es válida: El valor numérico N
+     * no es convertible a lógico (se admite 1 o 0)» (número 50000) y no
+     * asigna el atributo (E4-25 del plan XLSEXP de Maker, D62).</li>
      * </ul>
      * El registro marcado con error no interrumpe el procesamiento: la
      * importación lo deriva al listado de filas con error.
@@ -423,6 +439,10 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
                 //sobre la exigencia de valor de una columna VALUE.
                 if (spec.isDefaultWhenBlank() && spec.hasDefaultValue()) {
                     applyDefaultValue(target, spec, fieldName, fieldType);
+                    //Igual que la columna ausente: la celda vacía no trae un
+                    //valor, así que al sobreescribir no pisa lo guardado (D59
+                    //del plan XLSEXP de Maker, hallazgo E4-20).
+                    registerField(target, DEFAULTED_FIELDS, fieldName);
                     continue;
                 }
                 if (spec.getRequirement() == ColumnRequirement.VALUE) {
@@ -441,6 +461,20 @@ public abstract class ExcelRowProcessor<T extends IDataRow> implements IExcelRow
                             + Fn.nvl(exp.getMessage(), exp.getClass().getSimpleName()), fieldName, 50000);
                     continue;
                 }
+            }
+            if (fieldType == Boolean.class) {
+                //Un número que no es 1 ni 0 en una columna lógica es un dato
+                //malo de la fila, no un corte de la importación (E4-25, D62).
+                Object logical;
+                try {
+                    logical = ExcelUtil.convertValue(value, fieldType);
+                } catch (IllegalArgumentException exp) {
+                    target.setErrors("La columna «" + header + "» no es válida: " + exp.getMessage(),
+                            fieldName, 50000);
+                    continue;
+                }
+                target.setValue(fieldName, logical);
+                continue;
             }
             target.setValue(fieldName, ExcelUtil.convertValue(value, fieldType));
         }

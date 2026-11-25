@@ -180,6 +180,14 @@ public final class ExcelColumnSpec {
      * valor por defecto y la fila <b>no</b> se marca con error, porque el valor
      * por defecto es la declaración explícita de qué poner cuando el dato no
      * viene.
+     * <p>
+     * El valor por defecto se graba en las <b>altas</b>; al sobreescribir un
+     * registro existente, la celda vacía <b>conserva lo guardado</b>, igual
+     * que la columna ausente (D59 del plan XLSEXP de Maker; ver
+     * {@link ExcelRowProcessor#DEFAULTED_FIELDS}). Excepción: si lo guardado
+     * es NULL en un atributo {@code @NotNull}, se graba el valor por defecto
+     * para que el dato quede válido, aunque la columna sea
+     * {@link Builder#noOverwrite()} (D61 y D63).
      *
      * @return {@code true} si el valor por defecto reemplaza a la celda vacía.
      */

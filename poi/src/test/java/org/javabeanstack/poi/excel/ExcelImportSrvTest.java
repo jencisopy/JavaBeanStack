@@ -320,6 +320,8 @@ public class ExcelImportSrvTest {
         boolean deleteFails = false;
         /** Empresa del existente {@code u1} (null = sin empresa). */
         Long companyOfU1;
+        /** Resultado que devuelve {@code save} (null = éxito). */
+        org.javabeanstack.data.IDataResult saveResult;
         int lookups = 0;
 
         @Override
@@ -378,6 +380,9 @@ public class ExcelImportSrvTest {
                             }
                             return null;
                         case "save":
+                            if (saveResult != null) {
+                                return saveResult;
+                            }
                             updated.add((IDataRow) args[1]);
                             return stub(org.javabeanstack.data.IDataResult.class);
                         case "checkAndSave":
@@ -933,6 +938,1043 @@ public class ExcelImportSrvTest {
             AppUser u2 = (AppUser) srv.updated.stream()
                     .filter(r -> "u2".equals(((AppUser) r).getCode())).findFirst().orElseThrow();
             assertEquals("default@dominio.com", u2.getEmail1());
+        }
+    }
+
+    // ---- Celda vacía con defaultWhenBlank (D59 del plan XLSEXP de Maker, E4-20) ----
+
+    /**
+     * Corre la importación con «sobreescribir» sobre una planilla
+     * {@code code}/{@code email1} donde {@code email1} declara un valor por
+     * defecto con {@code defaultWhenBlank}, y devuelve la entidad que recibió
+     * {@code save} para el {@code code} pedido. {@code u1} existe (con
+     * {@code email1 = "previo@dominio.com"}); {@code u2} no.
+     */
+    private AppUser importarConDefaultWhenBlank(String code, String email1) throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook(new String[]{"code", "email1"}, new String[]{code, email1})) {
+            srv.setExcelWorkbook(wb);
+            ExcelColumns columns = new ExcelColumns();
+            columns.add("code", "code").required();
+            columns.add("email1", "email1").defaultValue("default@dominio.com").defaultWhenBlank();
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, columns) {
+            });
+            srv.setOverWriteData(true);
+
+            srv.checkValidation(null);
+            srv.importData();
+
+            assertEquals(1, srv.getRowsMigratedCount(), srv.getResultLog());
+            return (AppUser) srv.updated.get(0);
+        }
+    }
+
+    /** Alta con la celda vacía: se graba el valor por defecto. */
+    @Test
+    public void testDefaultWhenBlankAltaConCeldaVaciaGrabaElDefault() throws Exception {
+        AppUser alta = importarConDefaultWhenBlank("u2", "");
+        assertNull(alta.getIduser(), "es un alta");
+        assertEquals("default@dominio.com", alta.getEmail1());
+    }
+
+    /** Alta con valor: se graba el valor de la celda. */
+    @Test
+    public void testDefaultWhenBlankAltaConValorGrabaElValor() throws Exception {
+        AppUser alta = importarConDefaultWhenBlank("u2", "nuevo@dominio.com");
+        assertNull(alta.getIduser(), "es un alta");
+        assertEquals("nuevo@dominio.com", alta.getEmail1());
+    }
+
+    /**
+     * «Sobreescribir» con la celda vacía: se conserva lo guardado (D59). Antes
+     * de la corrección el default pisaba el valor del existente.
+     */
+    @Test
+    public void testDefaultWhenBlankSobreescribirConCeldaVaciaConservaLoGuardado() throws Exception {
+        AppUser existente = importarConDefaultWhenBlank("u1", "");
+        assertEquals(100L, existente.getIduser(), "es el existente");
+        assertEquals("previo@dominio.com", existente.getEmail1(),
+                "la celda vacía con default NO pisa al existente");
+    }
+
+    /** «Sobreescribir» con valor: el valor de la celda pisa al existente. */
+    @Test
+    public void testDefaultWhenBlankSobreescribirConValorPisa() throws Exception {
+        AppUser existente = importarConDefaultWhenBlank("u1", "nuevo@dominio.com");
+        assertEquals(100L, existente.getIduser(), "es el existente");
+        assertEquals("nuevo@dominio.com", existente.getEmail1());
+    }
+
+    // ---- Revisión previa con Bean Validation y motivo en el log (XLSEXP, E4-21) ----
+
+    /**
+     * Validador simulado: para {@code validateProperty} mira las anotaciones
+     * {@code @NotNull} y {@code @Size} del atributo, como lo haría la
+     * implementación de Bean Validation (que no está en el classpath de las
+     * pruebas). Registra los atributos que se le piden.
+     */
+    static class FakeValidator implements InvocationHandler {
+
+        final List<String> properties = new ArrayList<>();
+
+        jakarta.validation.Validator proxy() {
+            return (jakarta.validation.Validator) Proxy.newProxyInstance(
+                    jakarta.validation.Validator.class.getClassLoader(),
+                    new Class[]{jakarta.validation.Validator.class}, this);
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (!"validateProperty".equals(method.getName())) {
+                throw new UnsupportedOperationException(method.getName());
+            }
+            Object bean = args[0];
+            String property = (String) args[1];
+            properties.add(property);
+            java.util.Set<jakarta.validation.ConstraintViolation<?>> result = new java.util.LinkedHashSet<>();
+            java.lang.reflect.Field field = bean.getClass().getDeclaredField(property);
+            field.setAccessible(true);
+            Object value = field.get(bean);
+            jakarta.validation.constraints.NotNull notNull = field.getAnnotation(jakarta.validation.constraints.NotNull.class);
+            if (notNull != null && value == null) {
+                result.add(violation(property, notNull.message().startsWith("{") ? "no debe ser nulo" : notNull.message()));
+            }
+            jakarta.validation.constraints.Size size = field.getAnnotation(jakarta.validation.constraints.Size.class);
+            if (size != null && value instanceof String
+                    && (((String) value).length() < size.min() || ((String) value).length() > size.max())) {
+                result.add(violation(property, "el tamaño debe estar entre " + size.min() + " y " + size.max()));
+            }
+            return result;
+        }
+    }
+
+    /** Violación simulada con su atributo y su mensaje. */
+    static jakarta.validation.ConstraintViolation<?> violation(String property, String message) {
+        jakarta.validation.Path path = (jakarta.validation.Path) Proxy.newProxyInstance(
+                jakarta.validation.Path.class.getClassLoader(), new Class[]{jakarta.validation.Path.class},
+                (p, m, a) -> "toString".equals(m.getName()) ? property : null);
+        return (jakarta.validation.ConstraintViolation<?>) Proxy.newProxyInstance(
+                jakarta.validation.ConstraintViolation.class.getClassLoader(),
+                new Class[]{jakarta.validation.ConstraintViolation.class}, (p, m, a) -> {
+                    switch (m.getName()) {
+                        case "getMessage":
+                            return message;
+                        case "getPropertyPath":
+                            return path;
+                        case "hashCode":
+                            return System.identityHashCode(p);
+                        case "equals":
+                            return p == a[0];
+                        default:
+                            return null;
+                    }
+                });
+    }
+
+    /** {@link ExistingRowSrv} con el validador simulado. */
+    static class ValidatingSrv extends ExistingRowSrv {
+
+        final FakeValidator fake = new FakeValidator();
+
+        @Override
+        protected jakarta.validation.Validator getValidator() {
+            return fake.proxy();
+        }
+    }
+
+    /**
+     * La revisión previa rechaza la fila que la grabación rechazaría por Bean
+     * Validation: {@code fullName} es {@code @NotNull @Size(min = 1)}; con la
+     * celda vacía el atributo de texto queda en {@code ""} y lo rechaza el
+     * {@code @Size}. El error nombra la columna, lleva el número 50000 y la
+     * fila no se graba; el log de la importación da el motivo con su número.
+     */
+    @Test
+    public void testRevisionPreviaRechazaLaFilaQueBeanValidationRechazaria() throws Exception {
+        ValidatingSrv srv = new ValidatingSrv();
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName"},
+                new String[]{"u2", ""}, new String[]{"u3", "User Three"})) {
+            srv.setExcelWorkbook(wb);
+            ExcelColumns columns = new ExcelColumns();
+            columns.add("code", "code").required();
+            columns.add("fullName", "fullName").required();
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, columns) {
+            });
+
+            srv.checkValidation(null);
+
+            assertEquals(1, srv.getRowsValidCount());
+            assertEquals(1, srv.getRowsErrorCount());
+            AppUser rechazada = srv.getDataRowsError().get(0);
+            assertEquals("u2", rechazada.getCode());
+            org.javabeanstack.error.IErrorInfo error = rechazada.getErrors().get("fullname");
+            assertNotNull(error, String.valueOf(rechazada.getErrors()));
+            assertEquals(Integer.valueOf(50000), error.getErrorNumber());
+            assertEquals("La columna «fullName» no es válida: el tamaño debe estar entre 1 y 50",
+                    error.getMessage());
+            assertTrue(srv.fake.properties.containsAll(List.of("code", "fullName")), srv.fake.properties.toString());
+
+            srv.importData();
+
+            assertEquals(1, srv.getRowsMigratedCount());
+            assertEquals("u3", ((AppUser) srv.updated.get(0)).getCode());
+            assertTrue(srv.getResultLog().contains(
+                    "La columna «fullName» no es válida: el tamaño debe estar entre 1 y 50 - (50000)"),
+                    srv.getResultLog());
+        }
+    }
+
+    /**
+     * Un registro existente que no se va a grabar (sin «sobreescribir») no se
+     * valida con Bean Validation: la importación solo lo cuenta como «ya
+     * existe».
+     */
+    @Test
+    public void testRevisionPreviaNoValidaElExistenteQueNoSeGraba() throws Exception {
+        ValidatingSrv srv = new ValidatingSrv();
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName"}, new String[]{"u1", ""})) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, ExcelColumns.of(null)) {
+            });
+
+            srv.checkValidation(null);
+
+            assertEquals(0, srv.getRowsErrorCount());
+            assertTrue(srv.fake.properties.isEmpty(), srv.fake.properties.toString());
+            srv.importData();
+            assertEquals(1, srv.getRowsExistCount());
+        }
+    }
+
+    /**
+     * Bean Validation y {@code checkDataRow} se informan juntos: la fila
+     * rechazada por las dos lleva los dos motivos.
+     */
+    @Test
+    public void testRevisionPreviaJuntaBeanValidationYCheckDataRow() throws Exception {
+        ValidatingSrv srv = new ValidatingSrv() {
+            @Override
+            protected IDataService getDataService() {
+                IDataService base = super.getDataService();
+                return (IDataService) Proxy.newProxyInstance(IDataService.class.getClassLoader(),
+                        new Class[]{IDataService.class}, (p, m, a) -> {
+                            if ("checkDataRow".equals(m.getName())) {
+                                Map<String, org.javabeanstack.error.IErrorInfo> errores = new HashMap<>();
+                                errores.put("code", new org.javabeanstack.error.ErrorInfo("Código inválido", 51000, "code"));
+                                return errores;
+                            }
+                            return m.invoke(base, a);
+                        });
+            }
+        };
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName"}, new String[]{"u2", ""})) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, ExcelColumns.of(null)) {
+            });
+
+            srv.checkValidation(null);
+
+            Map<String, org.javabeanstack.error.IErrorInfo> errores = srv.getDataRowsError().get(0).getErrors();
+            assertEquals(java.util.Set.of("fullname", "code"), errores.keySet());
+        }
+    }
+
+    /**
+     * Si Bean Validation y {@code checkDataRow} marcan el mismo atributo, queda
+     * el error de {@code checkDataRow}, que es el más específico (por ejemplo
+     * la clave foránea que no resuelve, número 50013).
+     */
+    @Test
+    public void testRevisionPreviaConElMismoAtributoGanaCheckDataRow() throws Exception {
+        ValidatingSrv srv = new ValidatingSrv() {
+            @Override
+            protected IDataService getDataService() {
+                IDataService base = super.getDataService();
+                return (IDataService) Proxy.newProxyInstance(IDataService.class.getClassLoader(),
+                        new Class[]{IDataService.class}, (p, m, a) -> {
+                            if ("checkDataRow".equals(m.getName())) {
+                                Map<String, org.javabeanstack.error.IErrorInfo> errores = new HashMap<>();
+                                errores.put("fullname", new org.javabeanstack.error.ErrorInfo(
+                                        "Dejo en blanco este dato o no existe el registro - fullName", 50013, "fullName"));
+                                return errores;
+                            }
+                            return m.invoke(base, a);
+                        });
+            }
+        };
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName"}, new String[]{"u2", ""})) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, ExcelColumns.of(null)) {
+            });
+
+            srv.checkValidation(null);
+
+            org.javabeanstack.error.IErrorInfo error = srv.getDataRowsError().get(0).getErrors().get("fullname");
+            assertEquals(Integer.valueOf(50013), error.getErrorNumber());
+            assertTrue(srv.fake.properties.contains("fullName"), "Bean Validation corrió igual");
+        }
+    }
+
+    /**
+     * Si la grabación corta por una violación de Bean Validation, el DAO deja
+     * solo el texto y el mapa de errores vacío: la fila igual queda con el
+     * motivo, un error por atributo, y el log lo muestra con su número (antes
+     * la fila salía en el log sin mensaje, E4-21).
+     */
+    @Test
+    public void testLogDelRechazoAlGrabarPorBeanValidationDaElMotivo() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        java.util.Set<jakarta.validation.ConstraintViolation<?>> violaciones = new java.util.LinkedHashSet<>();
+        violaciones.add(violation("inactivo", "no debe ser nulo"));
+        violaciones.add(violation("bloquearAtrasoDias", "no debe ser nulo"));
+        jakarta.persistence.PersistenceException envuelta = new jakarta.persistence.PersistenceException(
+                new jakarta.validation.ConstraintViolationException("Validation failed", violaciones));
+        srv.saveResult = failedResultWithoutMap("Validation failed for classes [...]", envuelta);
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName"}, new String[]{"u2", "User Two"})) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+
+            srv.checkValidation(null);
+            srv.importData();
+
+            assertEquals(0, srv.getRowsMigratedCount());
+            assertEquals(1, srv.getRowsErrorCount());
+            Map<String, org.javabeanstack.error.IErrorInfo> errores = srv.getDataRowsError().get(0).getErrors();
+            assertEquals(java.util.Set.of("inactivo", "bloquearatrasodias"), errores.keySet());
+            assertEquals("«inactivo» no debe ser nulo", errores.get("inactivo").getMessage());
+            assertEquals(Integer.valueOf(50000), errores.get("inactivo").getErrorNumber());
+            //El orden de los atributos en la línea depende del mapa de la fila.
+            assertTrue(srv.getResultLog().contains("«inactivo» no debe ser nulo - (50000)"), srv.getResultLog());
+            assertTrue(srv.getResultLog().contains("«bloquearAtrasoDias» no debe ser nulo - (50000)"),
+                    srv.getResultLog());
+        }
+    }
+
+    /**
+     * Si la grabación corta por otra excepción y el resultado trae solo el
+     * texto, la fila queda con ese texto y el número 1 (error que viene de una
+     * excepción).
+     */
+    @Test
+    public void testLogDelRechazoAlGrabarPorOtraExcepcionDaElTexto() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.saveResult = failedResultWithoutMap("El trigger rechazó la fila", new IllegalStateException("x"));
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName"}, new String[]{"u2", "User Two"})) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+
+            srv.checkValidation(null);
+            srv.importData();
+
+            assertEquals(1, srv.getRowsErrorCount());
+            assertTrue(srv.getResultLog().contains("El trigger rechazó la fila - (1)"), srv.getResultLog());
+        }
+    }
+
+    /**
+     * Resultado de grabación fallido como el que deja el DAO cuando la
+     * grabación corta por una excepción: mapa de errores vacío, el texto en
+     * {@code getErrorMsg()} y la excepción.
+     */
+    private static org.javabeanstack.data.IDataResult failedResultWithoutMap(String message, Exception exp) {
+        return (org.javabeanstack.data.IDataResult) Proxy.newProxyInstance(
+                org.javabeanstack.data.IDataResult.class.getClassLoader(),
+                new Class[]{org.javabeanstack.data.IDataResult.class}, (proxy, method, args) -> {
+                    switch (method.getName()) {
+                        case "isSuccessFul":
+                            return false;
+                        case "getErrorsMap":
+                            return new HashMap<>();
+                        case "getErrorMsg":
+                            return message;
+                        case "getException":
+                            return exp;
+                        default:
+                            Class<?> type = method.getReturnType();
+                            if (type == boolean.class || type == Boolean.class) {
+                                return false;
+                            }
+                            return null;
+                    }
+                });
+    }
+
+    // ---- Revisión previa: defaults de checkDataRow fuera de la planilla (XLSEXP, E4-23) ----
+
+    /**
+     * Entidad destino con atributos {@code @NotNull} que <b>no</b> son
+     * columnas de la planilla, como {@code inactivo} o
+     * {@code bloquearAtrasoDias} de {@code Ctactesub} (E4-23 del plan XLSEXP
+     * de Maker). {@code type} sí es columna; {@code observacion} es texto
+     * (sin valor por defecto en {@code checkDataRow}) e {@code idpadre} lleva
+     * {@code @CheckForeignkey(check = false)}, que en {@code checkDataRow}
+     * también saltea el valor por defecto.
+     */
+    public static class Obligatorios extends org.javabeanstack.data.DataRow {
+        @jakarta.persistence.Id
+        @jakarta.persistence.Column(name = "iduser")
+        private Long iduser;
+        @jakarta.persistence.Column(name = "code")
+        private String code;
+        @jakarta.persistence.Column(name = "fullname")
+        private String fullName;
+        @jakarta.validation.constraints.NotNull
+        @jakarta.persistence.Column(name = "type")
+        private Short type;
+        @jakarta.validation.constraints.NotNull
+        @jakarta.persistence.Column(name = "inactivo")
+        private Boolean inactivo;
+        @jakarta.validation.constraints.NotNull
+        @jakarta.persistence.Column(name = "diasatraso")
+        private Integer diasAtraso;
+        @jakarta.validation.constraints.NotNull
+        @jakarta.persistence.Column(name = "saldo")
+        private java.math.BigDecimal saldo;
+        @jakarta.validation.constraints.NotNull
+        @jakarta.persistence.Column(name = "limite")
+        private Long limite;
+        @jakarta.validation.constraints.NotNull
+        @jakarta.persistence.Column(name = "observacion")
+        private String observacion;
+        @jakarta.validation.constraints.NotNull
+        @org.javabeanstack.annotation.CheckForeignkey(check = false)
+        @jakarta.persistence.Column(name = "idpadre")
+        private Long idpadre;
+
+        public Long getIduser() {
+            return iduser;
+        }
+
+        public void setIduser(Long iduser) {
+            this.iduser = iduser;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getFullName() {
+            return fullName;
+        }
+
+        public void setFullName(String fullName) {
+            this.fullName = fullName;
+        }
+
+        public Short getType() {
+            return type;
+        }
+
+        public void setType(Short type) {
+            this.type = type;
+        }
+
+        public Boolean getInactivo() {
+            return inactivo;
+        }
+
+        public void setInactivo(Boolean inactivo) {
+            this.inactivo = inactivo;
+        }
+
+        public Integer getDiasAtraso() {
+            return diasAtraso;
+        }
+
+        public void setDiasAtraso(Integer diasAtraso) {
+            this.diasAtraso = diasAtraso;
+        }
+
+        public java.math.BigDecimal getSaldo() {
+            return saldo;
+        }
+
+        public void setSaldo(java.math.BigDecimal saldo) {
+            this.saldo = saldo;
+        }
+
+        public Long getLimite() {
+            return limite;
+        }
+
+        public void setLimite(Long limite) {
+            this.limite = limite;
+        }
+
+        public String getObservacion() {
+            return observacion;
+        }
+
+        public void setObservacion(String observacion) {
+            this.observacion = observacion;
+        }
+
+        public Long getIdpadre() {
+            return idpadre;
+        }
+
+        public void setIdpadre(Long idpadre) {
+            this.idpadre = idpadre;
+        }
+    }
+
+    /**
+     * Servicio simulado para E4-23: graba en {@link Obligatorios}, declara
+     * existente la fila {@code u1} (id 100, {@code type} 3, {@code diasAtraso}
+     * 7 y el resto de los {@code @NotNull} en NULL, como un registro con NULL
+     * en la base) y su {@code checkDataRow} completa los valores por defecto
+     * igual que {@code AbstractDataService.checkDataRow}: solo en altas y
+     * modificaciones, sin {@code FOREIGNKEY_NOCHECK}, sobre los atributos
+     * declarados en la clase, salteando {@code @CheckForeignkey(check = false)}
+     * y con 0/{@code false} según el tipo. Así reproduce la entidad
+     * descartable de la revisión previa y el camino sin revisión.
+     */
+    static class NotNullDefaultsSrv extends ExcelImportSrvTest01 {
+
+        /** Entidades que recibe {@code save}. */
+        final List<Obligatorios> saved = new ArrayList<>();
+        /** Veces que se llamó a {@code checkDataRow}. */
+        int checkDataRowCalls;
+        /** Si {@code onAfterRowConvert} marca la entidad con {@code FOREIGNKEY_NOCHECK}. */
+        boolean foreignKeyNoCheck;
+        /** {@code type} guardado en el existente {@code u1} (null = NULL en la base). */
+        Short typeOfU1 = 3;
+        /** Validador simulado de la revisión previa (null = sin Bean Validation). */
+        FakeValidator validator;
+
+        @Override
+        protected jakarta.validation.Validator getValidator() {
+            return validator == null ? null : validator.proxy();
+        }
+
+        /** Excepción con la que se canceló la corrida, para el mensaje de las aserciones. */
+        Exception cancelled;
+
+        @Override
+        protected void cancelError(Exception exp) {
+            cancelled = exp;
+        }
+
+        @Override
+        protected boolean onAfterRowConvert(AppUser rowSource, IDataRow rowTarget) {
+            if (foreignKeyNoCheck) {
+                rowTarget.getProperties().put("FOREIGNKEY_NOCHECK", Boolean.TRUE);
+            }
+            return true;
+        }
+
+        @Override
+        protected IDataService getDataService() {
+            InvocationHandler handler = (proxy, method, args) -> {
+                switch (method.getName()) {
+                    case "copyTo":
+                        return ((IDataRow) args[1]).copyTo((IDataRow) args[2]);
+                    case "checkDataRow":
+                        checkDataRowCalls++;
+                        completarComoCheckDataRow((IDataRow) args[1]);
+                        return new HashMap<>();
+                    case "findById":
+                        return null;
+                    case "findByUk":
+                        if ("u1".equals(((Obligatorios) args[1]).getCode())) {
+                            Obligatorios existing = new Obligatorios();
+                            existing.setIduser(100L);
+                            existing.setCode("u1");
+                            existing.setFullName("Nombre previo");
+                            existing.setType(typeOfU1);
+                            existing.setDiasAtraso(7);
+                            existing.setAction(0);
+                            return existing;
+                        }
+                        return null;
+                    case "save":
+                        saved.add((Obligatorios) args[1]);
+                        return stub(org.javabeanstack.data.IDataResult.class);
+                    default:
+                        break;
+                }
+                Class<?> type = method.getReturnType();
+                if (type.isInterface()) {
+                    return stub(type);
+                }
+                if (type == boolean.class || type == Boolean.class) {
+                    return false;
+                }
+                return null;
+            };
+            return (IDataService) Proxy.newProxyInstance(IDataService.class.getClassLoader(),
+                    new Class[]{IDataService.class}, handler);
+        }
+
+        /** El bloque de valores por defecto de {@code AbstractDataService.checkDataRow}. */
+        static void completarComoCheckDataRow(IDataRow row) throws Exception {
+            if (Boolean.TRUE.equals(row.getProperties().get("FOREIGNKEY_NOCHECK"))
+                    || (row.getAction() != IDataRow.INSERT && row.getAction() != IDataRow.UPDATE)) {
+                return;
+            }
+            for (java.lang.reflect.Field field : row.getClass().getDeclaredFields()) {
+                org.javabeanstack.annotation.CheckForeignkey fk
+                        = field.getAnnotation(org.javabeanstack.annotation.CheckForeignkey.class);
+                if (fk != null && !fk.check()) {
+                    continue;
+                }
+                if (field.getAnnotation(jakarta.validation.constraints.NotNull.class) == null
+                        || row.getValue(field.getName()) != null) {
+                    continue;
+                }
+                Class<?> type = row.getFieldType(field.getName());
+                if (type == java.math.BigDecimal.class) {
+                    row.setValue(field.getName(), java.math.BigDecimal.ZERO);
+                } else if (type == Boolean.class) {
+                    row.setValue(field.getName(), false);
+                } else if (type == Long.class) {
+                    row.setValue(field.getName(), 0L);
+                } else if (type == Integer.class) {
+                    row.setValue(field.getName(), 0);
+                } else if (type == Short.class) {
+                    row.setValue(field.getName(), (short) 0);
+                }
+            }
+        }
+
+        @Override
+        protected IUserSession getUserSession() {
+            return stub(IUserSession.class);
+        }
+
+        @Override
+        protected Class<? extends IDataRow> getTargetType() {
+            return Obligatorios.class;
+        }
+    }
+
+    /**
+     * Importa una fila ({@code code}, {@code fullName}, {@code type}) en
+     * {@link Obligatorios} con el servicio de E4-23 y devuelve el servicio,
+     * con la entidad grabada en {@code saved}. {@code type} es columna con
+     * valor por defecto 5 y {@code defaultWhenBlank} (D59) si
+     * {@code typeConDefault}; si no, sin valor por defecto. Un {@code type}
+     * {@code null} deja la celda en blanco, como la escribe la exportación.
+     *
+     * @param conRevision si se hace la revisión previa ({@code checkValidation}
+     * antes de {@code importData}); sin ella, la importación no revisa antes.
+     */
+    private NotNullDefaultsSrv importarObligatorios(String code, String type, boolean conRevision,
+            boolean typeConDefault, boolean foreignKeyNoCheck) throws Exception {
+        return importarObligatorios(code, type, conRevision, typeConDefault, foreignKeyNoCheck, (short) 3, false);
+    }
+
+    /**
+     * Variante con el {@code type} guardado en el existente {@code u1}
+     * ({@code null} = NULL en la base) y, si {@code conBeanValidation}, el
+     * validador simulado en la revisión previa (E4-21).
+     */
+    private NotNullDefaultsSrv importarObligatorios(String code, String type, boolean conRevision,
+            boolean typeConDefault, boolean foreignKeyNoCheck, Short typeOfU1,
+            boolean conBeanValidation) throws Exception {
+        NotNullDefaultsSrv srv = new NotNullDefaultsSrv();
+        srv.foreignKeyNoCheck = foreignKeyNoCheck;
+        srv.typeOfU1 = typeOfU1;
+        srv.validator = conBeanValidation ? new FakeValidator() : null;
+        try (Workbook wb = buildWorkbook(new String[]{"code", "fullName", "type"},
+                new String[]{code, "Nombre nuevo", type})) {
+            srv.setExcelWorkbook(wb);
+            ExcelColumns columns = new ExcelColumns();
+            columns.add("code", "code").required();
+            columns.add("fullName", "fullName");
+            if (typeConDefault) {
+                columns.add("type", "type").defaultValue("5").defaultWhenBlank();
+            } else {
+                columns.add("type", "type");
+            }
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, columns) {
+            });
+            srv.setOverWriteData(true);
+            srv.setCheckBeforeErrors(conRevision);
+            if (conRevision) {
+                srv.checkValidation(null);
+                assertEquals(1, srv.getRowsValidCount(), () -> "la revisión previa da la fila por válida: "
+                        + srv.cancelled + " " + srv.getDataRowsError());
+                assertEquals(0, srv.getRowsErrorCount());
+            }
+            srv.importData();
+
+            assertEquals(1, srv.getRowsMigratedCount(), srv.getResultLog());
+            assertEquals(0, srv.getRowsErrorCount(), srv.getResultLog());
+            assertFalse(srv.getResultLog().contains("Errores de migración"), srv.getResultLog());
+            assertEquals(1, srv.checkDataRowCalls,
+                    "checkDataRow corre una sola vez por fila: en la revisión o en la grabación");
+            return srv;
+        }
+    }
+
+    /** Los {@code @NotNull} fuera de la planilla, completados como lo hace {@code checkDataRow}. */
+    private static void assertDefaultsFueraDeLaPlanilla(Obligatorios grabada) {
+        assertEquals(Boolean.FALSE, grabada.getInactivo());
+        assertEquals(Integer.valueOf(0), grabada.getDiasAtraso());
+        assertEquals(java.math.BigDecimal.ZERO, grabada.getSaldo());
+        assertEquals(Long.valueOf(0L), grabada.getLimite());
+        assertNull(grabada.getObservacion(), "checkDataRow no completa los textos");
+        assertNull(grabada.getIdpadre(), "@CheckForeignkey(check = false) saltea el valor por defecto");
+    }
+
+    /**
+     * E4-23, alta con revisión previa: el paso 3 vuelve a completar los
+     * valores por defecto de los {@code @NotNull} que no son columnas (antes
+     * llegaban nulos a la grabación y la fila se rechazaba), sin repetir
+     * {@code checkDataRow}.
+     */
+    @Test
+    public void testE423AltaConRevisionCompletaLosDefaultsFueraDeLaPlanilla() throws Exception {
+        NotNullDefaultsSrv srv = importarObligatorios("u2", null, true, true, false);
+        Obligatorios alta = srv.saved.get(0);
+        assertNull(alta.getIduser(), "es un alta");
+        assertEquals("Nombre nuevo", alta.getFullName());
+        assertEquals(Short.valueOf((short) 5), alta.getType(), "la columna con defaultWhenBlank graba su default");
+        assertDefaultsFueraDeLaPlanilla(alta);
+    }
+
+    /** E4-23, alta sin revisión previa: el mismo resultado (lo completa checkDataRow). */
+    @Test
+    public void testE423AltaSinRevisionCompletaLosDefaultsFueraDeLaPlanilla() throws Exception {
+        NotNullDefaultsSrv srv = importarObligatorios("u2", null, false, true, false);
+        Obligatorios alta = srv.saved.get(0);
+        assertNull(alta.getIduser(), "es un alta");
+        assertEquals(Short.valueOf((short) 5), alta.getType());
+        assertDefaultsFueraDeLaPlanilla(alta);
+    }
+
+    /**
+     * E4-23, «sobreescribir» con revisión previa: el existente con NULL en
+     * los {@code @NotNull} fuera de la planilla se graba con sus valores por
+     * defecto, lo que ya tenía se conserva ({@code diasAtraso} 7) y la celda
+     * vacía de la columna con {@code defaultWhenBlank} conserva lo guardado
+     * ({@code type} 3, D59).
+     */
+    @Test
+    public void testE423SobreescribirConRevisionCompletaLosDefaultsYRespetaD59() throws Exception {
+        NotNullDefaultsSrv srv = importarObligatorios("u1", null, true, true, false);
+        Obligatorios existente = srv.saved.get(0);
+        assertEquals(100L, existente.getIduser(), "es el existente");
+        assertEquals(IDataRow.UPDATE, existente.getAction());
+        assertEquals("Nombre nuevo", existente.getFullName());
+        assertEquals(Short.valueOf((short) 3), existente.getType(),
+                "la celda vacía con defaultWhenBlank conserva lo guardado (D59)");
+        assertEquals(Integer.valueOf(7), existente.getDiasAtraso(), "lo que tenía el existente no se toca");
+        assertEquals(Boolean.FALSE, existente.getInactivo());
+        assertEquals(java.math.BigDecimal.ZERO, existente.getSaldo());
+        assertEquals(Long.valueOf(0L), existente.getLimite());
+        assertNull(existente.getIdpadre());
+    }
+
+    /** E4-23, «sobreescribir» sin revisión previa: el mismo resultado. */
+    @Test
+    public void testE423SobreescribirSinRevisionCompletaLosDefaultsYRespetaD59() throws Exception {
+        NotNullDefaultsSrv srv = importarObligatorios("u1", null, false, true, false);
+        Obligatorios existente = srv.saved.get(0);
+        assertEquals(100L, existente.getIduser(), "es el existente");
+        assertEquals(Short.valueOf((short) 3), existente.getType(), "D59");
+        assertEquals(Integer.valueOf(7), existente.getDiasAtraso());
+        assertEquals(Boolean.FALSE, existente.getInactivo());
+        assertEquals(java.math.BigDecimal.ZERO, existente.getSaldo());
+        assertEquals(Long.valueOf(0L), existente.getLimite());
+    }
+
+    /**
+     * E4-23 no toca las columnas de la planilla: con revisión previa, una
+     * columna {@code @NotNull} con la celda vacía y sin valor por defecto
+     * sigue llegando nula a la grabación, como antes (en la aplicación la
+     * rechaza el Bean Validation de la revisión, E4-21); solo se completan
+     * los atributos que no son columnas.
+     */
+    @Test
+    public void testE423ConRevisionNoTocaLasColumnasDeLaPlanilla() throws Exception {
+        NotNullDefaultsSrv srv = importarObligatorios("u2", null, true, false, false);
+        Obligatorios alta = srv.saved.get(0);
+        assertNull(alta.getType(), "la columna de la planilla no se completa en el paso 3");
+        assertDefaultsFueraDeLaPlanilla(alta);
+    }
+
+    /**
+     * E4-23 respeta {@code FOREIGNKEY_NOCHECK}: si un gancho la pone en la
+     * entidad, {@code checkDataRow} no completa los valores por defecto y el
+     * paso 3 de la revisión previa tampoco; con y sin revisión queda igual.
+     */
+    @Test
+    public void testE423RespetaForeignKeyNoCheck() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            NotNullDefaultsSrv srv = importarObligatorios("u2", null, conRevision, true, true);
+            Obligatorios alta = srv.saved.get(0);
+            assertNull(alta.getInactivo(), "conRevision=" + conRevision);
+            assertNull(alta.getDiasAtraso(), "conRevision=" + conRevision);
+            assertNull(alta.getSaldo(), "conRevision=" + conRevision);
+            assertNull(alta.getLimite(), "conRevision=" + conRevision);
+        }
+    }
+
+
+    // ---- Sobreescribir sobre un NULL obligatorio con la celda vacía (XLSEXP, D61, E4-24) ----
+
+    /**
+     * E4-24 con revisión previa: el existente tiene NULL en {@code type}
+     * ({@code @NotNull}), la celda viene vacía y la columna declara
+     * {@code defaultWhenBlank}. La revisión (con Bean Validation) ya no
+     * rechaza la fila y se graba el valor por defecto 5 (D61, excepción a
+     * D59), sin errores en el log.
+     */
+    @Test
+    public void testE424SobreescribirNullObligatorioConRevisionGrabaElDefault() throws Exception {
+        NotNullDefaultsSrv srv = importarObligatorios("u1", null, true, true, false, null, true);
+        Obligatorios existente = srv.saved.get(0);
+        assertEquals(100L, existente.getIduser(), "es el existente");
+        assertEquals(Short.valueOf((short) 5), existente.getType(),
+                "sobre el NULL obligatorio se graba el default de la columna (D61)");
+        assertTrue(srv.validator.properties.contains("type"), "Bean Validation corrió sobre la columna");
+    }
+
+    /**
+     * E4-24 sin revisión previa: el mismo caso graba el mismo valor por
+     * defecto de la columna (5), y no el 0 que pondría {@code checkDataRow}.
+     */
+    @Test
+    public void testE424SobreescribirNullObligatorioSinRevisionGrabaElDefault() throws Exception {
+        NotNullDefaultsSrv srv = importarObligatorios("u1", null, false, true, false, null, true);
+        Obligatorios existente = srv.saved.get(0);
+        assertEquals(100L, existente.getIduser(), "es el existente");
+        assertEquals(Short.valueOf((short) 5), existente.getType(), "D61, igual que con revisión");
+    }
+
+    /**
+     * E4-24 no cambia D59: con lo guardado no nulo, la celda vacía con
+     * {@code defaultWhenBlank} conserva lo guardado, con revisión previa (y
+     * Bean Validation) y sin ella.
+     */
+    @Test
+    public void testE424SobreescribirConLoGuardadoNoNuloConservaD59() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            NotNullDefaultsSrv srv = importarObligatorios("u1", null, conRevision, true, false, (short) 3, true);
+            Obligatorios existente = srv.saved.get(0);
+            assertEquals(100L, existente.getIduser(), "conRevision=" + conRevision);
+            assertEquals(Short.valueOf((short) 3), existente.getType(),
+                    "lo guardado no nulo se conserva (D59), conRevision=" + conRevision);
+        }
+    }
+
+    /**
+     * E4-24 en un alta con Bean Validation: la celda vacía con
+     * {@code defaultWhenBlank} graba su default, como antes.
+     */
+    @Test
+    public void testE424AltaConBeanValidationGrabaElDefault() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            NotNullDefaultsSrv srv = importarObligatorios("u2", null, conRevision, true, false, null, true);
+            Obligatorios alta = srv.saved.get(0);
+            assertNull(alta.getIduser(), "es un alta, conRevision=" + conRevision);
+            assertEquals(Short.valueOf((short) 5), alta.getType(), "conRevision=" + conRevision);
+        }
+    }
+
+    /**
+     * E4-24 vale solo para la celda vacía: una celda con valor pisa el NULL
+     * del existente como siempre.
+     */
+    @Test
+    public void testE424SobreescribirNullObligatorioConValorGrabaElValor() throws Exception {
+        NotNullDefaultsSrv srv = importarObligatorios("u1", "8", true, true, false, null, true);
+        assertEquals(Short.valueOf((short) 8), srv.saved.get(0).getType());
+    }
+
+    // ---- Default sobre un NULL obligatorio: columna ausente y noOverwrite (XLSEXP, D63) ----
+
+    /**
+     * Importa {@code u1} (existente, «sobreescribir») en {@link Obligatorios}
+     * con la columna {@code type} declarada con valor por defecto 5 y
+     * {@code defaultWhenBlank}; si {@code typeEnPlanilla} es {@code false} la
+     * columna no viene en la planilla, y si {@code noOverwrite} se declara
+     * de solo alta. Controla que no haya errores ni en la revisión ni en el
+     * log y devuelve la entidad grabada.
+     *
+     * @param type valor de la celda ({@code null} = vacía).
+     * @param typeOfU1 lo guardado en el existente ({@code null} = NULL).
+     */
+    private Obligatorios importarD63(String type, boolean conRevision, boolean typeEnPlanilla,
+            boolean noOverwrite, Short typeOfU1, boolean conBeanValidation) throws Exception {
+        NotNullDefaultsSrv srv = new NotNullDefaultsSrv();
+        srv.typeOfU1 = typeOfU1;
+        srv.validator = conBeanValidation ? new FakeValidator() : null;
+        String[] cabeceras = typeEnPlanilla ? new String[]{"code", "fullName", "type"} : new String[]{"code", "fullName"};
+        String[] fila = typeEnPlanilla ? new String[]{"u1", "Nombre nuevo", type} : new String[]{"u1", "Nombre nuevo"};
+        try (Workbook wb = buildWorkbook(cabeceras, fila)) {
+            srv.setExcelWorkbook(wb);
+            ExcelColumns columns = new ExcelColumns();
+            columns.add("code", "code").required();
+            columns.add("fullName", "fullName");
+            ExcelColumnSpec.Builder typeSpec = columns.add("type", "type").defaultValue("5").defaultWhenBlank();
+            if (noOverwrite) {
+                typeSpec.noOverwrite();
+            }
+            srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                    wb.getSheetAt(0).getRow(0), AppUser.class, columns) {
+            });
+            srv.setOverWriteData(true);
+            srv.setCheckBeforeErrors(conRevision);
+            String contexto = "conRevision=" + conRevision + " typeEnPlanilla=" + typeEnPlanilla
+                    + " noOverwrite=" + noOverwrite + " typeOfU1=" + typeOfU1;
+            if (conRevision) {
+                srv.checkValidation(null);
+                assertEquals(1, srv.getRowsValidCount(), () -> contexto + ": la revisión previa da la fila por válida: "
+                        + srv.cancelled + " " + srv.getDataRowsError());
+            }
+            srv.importData();
+            assertEquals(1, srv.getRowsMigratedCount(), contexto + "\n" + srv.getResultLog());
+            assertEquals(0, srv.getRowsErrorCount(), contexto + "\n" + srv.getResultLog());
+            assertFalse(srv.getResultLog().contains("Errores de migración"), contexto + "\n" + srv.getResultLog());
+            Obligatorios grabada = srv.saved.get(0);
+            assertEquals(100L, grabada.getIduser(), contexto + ": es el existente");
+            return grabada;
+        }
+    }
+
+    /**
+     * D63 (1): la columna con valor por defecto no viene en la planilla y lo
+     * guardado es NULL en un {@code @NotNull}: se graba el default, con y sin
+     * revisión previa (antes la revisión la rechazaba y sin revisión se
+     * grababa el 0 de {@code checkDataRow}).
+     */
+    @Test
+    public void testD63ColumnaAusenteSobreNullObligatorioGrabaElDefault() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            Obligatorios grabada = importarD63(null, conRevision, false, false, null, true);
+            assertEquals(Short.valueOf((short) 5), grabada.getType(), "conRevision=" + conRevision);
+        }
+    }
+
+    /** D63 (1) no cambia la columna ausente con lo guardado no nulo: se conserva. */
+    @Test
+    public void testD63ColumnaAusenteConLoGuardadoNoNuloConserva() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            Obligatorios grabada = importarD63(null, conRevision, false, false, (short) 3, true);
+            assertEquals(Short.valueOf((short) 3), grabada.getType(), "conRevision=" + conRevision);
+        }
+    }
+
+    /**
+     * D63 (2): columna {@code noOverwrite()} con la celda vacía y lo guardado
+     * NULL en un {@code @NotNull}: se graba el default, con y sin revisión
+     * previa (excepción a «no sobreescribir» solo para el NULL inválido).
+     */
+    @Test
+    public void testD63NoOverwriteCeldaVaciaSobreNullObligatorioGrabaElDefault() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            Obligatorios grabada = importarD63(null, conRevision, true, true, null, true);
+            assertEquals(Short.valueOf((short) 5), grabada.getType(), "conRevision=" + conRevision);
+        }
+    }
+
+    /**
+     * D63 (2) no cambia {@code noOverwrite()} en lo demás: con lo guardado no
+     * nulo se conserva, venga la celda vacía o con valor.
+     */
+    @Test
+    public void testD63NoOverwriteConLoGuardadoNoNuloConserva() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            for (String celda : new String[]{null, "8"}) {
+                Obligatorios grabada = importarD63(celda, conRevision, true, true, (short) 3, true);
+                assertEquals(Short.valueOf((short) 3), grabada.getType(),
+                        "conRevision=" + conRevision + " celda=" + celda);
+            }
+        }
+    }
+
+    /**
+     * D63 (2) vale solo para la celda vacía: con valor en la celda,
+     * {@code noOverwrite()} sigue sin copiarlo aunque lo guardado sea NULL
+     * (sin Bean Validation, para que la revisión no lo rechace antes).
+     */
+    @Test
+    public void testD63NoOverwriteConValorSobreNullNoCopiaElValor() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            Obligatorios grabada = importarD63("8", conRevision, true, true, null, false);
+            assertNotEquals(Short.valueOf((short) 8), grabada.getType(), "conRevision=" + conRevision);
+        }
+    }
+
+    // ---- Celda numérica en una columna lógica (XLSEXP, D62, E4-25) ----
+
+    /**
+     * Planilla con {@code code} (texto) y {@code disabled} como celda
+     * numérica: u2 = 1, u3 = 0, u4 = 2, u5 = 1.0, u6 = 0.0, u7 = 0.5.
+     */
+    private Workbook buildWorkbookLogicoNumerico() {
+        Workbook wb = new XSSFWorkbook();
+        Sheet sheet = wb.createSheet("data");
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("code");
+        header.createCell(1).setCellValue("disabled");
+        Object[][] filas = {{"u2", 1d}, {"u3", 0d}, {"u4", 2d}, {"u5", 1.0d}, {"u6", 0.0d}, {"u7", 0.5d}};
+        for (int i = 0; i < filas.length; i++) {
+            Row row = sheet.createRow(i + 1);
+            row.createCell(0).setCellValue((String) filas[i][0]);
+            row.createCell(1).setCellValue((Double) filas[i][1]);
+        }
+        return wb;
+    }
+
+    /**
+     * E4-25: con y sin revisión previa, el 1 numérico se graba como
+     * {@code true} y el 0 como {@code false} (también 1.0 y 0.0); el 2 y el
+     * 0.5 son errores de la fila (número 50000, nombrando la columna), la
+     * revisión los informa en el paso 2 sin cortar la importación, no se
+     * graban, y cada motivo aparece una sola vez en el log.
+     */
+    @Test
+    public void testE425LogicoDesdeCeldaNumerica() throws Exception {
+        for (boolean conRevision : new boolean[]{true, false}) {
+            ExistingRowSrv srv = new ExistingRowSrv();
+            try (Workbook wb = buildWorkbookLogicoNumerico()) {
+                srv.setExcelWorkbook(wb);
+                ExcelColumns columns = new ExcelColumns();
+                columns.add("code", "code").required();
+                columns.add("disabled", "disabled");
+                srv.setExcelRowProcessor(new ExcelRowProcessor<AppUser>(
+                        wb.getSheetAt(0).getRow(0), AppUser.class, columns) {
+                });
+                srv.setCheckBeforeErrors(conRevision);
+                String msg2 = "La columna «disabled» no es válida: El valor numérico 2 no es convertible a lógico (se admite 1 o 0)";
+                String msg05 = "La columna «disabled» no es válida: El valor numérico 0.5 no es convertible a lógico (se admite 1 o 0)";
+                if (conRevision) {
+                    srv.checkValidation(null);
+                    assertTrue(srv.getErrorsReviewed(), "la revisión no se corta");
+                    assertEquals(4, srv.getRowsValidCount());
+                    assertEquals(2, srv.getRowsErrorCount());
+                    org.javabeanstack.error.IErrorInfo error = srv.getDataRowsError().get(0).getErrors().get("disabled");
+                    assertNotNull(error, String.valueOf(srv.getDataRowsError().get(0).getErrors()));
+                    assertEquals(Integer.valueOf(50000), error.getErrorNumber());
+                    assertEquals(msg2, error.getMessage());
+                }
+                srv.importData();
+
+                String contexto = "conRevision=" + conRevision + "\n" + srv.getResultLog();
+                assertEquals(4, srv.getRowsMigratedCount(), contexto);
+                assertEquals(2, srv.getRowsErrorCount(), contexto);
+                Map<String, Boolean> grabados = new HashMap<>();
+                for (IDataRow row : srv.updated) {
+                    grabados.put(((AppUser) row).getCode(), ((AppUser) row).getDisabled());
+                }
+                assertEquals(Map.of("u2", true, "u3", false, "u5", true, "u6", false), grabados, contexto);
+                assertEquals(1, srv.getResultLog().split(java.util.regex.Pattern.quote(msg2), -1).length - 1, contexto);
+                assertEquals(1, srv.getResultLog().split(java.util.regex.Pattern.quote(msg05), -1).length - 1, contexto);
+            }
         }
     }
 

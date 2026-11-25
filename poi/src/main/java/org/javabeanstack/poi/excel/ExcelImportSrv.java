@@ -22,6 +22,7 @@
 package org.javabeanstack.poi.excel;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,22 +32,33 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.naming.InitialContext;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.Dependent;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.javabeanstack.annotation.CheckForeignkey;
 import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.IDataRow;
 import org.javabeanstack.config.IAppConfig;
 import org.javabeanstack.data.IDataResult;
 import org.javabeanstack.data.services.IDataService;
+import org.javabeanstack.error.ErrorInfo;
 import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.io.IOUtil;
 import org.javabeanstack.security.model.IUserSession;
@@ -100,6 +112,17 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     private List<T> dataRows = new ArrayList();
 
     private transient Workbook excelWorkbook;
+
+    /**
+     * Validador de Bean Validation de la revisión previa, resuelto de forma
+     * perezosa por {@link #getValidator()}. Es {@code transient} como el libro
+     * y el procesador: no es serializable, y tras una pasivación se vuelve a
+     * resolver ({@link #validatorResolved} vuelve a {@code false}).
+     */
+    private transient Validator validator;
+
+    /** Indica si ya se intentó resolver {@link #validator}. */
+    private transient boolean validatorResolved;
 
     /**
      * Hoja a procesar por nombre; tiene prioridad sobre {@link #sheetIndex}.
@@ -455,13 +478,43 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         logResult("Errores de migración (" + dataRowsError.size() + "):");
         int nro = 1;
         for (T row : dataRowsError) {
-            StringBuilder msgs = new StringBuilder();
-            if (row.getErrors() != null) {
-                msgs.append(row.getErrorMsg());
-            }
             String id = getRowLogIdentifier(row);
-            logResult("  " + nro++ + ") " + (id.isEmpty() ? "" : id + ": ") + msgs);
+            logResult("  " + nro++ + ") " + (id.isEmpty() ? "" : id + ": ") + formatRowErrors(row));
         }
+    }
+
+    /**
+     * Arma el texto de los errores de una fila para el log: cada mensaje con
+     * su número al final, con el formato {@code mensaje - (nro)} que usa la
+     * aplicación en pantalla (el número se omite si es 0), separados por
+     * {@code "; "}. Los avisos no se incluyen.
+     *
+     * @param row fila con errores.
+     * @return los mensajes de error de la fila; cadena vacía si no tiene.
+     */
+    static String formatRowErrors(IDataRow row) {
+        if (row.getErrors() == null) {
+            return "";
+        }
+        StringBuilder msgs = new StringBuilder();
+        for (IErrorInfo error : row.getErrors().values()) {
+            if (error == null || error.isWarning()) {
+                continue;
+            }
+            String message = Fn.nvl(error.getMessage(), "").trim();
+            if (message.isEmpty()) {
+                continue;
+            }
+            if (msgs.length() > 0) {
+                msgs.append("; ");
+            }
+            msgs.append(message);
+            Integer number = error.getErrorNumber();
+            if (number != null && number != 0) {
+                msgs.append(" - (").append(number).append(")");
+            }
+        }
+        return msgs.toString();
     }
 
     /**
@@ -1022,13 +1075,22 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * negocios: se invoca {@link #onBeforeRowConvert(IDataRow)}, se convierte a
      * la entidad destino ({@link #getTargetType()}) con
      * {@code IDataService.copyTo}, se invoca
-     * {@link #onAfterRowConvert(IDataRow, IDataRow)} y se valida con
-     * {@code IDataService.checkDataRow}; los registros rechazados por la
-     * validación se acumulan en {@link #getDataRowsError()} y los omitidos por
-     * los hooks se descartan. Cuando la lectura se realiza dentro de
+     * {@link #onAfterRowConvert(IDataRow, IDataRow)}, se validan con Bean
+     * Validation los atributos de las columnas
+     * ({@link #checkBeanValidation(IExcelRowProcessor, IDataRow)}) y se valida
+     * con {@code IDataService.checkDataRow}; los registros rechazados por
+     * alguna de las dos validaciones (se informan juntos; si las dos marcan el
+     * mismo atributo queda el error de {@code checkDataRow}) se acumulan en
+     * {@link #getDataRowsError()} y los omitidos por los hooks se descartan. Cuando la lectura se realiza dentro de
      * {@link #importData()} ({@code errorsReviewed} en {@code true}) este método
      * solo convierte las filas: los hooks y la validación corren después, en el
      * bucle de grabación.
+     * <p>
+     * La entidad destino de esta pasada se descarta: lo que {@code checkDataRow}
+     * le completa (los valores por defecto de los {@code @NotNull} nulos) no
+     * llega a la grabación, que vuelve a convertir la fila y completa esos
+     * valores con {@link #completeNotNullDefaults(IExcelRowProcessor, IDataRow)}
+     * (E4-23).
      *
      * <p>
      * Se leen las filas <b>posteriores</b> a la de encabezados
@@ -1148,8 +1210,20 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     if (!onAfterRowConvert(source, target)) {
                         continue;
                     }
+                    //Bean Validation de las columnas de la planilla, ANTES de
+                    //checkDataRow: este completa con su valor por defecto los
+                    //@NotNull nulos de la entidad descartable de esta pasada, y
+                    //la grabación de una revisión previa no lo repite (E4-21).
+                    Map<String, IErrorInfo> beanErrors = checkBeanValidation(processor, target);
                     //Validar
                     Map<String, IErrorInfo> errorInfo = getDataService().checkDataRow(sessionId, target);
+                    if (!beanErrors.isEmpty()) {
+                        //Con el mismo atributo gana el error de checkDataRow:
+                        //es más específico (clave foránea, regla numerada).
+                        Map<String, IErrorInfo> merged = new LinkedHashMap<>(errorInfo);
+                        beanErrors.forEach(merged::putIfAbsent);
+                        errorInfo = merged;
+                    }
                     if (!errorInfo.isEmpty()) {
                         source.setErrors(errorInfo);
                         dataRowsError.add(source);
@@ -1160,6 +1234,268 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
             }
         }
         return dataRows;
+    }
+
+    /**
+     * Valida con Bean Validation ({@code @NotNull}, {@code @Size}, etc.) los
+     * atributos de la entidad destino que corresponden a las columnas de la
+     * importación ({@link IExcelRowProcessor#getColumns()}), para que la
+     * revisión previa rechace la fila que la grabación rechazaría al
+     * persistirla (E4-21 del plan XLSEXP de Maker).
+     * <p>
+     * Se validan <b>solo</b> los atributos de las columnas, con
+     * {@link Validator#validateProperty}, y no la entidad entera: muchas
+     * entidades completan atributos obligatorios recién al grabar (la fecha
+     * de modificación en {@code @PrePersist}/{@code @PreUpdate}, el usuario
+     * en el DAO) y validarlas ahora rechazaría filas buenas. Queda fuera, por
+     * lo mismo, un atributo obligatorio que no es columna de la planilla: lo
+     * sigue juzgando la grabación, y el motivo del rechazo llega al log
+     * ({@link #getResultErrors(IDataResult)}). Igual que en
+     * {@code resolveExistingRow}, el atributo de la entidad es el que se
+     * llama como el de la vista; uno que solo existe en la vista no se valida.
+     * <p>
+     * No se valida el registro existente que no se va a grabar (sin
+     * «sobreescribir») ni, si no hay implementación de Bean Validation
+     * ({@link #getValidator()} nulo), nada.
+     *
+     * @param processor procesador de la corrida, con las columnas.
+     * @param target entidad a grabar, ya resuelta (alta o existente).
+     * @return los errores por atributo (clave en minúsculas, número 50000,
+     * mensaje que nombra la columna); vacío si no hay.
+     */
+    protected Map<String, IErrorInfo> checkBeanValidation(IExcelRowProcessor<T> processor, IDataRow target) {
+        Map<String, IErrorInfo> errors = new LinkedHashMap<>();
+        if (processor == null || target == null) {
+            return errors;
+        }
+        if (target.getAction() == IDataRow.UPDATE && !getOverWriteData()) {
+            return errors;
+        }
+        Validator beanValidator = getValidator();
+        if (beanValidator == null) {
+            return errors;
+        }
+        Class<?> type = target.getClass();
+        for (ExcelColumnSpec spec : processor.getColumns()) {
+            String fieldName = spec.getField();
+            if (fieldName == null || fieldName.isEmpty()
+                    || !DataInfo.isFieldExist((Class) type, fieldName)) {
+                continue;
+            }
+            StringBuilder message = new StringBuilder();
+            for (ConstraintViolation<IDataRow> violation : beanValidator.validateProperty(target, fieldName)) {
+                if (message.length() > 0) {
+                    message.append(", ");
+                }
+                message.append(violation.getMessage());
+            }
+            if (message.length() > 0) {
+                errors.put(fieldName.toLowerCase(),
+                        new ErrorInfo("La columna «" + spec.getHeader() + "» no es válida: " + message,
+                                50000, fieldName));
+            }
+        }
+        return errors;
+    }
+
+    /**
+     * Completa con su valor por defecto los atributos {@code @NotNull} nulos
+     * de la entidad a grabar que <b>no</b> son columnas de la planilla, igual
+     * que lo hace {@code checkDataRow}. Se usa en la grabación de una
+     * importación con revisión previa, que no repite {@code checkDataRow}: la
+     * revisión los completó sobre una entidad que después se descartó, y la
+     * fila que pasó la revisión se rechazaba al grabar (E4-23 del plan XLSEXP
+     * de Maker; decisión del usuario D60).
+     * <p>
+     * Reproduce, sin repetir el resto de las validaciones ni sus consultas, el
+     * bloque de {@code AbstractDataService.checkDataRow} que llama a
+     * {@code AbstractDataService.setDefault} (módulo {@code jbs-business}); si
+     * ese bloque cambia, hay que cambiar este método con él:
+     * <ul>
+     * <li>solo en altas y modificaciones, y no si la entidad tiene la
+     * propiedad {@code FOREIGNKEY_NOCHECK} (la puede poner un gancho como
+     * {@link #onAfterRowConvert(IDataRow, IDataRow)});</li>
+     * <li>sobre los atributos declarados en la clase de la entidad
+     * ({@code DataInfo.getDeclaredFields}, sin las superclases), salteando los
+     * que llevan {@code @CheckForeignkey(check = false)};</li>
+     * <li>con el valor del tipo del atributo: 0 para {@code BigDecimal},
+     * {@code Long}, {@code Integer} y {@code Short}, {@code false} para
+     * {@code Boolean}; los demás tipos quedan nulos.</li>
+     * </ul>
+     * Los atributos de las columnas ({@link IExcelRowProcessor#getColumns()})
+     * no se tocan: los decide la planilla, y la revisión ya los controló con
+     * Bean Validation ({@link #checkBeanValidation(IExcelRowProcessor, IDataRow)}).
+     * Así una celda vacía con {@code defaultWhenBlank} que al sobreescribir
+     * conserva lo guardado (D59, {@link ExcelRowProcessor#DEFAULTED_FIELDS})
+     * sigue igual. No informa errores: un atributo que no se puede completar
+     * queda como estaba y lo juzga la grabación.
+     *
+     * @param processor procesador de la corrida, con las columnas; puede ser
+     * {@code null} (no se excluye ninguna).
+     * @param target entidad a grabar, ya resuelta (alta o existente).
+     */
+    protected void completeNotNullDefaults(IExcelRowProcessor<T> processor, IDataRow target) {
+        if (target == null || !Fn.inList(target.getAction(), IDataRow.INSERT, IDataRow.UPDATE)) {
+            return;
+        }
+        if (target.getProperties() != null
+                && Fn.toLogical(target.getProperties().get("FOREIGNKEY_NOCHECK"))) {
+            return;
+        }
+        Set<String> columnFields = new HashSet<>();
+        if (processor != null && processor.getColumns() != null) {
+            for (ExcelColumnSpec spec : processor.getColumns()) {
+                if (spec.getField() != null && !spec.getField().isEmpty()) {
+                    columnFields.add(spec.getField().toLowerCase());
+                }
+            }
+        }
+        for (Field field : DataInfo.getDeclaredFields(target.getClass())) {
+            String fieldName = field.getName();
+            if (columnFields.contains(fieldName.toLowerCase())) {
+                continue;
+            }
+            CheckForeignkey foreignKey = field.getAnnotation(CheckForeignkey.class);
+            if (foreignKey != null && !foreignKey.check()) {
+                continue;
+            }
+            if (field.getAnnotation(NotNull.class) == null) {
+                continue;
+            }
+            try {
+                if (target.getValue(fieldName) != null) {
+                    continue;
+                }
+                Object value = notNullDefaultValue(target.getFieldType(fieldName));
+                if (value != null) {
+                    target.setValue(fieldName, value);
+                }
+            } catch (Exception e) {
+                //Como en checkDataRow, no corta la fila: queda como estaba y,
+                //si es un problema, la grabación lo rechaza con su motivo.
+            }
+        }
+    }
+
+    /**
+     * Valor por defecto de {@code AbstractDataService.setDefault} para un
+     * atributo {@code @NotNull} nulo, según su tipo.
+     *
+     * @param type tipo del atributo.
+     * @return 0 o {@code false} según el tipo; {@code null} si el tipo no
+     * tiene valor por defecto.
+     */
+    private static Object notNullDefaultValue(Class<?> type) {
+        if (type == BigDecimal.class) {
+            return BigDecimal.ZERO;
+        } else if (type == Boolean.class) {
+            return Boolean.FALSE;
+        } else if (type == Long.class) {
+            return 0L;
+        } else if (type == Integer.class) {
+            return 0;
+        } else if (type == Short.class) {
+            return Short.valueOf("0");
+        }
+        return null;
+    }
+
+    /**
+     * Devuelve el validador de Bean Validation con el que la revisión previa
+     * controla las columnas ({@link #checkBeanValidation}). Lo busca una sola
+     * vez: primero el del contenedor ({@code java:comp/Validator}) y, si no
+     * está, el de la implementación por omisión; sin implementación disponible
+     * (p. ej. en una prueba unitaria) devuelve {@code null} y la validación se
+     * omite. Las subclases o las pruebas pueden sobrescribirlo.
+     *
+     * @return el validador, o {@code null} si no hay implementación.
+     */
+    protected Validator getValidator() {
+        if (!validatorResolved) {
+            validatorResolved = true;
+            try {
+                validator = (Validator) new InitialContext().lookup("java:comp/Validator");
+            } catch (Exception | LinkageError e) {
+                validator = null;
+            }
+            if (validator == null) {
+                try {
+                    validator = Validation.buildDefaultValidatorFactory().getValidator();
+                } catch (Exception | LinkageError e) {
+                    validator = null;
+                }
+            }
+        }
+        return validator;
+    }
+
+    /**
+     * Errores de una grabación fallida, para dejarlos en la fila de la
+     * planilla (y en el log). Si el resultado trae el mapa de errores se usa
+     * tal cual. Si no —la grabación cortó por una excepción y el DAO solo dejó
+     * el texto—, se arman a partir de la excepción: una violación de Bean
+     * Validation da un error por atributo (número 50000); cualquier otra, un
+     * error con el texto del resultado y el número 1 (error que viene de una
+     * excepción). Antes la fila quedaba sin motivo (E4-21 del plan XLSEXP de
+     * Maker).
+     *
+     * @param result resultado de la grabación fallida.
+     * @return los errores; nunca {@code null}.
+     */
+    protected Map<String, IErrorInfo> getResultErrors(IDataResult result) {
+        Map<String, IErrorInfo> errors = new LinkedHashMap<>();
+        if (result == null) {
+            return errors;
+        }
+        if (result.getErrorsMap() != null && !result.getErrorsMap().isEmpty()) {
+            return result.getErrorsMap();
+        }
+        ConstraintViolationException violations = findConstraintViolation(result.getException());
+        if (violations != null && violations.getConstraintViolations() != null) {
+            //Un error por atributo, con todos sus motivos.
+            Map<String, StringBuilder> byProperty = new LinkedHashMap<>();
+            for (ConstraintViolation<?> violation : violations.getConstraintViolations()) {
+                String property = String.valueOf(violation.getPropertyPath());
+                StringBuilder message = byProperty.get(property);
+                if (message == null) {
+                    byProperty.put(property, new StringBuilder(Fn.nvl(violation.getMessage(), "")));
+                } else {
+                    message.append(", ").append(violation.getMessage());
+                }
+            }
+            byProperty.forEach((property, message) -> errors.put(property.toLowerCase(),
+                    new ErrorInfo("«" + property + "» " + message, 50000, property)));
+            if (!errors.isEmpty()) {
+                return errors;
+            }
+        }
+        String message = Fn.nvl(result.getErrorMsg(), "").trim();
+        if (message.isEmpty() && result.getException() != null) {
+            message = Fn.nvl(result.getException().getMessage(), result.getException().getClass().getSimpleName());
+        }
+        if (message.isEmpty()) {
+            message = "No se pudo grabar el registro";
+        }
+        errors.put("datageneric", new ErrorInfo(message, 1, ""));
+        return errors;
+    }
+
+    /**
+     * Busca una violación de Bean Validation en la cadena de causas.
+     *
+     * @param exp excepción de la grabación; puede ser {@code null}.
+     * @return la violación, o {@code null} si no hay.
+     */
+    private static ConstraintViolationException findConstraintViolation(Throwable exp) {
+        Throwable cause = exp;
+        int depth = 0;
+        while (cause != null && depth++ < 20) {
+            if (cause instanceof ConstraintViolationException) {
+                return (ConstraintViolationException) cause;
+            }
+            cause = cause.getCause();
+        }
+        return null;
     }
 
     /** Mensaje de la fila que no existe cuando la importación no permite altas. */
@@ -1265,12 +1601,27 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * Variante de {@link #resolveExistingRow(String, IDataRow)} que conoce la
      * fila de la vista de la que salió {@code target}: si el registro existe y
      * se sobreescribe, los atributos que la vista completó con el <b>valor por
-     * defecto de una columna ausente</b> ({@link ExcelRowProcessor#DEFAULTED_FIELDS})
+     * defecto de la columna</b> —columna ausente, o celda vacía con
+     * {@code defaultWhenBlank}— ({@link ExcelRowProcessor#DEFAULTED_FIELDS})
      * y los de las columnas declaradas con {@code noOverwrite()}
      * ({@link ExcelRowProcessor#NO_OVERWRITE_FIELDS}) <b>no</b> se copian sobre
      * el existente, que conserva su valor (decisión del usuario, 2026-09-16: lo
      * que la planilla no trae no pisa lo que hay, y una columna puede declararse
-     * como de solo alta).
+     * como de solo alta; la celda vacía se sumó el 2026-11-25, D59 del plan
+     * XLSEXP de Maker).
+     *
+     * <p>
+     * Excepción para el NULL obligatorio: si la vista completó el atributo con
+     * el valor por defecto de la columna ({@link ExcelRowProcessor#DEFAULTED_FIELDS}:
+     * columna ausente, o celda vacía con {@code defaultWhenBlank}) y el
+     * existente tiene NULL en ese atributo {@code @NotNull}, el valor por
+     * defecto <b>sí</b> se copia, para que el dato quede válido, aunque la
+     * columna sea {@code noOverwrite()} (D61 y D63 del plan XLSEXP de Maker,
+     * hallazgo E4-24). Con lo guardado no nulo rigen D59 y {@code noOverwrite()},
+     * y un valor que vino en la celda de una columna {@code noOverwrite()} no
+     * se copia nunca. Como la revisión previa y la grabación resuelven el
+     * existente con este mismo método, la revisión ya valida la entidad con
+     * el default y no la rechaza, y con revisión o sin ella se graba lo mismo.
      *
      * <p>
      * Las dos protecciones actúan sobre el atributo de la <b>entidad destino</b>
@@ -1335,14 +1686,17 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         //no debe devolver la entidad a medio anular como actualización.
         if (getOverWriteData()) {
             //Solo los valores que trajo la planilla; el resto se conserva.
-            //Un atributo completado por el default de una columna AUSENTE
-            //no vino en la planilla: se anula en la copia para no pisar
-            //el valor del existente (copyTo con onlyFieldsNotNulls).
+            //Un atributo completado por el default de una columna AUSENTE,
+            //o de una celda vacía con defaultWhenBlank (D59), no vino en la
+            //planilla: se anula en la copia para no pisar el valor del
+            //existente (copyTo con onlyFieldsNotNulls).
             //Lo mismo para las columnas declaradas noOverwrite(): se graban
             //solo en las altas.
+            //Excepción (D61, D63): el default de la columna sobre un NULL de
+            //un atributo @NotNull del existente sí se graba, también en una
+            //columna noOverwrite().
             if (source != null) {
-                clearFields(target, source, ExcelRowProcessor.DEFAULTED_FIELDS);
-                clearFields(target, source, ExcelRowProcessor.NO_OVERWRITE_FIELDS);
+                clearProtectedFields(target, source, existing);
             }
             //Las colecciones hijas (@OneToMany) de la entidad convertida
             //no vienen de la planilla: si la entidad las inicializa con
@@ -1356,27 +1710,56 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
     }
 
     /**
-     * Anula en {@code target} los atributos anotados en las propiedades de
-     * {@code source} bajo {@code key}, para que la copia «solo no nulos» sobre
-     * el registro existente no los toque.
+     * Anula en {@code target} los atributos que no deben pisar al existente:
+     * los que la vista completó con el valor por defecto
+     * ({@link ExcelRowProcessor#DEFAULTED_FIELDS}, D59) y los de las columnas
+     * {@code noOverwrite()} ({@link ExcelRowProcessor#NO_OVERWRITE_FIELDS}),
+     * para que la copia «solo no nulos» no los toque. Excepción: un atributo
+     * completado con el valor por defecto que es {@code @NotNull} y está NULL
+     * en el existente conserva el default y se copia, aunque su columna sea
+     * {@code noOverwrite()} (D61 y D63, E4-24). Un valor que vino en la celda
+     * de una columna {@code noOverwrite()} no está en {@code DEFAULTED_FIELDS}
+     * y se anula siempre.
      *
      * @param target entidad convertida que se va a copiar sobre el existente.
      * @param source fila de la vista con las anotaciones del procesador.
-     * @param key {@link ExcelRowProcessor#DEFAULTED_FIELDS} o
-     * {@link ExcelRowProcessor#NO_OVERWRITE_FIELDS}.
+     * @param existing registro existente sobre el que se copia.
      * @throws Exception si falla la asignación.
      */
     @SuppressWarnings("unchecked")
-    private void clearFields(IDataRow target, IDataRow source, String key) throws Exception {
-        Set<String> fields = (Set<String>) source.getProperties().get(key);
-        if (fields == null) {
-            return;
+    private void clearProtectedFields(IDataRow target, IDataRow source, IDataRow existing) throws Exception {
+        Set<String> defaulted = (Set<String>) source.getProperties().get(ExcelRowProcessor.DEFAULTED_FIELDS);
+        Set<String> noOverwrite = (Set<String>) source.getProperties().get(ExcelRowProcessor.NO_OVERWRITE_FIELDS);
+        Set<String> fields = new LinkedHashSet<>();
+        if (defaulted != null) {
+            fields.addAll(defaulted);
+        }
+        if (noOverwrite != null) {
+            fields.addAll(noOverwrite);
         }
         for (String fieldName : fields) {
-            if (DataInfo.isFieldExist(target.getClass(), fieldName)) {
-                target.setValue(fieldName, null);
+            if (!DataInfo.isFieldExist(target.getClass(), fieldName)) {
+                continue;
             }
+            if (defaulted != null && defaulted.contains(fieldName)
+                    && isNullNotNull(existing, fieldName)) {
+                continue;
+            }
+            target.setValue(fieldName, null);
         }
+    }
+
+    /**
+     * Indica si el atributo de la entidad es {@code @NotNull} y está NULL.
+     *
+     * @param row entidad (el registro existente).
+     * @param fieldName atributo.
+     * @return {@code true} si el atributo es obligatorio y no tiene valor.
+     */
+    private static boolean isNullNotNull(IDataRow row, String fieldName) {
+        Field field = DataInfo.getDeclaredField(row.getClass(), fieldName);
+        return field != null && field.getAnnotation(NotNull.class) != null
+                && row.getValue(fieldName) == null;
     }
 
     /**
@@ -1467,11 +1850,18 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * validación con {@code IDataService.checkDataRow} y persistencia con
      * {@code IDataService.save} (los grabados se contabilizan en
      * {@link #getRowsMigratedCount()}). Los registros con error se acumulan en
-     * {@link #getDataRowsError()}. Si los registros ya fueron validados en la
+     * {@link #getDataRowsError()}, con el motivo del rechazo aunque la
+     * grabación haya cortado por una excepción
+     * ({@link #getResultErrors(IDataResult)}), y el log los lista con su
+     * número de mensaje. Si los registros ya fueron validados en la
      * pasada de {@link #checkValidation(Sheet)}, el {@code checkDataRow} no se
      * repite (se marca el registro como verificado); en ese caso los duplicados
      * dentro de la misma planilla no se detectan entre sí, dado que ninguno
-     * existía en la base al momento de la revisión.</li>
+     * existía en la base al momento de la revisión. Lo que sí se repite es la
+     * parte de {@code checkDataRow} que completa los valores por defecto de los
+     * atributos {@code @NotNull} que no son columnas de la planilla
+     * ({@link #completeNotNullDefaults(IExcelRowProcessor, IDataRow)}): la
+     * revisión los completó sobre una entidad que se descartó (E4-23).</li>
      * <li>Completado el recorrido se marca {@link #getImportOk()} en
      * {@code true} y se invoca {@link #finishWithError()} si algún registro
      * falló, o {@link #finish()} si todos se procesaron correctamente.</li>
@@ -1570,7 +1960,7 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     }
                     IDataResult deleted = getDataService().checkAndSave(sessionId, existing);
                     if (!deleted.isSuccessFul()) {
-                        source.setErrors(deleted.getErrorsMap());
+                        source.setErrors(getResultErrors(deleted));
                         getDataRowsError().add(source);
                     } else {
                         rowsDeletedCount++;
@@ -1613,12 +2003,16 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                         continue;
                     }
                 } else {
+                    //La revisión previa ya validó, pero los valores por defecto
+                    //que checkDataRow puso en los @NotNull fuera de la planilla
+                    //quedaron en la entidad descartada de esa pasada (E4-23).
+                    completeNotNullDefaults(getExcelRowProcessor(), target);
                     target.setRowChecked(true);
                 }
                 //Grabar
                 IDataResult result = getDataService().save(sessionId, target);
                 if (!result.isSuccessFul()) {
-                    source.setErrors(result.getErrorsMap());
+                    source.setErrors(getResultErrors(result));
                     getDataRowsError().add(source);
                 } else {
                     rowsMigratedCount++;

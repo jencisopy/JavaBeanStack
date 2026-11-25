@@ -533,18 +533,20 @@ public class ExcelRowProcessorTest {
     }
 
     /**
-     * La fila anota qué atributos se completaron con el default de una columna
-     * AUSENTE (y solo esos): es lo que usa la importación para no pisar con
-     * ellos un registro existente (decisión del usuario, 2026-09-16).
+     * La fila anota qué atributos se completaron con el default de la columna:
+     * la columna AUSENTE (decisión del usuario, 2026-09-16) y la celda VACÍA
+     * con {@code defaultWhenBlank} (D59 del plan XLSEXP de Maker, 2026-11-25,
+     * hallazgo E4-20). Es lo que usa la importación para no pisar con ellos un
+     * registro existente. La columna presente con valor no se anota.
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testRegistraLosAtributosCompletadosPorDefaultDeColumnaAusente() throws Exception {
+    public void testRegistraLosAtributosCompletadosPorDefaultDeColumnaAusenteOCeldaVacia() throws Exception {
         try (Workbook wb = buildWorkbook(new String[]{"code", "description"},
                 new Object[]{"u1", ""})) {
             ExcelColumns columns = new ExcelColumns();
             columns.add("code", "code").defaultValue("x");                  //presente: no cuenta
-            columns.add("description", "description").defaultValue("d").defaultWhenBlank(); //presente y en blanco: no cuenta
+            columns.add("description", "description").defaultValue("d").defaultWhenBlank(); //presente y en blanco: cuenta (D59)
             columns.add("fullName", "fullName").defaultValue("Sin nombre");  //ausente: cuenta
             columns.add("email1", "email1");                                 //ausente sin default: no cuenta
 
@@ -556,7 +558,7 @@ public class ExcelRowProcessorTest {
             java.util.Set<String> defaulted = (java.util.Set<String>) fila.getProperties()
                     .get(ExcelRowProcessor.DEFAULTED_FIELDS);
             assertNotNull(defaulted);
-            assertEquals(java.util.Set.of("fullName"), defaulted);
+            assertEquals(java.util.Set.of("fullName", "description"), defaulted);
         }
     }
 

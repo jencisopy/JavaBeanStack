@@ -339,6 +339,18 @@ public class ExcelUtilTest {
         assertEquals(true, convertValue("1", Boolean.class));
         assertEquals(true, convertValue("true", Boolean.class));
         assertEquals(false, convertValue("0", Boolean.class));
+        // Boolean desde número (celda numérica): 1 y 0, con decimales en cero (E4-25, D62)
+        assertEquals(Boolean.TRUE, convertValue(1d, Boolean.class));
+        assertEquals(Boolean.TRUE, convertValue(1.0d, Boolean.class));
+        assertEquals(Boolean.FALSE, convertValue(0d, Boolean.class));
+        assertEquals(Boolean.FALSE, convertValue(0.0d, Boolean.class));
+        assertEquals(Boolean.FALSE, convertValue(-0.0d, Boolean.class));
+        assertEquals(Boolean.TRUE, convertValue(1L, Boolean.class));
+        assertEquals(Boolean.TRUE, convertValue(new BigDecimal("1.00"), Boolean.class));
+        assertEquals(Boolean.FALSE, convertValue(0, Boolean.class));
+        // los textos siguen como antes
+        assertEquals(false, convertValue("1.0", Boolean.class));
+        assertEquals(false, convertValue("2", Boolean.class));
         // LocalDateTime desde Timestamp y Date
         assertEquals(FECHA, convertValue(Timestamp.valueOf(FECHA), LocalDateTime.class));
         assertTrue(convertValue(new Date(), LocalDateTime.class) instanceof LocalDateTime);
@@ -364,6 +376,19 @@ public class ExcelUtilTest {
             cell.setCellValue("678.90");
             assertEquals(0, new BigDecimal("678.90").compareTo(getBigDecimal(cell)));
         }
+    }
+
+    /** E4-25 (D62): un número que no es 1 ni 0 no se convierte a lógico. */
+    @Test
+    public void testConvertValueNumeroNoLogicoLanza() {
+        IllegalArgumentException e2 = assertThrows(IllegalArgumentException.class,
+                () -> convertValue(2d, Boolean.class));
+        assertEquals("El valor numérico 2 no es convertible a lógico (se admite 1 o 0)", e2.getMessage());
+        IllegalArgumentException e05 = assertThrows(IllegalArgumentException.class,
+                () -> convertValue(0.5d, Boolean.class));
+        assertEquals("El valor numérico 0.5 no es convertible a lógico (se admite 1 o 0)", e05.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> convertValue(-1d, Boolean.class));
+        assertThrows(IllegalArgumentException.class, () -> convertValue(1.0000001d, Boolean.class));
     }
 
     @Test

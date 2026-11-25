@@ -597,8 +597,13 @@ public class ExcelUtil {
      * {@code Short} (vía {@code BigDecimal}; {@code Long/Integer/Short} de forma
      * exacta, lanza excepción si hay pérdida de información).</li>
      * <li>{@code Character}: primer caracter del texto.</li>
-     * <li>{@code Boolean}: {@code true} si el valor es {@code "1"} o
-     * {@code "true"} (ignorando mayúsculas).</li>
+     * <li>{@code Boolean}: desde un número (la celda numérica de Excel),
+     * {@code true} si vale 1 (también 1.0) y {@code false} si vale 0 (también
+     * 0.0); cualquier otro número lanza {@link IllegalArgumentException}
+     * (E4-25 del plan XLSEXP de Maker, D62: antes un 1 numérico daba
+     * {@code false} sin error). Desde un texto, {@code true} si el valor es
+     * {@code "1"} o {@code "true"} (ignorando mayúsculas) y {@code false} en
+     * cualquier otro caso.</li>
      * <li>{@code LocalDateTime}: desde {@code Date}, {@code Timestamp} o
      * {@code String} (este último con formato {@code dd/MM/yyyy HH:mm:ss},
      * ver {@link org.javabeanstack.util.LocalDates#toDateTime(String)}).</li>
@@ -627,6 +632,17 @@ public class ExcelUtil {
         } else if (type.getSimpleName().equals("Character") && !(value instanceof Character)) {
             String s = value.toString();
             return s.isEmpty() ? null : s.charAt(0);
+        } else if (type.getSimpleName().equals("Boolean") && (value instanceof Number)) {
+            //Celda numérica: 1 y 0, con o sin decimales en cero (1.0, 0.0); otro número es error (E4-25, D62).
+            double number = ((Number) value).doubleValue();
+            if (number == 1d) {
+                return Boolean.TRUE;
+            }
+            if (number == 0d) {
+                return Boolean.FALSE;
+            }
+            throw new IllegalArgumentException("El valor numérico " + new BigDecimal(value.toString()).stripTrailingZeros().toPlainString()
+                    + " no es convertible a lógico (se admite 1 o 0)");
         } else if (type.getSimpleName().equals("Boolean") && !(value instanceof Boolean)) {
             return (value.toString().trim().equals("1") || value.toString().trim().equalsIgnoreCase("true"));
         } else if (type.getSimpleName().equals("LocalDateTime") && (value instanceof Date)) {
