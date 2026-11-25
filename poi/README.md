@@ -10,6 +10,7 @@ las plantillas Word — XSSF (Excel) y XWPF (Word) viven en el mismo artefacto
 ### `org.javabeanstack.poi.excel` — planillas
 - **`ExcelUtil`** — apertura de libros, exportación de datos de consulta a un libro y descarga.
 - **`ExcelDataSource`** — fuente del subsistema de salida (`org.javabeanstack.outputs`): planilla tabular como documento en memoria. Único camino del subsistema para el formato de planilla.
+- **`ExcelSheetWriter`** — escritor **incremental** de una hoja `xlsx` (SXSSF): recibe las filas de a una y no necesita la lista completa (ver «Escritura incremental»).
 - **`ExcelImportSrv`** / **`ExcelRowProcessor`** — importación de datos, con sus contratos `IExcelImportSrv` / `IExcelRowProcessor`.
 - **`ExcelColumns`** / **`ExcelColumnSpec`** / **`ColumnRequirement`** — especificación de las columnas de la planilla que consume `ExcelRowProcessor` (ver más abajo).
 - **`ExcelColumnsXml`** — arma un `ExcelColumns` desde un bloque XML (nodo DOM, recurso `IXmlDom`, texto o archivo + ruta del tag); ver «Columnas desde XML».
@@ -146,6 +147,67 @@ cabecera vacía o repetida, tag de columna con elementos hijos, bloque **sin nin
 comentarios XML se ignoran. Que el bloque vacío sea un error importa: el constructor base de
 `ExcelRowProcessor` trata un `ExcelColumns` vacío como mapeo identidad de toda la planilla.
 Los defaults no convertibles al tipo del atributo los sigue reclamando `checkMetaData()`.
+
+#### Escritura incremental (`ExcelSheetWriter`, 2026-11-24)
+
+`ExcelUtil.toExcelSheets` escribe con SXSSF pero recibe **todas** las filas en una lista: para
+exportar un conjunto grande hay que leerlo entero antes de empezar. `ExcelSheetWriter` escribe
+una hoja **fila por fila** (`writeRow(Object[])`), así quien lee por lotes escribe cada lote y
+lo suelta; en memoria quedan la ventana de SXSSF (`ROW_WINDOW`, 100 filas) y el lote en curso.
+
+```java
+try (ExcelSheetWriter writer = new ExcelSheetWriter("Clientes",
+        new String[]{"codigo", "nombre", "saldo"},
+        new Class<?>[]{String.class, String.class, BigDecimal.class});
+     OutputStream out = Files.newOutputStream(archivo)) {
+    for (Object[] fila : lote) {
+        writer.writeRow(fila);
+    }
+    writer.writeTo(out);          // una sola vez, después de la última fila
+}                                 // close() borra los temporales de SXSSF
+```
+
+- **El tipo declarado de la columna decide la celda**, no el valor: `String`/`Character` →
+  texto (un `"001"` sigue siendo `"001"`; se conservan los espacios finales); enteros (`Long`,
+  `Integer`, `Short`, `Byte`, `BigInteger`) → numérica con formato `0`; `BigDecimal`/`Double`/`Float`
+  → numérica sin máscara (General), o con la que fije `setColumnFormat(col, "#,##0.00")`;
+  `LocalDateTime`/`Date` → fecha `dd/mm/yyyy hh:mm:ss`; `LocalDate`/`java.sql.Date` → `dd/mm/yyyy`;
+  `java.sql.Time`/`LocalTime` → hora (fracción del día) con formato `hh:mm:ss`; `Boolean` → texto
+  `true`/`false`; `byte[]` → rechazado en el constructor; tipo `null` u `Object` → según el valor.
+  Nulo deja la celda vacía. Un valor que no corresponde al tipo declarado se escribe por su
+  propio tipo (no se descarta).
+- **Precisión**: Excel guarda los números como `double` (15 dígitos significativos). Un **entero**
+  (`Long`, `BigInteger`) con más de 15 dígitos significativos (sin contar los ceros finales) se
+  escribe como **texto** con todos sus dígitos, y la importación lo vuelve a leer al tipo entero;
+  un decimal más largo no vuelve igual: si una columna lo necesita, declararla `String`.
+- **Lo que Excel no puede guardar** no rechaza la fila: se aplica una regla fija y el escritor
+  **cuenta** cada celda afectada, para que quien exporta lo informe:
+  texto de más de 32.767 caracteres → se recorta a ese largo (`getTruncatedCellCount()`);
+  fecha u hora anterior al 1900-01-01 o posterior al 9999-12-31 → texto **en el formato que lee la
+  importación** (`LocalDates.toDateTime(String)`): `dd/MM/yyyy` para una fecha sola, `dd/MM/yyyy HH:mm:ss`
+  con hora, sin fracciones (una fecha sola con año de cinco cifras lleva `00:00:00`) (`getOutOfRangeDateCount()`), así que vuelve como fecha y hora por
+  `ExcelRowProcessor` (la fecha sola, a las 00:00:00); `NaN` e infinito (`Double`, `Float`) → celda
+  vacía (`getInvalidNumberCount()`). Dos límites de la importación, no del escritor: un año anterior
+  al 1 no vuelve (el formato no lleva era) y un atributo `LocalDate` no se importa con ninguna celda de
+  fecha (la conversión solo produce `LocalDateTime`).
+- **Formato de texto**: las celdas que el escritor emite como texto (texto, booleanos, enteros largos,
+  fechas fuera de rango) llevan el formato `@`, para que Excel no las convierta en número si alguien
+  las edita (`001` no pasa a `1`).
+- **Encabezados** únicos, de texto y no vacíos (las condiciones de `ExcelRowProcessor.checkMetaData`);
+  el constructor lo verifica, comparándolos sin los espacios de los extremos (como la importación), y
+  los escribe recortados. La fila de encabezados puede no ser la primera
+  (`new ExcelSheetWriter(hoja, encabezados, tipos, headerRowIndex)`), para producir una planilla
+  que una importación lea con su `headerRowIndex`.
+- **Anchos** fijados al abrir por encabezado y tipo, sin `autoSizeColumn`; `setColumnWidth(col, chars)`
+  los cambia. El nombre de la hoja se sanea con la regla de `ExcelUtil` (31 caracteres, sin `[]:*?/\`).
+- Comparte con `ExcelUtil` los estilos de texto, fecha y cabecera; la salida de `ExcelUtil`
+  (asistente de informes, `ExcelExportSrv`) no cambia.
+
+Para entregar el archivo sin cargarlo en memoria, el subsistema de salida tiene
+`FileOutputDocument` (módulo `outputs`): un `IOutputDocument` respaldado por un archivo, cuyo
+`writeTo(OutputStream)` copia el disco por bloques; `DownloadTarget` (módulo `web`) entrega todo
+documento con `writeTo`, así que un documento en memoria sale igual que antes. `delete()` borra el
+archivo cuando el dueño ya no lo necesita.
 
 ### `org.javabeanstack.poi.word` — documentos Word
 - **`WordTemplateMerge`** — reemplaza los marcadores `<<campo>>` de una plantilla .docx con los valores de un mapa; el reemplazo se resuelve por párrafo (Word parte los marcadores en varios runs).

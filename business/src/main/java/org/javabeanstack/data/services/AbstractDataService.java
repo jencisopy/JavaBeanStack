@@ -50,6 +50,7 @@ import org.javabeanstack.error.ErrorManager;
 import org.javabeanstack.error.IErrorInfo;
 import org.javabeanstack.exceptions.SessionError;
 import org.javabeanstack.security.model.IUserSession;
+import org.javabeanstack.data.AssociationOrderBy;
 import org.javabeanstack.data.DataInfo;
 import org.javabeanstack.data.model.DataResult;
 import org.javabeanstack.data.IDataResult;
@@ -1048,7 +1049,10 @@ public abstract class AbstractDataService implements IDataService {
      * @param <T>
      * @param sessionId identificador de la sesión
      * @param type tipo o modelo de dato
-     * @param order orden de la selección
+     * @param order orden de la selección; con {@link AssociationOrderBy}, los
+     * términos que navegan una asociación que puede ser nula se reescriben
+     * para que el orden no descarte filas y se agrega la clave de la entidad
+     * como desempate
      * @param filter filtro de la selección
      * @return sentencia JPQL que se ejecutará para recuperar los datos
      */
@@ -1077,9 +1081,13 @@ public abstract class AbstractDataService implements IDataService {
         if (!"".equals(filtro)) {
             comando = comando + " where " + filtro;
         }
-        //Orden
+        //Orden. Los terminos que navegan una asociacion que puede ser nula
+        //(customer.name) se reescriben para no descartar filas: Hibernate
+        //resuelve esa navegacion con un join interno. Y el orden termina con
+        //la clave de la raiz, para que la paginacion sea estable con filas
+        //empatadas (ver AssociationOrderBy). Sin orden no se agrega ninguno.
         if (!"".equals(order)) {
-            comando = comando + " order by " + order;
+            comando = comando + " order by " + AssociationOrderBy.rewrite(type, "o", order);
         }
         return comando;
     }

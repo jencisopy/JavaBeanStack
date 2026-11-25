@@ -22,6 +22,9 @@
  */
 package org.javabeanstack.outputs;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * Contrato del documento generado en memoria: el resultado de una
  * {@link IDocumentSource} (merge de una plantilla Word, exportación de un
@@ -40,6 +43,14 @@ package org.javabeanstack.outputs;
  * {@link org.javabeanstack.messaging.IMessageAttachment} (nombre, contenido,
  * content-type), de modo que convertirlo en adjunto de un mensaje es una copia
  * directa de valores.
+ * </p>
+ *
+ * <p>
+ * El contenido vive por lo general en memoria
+ * ({@code org.javabeanstack.outputs.OutputDocument}); un documento grande puede
+ * vivir en un archivo temporal ({@code org.javabeanstack.outputs.FileOutputDocument}),
+ * y entonces conviene entregarlo con {@link #writeTo(java.io.OutputStream)} en
+ * vez de pedir {@link #getContent()}.
  * </p>
  *
  * <p>Es un contrato puro, sin relación con la persistencia ni con la web.</p>
@@ -124,4 +135,24 @@ public interface IOutputDocument {
      * @return tamaño en bytes, o 0 si aún no hay contenido.
      */
     long getSize();
+
+    /**
+     * Escribe el contenido del documento en un flujo de salida.
+     *
+     * <p>Es el camino que usan los destinos que entregan el documento por un
+     * flujo (la descarga HTTP), en lugar de pedir {@link #getContent()}: un
+     * documento respaldado por un archivo lo implementa leyendo el disco por
+     * bloques, sin cargarlo entero en memoria. La implementación por omisión
+     * escribe {@link #getContent()}, así que para un documento en memoria el
+     * resultado es el mismo que escribir sus bytes.</p>
+     *
+     * @param output flujo destino; no se cierra ni se vacía.
+     * @throws IOException si la escritura falla.
+     */
+    default void writeTo(OutputStream output) throws IOException {
+        byte[] content = getContent();
+        if (content != null) {
+            output.write(content);
+        }
+    }
 }

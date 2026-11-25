@@ -22,6 +22,8 @@
  */
 package org.javabeanstack.web.util;
 
+import java.io.IOException;
+
 import jakarta.faces.context.FacesContext;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,6 +45,13 @@ import org.javabeanstack.outputs.IOutputDocument;
  * falla histórico —comprometer la respuesta antes de generar y terminar
  * descargando la pantalla de error como si fuera el archivo, o reventar con
  * {@code UT010006}— queda estructuralmente eliminado.
+ * </p>
+ *
+ * <p>
+ * El contenido se entrega con {@link IOutputDocument#writeTo(java.io.OutputStream)}:
+ * un documento respaldado por un archivo
+ * ({@code org.javabeanstack.outputs.FileOutputDocument}) se copia a la
+ * respuesta por bloques, y uno en memoria escribe sus bytes como antes.
  * </p>
  *
  * <p>Uso: {@code new DownloadTarget()} (descarga como adjunto) o
@@ -79,8 +88,15 @@ public class DownloadTarget implements IDocumentTarget {
      * Escribe el documento en la respuesta HTTP del ciclo JSF en curso y marca
      * la respuesta como completa.
      *
+     * <p>Si la copia falla a mitad, no lanza: devuelve el error (número 1, con
+     * la excepción), como los demás destinos ante una falla de entrega. Si ya
+     * salieron bytes la respuesta queda marcada como completa (está
+     * comprometida y JSF no puede dibujar encima); si no, se limpia, para que
+     * la pantalla pueda mostrar el error.</p>
+     *
      * @param document documento generado.
-     * @return resultado sin error si se escribió.
+     * @return resultado sin error si se escribió; con el error si la copia
+     * falló.
      * @throws Exception si el documento es nulo o vacío, o no hay contexto
      * Faces activo (uso inválido).
      */
@@ -98,10 +114,30 @@ public class DownloadTarget implements IDocumentTarget {
         response.setContentType(document.getContentType());
         response.setHeader("Content-Disposition", (inline ? "inline" : "attachment")
                 + "; filename=" + document.getFileName());
-        response.setContentLength((int) document.getSize());
+        response.setContentLengthLong(document.getSize());
+        //writeTo y no getContent(): un documento respaldado por un archivo se
+        //copia por bloques, sin cargarlo entero en memoria; uno en memoria
+        //escribe sus bytes, como siempre.
         try (ServletOutputStream outputStream = response.getOutputStream()) {
-            outputStream.write(document.getContent());
+            document.writeTo(outputStream);
             outputStream.flush();
+        } catch (IOException ex) {
+            //La copia fallo a mitad (el cliente corto la descarga, o el archivo
+            //que respalda el documento desaparecio). Si ya salieron bytes, la
+            //respuesta esta comprometida: se la marca completa para que JSF no
+            //intente dibujar encima. Si no salio nada, se la limpia y JSF puede
+            //mostrar el error en la pantalla.
+            if (response.isCommitted()) {
+                facesContext.responseComplete();
+            } else {
+                response.reset();
+            }
+            IErrorInfo result = new ErrorInfo();
+            result.setErrorNumber(1);
+            result.setMessage("No se pudo entregar el documento " + document.getFileName()
+                    + ": " + ex.getMessage());
+            result.setException(ex);
+            return result;
         }
         facesContext.responseComplete();
         return new ErrorInfo();

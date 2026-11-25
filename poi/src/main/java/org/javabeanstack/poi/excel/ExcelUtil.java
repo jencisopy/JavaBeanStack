@@ -77,11 +77,11 @@ import org.javabeanstack.util.LocalDates;
 public class ExcelUtil {
 
     private static final int SAMPLE_ROWS = 200;  // filas que se muestrean para medir String
-    private static final int WIDTH_MIN = 8;    // ancho mínimo en caracteres
-    private static final int WIDTH_MAX = 60;   // tope para String largos (evita columnas enormes)
-    private static final int WIDTH_DATE = 19;   // "dd/mm/yyyy hh:mm:ss" = 19 fijo
-    private static final int WIDTH_NUMBER = 15;   // "#,##0.00" con signo y separadores de miles
-    private static final int STRING_PAD = 2;    // margen visual para texto
+    static final int WIDTH_MIN = 8;    // ancho mínimo en caracteres
+    static final int WIDTH_MAX = 60;   // tope para String largos (evita columnas enormes)
+    static final int WIDTH_DATE = 19;   // "dd/mm/yyyy hh:mm:ss" = 19 fijo
+    static final int WIDTH_NUMBER = 15;   // "#,##0.00" con signo y separadores de miles
+    static final int STRING_PAD = 2;    // margen visual para texto
     private static final int MAX_SHEET_NAME = 31;  // tope de Excel para el nombre de una hoja
     private static final String SHEET_DEFAULT = "DATOS";  // nombre historico de la hoja unica
 
@@ -128,7 +128,7 @@ public class ExcelUtil {
         return widths;
     }
 
-    private static int clampWidth(int chars) {
+    static int clampWidth(int chars) {
         return Math.max(WIDTH_MIN, Math.min(WIDTH_MAX, chars));
     }
 
@@ -136,7 +136,7 @@ public class ExcelUtil {
      * Convierte un ancho en caracteres a las unidades de POI (1/256 de
      * caracter).
      */
-    private static int charsToWidthUnits(int chars) {
+    static int charsToWidthUnits(int chars) {
         return (int) Math.round((chars + 1) * 256 * FONT_SCALE);  // +1 caracter de padding
     }
 
@@ -321,7 +321,7 @@ public class ExcelUtil {
      * @param valor valor a escribir.
      * @param styles estilos del libro.
      */
-    private static void writeCell(Cell cell, Object valor, SheetStyles styles) {
+    static void writeCell(Cell cell, Object valor, SheetStyles styles) {
         if (valor == null) {
             cell.setCellStyle(styles.text);
         } else if (valor instanceof BigDecimal) {
@@ -353,7 +353,7 @@ public class ExcelUtil {
      * @param name nombre pedido.
      * @return el nombre a usar.
      */
-    private static String sheetName(Workbook workBook, String name) {
+    static String sheetName(Workbook workBook, String name) {
         String limpio = WorkbookUtil.createSafeSheetName(Fn.nvl(name, SHEET_DEFAULT));
         if (limpio.trim().isEmpty()) {
             limpio = SHEET_DEFAULT;
@@ -416,14 +416,20 @@ public class ExcelUtil {
 
     /**
      * Los estilos de un libro, creados una sola vez.
+     *
+     * <p>Tiene visibilidad de paquete para que {@link ExcelSheetWriter} use
+     * los mismos estilos de texto, fecha y cabecera que esta clase. Los estilos
+     * propios del escritor (entero, decimal sin máscara, máscara por columna)
+     * NO se agregan acá: los crearía también cada libro de esta clase y
+     * cambiaría su salida.</p>
      */
-    private static class SheetStyles {
+    static class SheetStyles {
 
-        private final CellStyle text;
-        private final CellStyle number;
-        private final CellStyle dateTime;
-        private final CellStyle date;
-        private final CellStyle header;
+        final CellStyle text;
+        final CellStyle number;
+        final CellStyle dateTime;
+        final CellStyle date;
+        final CellStyle header;
 
         SheetStyles(Workbook workBook) {
             DataFormat dataFormat = workBook.createDataFormat();
