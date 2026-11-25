@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Descripción del proyecto
 
-JavaBeanStack es un framework Java multi-módulo Maven (LGPL v3.0) que provee infraestructura reutilizable para acceso a datos, seguridad, manejo de errores y capas web JSF/REST. Es una **librería/framework**, no una aplicación ejecutable. Grupo Maven: `org.javabeanstack`, parent `jbs-parent`, versión actual `2.1.0-SNAPSHOT`. `maven.compiler.release` fija **Java 25** (`java.version` en el pom raíz, alineado al runtime de WildFly 40; Jakarta EE 11 exige 17 como mínimo).
+JavaBeanStack es un framework Java multi-módulo Maven (LGPL v3.0) que provee infraestructura reutilizable para acceso a datos, seguridad, manejo de errores y capas web JSF/REST. Es una **librería/framework**, no una aplicación ejecutable. Grupo Maven: `org.javabeanstack`, parent `jbs-parent`, versión actual `2.2.0-SNAPSHOT`. `maven.compiler.release` fija **Java 25** (`java.version` en el pom raíz, alineado al runtime de WildFly 41; Jakarta EE 11 exige 17 como mínimo).
 
 ## Estrategia de ramas — IMPORTANTE
 
-- **`master`**: versión 2.0.0, **Jakarta EE 11** (`jakarta.jakartaee-api:11.0.0`, namespace `jakarta.*`), Java 25, PrimeFaces 15 (classifier `jakarta`), JasperReports 7, JUnit 5. Los tests de integración de `business` requieren un servidor **WildFly 40+** (primera versión con soporte completo de EE11).
+- **`master`**: versión 2.2.x, **Jakarta EE 11** (`jakarta.jakartaee-api:11.0.0`, namespace `jakarta.*`), Java 25, PrimeFaces 15 (classifier `jakarta`), JasperReports 7, JUnit 5. Los tests de integración de `business` requieren un servidor **WildFly 41** (sirve cualquier WildFly 40+, la primera versión con soporte completo de EE11).
 - **`1.5.x`**: rama legacy 1.5.x, **Java EE 8** (namespace `javax.*`), PrimeFaces antiguo, JasperReports 6. Recibe fixes de lógica que luego se portan a master.
 
 Al comparar o portar cambios entre ramas:
@@ -20,7 +20,7 @@ Al comparar o portar cambios entre ramas:
 
 ### Migración a Jakarta EE 11 — verificada en runtime
 
-- **PrimeFaces** está en `15.0.7` (gestionada en el BOM) y **verificado contra Jakarta Faces 4.1 en runtime**: el WAR de Maker con jbs-web se despliega y funciona en WildFly 40 (Mojarra 4.1.7), julio 2026.
+- **PrimeFaces** está en `15.0.17` (gestionada en el BOM) y **verificado contra Jakarta Faces 4.1 en runtime**: las aplicaciones consumidoras con jbs-web se despliegan y funcionan en WildFly 40+ (hoy WildFly 41).
 - El bump de Java y `jakartaee-api` 10.0.0→11.0.0 se validó en su momento con `mvn test-compile` (compilación completa) y con los tests unitarios de `commons` en JDK 17 y **JDK 25 LTS** (Temurin) — mismo resultado en ambos (el único fallo, `CipherUtilTest.testRSA`, es preexistente y no relacionado a la migración); hoy el proyecto compila y publica directamente con JDK 25.
 
 ## Comandos
@@ -45,7 +45,7 @@ mvn -pl commons test
 
 # Una clase de test / un método
 mvn -pl commons -Dtest=StringsTest test
-mvn -pl poi -Dtest=ExcelUtilTest#testOpenWorkbook_File test
+mvn -pl poi -Dtest=ExcelUtilTest#testOpenWorkbookFile test
 
 # Cobertura (JaCoCo)
 mvn -Psonar-coverage test
@@ -58,7 +58,8 @@ No hay lint ni formatter configurados; la validación es `mvn test-compile` / `m
 
 ### Tests: qué se puede ejecutar localmente
 
-- **`commons`**, **`core`**, **`web`**, **`poi`**, **`outputs`**: tests unitarios puros — se pueden correr siempre (`mvn -pl commons,core,web,poi,outputs test`).
+- **`commons`**, **`core`**, **`web`**, **`poi`**, **`outputs`**, **`messaging`**: tests unitarios puros — se pueden correr siempre (`mvn -pl commons,core,web,poi,outputs,messaging test`).
+- **`sifen`**: corre sin red ni certificado real (certificado autofirmado de `src/test/resources/certificados/` y el simulador de SIFEN, `org.javabeanstack.sifen.simulator`, que se publica en el `-tests.jar`): `mvn -pl sifen test`. Los tests `@Tag("sifen-live")` van contra el ambiente de pruebas de SIFEN y quedan **excluidos por omisión**; solo corren con `-Psifen-live -Djbs.sifen.test.env=<archivo>` y solo contra `DEV` (ver `SifenTestEnv`). Nunca apuntarlos a producción. En `verify` el build comprueba que los dos jars lleven `LICENSE`, `NOTICE` y `LICENSE-rshk-jsifenlib.md`.
 - **`business` (y los que extienden `TestClass`)**: son tests de integración que requieren un **servidor WildFly/JBoss corriendo** con el EAR `TestProjects-ear` desplegado (lookup EJB remoto vía `http-remoting`). Se configuran con variables de entorno: `SERVER_TEST` (default `localhost`), `SERVER_TEST_PORT` (default `8080`), `SECURITY_PRINCIPAL`, `SECURITY_CREDENTIALS`, `APP_USER_LOGIN`/`APP_USER_PASS` (default `test1`), `APP_IDCOMPANY` (default `2`). Sin ese servidor, fallan en el setup — no es un bug del código.
 
 ## CI/CD — CUIDADO con push a master
@@ -78,26 +79,36 @@ commons     (utilidades de strings, archivos, crypto, fechas)
     ↓
 core        (manejo de errores, log de eventos, XML, configuración, recursos)
     ↓
-business    (acceso a datos JPA/EJB, servicios, seguridad, lógica de negocio)
+├── business  (acceso a datos JPA/EJB, servicios, seguridad, lógica de negocio)
+└── outputs   (salida de documentos: fuente → documento → destinos;
+               OutputDispatcher, OutputDocument, FolderTarget — depende solo de jbs-core)
+
+business + outputs
     ↓
-├── web     (controllers JSF, converters, filtros — solo JSF/PrimeFaces)
-└── poi     (todo lo construido sobre Apache POI: planillas Excel —
-             ExcelUtil, importación Excel*Srv — y plantillas Word —
-             WordTemplateMerge/Source; sin PrimeFaces y sin jbs-web, usa
-             FacesContext directo. Se llamó jbs-excel hasta 2026-08)
+├── web       (controllers JSF, converters, filtros — solo JSF/PrimeFaces; DownloadTarget)
+└── poi       (todo lo construido sobre Apache POI: planillas Excel —
+               ExcelUtil, importación Excel*Srv, ExcelDataSource — y plantillas Word —
+               WordTemplateMerge/Source; sin PrimeFaces y sin jbs-web, usa
+               FacesContext directo. Se llamó jbs-excel hasta 2026-08)
+
+outputs (+ core)
+    ↓
+├── messaging (canal de correo: MailMessage, MailSender, MailTarget)
+├── jasper    (integración JasperReports; JasperReportUtil, JasperReportSource)
+└── aws       (integración AWS S3; S3Target — depende solo de jbs-outputs)
 
 rest        (recursos JAX-RS: AbstractWebResource, SessionWebResource, CORSFilter,
              exceptions, model, util — depende solo de interfaces + commons;
              jbs-business entra únicamente con scope test)
-jasper      (integración JasperReports; JasperReportUtil — depende solo de jbs-core)
-aws         (integración AWS S3 — independiente, fuera de la cadena principal)
+sifen       (cliente de SIFEN, facturación electrónica de la DNIT — autónomo: no
+             depende de ningún otro jbs-* ni de una base, solo del parent)
 ```
 
 No introducir imports que inviertan esta dirección. Desde 2.0, tres módulos se
 extrajeron de `web` para aislar sus dependencias pesadas (POI, JasperReports+Groovy,
 JAX-RS) y sacar Apache POI de `interfaces`:
 
-- **`poi`** (ex `excel`) ya **no depende de `jbs-web` ni de PrimeFaces**: declara `jbs-business` (arrastra core, commons, interfaces), `jbs-outputs` + `poi-ooxml`; usa `FacesContext`/`jakarta.servlet` directos (jakartaee-api provided). El bean de carga `ExcelUploadCtrl`/`IExcelUploadCtrl` (paquete `org.javabeanstack.web.uploads`) **se movió al proyecto Maker** (`net.makerapp.web.uploads`, Maker-controllers) por ser código específico de su vista (widget `wdlg_excel_upload`, `AppMkRootCtrl.MENSAJES`) — era el único uso de PrimeFaces del módulo. `jasper` se desacopló igual de `web` **y de PrimeFaces**: usa `FacesContext` directo y depende solo de `jbs-core` (arrastra interfaces + commons; no usa nada de `jbs-business`). `web` quedó libre de POI y de JasperReports.
+- **`poi`** (ex `excel`) ya **no depende de `jbs-web` ni de PrimeFaces**: declara `jbs-business` (arrastra core, commons, interfaces), `jbs-outputs` + `poi-ooxml`; usa `FacesContext`/`jakarta.servlet` directos (jakartaee-api provided). El bean de carga `ExcelUploadCtrl`/`IExcelUploadCtrl` (paquete `org.javabeanstack.web.uploads`) **se movió al proyecto Maker** (`net.makerapp.web.uploads`, Maker-controllers) por ser código específico de su vista (widget `wdlg_excel_upload`, `AppMkRootCtrl.MENSAJES`) — era el único uso de PrimeFaces del módulo. `jasper` se desacopló igual de `web` **y de PrimeFaces**: usa `FacesContext` directo y depende de `jbs-core` (arrastra interfaces + commons) y `jbs-outputs` (aporta `JasperReportSource`); no usa nada de `jbs-business`. `web` quedó libre de POI y de JasperReports.
 - **`rest`** depende solo de `interfaces` + `commons` (no arrastra JSF).
 - `interfaces` **ya no depende de POI**: `IExcelImportSrv`/`IExcelRowProcessor` viven ahora en `poi` (paquete `org.javabeanstack.poi.excel`).
 - Consecuencia: los consumidores de `jbs-web` que usen Excel, reportes Jasper o recursos REST deben declarar `jbs-poi`, `jbs-jasper` o `jbs-rest` **explícitamente** (antes venían dentro de `jbs-web`).
@@ -108,7 +119,7 @@ Cada jar declara `Automatic-Module-Name` vía la propiedad `<jbs.module.name>` (
 
 ## Gestión de dependencias
 
-**`jbs-bom` es la fuente única de versiones.** El módulo `bom/` (artefacto `jbs-bom`, packaging pom) centraliza en su `dependencyManagement` las versiones de los 9 artefactos `jbs-*` y de las dependencias de terceros (jakartaee-api, hibernate, primefaces, los artefactos de JasperReports, POI, log4j, junit, wildfly-ejb-client-bom). `jbs-parent` **hereda** del BOM (`<parent>` con `relativePath` = `bom/pom.xml`), por lo que todos los módulos reciben las versiones sin declararlas. Los consumidores (Oym-frame, Maker, TestProject) **importan** el BOM (`<scope>import</scope>`) en su `dependencyManagement`.
+**`jbs-bom` es la fuente única de versiones.** El módulo `bom/` (artefacto `jbs-bom`, packaging pom) centraliza en su `dependencyManagement` las versiones de los 12 artefactos `jbs-*` y de las dependencias de terceros (jakartaee-api, hibernate, primefaces, los artefactos de JasperReports, POI, log4j, junit, wildfly-ejb-client-bom). `jbs-parent` **hereda** del BOM (`<parent>` con `relativePath` = `bom/pom.xml`), por lo que todos los módulos reciben las versiones sin declararlas. Los consumidores (Oym-frame, Maker, TestProject) **importan** el BOM (`<scope>import</scope>`) en su `dependencyManagement`.
 
 - Al subir la versión de una dependencia, editar **solo** `bom/pom.xml`.
 - POI: el BOM gestiona `poi`, `poi-ooxml` y `poi-scratchpad` a la misma versión (POI exige que todos sus artefactos coincidan — verificar con `dependency:tree`). Debe alinearse con el `poi` base que arrastra JasperReports.
@@ -156,6 +167,14 @@ Todo lo construido sobre Apache POI, en dos paquetes por dominio:
 
 ### Salida de documentos (`outputs` + adapters)
 - **`org.javabeanstack.outputs`** (contratos en `interfaces`; núcleo en el módulo `outputs`, artefacto `jbs-outputs`, que depende solo de `jbs-core`): modelo fuente→documento→destinos. **`OutputDispatcher`** (orquestador fluido: genera una vez, entrega a N destinos, nunca lanza — todo vuelve como `IErrorInfo`; log opcional con `EVENT_DOCUMENT_OUTPUT`), **`OutputDocument`**, **`FolderTarget`**. Adapters en el módulo dueño de cada dependencia: `JasperReportSource` (jasper), `MailTarget` (messaging), `ExcelDataSource` (poi), `DownloadTarget` (web, único autorizado a tocar la respuesta HTTP), `WordTemplateSource` (poi). Regla que el subsistema garantiza: *primero generar en memoria, después comprometer el destino*.
+
+### Correo (`messaging`)
+- **`org.javabeanstack.messaging.mail`** (artefacto `jbs-messaging`; depende de `jbs-outputs`, `jbs-core` y `jakarta.mail-api` provided): **`MailMessage`** (mensaje en memoria, con `MailAddress`/`MailAttachment`), **`MailAccount`** (portador de los datos de la cuenta; de dónde salen lo decide la aplicación), **`MailSessionProvider`** (sesión desde la cuenta o, sin servidor SMTP, la del contenedor), **`MailSender`** (envío SMTP síncrono; nunca lanza, el `MailSendResult` dice si el fallo es definitivo o recuperable) y **`MailTarget`** (destino del subsistema de salida).
+
+### Cliente de SIFEN (`sifen`)
+- **`org.javabeanstack.sifen`** (artefacto `jbs-sifen`, autónomo; deriva de `rshk-jsifenlib`, MIT, con el aviso en `NOTICE` y `sifen/LICENSE-rshk-jsifenlib.md`): fachada **`ISifenClient`** (API pública v1) por empresa, creada con `SifenClient.create(config)` o guardada por clave en un **`SifenClientRegistry`**; emisión en dos pasos (`sign` → la aplicación graba → `send`), `resolve` para un envío de resultado desconocido (nunca reenviar a ciegas), lote, eventos y consultas; validación previa del DE activa por omisión, con todos los errores juntos y mensajes en español; **`SifenException`** con código estable, mensaje para el usuario e id de correlación; transporte con contexto TLS por cliente, que se rearma sin reiniciar la JVM. Configuración `sifen.*` en `SifenConfig`. Detalle en `sifen/README.md`.
+- **Contrato de API v1**: `ApiSignaturesTest` compara las firmas públicas con `src/test/resources/contract/api_v1.txt` (estable: dentro de `2.x` solo se agregan líneas) y `api_v1_provisional.txt` (lo anotado `@Provisional`, que puede cambiar dentro de `2.x`). Un cambio de firma pública exige regenerar la foto a conciencia; no quitar ni cambiar líneas de la estable.
+- Dependencias: SAAJ (`jakarta.xml.soap-api` provided; `saaj-impl` solo en test) y log4j los da el servidor; no depende de ninguna base de datos.
 
 ## Header de copyright
 

@@ -25,6 +25,7 @@
         <module>aws</module>
         <module>messaging</module>
         <module>outputs</module>
+        <module>sifen</module>
     </modules>
 
     <!--

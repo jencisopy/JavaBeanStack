@@ -1,0 +1,25 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Header></env:Header><env:Body><rEnviEventoDe xmlns="http://ekuatia.set.gov.py/sifen/xsd"><dId>1</dId><dEvReg><gGroupGesEve xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ekuatia.set.gov.py/sifen/xsd siRecepEvento_v150.xsd"><rGesEve><rEve Id="5"><dFecFirma>2026-11-23T10:00:05</dFecFirma><dVerFor>150</dVerFor><gGroupTiEvt><rGEveNom><Id>01801234565001001000001622026112310000000163</Id><mOtEve>Nominacion de prueba del receptor</mOtEve><iNatRec>2</iNatRec><iTiOpe>2</iTiOpe><cPaisRec>PRY</cPaisRec><dDesPaisRe>Paraguay</dDesPaisRe><iTipIDRec>1</iTipIDRec><dDTipIDRec>Cedula paraguaya</dDTipIDRec><dNumIDRec>1234567</dNumIDRec><dNomRec>PERSONA FICTICIA</dNomRec><dDirRec>CALLE FICTICIA 2</dDirRec><dNumCasRec>100</dNumCasRec><cDepRec>1</cDepRec><dDesDepRec>CAPITAL</dDesDepRec><cDisRec>1</cDisRec><dDesDisRec>ASUNCION (DISTRITO)</dDesDisRec><cCiuRec>1</cCiuRec><dDesCiuRec>ASUNCION (DISTRITO)</dDesCiuRec><dEmailRec>persona@example.com</dEmailRec></rGEveNom></gGroupTiEvt></rEve><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></CanonicalizationMethod><SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"></SignatureMethod><Reference URI="#5"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"></Transform><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></Transform></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod><DigestValue>2+CQRZIe12hTHDAhfztjUpUfSt6f+B0GpTeMgzyNCRU=</DigestValue></Reference></SignedInfo><SignatureValue>R/tmW5oGYRoY24d+FBqVRHnYMNdZ3F5gBtAMnfKV4iNjESmyGTtf5RBjRH5bmZpr9Pp3NiKFCRh5&#xD;
+v4D+E8MQx7Z4gQ8fGqvC8bCAFtwiuGSi2BaD7yRKq6280ed1ckwBXSwrBkooBFTkilQJJbsj0ohg&#xD;
+TEtG0yYUlj/OYP6MsHTvnvRdRZ8I+N1SB5GkyZ6vHZjSdRxrndArPkN3QoRAmPMxlGYam5W4Eauk&#xD;
+Hbh6Aex1yu0HK82mv9fPx8I8F1//AZEa74D2ikKGJ3T9xsaI0To/K7Jo+TUuj4r9xmKiSB/ZLm5h&#xD;
+sKA5q1JdR/7HQGW42N7pJShmASt5jI2C4ykKqA==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIEfTCCA2WgAwIBAgIUSGHZR5I5wWSpZTBFflRTWhVPhq0wDQYJKoZIhvcNAQELBQAwgYYxCzAJ&#xD;
+BgNVBAYTAlBZMSgwJgYDVQQKDB9FTVBSRVNBIEZJQ1RJQ0lBIERFIFBSVUVCQSBTLkEuMQswCQYD&#xD;
+VQQLDAJGMTEWMBQGA1UEBRMNUlVDODAxMjM0NTYtNTEoMCYGA1UEAwwfRU1QUkVTQSBGSUNUSUNJ&#xD;
+QSBERSBQUlVFQkEgUy5BLjAeFw0yNjExMjMyMDE1MzhaFw0zNjExMjAyMDE1MzhaMIGGMQswCQYD&#xD;
+VQQGEwJQWTEoMCYGA1UECgwfRU1QUkVTQSBGSUNUSUNJQSBERSBQUlVFQkEgUy5BLjELMAkGA1UE&#xD;
+CwwCRjExFjAUBgNVBAUTDVJVQzgwMTIzNDU2LTUxKDAmBgNVBAMMH0VNUFJFU0EgRklDVElDSUEg&#xD;
+REUgUFJVRUJBIFMuQS4wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCKI5xosg9Bptad&#xD;
+ikNm1gXLkWXxT1v6pi9ECscPj05XRXeNdRcnDbEI3Ra8Zx0b/8d2tej4LCx2UUvvE5nBwG7SF6Ge&#xD;
+29JXMgv2NBEQjjew+amtBwkeo7TylIAYoOwgkPagZV/0T/5c5HUKnY1uv0pD/U4IR4NKOr5iWZoG&#xD;
+zLkZSgtJVEbwtHGaDkBEmLVIN1teHDLcQzXSvSp1MyeQRLDnQ9Pd5EDqVpx19wsN9SoqquO8qdV0&#xD;
+/eOAWcb3nyHgDF22rAg/RCxLfpLFRPmnCEb6yVuwicQ1fZKKZmUCGGq9VjS3Cb1KnhrgckR7Q58h&#xD;
+4kMCY4iuQupq6qzKzx68ON5HAgMBAAGjgeAwgd0wDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMC&#xD;
+BeAwIAYDVR0lAQH/BBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMB0GA1UdDgQWBBTETG5S2ViVBn1f&#xD;
+zj2HwXwILnFHmTB8BgNVHREEdTBzgRdmYWN0dXJhY2lvbkBleGFtcGxlLmNvbaRYMFYxKDAmBgNV&#xD;
+BAoMH0VNUFJFU0EgRklDVElDSUEgREUgUFJVRUJBIFMuQS4xEjAQBgNVBAwMCUFQT0RFUkFETzEW&#xD;
+MBQGA1UEBRMNUlVDODAxMjM0NTYtNTANBgkqhkiG9w0BAQsFAAOCAQEAXnD4UVC6rr4JWBa14ixL&#xD;
+ij49jvs51mP1mdkIE5xG8UQET0iE/SwA2qXU2pZ2JYs2BKELxU/TNUyQZcTdermU5RjZ1EdtJQeO&#xD;
+ona32gWEcyLwDdGday1TpD2oobTL80SzoYjQPNlUIEI+fXf6TcaHQ60EIm9L34l+P0x+Ai5lJun9&#xD;
+ZRBi1blQ/O4PFtgZL/3oFev2eHD5kDmGXan3Sh24Mz3LcJPk5FvM/BC/bN4J06diXv9B0tB8BDOn&#xD;
+qG060k74jrLdsb1bz7OzyfOp/X7e6ICnKblz3MaEaOQEbcBJ5H6moqxQLrJaYBhDkPcWPJI3lLVo&#xD;
+Qd2Z92NdeISb8djCgQ==</X509Certificate></X509Data></KeyInfo></Signature></rGesEve></gGroupGesEve></dEvReg></rEnviEventoDe></env:Body></env:Envelope>

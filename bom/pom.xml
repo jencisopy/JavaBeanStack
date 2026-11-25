@@ -121,6 +121,11 @@
                 <artifactId>jbs-outputs</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.javabeanstack</groupId>
+                <artifactId>jbs-sifen</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- ============ Jakarta EE / servidor de aplicaciones ============ -->
             <dependency>
@@ -161,6 +166,28 @@
                 <artifactId>jakarta.mail-api</artifactId>
                 <version>2.1.3</version>
                 <scope>provided</scope>
+            </dependency>
+            <!--
+                SAAJ (SOAP with Attachments): la usa jbs-sifen para armar y leer los
+                mensajes SOAP de SIFEN. Igual que JAXB, Jakarta EE 11 ya no la trae
+                vía jakartaee-api (salió de la plataforma). Scope "provided": la API la
+                provee el servidor (WildFly 41, módulo jakarta.xml.soap.api, SAAJ 3.0).
+                La implementación saaj-impl se fija en "test": en el contenedor la da
+                el módulo com.sun.xml.messaging.saaj (3.0.6 en WildFly 41) y no se
+                embebe para no cargar dos SAAJ; los consumidores fuera de contenedor
+                (CLI, tests de otros proyectos) la declaran en "runtime".
+            -->
+            <dependency>
+                <groupId>jakarta.xml.soap</groupId>
+                <artifactId>jakarta.xml.soap-api</artifactId>
+                <version>3.0.2</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.messaging.saaj</groupId>
+                <artifactId>saaj-impl</artifactId>
+                <version>3.0.6</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.orm</groupId>

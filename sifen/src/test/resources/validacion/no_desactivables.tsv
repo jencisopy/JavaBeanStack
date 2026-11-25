@@ -1,0 +1,16 @@
+# Reglas no desactivables de la validación previa (plan JBSSIF, M3-15, E3-27; I3-60): guardas anti-NPE y códigos del motor. Lista CERRADA.
+# ConfiguracionValidatorTest.lasGuardasNoSeDesactivan exige que el conjunto de reglas con
+# isDisableable() = false sea exactamente este: una guarda nueva sin fila, o una fila sin guarda, falla.
+# Columnas (TAB): codigo · motivo (qué rompe la generación si se desactiva)
+E605	gCamCond contado sin gPaConEIni: la generación del pago al contado desreferencia la lista (NPE)
+E605b	gPaConEIni vacío o con un null en contado: NPE al recorrer los pagos
+E640	crédito sin gPagCred: la generación de la condición de crédito desreferencia el grupo (NPE)
+JBS-D-03	iTImp = 2 (ISC), que la librería no soporta: el cálculo de los totales no lo contempla
+H001	E2-01: gCamDEAsoc obligatorio en AFE, NC y ND; sin él la generación del grupo falla
+JBS-VAL-03	E0-16, D25: DE con IVA y la NT 13 apagada en la configuración: el XML saldría en el formato anterior a la NT
+JBS-E-83	E2-03: dDescItem ausente con gValorRestaItem, el MT lo admite pero la librería hace NPE
+JBS-E-85	E2-03: dDescGloItem ausente, ídem JBS-E-83 para el descuento global
+JBS-EVENTO-40	E0-18: TrGeVeNom evalúa cDisRec != 0 antes de != null (NPE)
+JBS-VAL-00	motor: error interno de un grupo (la NPE se reporta en vez de propagarse); no es una regla de contenido
+JBS-VAL-01	motor: documento o evento nulo, no hay nada que validar ni generar
+JBS-VAL-02	motor: aviso de validación sin contexto de generación

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rDE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ekuatia.set.gov.py/sifen/xsd siRecepDE_v150.xsd" xmlns="http://ekuatia.set.gov.py/sifen/xsd">
+    <dVerFor>150</dVerFor>
+    <DE Id="01801234565001001000002522026112310000000253">
+        <dDVId>3</dDVId>
+        <dFecFirma>2026-11-23T10:00:05</dFecFirma>
+        <dSisFact>1</dSisFact>
+        <gOpeDE>
+            <iTipEmi>1</iTipEmi>
+            <dDesTipEmi>Normal</dDesTipEmi>
+            <dCodSeg>000000025</dCodSeg>
+        </gOpeDE>
+        <gTimb>
+            <iTiDE>1</iTiDE>
+            <dDesTiDE>Factura electrónica</dDesTiDE>
+            <dNumTim>12345678</dNumTim>
+            <dEst>001</dEst>
+            <dPunExp>001</dPunExp>
+            <dNumDoc>0000025</dNumDoc>
+            <dFeIniT>2026-01-02</dFeIniT>
+        </gTimb>
+        <gDatGralOpe>
+            <dFeEmiDE>2026-11-23T10:00:00</dFeEmiDE>
+            <gOpeCom>
+                <iTipTra>4</iTipTra>
+                <dDesTipTra>Venta de activo fijo</dDesTipTra>
+                <iTImp>1</iTImp>
+                <dDesTImp>IVA</dDesTImp>
+                <cMoneOpe>PYG</cMoneOpe>
+                <dDesMoneOpe>Guarani</dDesMoneOpe>
+            </gOpeCom>
+            <gEmis>
+                <dRucEm>80123456</dRucEm>
+                <dDVEmi>5</dDVEmi>
+                <iTipCont>2</iTipCont>
+                <dNomEmi>EMPRESA FICTICIA DE PRUEBA S.A.</dNomEmi>
+                <dDirEmi>CALLE FICTICIA</dDirEmi>
+                <dNumCas>123</dNumCas>
+                <cDepEmi>1</cDepEmi>
+                <dDesDepEmi>CAPITAL</dDesDepEmi>
+                <cCiuEmi>1</cCiuEmi>
+                <dDesCiuEmi>ASUNCION (DISTRITO)</dDesCiuEmi>
+                <dTelEmi>0210000000</dTelEmi>
+                <dEmailE>facturacion@example.com</dEmailE>
+                <gActEco>
+                    <cActEco>46900</cActEco>
+                    <dDesActEco>VENTA AL POR MAYOR NO ESPECIALIZADA</dDesActEco>
+                </gActEco>
+            </gEmis>
+            <gDatRec>
+                <iNatRec>1</iNatRec>
+                <iTiOpe>1</iTiOpe>
+                <cPaisRec>PRY</cPaisRec>
+                <dDesPaisRe>Paraguay</dDesPaisRe>
+                <iTiContRec>2</iTiContRec>
+                <dRucRec>80654321</dRucRec>
+                <dDVRec>3</dDVRec>
+                <dNomRec>CLIENTE FICTICIO S.A.</dNomRec>
+                <dDirRec>RUTA FICTICIA KM 1</dDirRec>
+                <dNumCasRec>0</dNumCasRec>
+                <cDepRec>1</cDepRec>
+                <dDesDepRec>CAPITAL</dDesDepRec>
+                <cCiuRec>1</cCiuRec>
+                <dDesCiuRec>ASUNCION (DISTRITO)</dDesCiuRec>
+                <dEmailRec>recepcion@example.com</dEmailRec>
+            </gDatRec>
+        </gDatGralOpe>
+        <gDtipDE>
+            <gCamFE>
+                <iIndPres>1</iIndPres>
+                <dDesIndPres>Operación presencial</dDesIndPres>
+            </gCamFE>
+            <gCamCond>
+                <iCondOpe>1</iCondOpe>
+                <dDCondOpe>Contado</dDCondOpe>
+                <gPaConEIni>
+                    <iTiPago>1</iTiPago>
+                    <dDesTiPag>Efectivo</dDesTiPag>
+                    <dMonTiPag>13913550</dMonTiPag>
+                    <cMoneTiPag>PYG</cMoneTiPag>
+                    <dDMoneTiPag>Guarani</dDMoneTiPag>
+                </gPaConEIni>
+            </gCamCond>
+            <gCamItem>
+                <dCodInt>LOTE-015</dCodInt>
+                <dDesProSer>LOTE 15 MANZANA B - CUOTA</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>1</dCantProSer>
+                <gValorItem>
+                    <dPUniProSer>12345679</dPUniProSer>
+                    <dTotBruOpeItem>12345679</dTotBruOpeItem>
+                    <gValorRestaItem>
+                        <dDescItem>0</dDescItem>
+                        <dPorcDesIt>0.00</dPorcDesIt>
+                        <dDescGloItem>0</dDescGloItem>
+                        <dAntPreUniIt>0</dAntPreUniIt>
+                        <dAntGloPreUniIt>0</dAntGloPreUniIt>
+                        <dTotOpeItem>12345679.00</dTotOpeItem>
+                    </gValorRestaItem>
+                </gValorItem>
+                <gCamIVA>
+                    <iAfecIVA>4</iAfecIVA>
+                    <dDesAfecIVA>Gravado parcial (Grav- Exento)</dDesAfecIVA>
+                    <dPropIVA>30</dPropIVA>
+                    <dTasaIVA>5</dTasaIVA>
+                    <dBasGravIVA>3648969.16</dBasGravIVA>
+                    <dLiqIVAItem>182448.46</dLiqIVAItem>
+                    <dBasExe>8514261.38</dBasExe>
+                </gCamIVA>
+            </gCamItem>
+            <gCamItem>
+                <dCodInt>ADM-001</dCodInt>
+                <dDesProSer>GASTOS DE ADMINISTRACION</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>1</dCantProSer>
+                <gValorItem>
+                    <dPUniProSer>1234567</dPUniProSer>
+                    <dTotBruOpeItem>1234567</dTotBruOpeItem>
+                    <gValorRestaItem>
+                        <dDescItem>0</dDescItem>
+                        <dPorcDesIt>0.00</dPorcDesIt>
+                        <dDescGloItem>0</dDescGloItem>
+                        <dAntPreUniIt>0</dAntPreUniIt>
+                        <dAntGloPreUniIt>0</dAntGloPreUniIt>
+                        <dTotOpeItem>1234567.00</dTotOpeItem>
+                    </gValorRestaItem>
+                </gValorItem>
+                <gCamIVA>
+                    <iAfecIVA>1</iAfecIVA>
+                    <dDesAfecIVA>Gravado IVA</dDesAfecIVA>
+                    <dPropIVA>100</dPropIVA>
+                    <dTasaIVA>10</dTasaIVA>
+                    <dBasGravIVA>1122333.64</dBasGravIVA>
+                    <dLiqIVAItem>112233.36</dLiqIVAItem>
+                    <dBasExe>0</dBasExe>
+                </gCamIVA>
+            </gCamItem>
+            <gCamItem>
+                <dCodInt>EXE-001</dCodInt>
+                <dDesProSer>TASA MUNICIPAL (EXENTA)</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>3</dCantProSer>
+                <gValorItem>
+                    <dPUniProSer>111111</dPUniProSer>
+                    <dTotBruOpeItem>333333</dTotBruOpeItem>
+                    <gValorRestaItem>
+                        <dDescItem>0</dDescItem>
+                        <dPorcDesIt>0.00</dPorcDesIt>
+                        <dDescGloItem>0</dDescGloItem>
+                        <dAntPreUniIt>0</dAntPreUniIt>
+                        <dAntGloPreUniIt>0</dAntGloPreUniIt>
+                        <dTotOpeItem>333333.00</dTotOpeItem>
+                    </gValorRestaItem>
+                </gValorItem>
+                <gCamIVA>
+                    <iAfecIVA>3</iAfecIVA>
+                    <dDesAfecIVA>Exento</dDesAfecIVA>
+                    <dPropIVA>0</dPropIVA>
+                    <dTasaIVA>0</dTasaIVA>
+                    <dBasGravIVA>0</dBasGravIVA>
+                    <dLiqIVAItem>0</dLiqIVAItem>
+                    <dBasExe>0</dBasExe>
+                </gCamIVA>
+            </gCamItem>
+        </gDtipDE>
+        <gTotSub>
+            <dSubExe>8847594.38</dSubExe>
+            <dSubExo>0</dSubExo>
+            <dSub5>3831417.62</dSub5>
+            <dSub10>1234567.00</dSub10>
+            <dTotOpe>13913579</dTotOpe>
+            <dTotDesc>0</dTotDesc>
+            <dTotDescGlotem>0</dTotDescGlotem>
+            <dTotAntItem>0</dTotAntItem>
+            <dTotAnt>0</dTotAnt>
+            <dPorcDescTotal>0</dPorcDescTotal>
+            <dDescTotal>0</dDescTotal>
+            <dAnticipo>0</dAnticipo>
+            <dRedon>29</dRedon>
+            <dComi>0</dComi>
+            <dTotGralOpe>13913550</dTotGralOpe>
+            <dIVA5>182448.46</dIVA5>
+            <dIVA10>112233.36</dIVA10>
+            <dLiqTotIVA5>0</dLiqTotIVA5>
+            <dLiqTotIVA10>0</dLiqTotIVA10>
+            <dIVAComi>0.00</dIVAComi>
+            <dTotIVA>294681.82</dTotIVA>
+            <dBaseGrav5>3648969.16</dBaseGrav5>
+            <dBaseGrav10>1122333.64</dBaseGrav10>
+            <dTBasGraIVA>4771302.80</dTBasGraIVA>
+        </gTotSub>
+    </DE>
+</rDE>

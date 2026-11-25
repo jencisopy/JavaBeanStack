@@ -1,0 +1,633 @@
+# Negativos de las reglas de la validación previa del DE (plan JBSSIF, §3.4; CA3-03).
+# Lo lee DeValidatorTest: una fila (o más) por código de ValidationRule; las columnas van separadas
+# por TAB:
+#   codigo        código de la regla (= ID del catálogo de reglas, docs/Jbs_sifen_reglas_validacion_de.md)
+#   fuente        caso base: "*" = el primer caso del catálogo (por objeto primero, después XML) en el
+#                 que la ruta de la acción existe y, para falta/nulo/vacio/listas, tiene valor;
+#                 o explícito: DE-23/obj (o DE-23), DE-01/xml, EV-05. La base es el caso con sus desvíos
+#                 conocidos corregidos (DeValidatorTest.CORRECCIONES y corregirEvento)
+#   accion        falta (null; 0 si es primitivo; lista vacía si es lista) · nulo · vacio ("") ·
+#                 lista-vacia · +nulo (agrega un null a la lista) · largo:N (texto de N letras) ·
+#                 digitos:N (texto de N dígitos) · set:VALOR (convertido al tipo del campo; enums por
+#                 nombre de la constante; fechas ISO) · java:NOMBRE (DeValidatorTest.ACCIONES) ·
+#                 crear (grupo nuevo vacío; en una lista, con un elemento vacío) · repetir:N (la lista
+#                 crece a N repitiendo el primero) · lista:v1,v2 (lista de escalares) ·
+#                 dv-mal:RUTA_RUC (DV distinto del módulo 11 del RUC de esa ruta).
+#                 Varios pasos: «accion@ruta ; accion@ruta» en esta columna (ruta_accion «-»); por eso
+#                 un valor de set: no puede llevar «@».
+#   ruta_accion   ruta del MT donde se aplica la acción; "[]" se toma como [0]; "-" con java:
+#   ruta_esperada ruta concreta del error esperado; "=" = la ruta de la acción (con [0])
+#
+# Primera sección: filas derivadas del catálogo (chequeo «falta …» ⇒ falta; «A m-n» ⇒ largo:n+1).
+# Segunda sección: filas escritas a mano (formato, dominio, coherencia, ausencia, motor).
+# Una regla sin fila sale como «sin negativo» (en la corrida final, falla).
+
+# --- motor (RuleGroup.VAL) ---
+JBS-VAL-01	*	java:documentoNulo	-	DE
+JBS-VAL-02	*	java:sinContexto	-	DE
+
+# --- derivadas del catálogo ---
+JBS-A-03	*	falta	dFecFirma	=
+JBS-B-01	*	falta	gOpeDE	=
+JBS-B-02	*	falta	gOpeDE.iTipEmi	=
+JBS-B-03	*	falta	gOpeDE.dCodSeg	=
+JBS-B-05	*	largo:3001	gOpeDE.dInfoEmi	=
+JBS-B-06	*	falta	gOpeDE.dInfoFisc	=
+JBS-B-07	*	largo:3001	gOpeDE.dInfoFisc	=
+JBS-C-01	*	falta	gTimb	=
+JBS-C-02	*	falta	gTimb.iTiDE	=
+JBS-C-04	*	falta	gTimb.dNumTim	=
+JBS-C-06	*	falta	gTimb.dEst	=
+JBS-C-08	*	falta	gTimb.dPunExp	=
+JBS-C-10	*	falta	gTimb.dNumDoc	=
+JBS-C-13	*	falta	gTimb.dFeIniT	=
+JBS-D-01	*	falta	gDatGralOpe	=
+JBS-D-02	*	falta	gDatGralOpe.dFeEmiDE	=
+D010	*	falta	gDatGralOpe.gOpeCom	=
+D011	*	falta	gDatGralOpe.gOpeCom.iTipTra	=
+D013	*	falta	gDatGralOpe.gOpeCom.iTImp	=
+JBS-D-04	*	falta	gDatGralOpe.gOpeCom.cMoneOpe	=
+D017	*	falta	gDatGralOpe.gOpeCom.dCondTiCam	=
+D018	*	falta	gDatGralOpe.gOpeCom.dTiCam	=
+JBS-D-06	*	falta	gDatGralOpe.gEmis	=
+JBS-D-07	*	falta	gDatGralOpe.gEmis.dRucEm	=
+JBS-D-09	*	falta	gDatGralOpe.gEmis.dDVEmi	=
+JBS-D-10	*	falta	gDatGralOpe.gEmis.iTipCont	=
+JBS-D-11	*	falta	gDatGralOpe.gEmis.dNomEmi	=
+JBS-D-12	*	largo:256	gDatGralOpe.gEmis.dNomEmi	=
+JBS-D-14	*	largo:256	gDatGralOpe.gEmis.dNomFanEmi	=
+JBS-D-15	*	falta	gDatGralOpe.gEmis.dDirEmi	=
+JBS-D-16	*	largo:256	gDatGralOpe.gEmis.dDirEmi	=
+JBS-D-18	*	largo:256	gDatGralOpe.gEmis.dCompDir1	=
+JBS-D-19	*	largo:256	gDatGralOpe.gEmis.dCompDir2	=
+JBS-D-20	*	falta	gDatGralOpe.gEmis.cDepEmi	=
+JBS-D-22	*	largo:31	gDatGralOpe.gEmis.dDesDisEmi	=
+JBS-D-23	*	falta	gDatGralOpe.gEmis.cCiuEmi	=
+JBS-D-24	*	falta	gDatGralOpe.gEmis.dDesCiuEmi	=
+JBS-D-25	*	largo:31	gDatGralOpe.gEmis.dDesCiuEmi	=
+JBS-D-26	*	falta	gDatGralOpe.gEmis.dTelEmi	=
+JBS-D-27	*	largo:16	gDatGralOpe.gEmis.dTelEmi	=
+JBS-D-28	*	falta	gDatGralOpe.gEmis.dEmailE	=
+JBS-D-30	*	largo:31	gDatGralOpe.gEmis.dDenSuc	=
+JBS-D-31	*	lista-vacia	gDatGralOpe.gEmis.gActEco	gDatGralOpe.gEmis.gActEco[]
+JBS-D-32	*	falta	gDatGralOpe.gEmis.gActEco[].cActEco	=
+JBS-D-33	*	falta	gDatGralOpe.gEmis.gActEco[].dDesActEco	=
+JBS-D-39	*	falta	gDatGralOpe.gDatRec	=
+JBS-D-40	*	falta	gDatGralOpe.gDatRec.iNatRec	=
+JBS-D-41	*	falta	gDatGralOpe.gDatRec.iTiOpe	=
+JBS-D-42	*	falta	gDatGralOpe.gDatRec.cPaisRec	=
+D205	*	falta	gDatGralOpe.gDatRec.iTiContRec	=
+D206	*	falta	gDatGralOpe.gDatRec.dRucRec	=
+D208	*	falta	gDatGralOpe.gDatRec.iTipIDRec	=
+D209	*	falta	gDatGralOpe.gDatRec.dDTipIDRec	=
+D210	*	falta	gDatGralOpe.gDatRec.dNumIDRec	=
+JBS-D-45	*	falta	gDatGralOpe.gDatRec.dNomRec	=
+JBS-D-47	*	largo:256	gDatGralOpe.gDatRec.dNomFanRec	=
+JBS-D-48	*	largo:256	gDatGralOpe.gDatRec.dDirRec	=
+JBS-D-49	*	falta	gDatGralOpe.gDatRec.cDepRec	=
+JBS-D-53	*	falta	gDatGralOpe.gDatRec.cCiuRec	=
+JBS-D-55	*	falta	gDatGralOpe.gDatRec.dDesCiuRec	=
+JBS-D-56	*	largo:16	gDatGralOpe.gDatRec.dTelRec	=
+JBS-D-57	*	largo:21	gDatGralOpe.gDatRec.dCelRec	=
+JBS-D-59	*	largo:16	gDatGralOpe.gDatRec.dCodCliente	=
+JBS-E-01	*	falta	gDtipDE	=
+E010	*	falta	gDtipDE.gCamFE	=
+JBS-E-02	*	falta	gDtipDE.gCamFE.iIndPres	=
+JBS-E-05	*	falta	gDtipDE.gCamFE.gCompPub.dModCont	=
+JBS-E-06	*	falta	gDtipDE.gCamFE.gCompPub.dEntCont	=
+JBS-E-07	*	falta	gDtipDE.gCamFE.gCompPub.dAnoCont	=
+JBS-E-08	*	falta	gDtipDE.gCamFE.gCompPub.dSecCont	=
+JBS-E-09	*	falta	gDtipDE.gCamFE.gCompPub.dFeCodCont	=
+E300	*	falta	gDtipDE.gCamAE	=
+JBS-E-10	*	falta	gDtipDE.gCamAE.iNatVen	=
+JBS-E-12	*	falta	gDtipDE.gCamAE.iTipIDVen	=
+JBS-E-14	*	falta	gDtipDE.gCamAE.dNumIDVen	=
+JBS-E-192	*	set:1.234.567	gDtipDE.gCamAE.dNumIDVen	=
+JBS-E-15	*	falta	gDtipDE.gCamAE.dNomVen	=
+JBS-E-16	*	falta	gDtipDE.gCamAE.dDirVen	=
+JBS-E-18	*	falta	gDtipDE.gCamAE.cDepVen	=
+JBS-E-20	*	falta	gDtipDE.gCamAE.cCiuVen	=
+E315	*	falta	gDtipDE.gCamAE.dDesCiuVen	=
+JBS-E-21	*	falta	gDtipDE.gCamAE.dDirProv	=
+JBS-E-22	*	falta	gDtipDE.gCamAE.cDepProv	=
+JBS-E-24	*	falta	gDtipDE.gCamAE.cCiuProv	=
+E322	*	falta	gDtipDE.gCamAE.dDesCiuProv	=
+E400	*	falta	gDtipDE.gCamNCDE	=
+JBS-E-25	*	falta	gDtipDE.gCamNCDE.iMotEmi	=
+E500	*	falta	gDtipDE.gCamNRE	=
+JBS-E-26	*	falta	gDtipDE.gCamNRE.iMotEmiNR	=
+JBS-E-27	*	falta	gDtipDE.gCamNRE.iRespEmiNR	=
+JBS-E-28	*	falta	gDtipDE.gCamNRE.dKmR	=
+E506a	*	falta	gDtipDE.gCamNRE.dFecEm	=
+E600	*	falta	gDtipDE.gCamCond	=
+JBS-E-29	*	falta	gDtipDE.gCamCond.iCondOpe	=
+E605	*	lista-vacia	gDtipDE.gCamCond.gPaConEIni	gDtipDE.gCamCond.gPaConEIni[]
+JBS-E-31	*	falta	gDtipDE.gCamCond.gPaConEIni[].iTiPago	=
+JBS-E-32	*	falta	gDtipDE.gCamCond.gPaConEIni[].dMonTiPag	=
+JBS-E-34	*	falta	gDtipDE.gCamCond.gPaConEIni[].cMoneTiPag	=
+E611	*	falta	gDtipDE.gCamCond.gPaConEIni[].dTiCamTiPag	=
+JBS-E-36	DE-05/obj	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; falta@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.iDenTarj	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.iDenTarj
+JBS-E-37	DE-05/obj	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; largo:61@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dRSProTar	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dRSProTar
+JBS-E-38	DE-05/obj	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; largo:9@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dRUCProTar	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dRUCProTar
+JBS-E-40	DE-05/obj	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; falta@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.iForProPa	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.iForProPa
+JBS-E-42	DE-05/obj	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; largo:31@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dNomTit	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dNomTit
+JBS-E-44	DE-05/obj	set:CHEQUE@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; falta@gDtipDE.gCamCond.gPaConEIni[0].gPagCheq.dNumCheq	-	gDtipDE.gCamCond.gPaConEIni[0].gPagCheq.dNumCheq
+JBS-E-45	DE-05/obj	set:CHEQUE@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; falta@gDtipDE.gCamCond.gPaConEIni[0].gPagCheq.dBcoEmi	-	gDtipDE.gCamCond.gPaConEIni[0].gPagCheq.dBcoEmi
+E640	*	falta	gDtipDE.gCamCond.gPagCred	=
+JBS-E-46	*	falta	gDtipDE.gCamCond.gPagCred.iCondCred	=
+E643	*	falta	gDtipDE.gCamCond.gPagCred.dPlazoCre	=
+JBS-E-47	*	largo:16	gDtipDE.gCamCond.gPagCred.dPlazoCre	=
+E644	*	falta	gDtipDE.gCamCond.gPagCred.dCuotas	=
+E650	*	lista-vacia	gDtipDE.gCamCond.gPagCred.gCuotas	gDtipDE.gCamCond.gPagCred.gCuotas[]
+JBS-E-52	*	falta	gDtipDE.gCamCond.gPagCred.gCuotas[].cMoneCuo	=
+JBS-E-54	*	falta	gDtipDE.gCamCond.gPagCred.gCuotas[].dMonCuota	=
+JBS-E-57	*	lista-vacia	gDtipDE.gCamItem	gDtipDE.gCamItem[]
+JBS-E-58	*	falta	gDtipDE.gCamItem[].dCodInt	=
+JBS-E-59	*	largo:51	gDtipDE.gCamItem[].dCodInt	=
+JBS-E-68	*	falta	gDtipDE.gCamItem[].dDesProSer	=
+JBS-E-69	*	largo:2001	gDtipDE.gCamItem[].dDesProSer	=
+JBS-E-71	*	falta	gDtipDE.gCamItem[].cUniMed	=
+JBS-E-72	*	falta	gDtipDE.gCamItem[].dCantProSer	=
+JBS-E-74	*	largo:501	gDtipDE.gCamItem[].dInfItem	=
+E720	*	falta	gDtipDE.gCamItem[].gValorItem	=
+JBS-E-80	*	falta	gDtipDE.gCamItem[].gValorItem.dPUniProSer	=
+E725	*	falta	gDtipDE.gCamItem[].gValorItem.dTiCamIt	=
+JBS-E-83	*	falta	gDtipDE.gCamItem[].gValorItem.gValorRestaItem.dDescItem	=
+EA003	*	falta	gDtipDE.gCamItem[].gValorItem.gValorRestaItem.dPorcDesIt	=
+JBS-E-85	*	falta	gDtipDE.gCamItem[].gValorItem.gValorRestaItem.dDescGloItem	=
+EA009	*	falta	gDtipDE.gCamItem[].gValorItem.gValorRestaItem.dTotOpeGs	=
+E730	*	falta	gDtipDE.gCamItem[].gCamIVA	=
+JBS-E-89	*	falta	gDtipDE.gCamItem[].gCamIVA.iAfecIVA	=
+JBS-E-90	*	falta	gDtipDE.gCamItem[].gCamIVA.dPropIVA	=
+JBS-E-91	*	falta	gDtipDE.gCamItem[].gCamIVA.dTasaIVA	=
+JBS-E-94	*	largo:81	gDtipDE.gCamItem[].gRasMerc.dNumLote	=
+JBS-E-96	*	largo:11	gDtipDE.gCamItem[].gRasMerc.dNSerie	=
+JBS-E-97	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumPedi	=
+JBS-E-98	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumSegui	=
+JBS-E-99	*	largo:61	gDtipDE.gCamItem[].gRasMerc.dNomImp	=
+JBS-E-100	*	largo:256	gDtipDE.gCamItem[].gRasMerc.dDirImp	=
+JBS-E-101	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumFir	=
+JBS-E-102	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumReg	=
+JBS-E-103	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumRegEntCom	=
+JBS-E-105	*	largo:18	gDtipDE.gCamItem[].gVehNuevo.dChasis	=
+JBS-E-106	*	largo:11	gDtipDE.gCamItem[].gVehNuevo.dColor	=
+JBS-E-113	*	largo:22	gDtipDE.gCamItem[].gVehNuevo.dNroMotor	=
+JBS-E-116	*	largo:11	gDtipDE.gCamItem[].gVehNuevo.cTipVeh	=
+JBS-E-118	*	largo:5	gDtipDE.gCamItem[].gVehNuevo.dCilin	=
+JBS-E-119	*	largo:51	gDtipDE.gCamEsp.gGrupEner.dNroMed	=
+JBS-E-121	*	largo:4	gDtipDE.gCamEsp.gGrupEner.dCateg	=
+JBS-E-127	*	lista-vacia	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[]
+JBS-E-128	*	largo:21	gDtipDE.gCamEsp.gGrupSeg.dCodEmpSeg	=
+JBS-E-129	*	falta	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[].dPoliza	=
+JBS-E-130	*	falta	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[].dUnidVig	=
+JBS-E-131	*	falta	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[].dVigencia	=
+JBS-E-133	*	falta	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[].dNumPoliza	=
+JBS-E-135	*	largo:51	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[].dCodInt	=
+JBS-E-137	*	largo:21	gDtipDE.gCamEsp.gGrupSup.dNomCaj	=
+JBS-E-141	*	largo:21	gDtipDE.gCamEsp.gGrupSup.dDesDonac	=
+JBS-E-142	*	largo:16	gDtipDE.gCamEsp.gGrupAdi.dCiclo	=
+JBS-E-144	*	largo:31	gDtipDE.gCamEsp.gGrupAdi.dContrato	=
+JBS-E-145	*	largo:31	gDtipDE.gCamEsp.gGrupAdi.dCodConDncp	=
+E900	*	falta	gDtipDE.gTransp	=
+E901	*	falta	gDtipDE.gTransp.iTipTrans	=
+JBS-E-147	*	falta	gDtipDE.gTransp.iModTrans	=
+JBS-E-148	*	falta	gDtipDE.gTransp.iRespFlete	=
+JBS-E-149	*	largo:16	gDtipDE.gTransp.dNuManif	=
+JBS-E-151	DE-23/obj	set:IMPORTACION@gDtipDE.gCamNRE.iMotEmiNR ; largo:17@gDtipDE.gTransp.dNuDespImp	-	gDtipDE.gTransp.dNuDespImp
+E909	*	falta	gDtipDE.gTransp.dIniTras	=
+E910	*	falta	gDtipDE.gTransp.dFinTras	=
+E920	*	falta	gDtipDE.gTransp.gCamSal	=
+JBS-E-152	*	falta	gDtipDE.gTransp.gCamSal.dDirLocSal	=
+JBS-E-154	*	largo:256	gDtipDE.gTransp.gCamSal.dComp1Sal	=
+JBS-E-155	*	largo:256	gDtipDE.gTransp.gCamSal.dComp2Sal	=
+JBS-E-156	*	falta	gDtipDE.gTransp.gCamSal.cDepSal	=
+JBS-E-158	*	largo:31	gDtipDE.gTransp.gCamSal.dDesDisSal	=
+JBS-E-159	*	falta	gDtipDE.gTransp.gCamSal.cCiuSal	=
+JBS-E-160	*	falta	gDtipDE.gTransp.gCamSal.dDesCiuSal	=
+JBS-E-161	*	largo:16	gDtipDE.gTransp.gCamSal.dTelSal	=
+E940	*	lista-vacia	gDtipDE.gTransp.gCamEnt	gDtipDE.gTransp.gCamEnt[]
+JBS-E-162	*	falta	gDtipDE.gTransp.gCamEnt[].dDirLocEnt	=
+JBS-E-164	*	largo:256	gDtipDE.gTransp.gCamEnt[].dComp1Ent	=
+JBS-E-165	*	largo:256	gDtipDE.gTransp.gCamEnt[].dComp2Ent	=
+JBS-E-166	*	falta	gDtipDE.gTransp.gCamEnt[].cDepEnt	=
+JBS-E-168	*	largo:31	gDtipDE.gTransp.gCamEnt[].dDesDisEnt	=
+JBS-E-169	*	falta	gDtipDE.gTransp.gCamEnt[].cCiuEnt	=
+JBS-E-170	*	falta	gDtipDE.gTransp.gCamEnt[].dDesCiuEnt	=
+JBS-E-171	*	largo:16	gDtipDE.gTransp.gCamEnt[].dTelEnt	=
+E960	*	lista-vacia	gDtipDE.gTransp.gVehTras	gDtipDE.gTransp.gVehTras[]
+JBS-E-173	*	falta	gDtipDE.gTransp.gVehTras[].dTiVehTras	=
+JBS-E-174	*	falta	gDtipDE.gTransp.gVehTras[].dMarVeh	=
+JBS-E-175	*	falta	gDtipDE.gTransp.gVehTras[].dTipIdenVeh	=
+JBS-E-176	DE-23/obj	set:1@gDtipDE.gTransp.gVehTras[0].dTipIdenVeh ; largo:21@gDtipDE.gTransp.gVehTras[0].dNroIDVeh	-	gDtipDE.gTransp.gVehTras[0].dNroIDVeh
+JBS-E-177	*	largo:21	gDtipDE.gTransp.gVehTras[].dAdicVeh	=
+E965	*	falta	gDtipDE.gTransp.gVehTras[].dNroMatVeh	=
+JBS-E-178	*	largo:8	gDtipDE.gTransp.gVehTras[].dNroMatVeh	=
+JBS-E-179	DE-23/obj	set:AEREO@gDtipDE.gTransp.iModTrans ; largo:7@gDtipDE.gTransp.gVehTras[0].dNroVuelo	-	gDtipDE.gTransp.gVehTras[0].dNroVuelo
+E980	*	falta	gDtipDE.gTransp.gCamTrans	=
+JBS-E-180	*	falta	gDtipDE.gTransp.gCamTrans.iNatTrans	=
+JBS-E-181	*	falta	gDtipDE.gTransp.gCamTrans.dNomTrans	=
+E983	*	falta	gDtipDE.gTransp.gCamTrans.dRucTrans	=
+JBS-E-182	*	largo:9	gDtipDE.gTransp.gCamTrans.dRucTrans	=
+JBS-E-183	DE-23/obj	set:NO_CONTRIBUYENTE@gDtipDE.gTransp.gCamTrans.iNatTrans ; set:CEDULA_PARAGUAYA@gDtipDE.gTransp.gCamTrans.iTipIDTrans ; largo:21@gDtipDE.gTransp.gCamTrans.dNumIDTrans	-	gDtipDE.gTransp.gCamTrans.dNumIDTrans
+JBS-E-193	DE-23/obj	set:NO_CONTRIBUYENTE@gDtipDE.gTransp.gCamTrans.iNatTrans ; set:CEDULA_PARAGUAYA@gDtipDE.gTransp.gCamTrans.iTipIDTrans ; set:1.234.567@gDtipDE.gTransp.gCamTrans.dNumIDTrans	-	gDtipDE.gTransp.gCamTrans.dNumIDTrans
+JBS-E-184	*	falta	gDtipDE.gTransp.gCamTrans.dNumIDChof	=
+JBS-E-185	*	falta	gDtipDE.gTransp.gCamTrans.dNomChof	=
+JBS-E-186	*	largo:151	gDtipDE.gTransp.gCamTrans.dDomFisc	=
+JBS-E-187	*	largo:256	gDtipDE.gTransp.gCamTrans.dDirChof	=
+JBS-E-188	*	largo:61	gDtipDE.gTransp.gCamTrans.dNombAg	=
+JBS-E-189	*	largo:9	gDtipDE.gTransp.gCamTrans.dRucAg	=
+F001	*	falta	gTotSub	=
+F002	*	falta	gTotSub.dSubExe	=
+F003	*	falta	gTotSub.dSubExo	=
+F004	*	falta	gTotSub.dSub5	=
+F005	*	falta	gTotSub.dSub10	=
+F015	*	falta	gTotSub.dIVA5	=
+F016	*	falta	gTotSub.dIVA10	=
+F017	*	falta	gTotSub.dTotIVA	=
+F018	*	falta	gTotSub.dBaseGrav5	=
+F019	*	falta	gTotSub.dBaseGrav10	=
+F020	*	falta	gTotSub.dTBasGraIVA	=
+F023	*	falta	gTotSub.dTotalGs	=
+JBS-G-01	*	largo:16	gCamGen.dOrdCompra	=
+JBS-G-02	*	largo:16	gCamGen.dOrdVta	=
+JBS-G-03	*	largo:11	gCamGen.dAsiento	=
+H001	*	lista-vacia	gCamDEAsoc	gCamDEAsoc[]
+JBS-H-01	*	falta	gCamDEAsoc[].iTipDocAso	=
+H004	*	falta	gCamDEAsoc[].dCdCDERef	=
+H005	*	falta	gCamDEAsoc[].dNTimDI	=
+H006	*	falta	gCamDEAsoc[].dEstDocAso	=
+H007	*	falta	gCamDEAsoc[].dPExpDocAso	=
+H008	*	falta	gCamDEAsoc[].dNumDocAso	=
+H009	*	falta	gCamDEAsoc[].iTipoDocAso	=
+H011	*	falta	gCamDEAsoc[].dFecEmiDI	=
+JBS-H-08	DE-20/obj	set:VENTA_CREDITO_FISCAL@gDatGralOpe.gOpeCom.iTipTra ; largo:16@gCamDEAsoc[0].dNumResCF	-	gCamDEAsoc[0].dNumResCF
+H014	*	falta	gCamDEAsoc[].iTipCons	=
+JBS-H-11	DE-20/obj	set:CONSTANCIA_ELECTRONICA@gCamDEAsoc[0].iTipDocAso ; set:CONSTANCIA_MICROPRODUCTORES@gCamDEAsoc[0].iTipCons ; largo:9@gCamDEAsoc[0].dNumControl	-	gCamDEAsoc[0].dNumControl
+
+# --- a mano ---
+# A — campos firmados (el CDC de DE-01 es CasosDePrueba.CDC_FACTURA_SIMPLE)
+JBS-A-02	DE-01/xml	set:123	Id	=
+A003	DE-01/xml	set:01801234565001001000000122026112310000000011	Id	dDVId
+A002	DE-01/xml	set:000000099	gOpeDE.dCodSeg	Id
+A004a	*	set:2026-11-24T10:00:00	dFecFirma	=
+A004b	*	set:2026-11-19T10:00:00	dFecFirma	=
+JBS-A-04	*	set:3	dSisFact	=
+# B — gOpeDE
+B002	*	set:CONTINGENCIA	gOpeDE.iTipEmi	=
+JBS-B-04	*	set:12345	gOpeDE.dCodSeg	=
+# C — gTimb
+JBS-C-03	*	set:FACTURA_ELECTRONICA_EXPORTACION	gTimb.iTiDE	=
+JBS-C-05	*	set:1234567	gTimb.dNumTim	=
+JBS-C-07	*	set:01	gTimb.dEst	=
+JBS-C-09	*	set:0A1	gTimb.dPunExp	=
+JBS-C-11	*	set:0000000	gTimb.dNumDoc	=
+JBS-C-12	*	set:a1	gTimb.dSerieNum	=
+JBS-C-14	*	set:2026-12-01	gTimb.dFeIniT	=
+# D — gDatGralOpe y gOpeCom (el reloj de las pruebas está fijo en la firma de los casos + 5 s)
+D002a	*	set:2018-01-01T10:00:00	gDatGralOpe.dFeEmiDE	=
+D002	*	set:2026-10-01T10:00:00	gDatGralOpe.dFeEmiDE	=
+D002f	*	set:2026-12-01T10:00:00	gDatGralOpe.dFeEmiDE	=
+D010a	DE-23/obj	java:nreConOpeCom	-	gDatGralOpe.gOpeCom
+D011a	DE-21/obj	set:VENTA_MERCADERIA	gDatGralOpe.gOpeCom.iTipTra	=
+JBS-D-03	*	set:ISC	gDatGralOpe.gOpeCom.iTImp	=
+D022	DE-20/obj	set:USD	gDatGralOpe.gOpeCom.cMoneOpe	=
+D017a	DE-05/obj	set:GLOBAL	gDatGralOpe.gOpeCom.dCondTiCam	=
+JBS-D-05	DE-07/obj	set:123456.5	gDatGralOpe.gOpeCom.dTiCam	=
+D018a	DE-05/obj	set:7000	gDatGralOpe.gOpeCom.dTiCam	=
+# D2 — gEmis
+JBS-D-08	*	set:80-12345	gDatGralOpe.gEmis.dRucEm	=
+D102	*	set:9	gDatGralOpe.gEmis.dDVEmi	=
+D105	*	set:Emisor de prueba S.A.	gDatGralOpe.gEmis.dNomEmi	=
+JBS-D-13	*	java:prodConLeyenda	-	gDatGralOpe.gEmis.dNomEmi
+JBS-D-17	*	set:12a	gDatGralOpe.gEmis.dNumCas	=
+D114	*	set:1	gDatGralOpe.gEmis.cDisEmi	gDatGralOpe.gEmis.dDesDisEmi
+JBS-D-21	*	set:12345	gDatGralOpe.gEmis.cDisEmi	=
+JBS-D-29	*	set:no-es-correo	gDatGralOpe.gEmis.dEmailE	=
+JBS-D-34	*	java:respDESinTipo	-	gDatGralOpe.gEmis.gRespDE.iTipIDRespDE
+JBS-D-35	*	java:respDEOtroSinTexto	-	gDatGralOpe.gEmis.gRespDE.dDTipIDRespDE
+JBS-D-36	*	java:respDESinNumero	-	gDatGralOpe.gEmis.gRespDE.dNumIDRespDE
+JBS-D-61	*	java:respDESinNumero@- ; set:1.234.567@gDatGralOpe.gEmis.gRespDE.dNumIDRespDE	-	gDatGralOpe.gEmis.gRespDE.dNumIDRespDE
+JBS-D-37	*	java:respDESinNombre	-	gDatGralOpe.gEmis.gRespDE.dNomRespDE
+JBS-D-38	*	java:respDESinCargo	-	gDatGralOpe.gEmis.gRespDE.dCarRespDE
+# D3 — gDatRec
+D201	DE-20/obj	set:NO_CONTRIBUYENTE	gDatGralOpe.gDatRec.iNatRec	=
+D202	DE-05/obj	set:B2B	gDatGralOpe.gDatRec.iTiOpe	=
+D202a	DE-20/obj	set:B2B	gDatGralOpe.gDatRec.iTiOpe	=
+D203	DE-01/xml	set:USA	gDatGralOpe.gDatRec.cPaisRec	=
+D205a	DE-05/obj	set:PERSONA_FISICA	gDatGralOpe.gDatRec.iTiContRec	=
+JBS-D-43	DE-01/xml	set:8001-234	gDatGralOpe.gDatRec.dRucRec	=
+D206a	DE-05/obj	set:80012345	gDatGralOpe.gDatRec.dRucRec	=
+D206e	DE-20/obj	set:80099999	gDatGralOpe.gDatRec.dRucRec	=
+D207	DE-01/xml	java:dvReceptorIncorrecto	-	gDatGralOpe.gDatRec.dDVRec
+D208a	DE-01/xml	set:CEDULA_PARAGUAYA	gDatGralOpe.gDatRec.iTipIDRec	=
+D208g	DE-17/obj	falta	gDatGralOpe.gDatRec.iTipIDRec	=
+D208f	DE-05/obj	java:innominadoB2B	-	gDatGralOpe.gDatRec.iTipIDRec
+D208e	DE-21/obj	java:innominado@- ; set:NO_CONTRIBUYENTE@gDatGralOpe.gDatRec.iNatRec	-	gDatGralOpe.gDatRec.iTipIDRec
+D208c	DE-16/obj	set:8000000	gDtipDE.gCamItem[0].gValorItem.dPUniProSer	gDatGralOpe.gDatRec.iTipIDRec
+D209a	DE-05/obj	set:OTRO	gDatGralOpe.gDatRec.iTipIDRec	gDatGralOpe.gDatRec.dDTipIDRec
+JBS-D-44	DE-16/obj	set:123	gDatGralOpe.gDatRec.dNumIDRec	=
+JBS-D-60	DE-17/obj	set:1.234.567	gDatGralOpe.gDatRec.dNumIDRec	=
+D210b	DE-01/xml	set:1234567	gDatGralOpe.gDatRec.dNumIDRec	=
+JBS-D-46	DE-16/obj	set:Juan Pérez	gDatGralOpe.gDatRec.dNomRec	=
+D213	DE-23/obj	falta	gDatGralOpe.gDatRec.dDirRec	=
+D218	DE-01/xml	set:1234567	gDatGralOpe.gDatRec.dNumCasRec	=
+JBS-D-50	DE-17/obj	java:b2fConDepartamento	-	gDatGralOpe.gDatRec.cDepRec
+JBS-D-51	DE-01/xml	set:12345	gDatGralOpe.gDatRec.cDisRec	=
+JBS-D-52	DE-01/xml	set:1	gDatGralOpe.gDatRec.cDisRec	gDatGralOpe.gDatRec.dDesDisRec
+JBS-D-54	DE-17/obj	java:b2fConCiudad	-	gDatGralOpe.gDatRec.cCiuRec
+JBS-D-58	DE-01/xml	set:no-es-correo	gDatGralOpe.gDatRec.dEmailRec	=
+
+# E — gDtipDE (casos: DE-01 FE B2B contado PYG; DE-05 FE B2C contado; DE-07 USD crédito a plazo; DE-08 USD cambio por ítem;
+#     DE-10 gravado parcial; DE-12 exonerado; DE-15 B2G; DE-19 crédito en cuotas; DE-20 autofactura; DE-21 NC; DE-22 ND con
+#     documento impreso; DE-23 nota de remisión con transporte). Los grupos que ningún caso trae se crean vacíos al asignar.
+E501	DE-23	set:TRASLADO_ENTRE_LOCALES@gDtipDE.gCamNRE.iMotEmiNR ; set:80099999@gDatGralOpe.gDatRec.dRucRec	-	gDatGralOpe.gDatRec.dRucRec
+E010a	DE-21	crear	gDtipDE.gCamFE	=
+E012	DE-05	set:OTRO@gDtipDE.gCamFE.iIndPres ; set:Otro@gDtipDE.gCamFE.dDesIndPres	-	gDtipDE.gCamFE.dDesIndPres
+JBS-E-04	DE-05	crear	gDtipDE.gCamFE.gCompPub	=
+E025	DE-15	set:2026-12-01	gDtipDE.gCamFE.gCompPub.dFeCodCont	=
+E300a	DE-21	crear	gDtipDE.gCamAE	=
+JBS-E-17	DE-20	set:1234567	gDtipDE.gCamAE.dNumCasVen	=
+JBS-E-19	DE-20	set:12345	gDtipDE.gCamAE.cDisVen	=
+E313b	DE-20	set:1@gDtipDE.gCamAE.cDisVen ; nulo@gDtipDE.gCamAE.dDesDisVen	-	gDtipDE.gCamAE.dDesDisVen
+JBS-E-23	DE-20	set:12345	gDtipDE.gCamAE.cDisProv	=
+E320	DE-20	set:1@gDtipDE.gCamAE.cDisProv ; nulo@gDtipDE.gCamAE.dDesDisProv	-	gDtipDE.gCamAE.dDesDisProv
+E400a	DE-01/xml	crear	gDtipDE.gCamNCDE	=
+E500a	DE-01/xml	crear	gDtipDE.gCamNRE	=
+E502	DE-23	set:OTRO	gDtipDE.gCamNRE.iMotEmiNR	gDtipDE.gCamNRE.dDesMotEmiNR
+E506	DE-23	set:2026-12-15	gDtipDE.gCamNRE.dFecEm	=
+E600a	DE-23	crear	gDtipDE.gCamCond	=
+E601	DE-20	set:CREDITO	gDtipDE.gCamCond.iCondOpe	=
+E605a	DE-07	set:100	gDtipDE.gCamCond.gPagCred.dMonEnt	gDtipDE.gCamCond.gPaConEIni[]
+E605b	DE-07	crear	gDtipDE.gCamCond.gPaConEIni	gDtipDE.gCamCond.gPaConEIni[]
+JBS-E-30	DE-05	set:1	gDtipDE.gCamCond.gPaConEIni[0].dMonTiPag	gDtipDE.gCamCond.gPaConEIni[]
+E606	DE-05	set:PAGO_BANCARIO	gDtipDE.gCamCond.gPaConEIni[0].iTiPago	=
+E607	DE-05	set:OTRO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; set:Ot@gDtipDE.gCamCond.gPaConEIni[0].dDesTiPag	-	gDtipDE.gCamCond.gPaConEIni[0].dDesTiPag
+JBS-E-33	DE-05	set:-1	gDtipDE.gCamCond.gPaConEIni[0].dMonTiPag	=
+JBS-E-35	DE-08	set:0	gDtipDE.gCamCond.gPaConEIni[0].dTiCamTiPag	=
+E611a	DE-05	set:7000	gDtipDE.gCamCond.gPaConEIni[0].dTiCamTiPag	=
+E620	DE-05	set:TARJETA_DE_CREDITO	gDtipDE.gCamCond.gPaConEIni[0].iTiPago	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD
+E620a	DE-05	crear	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD	=
+E622	DE-05	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; set:OTRO@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.iDenTarj ; set:Ot@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dDesDenTarj	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dDesDenTarj
+JBS-E-39	DE-05	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; set:80012346@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dRUCProTar	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dDVProTar
+E624	DE-05	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; set:80012345@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dRUCProTar ; dv-mal:gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dRUCProTar@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dDVProTar	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dDVProTar
+JBS-E-41	DE-05	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; set:12345@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dCodAuOpe	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dCodAuOpe
+JBS-E-43	DE-05	set:TARJETA_DE_CREDITO@gDtipDE.gCamCond.gPaConEIni[0].iTiPago ; set:12345@gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dNumTarj	-	gDtipDE.gCamCond.gPaConEIni[0].gPagTarCD.dNumTarj
+E630	DE-05	set:CHEQUE	gDtipDE.gCamCond.gPaConEIni[0].iTiPago	gDtipDE.gCamCond.gPaConEIni[0].gPagCheq
+E630a	DE-05	crear	gDtipDE.gCamCond.gPaConEIni[0].gPagCheq	=
+E640a	DE-05	crear	gDtipDE.gCamCond.gPagCred	=
+E643a	DE-19	set:30 dias	gDtipDE.gCamCond.gPagCred.dPlazoCre	=
+JBS-E-48	DE-19	set:1000	gDtipDE.gCamCond.gPagCred.dCuotas	=
+E644a	DE-07	set:3	gDtipDE.gCamCond.gPagCred.dCuotas	=
+JBS-E-49	DE-19	set:5	gDtipDE.gCamCond.gPagCred.dCuotas	=
+JBS-E-50	DE-07	set:-5	gDtipDE.gCamCond.gPagCred.dMonEnt	=
+E650a	DE-07	crear	gDtipDE.gCamCond.gPagCred.gCuotas	gDtipDE.gCamCond.gPagCred.gCuotas[]
+JBS-E-51	DE-19	set:1	gDtipDE.gCamCond.gPagCred.gCuotas[0].dMonCuota	gDtipDE.gCamCond.gPagCred.gCuotas[]
+JBS-E-55	DE-19	set:-1	gDtipDE.gCamCond.gPagCred.gCuotas[0].dMonCuota	=
+JBS-E-60	DE-05	set:12345	gDtipDE.gCamItem[0].dParAranc	=
+JBS-E-61	DE-05	set:12345	gDtipDE.gCamItem[0].dNCM	=
+JBS-E-62	DE-05	set:12345678	gDtipDE.gCamItem[0].dDncpG	=
+JBS-E-194	DE-05	set:1234	gDtipDE.gCamItem[0].dDncpE	=
+JBS-E-63	DE-15	set:123	gDtipDE.gCamItem[0].dDncpG	=
+JBS-E-65	DE-15	set:12	gDtipDE.gCamItem[0].dDncpE	=
+JBS-E-66	DE-05	set:123	gDtipDE.gCamItem[0].dGtin	=
+JBS-E-67	DE-05	set:123	gDtipDE.gCamItem[0].dGtinPq	=
+JBS-E-70	DE-05	set:Producto de prueba	gDtipDE.gCamItem[0].dDesProSer	=
+JBS-E-73	DE-05	set:0	gDtipDE.gCamItem[0].dCantProSer	=
+E715	DE-23	nulo	gDtipDE.gCamItem[0].cRelMerc	=
+JBS-E-75	DE-05	set:TOLERANCIA_DE_QUIEBRA	gDtipDE.gCamItem[0].cRelMerc	=
+E717	DE-23	nulo	gDtipDE.gCamItem[0].dCanQuiMer	=
+JBS-E-76	DE-23	set:-1	gDtipDE.gCamItem[0].dCanQuiMer	=
+JBS-E-77	DE-23	set:150	gDtipDE.gCamItem[0].dPorQuiMer	=
+JBS-E-78	DE-31/obj	falta	gDtipDE.gCamItem[0].dCDCAnticipo	=
+JBS-E-79	DE-05	set:123	gDtipDE.gCamItem[0].dCDCAnticipo	=
+E720a	DE-23	crear	gDtipDE.gCamItem[0].gValorItem	=
+JBS-E-81	DE-05	set:-1	gDtipDE.gCamItem[0].gValorItem.dPUniProSer	=
+JBS-E-82	DE-08	set:0	gDtipDE.gCamItem[0].gValorItem.dTiCamIt	=
+E725a	DE-07	set:7000	gDtipDE.gCamItem[0].gValorItem.dTiCamIt	=
+E725b	DE-05	set:POR_ITEM@gDatGralOpe.gOpeCom.dCondTiCam ; set:7000@gDtipDE.gCamItem[0].gValorItem.dTiCamIt	-	gDtipDE.gCamItem[0].gValorItem.dTiCamIt
+JBS-E-84	DE-05	set:-1	gDtipDE.gCamItem[0].gValorItem.gValorRestaItem.dDescItem	=
+JBS-E-86	DE-05	set:-1	gDtipDE.gCamItem[0].gValorItem.gValorRestaItem.dDescGloItem	=
+JBS-E-87	DE-05	set:-1	gDtipDE.gCamItem[0].gValorItem.gValorRestaItem.dAntPreUniIt	=
+JBS-E-88	DE-05	set:-1	gDtipDE.gCamItem[0].gValorItem.gValorRestaItem.dAntGloPreUniIt	=
+E730a	DE-20	crear	gDtipDE.gCamItem[0].gCamIVA	=
+E730b	DE-05	set:ISC	gDatGralOpe.gOpeCom.iTImp	gDtipDE.gCamItem[0].gCamIVA
+E733	DE-05	set:50	gDtipDE.gCamItem[0].gCamIVA.dPropIVA	=
+E733a	DE-12	set:100	gDtipDE.gCamItem[0].gCamIVA.dPropIVA	=
+E733b	DE-10	set:100	gDtipDE.gCamItem[0].gCamIVA.dPropIVA	=
+E734	DE-12	set:10	gDtipDE.gCamItem[0].gCamIVA.dTasaIVA	=
+E734a	DE-05	set:7	gDtipDE.gCamItem[0].gCamIVA.dTasaIVA	=
+JBS-E-92	DE-05	set:10.00	gDtipDE.gCamItem[0].gCamIVA.dTasaIVA	=
+JBS-E-107	DE-05	set:12345	gDtipDE.gCamItem[0].gVehNuevo.dPotencia	=
+JBS-E-108	DE-05	set:12345	gDtipDE.gCamItem[0].gVehNuevo.dCapMot	=
+JBS-E-109	DE-05	set:1234567.5	gDtipDE.gCamItem[0].gVehNuevo.dPNet	=
+JBS-E-110	DE-05	set:1234567.5	gDtipDE.gCamItem[0].gVehNuevo.dPBruto	=
+JBS-E-111	DE-05	set:VENTA_AL_CONSUMIDOR_FINAL	gDtipDE.gCamItem[0].gVehNuevo.iTipOpVN	gDtipDE.gCamItem[0].gVehNuevo.iTipCom
+JBS-E-112	DE-05	set:VENTA_AL_CONSUMIDOR_FINAL@gDtipDE.gCamItem[0].gVehNuevo.iTipOpVN ; set:OTRO@gDtipDE.gCamItem[0].gVehNuevo.iTipCom ; set:Ot@gDtipDE.gCamItem[0].gVehNuevo.dDesTipCom	-	gDtipDE.gCamItem[0].gVehNuevo.dDesTipCom
+JBS-E-114	DE-05	set:1234567.5	gDtipDE.gCamItem[0].gVehNuevo.dCapTracc	=
+JBS-E-115	DE-05	set:123	gDtipDE.gCamItem[0].gVehNuevo.dAnoFab	=
+JBS-E-117	DE-05	set:1234	gDtipDE.gCamItem[0].gVehNuevo.dCapac	=
+JBS-E-120	DE-05	set:123	gDtipDE.gCamEsp.gGrupEner.dActiv	=
+JBS-E-122	DE-05	set:1.123	gDtipDE.gCamEsp.gGrupEner.dLecAnt	=
+JBS-E-123	DE-05	set:1.123	gDtipDE.gCamEsp.gGrupEner.dLecAct	=
+JBS-E-124	DE-05	set:10@gDtipDE.gCamEsp.gGrupEner.dLecAnt ; set:5@gDtipDE.gCamEsp.gGrupEner.dLecAct	-	gDtipDE.gCamEsp.gGrupEner.dLecAct
+JBS-E-125	DE-05	set:1.123	gDtipDE.gCamEsp.gGrupEner.dConKwh	=
+JBS-E-126	DE-05	set:5@gDtipDE.gCamEsp.gGrupEner.dLecAnt ; set:10@gDtipDE.gCamEsp.gGrupEner.dLecAct ; set:3@gDtipDE.gCamEsp.gGrupEner.dConKwh	-	gDtipDE.gCamEsp.gGrupEner.dConKwh
+JBS-E-132	DE-05	set:1.12	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[0].dVigencia	=
+JBS-E-134	DE-05	set:2026-12-01T00:00:00@gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[0].dFecIniVig ; set:2026-11-01T00:00:00@gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[0].dFecFinVig	-	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[0].dFecIniVig
+JBS-E-136	DE-05	set:NO-EXISTE	gDtipDE.gCamEsp.gGrupSeg.gGrupPolSeg[0].dCodInt	=
+JBS-E-138	DE-05	set:1234567890123456	gDtipDE.gCamEsp.gGrupSup.dEfectivo	=
+JBS-E-139	DE-05	set:1234567	gDtipDE.gCamEsp.gGrupSup.dVuelto	=
+JBS-E-140	DE-05	set:1234567	gDtipDE.gCamEsp.gGrupSup.dDonac	=
+E822	DE-05	set:CICLO-1	gDtipDE.gCamEsp.gGrupAdi.dCiclo	gDtipDE.gCamEsp.gGrupAdi.dFecIniC
+E822a	DE-05	set:2026-11-01	gDtipDE.gCamEsp.gGrupAdi.dFecIniC	=
+E823	DE-05	set:CICLO-1@gDtipDE.gCamEsp.gGrupAdi.dCiclo ; set:2026-11-01@gDtipDE.gCamEsp.gGrupAdi.dFecIniC	-	gDtipDE.gCamEsp.gGrupAdi.dFecFinC
+E823a	DE-05	set:2026-11-30	gDtipDE.gCamEsp.gGrupAdi.dFecFinC	=
+E823b	DE-05	set:CICLO-1@gDtipDE.gCamEsp.gGrupAdi.dCiclo ; set:2026-11-10@gDtipDE.gCamEsp.gGrupAdi.dFecIniC ; set:2026-11-01@gDtipDE.gCamEsp.gGrupAdi.dFecFinC	-	gDtipDE.gCamEsp.gGrupAdi.dFecFinC
+JBS-E-143	DE-05	lista:2026-12-01,2026-12-02,2026-12-03,2026-12-04	gDtipDE.gCamEsp.gGrupAdi.dVencPag	gDtipDE.gCamEsp.gGrupAdi.dVencPag[]
+E824	DE-05	lista:2026-11-01	gDtipDE.gCamEsp.gGrupAdi.dVencPag	gDtipDE.gCamEsp.gGrupAdi.dVencPag[0]
+JBS-E-146	DE-05	set:1234567890123456	gDtipDE.gCamEsp.gGrupAdi.dSalAnt	=
+E900a	DE-21	crear	gDtipDE.gTransp	=
+JBS-E-150	DE-23	set:IMPORTACION	gDtipDE.gCamNRE.iMotEmiNR	gDtipDE.gTransp.dNuDespImp
+E909a	DE-23	set:2018-01-01	gDtipDE.gTransp.dIniTras	=
+E910a	DE-23	set:2026-01-01	gDtipDE.gTransp.dFinTras	=
+E920a	DE-21	crear	gDtipDE.gTransp.gCamSal	=
+JBS-E-153	DE-23	set:-1	gDtipDE.gTransp.gCamSal.dNumCasSal	=
+JBS-E-157	DE-23	set:12345	gDtipDE.gTransp.gCamSal.cDisSal	=
+E928	DE-23	set:1@gDtipDE.gTransp.gCamSal.cDisSal ; nulo@gDtipDE.gTransp.gCamSal.dDesDisSal	-	gDtipDE.gTransp.gCamSal.dDesDisSal
+E940a	DE-21	crear	gDtipDE.gTransp.gCamEnt	gDtipDE.gTransp.gCamEnt[]
+JBS-E-163	DE-23	set:-1	gDtipDE.gTransp.gCamEnt[0].dNumCasEnt	=
+JBS-E-167	DE-23	set:12345	gDtipDE.gTransp.gCamEnt[0].cDisEnt	=
+E948	DE-23	set:1@gDtipDE.gTransp.gCamEnt[0].cDisEnt ; nulo@gDtipDE.gTransp.gCamEnt[0].dDesDisEnt	-	gDtipDE.gTransp.gCamEnt[0].dDesDisEnt
+E960a	DE-21	crear	gDtipDE.gTransp.gVehTras	gDtipDE.gTransp.gVehTras[]
+JBS-E-172	DE-23	repetir:5	gDtipDE.gTransp.gVehTras	gDtipDE.gTransp.gVehTras[]
+E963	DE-23	set:1@gDtipDE.gTransp.gVehTras[0].dTipIdenVeh ; nulo@gDtipDE.gTransp.gVehTras[0].dNroIDVeh	-	gDtipDE.gTransp.gVehTras[0].dNroIDVeh
+E966	DE-23	set:AEREO@gDtipDE.gTransp.iModTrans ; nulo@gDtipDE.gTransp.gVehTras[0].dNroVuelo	-	gDtipDE.gTransp.gVehTras[0].dNroVuelo
+E966a	DE-23	set:AB123	gDtipDE.gTransp.gVehTras[0].dNroVuelo	=
+E980a	DE-21	crear	gDtipDE.gTransp.gCamTrans	=
+E983c	DE-23	set:NO_CONTRIBUYENTE	gDtipDE.gTransp.gCamTrans.iNatTrans	gDtipDE.gTransp.gCamTrans.dRucTrans
+# E983c con el transportista no contribuyente completo (C:I3-43: la premisa «no se envía» se mide sobre un DE que genera)
+E983c	DE-23	set:NO_CONTRIBUYENTE@gDtipDE.gTransp.gCamTrans.iNatTrans ; set:CEDULA_PARAGUAYA@gDtipDE.gTransp.gCamTrans.iTipIDTrans ; set:1234567@gDtipDE.gTransp.gCamTrans.dNumIDTrans	-	gDtipDE.gTransp.gCamTrans.dRucTrans
+E984	DE-23	dv-mal:gDtipDE.gTransp.gCamTrans.dRucTrans	gDtipDE.gTransp.gCamTrans.dDVTrans	=
+E985	DE-23	set:NO_CONTRIBUYENTE@gDtipDE.gTransp.gCamTrans.iNatTrans ; nulo@gDtipDE.gTransp.gCamTrans.iTipIDTrans	-	gDtipDE.gTransp.gCamTrans.iTipIDTrans
+E985a	DE-23	set:CEDULA_PARAGUAYA	gDtipDE.gTransp.gCamTrans.iTipIDTrans	=
+E987	DE-23	set:NO_CONTRIBUYENTE@gDtipDE.gTransp.gCamTrans.iNatTrans ; set:CEDULA_PARAGUAYA@gDtipDE.gTransp.gCamTrans.iTipIDTrans ; nulo@gDtipDE.gTransp.gCamTrans.dNumIDTrans	-	gDtipDE.gTransp.gCamTrans.dNumIDTrans
+JBS-E-190	DE-23	set:80012345@gDtipDE.gTransp.gCamTrans.dRucAg ; set:AGENTE FICTICIO@gDtipDE.gTransp.gCamTrans.dNombAg ; set:CALLE 1@gDtipDE.gTransp.gCamTrans.dDirAge ; dv-mal:gDtipDE.gTransp.gCamTrans.dRucAg@gDtipDE.gTransp.gCamTrans.dDVAg	-	gDtipDE.gTransp.gCamTrans.dDVAg
+JBS-E-191	DE-23	set:AGENTE FICTICIO	gDtipDE.gTransp.gCamTrans.dNombAg	gDtipDE.gTransp.gCamTrans.dDirAge
+# F, G, H
+F001a	DE-23	crear	gTotSub	=
+JBS-F-08	DE-05	set:-1	gTotSub.dComi	=
+G050	DE-21	crear	gCamGen.gCamCarg	=
+JBS-G-05	DE-05	set:123456789012345678901	gCamGen.gCamCarg.dTotVolMerc	=
+JBS-G-07	DE-05	set:123456789012345678901	gCamGen.gCamCarg.dTotPesMerc	=
+JBS-G-08	DE-05	set:OTRO@gCamGen.gCamCarg.iCarCarga ; nulo@gCamGen.gCamCarg.dDesCarCarga	-	gCamGen.gCamCarg.dDesCarCarga
+H001b	DE-21	repetir:2	gCamDEAsoc	gCamDEAsoc[]
+H001a	DE-21	set:05801234565001001000000122026112310000000019	gCamDEAsoc[0].dCdCDERef	gCamDEAsoc[0]
+H002	DE-20	set:ELECTRONICO	gCamDEAsoc[0].iTipDocAso	=
+H002a	DE-21	set:CONSTANCIA_ELECTRONICA	gCamDEAsoc[0].iTipDocAso	=
+JBS-H-02	DE-21	set:123	gCamDEAsoc[0].dCdCDERef	=
+H004c	DE-22	set:01801234565001001000000122026112310000000010	gCamDEAsoc[0].dCdCDERef	=
+JBS-H-03	DE-22	set:123	gCamDEAsoc[0].dNTimDI	=
+H005a	DE-21	set:12345678	gCamDEAsoc[0].dNTimDI	=
+JBS-H-04	DE-22	set:1	gCamDEAsoc[0].dEstDocAso	=
+H006a	DE-21	set:001	gCamDEAsoc[0].dEstDocAso	=
+JBS-H-05	DE-22	set:1	gCamDEAsoc[0].dPExpDocAso	=
+H007a	DE-21	set:001	gCamDEAsoc[0].dPExpDocAso	=
+JBS-H-06	DE-22	set:12	gCamDEAsoc[0].dNumDocAso	=
+H008a	DE-21	set:0000001	gCamDEAsoc[0].dNumDocAso	=
+H009a	DE-21	set:FACTURA	gCamDEAsoc[0].iTipoDocAso	=
+H011a	DE-21	set:2026-11-01	gCamDEAsoc[0].dFecEmiDI	=
+JBS-H-07	DE-20	set:RETENCION	gDtipDE.gCamCond.gPaConEIni[0].iTiPago	gCamDEAsoc[0].dNumComRet
+H012a	DE-21	set:12345	gCamDEAsoc[0].dNumComRet	=
+H013	DE-20	set:VENTA_CREDITO_FISCAL	gDatGralOpe.gOpeCom.iTipTra	gCamDEAsoc[0].dNumResCF
+JBS-H-09	DE-20	set:123	gCamDEAsoc[0].dNumResCF	=
+H014a	DE-21	set:CONSTANCIA_NO_CONTRIBUYENTE	gCamDEAsoc[0].iTipCons	=
+H016	DE-20	set:CONSTANCIA_MICROPRODUCTORES@gCamDEAsoc[0].iTipCons ; nulo@gCamDEAsoc[0].dNumCons	-	gCamDEAsoc[0].dNumCons
+JBS-H-10	DE-20	set:CONSTANCIA_MICROPRODUCTORES@gCamDEAsoc[0].iTipCons ; set:123@gCamDEAsoc[0].dNumCons	-	gCamDEAsoc[0].dNumCons
+H016a	DE-21	set:12345678901	gCamDEAsoc[0].dNumCons	=
+H017	DE-20	set:CONSTANCIA_MICROPRODUCTORES@gCamDEAsoc[0].iTipCons ; nulo@gCamDEAsoc[0].dNumControl	-	gCamDEAsoc[0].dNumControl
+H017a	DE-21	set:ABC	gCamDEAsoc[0].dNumControl	=
+
+# Eventos (EV-01 cancelación; EV-02 inutilización; EV-03 conformidad parcial; EV-04 disconformidad;
+#   EV-05 nominación no contribuyente con dirección; EV-06 nominación de contribuyente; los que ningún caso trae se arman con java:)
+JBS-EVENTO-01	EV-01	set:ABC	rEve.Id	=
+JBS-EVENTO-02	EV-01	nulo	rEve.dFecFirma	=
+GDE004	EV-01	set:2026-11-25T10:00:00	rEve.dFecFirma	=
+JBS-EVENTO-03	EV-01	java:dosEventos	-	rEve.gGroupTiEvt
+GEC002	EV-01	set:123	rEve.gGroupTiEvt.rGeVeCan.Id	=
+JBS-EVENTO-04	EV-01	set:abc	rEve.gGroupTiEvt.rGeVeCan.mOtEve	=
+JBS-EVENTO-05	EV-02	set:1234	rEve.gGroupTiEvt.rGeVeInu.dNumTim	=
+JBS-EVENTO-06	EV-02	set:1	rEve.gGroupTiEvt.rGeVeInu.dEst	=
+JBS-EVENTO-07	EV-02	set:1	rEve.gGroupTiEvt.rGeVeInu.dPunExp	=
+JBS-EVENTO-08	EV-02	set:12	rEve.gGroupTiEvt.rGeVeInu.dNumIn	=
+JBS-EVENTO-09	EV-02	set:12	rEve.gGroupTiEvt.rGeVeInu.dNumFin	=
+GEI006a	EV-02	set:0000049	rEve.gGroupTiEvt.rGeVeInu.dNumFin	=
+GEI006	EV-02	set:0002000	rEve.gGroupTiEvt.rGeVeInu.dNumFin	=
+JBS-EVENTO-10	EV-02	nulo	rEve.gGroupTiEvt.rGeVeInu.iTiDE	=
+JBS-EVENTO-11	EV-02	set:abc	rEve.gGroupTiEvt.rGeVeInu.mOtEve	=
+GEN002c	EV-01	java:notRec1@- ; set:123@rEve.gGroupTiEvt.rGeVeNotRec.Id	-	rEve.gGroupTiEvt.rGeVeNotRec.Id
+JBS-EVENTO-12	EV-01	java:notRec1@- ; nulo@rEve.gGroupTiEvt.rGeVeNotRec.dFecEmi	-	rEve.gGroupTiEvt.rGeVeNotRec.dFecEmi
+GEN003	EV-01	java:notRec1@- ; set:2026-09-01T10:00:00@rEve.gGroupTiEvt.rGeVeNotRec.dFecEmi ; set:2026-09-02T10:00:00@rEve.gGroupTiEvt.rGeVeNotRec.dFecRecep	-	rEve.gGroupTiEvt.rGeVeNotRec.dFecEmi
+JBS-EVENTO-13	EV-01	java:notRec1@- ; nulo@rEve.gGroupTiEvt.rGeVeNotRec.dFecRecep	-	rEve.gGroupTiEvt.rGeVeNotRec.dFecRecep
+GEN004	EV-01	java:notRec1@- ; set:2026-11-22T10:00:00@rEve.gGroupTiEvt.rGeVeNotRec.dFecRecep	-	rEve.gGroupTiEvt.rGeVeNotRec.dFecRecep
+JBS-EVENTO-14	EV-01	java:notRec1@- ; nulo@rEve.gGroupTiEvt.rGeVeNotRec.iTipRec	-	rEve.gGroupTiEvt.rGeVeNotRec.iTipRec
+JBS-EVENTO-15	EV-01	java:notRec1@- ; set:ab@rEve.gGroupTiEvt.rGeVeNotRec.dNomRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dNomRec
+GEN007	EV-01	java:notRec1@- ; nulo@rEve.gGroupTiEvt.rGeVeNotRec.dRucRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dRucRec
+JBS-EVENTO-16	EV-01	java:notRec1@- ; set:123456789@rEve.gGroupTiEvt.rGeVeNotRec.dRucRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dRucRec
+GEN007a	EV-01	java:notRec2@- ; set:80012346@rEve.gGroupTiEvt.rGeVeNotRec.dRucRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dRucRec
+GEN008	EV-01	java:notRec1@- ; set:1@rEve.gGroupTiEvt.rGeVeNotRec.dDVRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dDVRec
+GEN008a	EV-01	java:notRec2@- ; set:8@rEve.gGroupTiEvt.rGeVeNotRec.dDVRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dDVRec
+GEN009	EV-01	java:notRec2@- ; nulo@rEve.gGroupTiEvt.rGeVeNotRec.dTipIDRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dTipIDRec
+JBS-EVENTO-17	EV-01	java:notRec2@- ; set:INNOMINADO@rEve.gGroupTiEvt.rGeVeNotRec.dTipIDRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dTipIDRec
+GEN009a	EV-01	java:notRec1@- ; set:CEDULA_PARAGUAYA@rEve.gGroupTiEvt.rGeVeNotRec.dTipIDRec	-	rEve.gGroupTiEvt.rGeVeNotRec.dTipIDRec
+GEN010	EV-01	java:notRec2@- ; nulo@rEve.gGroupTiEvt.rGeVeNotRec.dNumID	-	rEve.gGroupTiEvt.rGeVeNotRec.dNumID
+JBS-EVENTO-18	EV-01	java:notRec2@- ; largo:21@rEve.gGroupTiEvt.rGeVeNotRec.dNumID	-	rEve.gGroupTiEvt.rGeVeNotRec.dNumID
+JBS-EVENTO-54	EV-01	java:notRec2@- ; set:1.234.567@rEve.gGroupTiEvt.rGeVeNotRec.dNumID	-	rEve.gGroupTiEvt.rGeVeNotRec.dNumID
+GEN010a	EV-01	java:notRec1@- ; set:1234567@rEve.gGroupTiEvt.rGeVeNotRec.dNumID	-	rEve.gGroupTiEvt.rGeVeNotRec.dNumID
+JBS-EVENTO-19	EV-01	java:notRec1@- ; set:-1@rEve.gGroupTiEvt.rGeVeNotRec.dTotalGs	-	rEve.gGroupTiEvt.rGeVeNotRec.dTotalGs
+GED002c	EV-01	java:descon1@- ; set:123@rEve.gGroupTiEvt.rGeVeDescon.Id	-	rEve.gGroupTiEvt.rGeVeDescon.Id
+JBS-EVENTO-20	EV-01	java:descon1@- ; nulo@rEve.gGroupTiEvt.rGeVeDescon.dFecEmi	-	rEve.gGroupTiEvt.rGeVeDescon.dFecEmi
+GED003	EV-01	java:descon1@- ; set:2026-09-01T10:00:00@rEve.gGroupTiEvt.rGeVeDescon.dFecEmi ; set:2026-09-02T10:00:00@rEve.gGroupTiEvt.rGeVeDescon.dFecRecep	-	rEve.gGroupTiEvt.rGeVeDescon.dFecEmi
+JBS-EVENTO-21	EV-01	java:descon1@- ; nulo@rEve.gGroupTiEvt.rGeVeDescon.dFecRecep	-	rEve.gGroupTiEvt.rGeVeDescon.dFecRecep
+GED004	EV-01	java:descon1@- ; set:2026-11-22T10:00:00@rEve.gGroupTiEvt.rGeVeDescon.dFecRecep	-	rEve.gGroupTiEvt.rGeVeDescon.dFecRecep
+JBS-EVENTO-22	EV-01	java:descon1@- ; nulo@rEve.gGroupTiEvt.rGeVeDescon.iTipRec	-	rEve.gGroupTiEvt.rGeVeDescon.iTipRec
+JBS-EVENTO-23	EV-01	java:descon1@- ; set:ab@rEve.gGroupTiEvt.rGeVeDescon.dNomRec	-	rEve.gGroupTiEvt.rGeVeDescon.dNomRec
+GED007	EV-01	java:descon1@- ; nulo@rEve.gGroupTiEvt.rGeVeDescon.dRucRec	-	rEve.gGroupTiEvt.rGeVeDescon.dRucRec
+JBS-EVENTO-24	EV-01	java:descon2@- ; set:80012346@rEve.gGroupTiEvt.rGeVeDescon.dRucRec	-	rEve.gGroupTiEvt.rGeVeDescon.dRucRec
+GED008	EV-01	java:descon1@- ; set:1@rEve.gGroupTiEvt.rGeVeDescon.dDVRec	-	rEve.gGroupTiEvt.rGeVeDescon.dDVRec
+JBS-EVENTO-25	EV-01	java:descon2@- ; set:8@rEve.gGroupTiEvt.rGeVeDescon.dDVRec	-	rEve.gGroupTiEvt.rGeVeDescon.dDVRec
+GED009	EV-01	java:descon2@- ; nulo@rEve.gGroupTiEvt.rGeVeDescon.dTipIDRec	-	rEve.gGroupTiEvt.rGeVeDescon.dTipIDRec
+GED009a	EV-01	java:descon1@- ; set:CEDULA_PARAGUAYA@rEve.gGroupTiEvt.rGeVeDescon.dTipIDRec	-	rEve.gGroupTiEvt.rGeVeDescon.dTipIDRec
+GED010	EV-01	java:descon2@- ; nulo@rEve.gGroupTiEvt.rGeVeDescon.dNumID	-	rEve.gGroupTiEvt.rGeVeDescon.dNumID
+JBS-EVENTO-55	EV-01	java:descon2@- ; set:1.234.567@rEve.gGroupTiEvt.rGeVeDescon.dNumID	-	rEve.gGroupTiEvt.rGeVeDescon.dNumID
+JBS-EVENTO-26	EV-01	java:descon1@- ; set:1234567@rEve.gGroupTiEvt.rGeVeDescon.dNumID	-	rEve.gGroupTiEvt.rGeVeDescon.dNumID
+JBS-EVENTO-27	EV-01	java:descon1@- ; set:abc@rEve.gGroupTiEvt.rGeVeDescon.mOtEve	-	rEve.gGroupTiEvt.rGeVeDescon.mOtEve
+GCO002b	EV-03	set:123	rEve.gGroupTiEvt.rGeVeConf.Id	=
+JBS-EVENTO-28	EV-03	nulo	rEve.gGroupTiEvt.rGeVeConf.iTipConf	=
+GCO004	EV-03	nulo	rEve.gGroupTiEvt.rGeVeConf.dFecRecep	=
+GDI002b	EV-04	set:123	rEve.gGroupTiEvt.rGeVeDisconf.Id	=
+JBS-EVENTO-29	EV-04	set:abc	rEve.gGroupTiEvt.rGeVeDisconf.mOtEve	=
+GENFE002	EV-06	set:123	rEve.gGroupTiEvt.rGEveNom.Id	=
+GENFE002c	EV-06	set:05801234565001001000000122026112310000000019	rEve.gGroupTiEvt.rGEveNom.Id	=
+JBS-EVENTO-30	EV-06	set:abc	rEve.gGroupTiEvt.rGEveNom.mOtEve	=
+JBS-EVENTO-31	EV-06	set:3	rEve.gGroupTiEvt.rGEveNom.iNatRec	=
+JBS-EVENTO-32	EV-06	set:3	rEve.gGroupTiEvt.rGEveNom.iTiOpe	=
+JBS-EVENTO-33	EV-06	set:XXX	rEve.gGroupTiEvt.rGEveNom.cPaisRec	=
+GENFE006	EV-06	set:Argentina	rEve.gGroupTiEvt.rGEveNom.dDesPaisRe	=
+GENFE007	EV-06	set:3	rEve.gGroupTiEvt.rGEveNom.iTiContRec	=
+GENFE007a	EV-05	set:1	rEve.gGroupTiEvt.rGEveNom.iTiContRec	=
+GENFE008	EV-06	nulo	rEve.gGroupTiEvt.rGEveNom.dRucRec	=
+JBS-EVENTO-34	EV-06	set:4	rEve.gGroupTiEvt.rGEveNom.dDVRec	=
+GENFE010	EV-05	set:5	rEve.gGroupTiEvt.rGEveNom.iTipIDRec	=
+GENFE011	EV-05	set:Cedula	rEve.gGroupTiEvt.rGEveNom.dDTipIDRec	=
+GENFE012	EV-05	nulo	rEve.gGroupTiEvt.rGEveNom.dNumIDRec	=
+JBS-EVENTO-52	EV-05	set:1.234.567	rEve.gGroupTiEvt.rGEveNom.dNumIDRec	=
+JBS-EVENTO-35	EV-06	set:ab	rEve.gGroupTiEvt.rGEveNom.dNomRec	=
+JBS-EVENTO-36	EV-06	set:ab	rEve.gGroupTiEvt.rGEveNom.dNomFanRec	=
+JBS-EVENTO-37	EV-05	largo:256	rEve.gGroupTiEvt.rGEveNom.dDirRec	=
+GENFE016	EV-05	set:1234567	rEve.gGroupTiEvt.rGEveNom.dNumCasRec	=
+JBS-EVENTO-38	EV-05	set:99	rEve.gGroupTiEvt.rGEveNom.cDepRec	=
+JBS-EVENTO-39	EV-05	set:CONCEPCION	rEve.gGroupTiEvt.rGEveNom.dDesDepRec	=
+JBS-EVENTO-40	EV-05	nulo	rEve.gGroupTiEvt.rGEveNom.cDisRec	=
+JBS-EVENTO-41	EV-05	nulo	rEve.gGroupTiEvt.rGEveNom.dDesDisRec	=
+JBS-EVENTO-42	EV-05	set:-1	rEve.gGroupTiEvt.rGEveNom.cCiuRec	=
+JBS-EVENTO-56	EV-05	nulo	rEve.gGroupTiEvt.rGEveNom.dDesCiuRec	=
+JBS-EVENTO-44	EV-06	set:123	rEve.gGroupTiEvt.rGEveNom.dTelRec	=
+JBS-EVENTO-45	EV-06	set:123	rEve.gGroupTiEvt.rGEveNom.dCelRec	=
+JBS-EVENTO-46	EV-06	set:no-es-correo	rEve.gGroupTiEvt.rGEveNom.dEmailRec	=
+JBS-EVENTO-47	EV-06	set:ab	rEve.gGroupTiEvt.rGEveNom.dCodCliente	=
+JBS-EVENTO-48	EV-01	java:tr1@- ; set:123@rEve.gGroupTiEvt.rGeVeTr.Id	-	rEve.gGroupTiEvt.rGeVeTr.Id
+JBS-EVENTO-49	EV-01	java:tr1@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dMotEv	-	rEve.gGroupTiEvt.rGeVeTr.dMotEv
+GET004a	EV-01	java:tr1@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.cDepEnt	-	rEve.gGroupTiEvt.rGeVeTr.cDepEnt
+JBS-EVENTO-50	EV-01	java:tr1@- ; set:12345@rEve.gGroupTiEvt.rGeVeTr.cDisEnt	-	rEve.gGroupTiEvt.rGeVeTr.cDisEnt
+GET007	EV-01	java:tr1@- ; set:1@rEve.gGroupTiEvt.rGeVeTr.cDisEnt	-	rEve.gGroupTiEvt.rGeVeTr.dDesDisEnt
+GET008	EV-01	java:tr1@- ; set:0@rEve.gGroupTiEvt.rGeVeTr.cCiuEnt	-	rEve.gGroupTiEvt.rGeVeTr.cCiuEnt
+GET009	EV-01	java:tr1@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dDesCiuEnt	-	rEve.gGroupTiEvt.rGeVeTr.dDesCiuEnt
+GET010	EV-01	java:tr1@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dDirEnt	-	rEve.gGroupTiEvt.rGeVeTr.dDirEnt
+GET011	EV-01	java:tr1@- ; set:1234567@rEve.gGroupTiEvt.rGeVeTr.dNumCas	-	rEve.gGroupTiEvt.rGeVeTr.dNumCas
+JBS-EVENTO-51	EV-01	java:tr1@- ; largo:256@rEve.gGroupTiEvt.rGeVeTr.dCompDir1	-	rEve.gGroupTiEvt.rGeVeTr.dCompDir1
+GET013	EV-01	java:tr2@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dNomChof	-	rEve.gGroupTiEvt.rGeVeTr.dNomChof
+GET014	EV-01	java:tr2@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dNumIDChof	-	rEve.gGroupTiEvt.rGeVeTr.dNumIDChof
+GET015	EV-01	java:tr3@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.iNatTrans	-	rEve.gGroupTiEvt.rGeVeTr.iNatTrans
+GET016	EV-01	java:tr3@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dRucTrans	-	rEve.gGroupTiEvt.rGeVeTr.dRucTrans
+GET016c	EV-01	java:tr3@- ; set:NO_CONTRIBUYENTE@rEve.gGroupTiEvt.rGeVeTr.iNatTrans ; set:CEDULA_PARAGUAYA@rEve.gGroupTiEvt.rGeVeTr.iTipIDTrans ; set:1234567@rEve.gGroupTiEvt.rGeVeTr.dNumIDTrans	-	rEve.gGroupTiEvt.rGeVeTr.dRucTrans
+GET017	EV-01	java:tr3@- ; set:1@rEve.gGroupTiEvt.rGeVeTr.dDVTrans	-	rEve.gGroupTiEvt.rGeVeTr.dDVTrans
+GET018	EV-01	java:tr3@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dNomTrans	-	rEve.gGroupTiEvt.rGeVeTr.dNomTrans
+GET019	EV-01	java:tr3@- ; set:NO_CONTRIBUYENTE@rEve.gGroupTiEvt.rGeVeTr.iNatTrans ; nulo@rEve.gGroupTiEvt.rGeVeTr.dRucTrans ; nulo@rEve.gGroupTiEvt.rGeVeTr.dDVTrans	-	rEve.gGroupTiEvt.rGeVeTr.iTipIDTrans
+GET019a	EV-01	java:tr3@- ; set:CEDULA_PARAGUAYA@rEve.gGroupTiEvt.rGeVeTr.iTipIDTrans ; set:1234567@rEve.gGroupTiEvt.rGeVeTr.dNumIDTrans	-	rEve.gGroupTiEvt.rGeVeTr.iTipIDTrans
+GET021	EV-01	java:tr3@- ; set:NO_CONTRIBUYENTE@rEve.gGroupTiEvt.rGeVeTr.iNatTrans ; nulo@rEve.gGroupTiEvt.rGeVeTr.dRucTrans ; nulo@rEve.gGroupTiEvt.rGeVeTr.dDVTrans ; set:CEDULA_PARAGUAYA@rEve.gGroupTiEvt.rGeVeTr.iTipIDTrans	-	rEve.gGroupTiEvt.rGeVeTr.dNumIDTrans
+JBS-EVENTO-53	EV-01	java:tr3@- ; set:NO_CONTRIBUYENTE@rEve.gGroupTiEvt.rGeVeTr.iNatTrans ; nulo@rEve.gGroupTiEvt.rGeVeTr.dRucTrans ; nulo@rEve.gGroupTiEvt.rGeVeTr.dDVTrans ; set:CEDULA_PARAGUAYA@rEve.gGroupTiEvt.rGeVeTr.iTipIDTrans ; set:1.234.567@rEve.gGroupTiEvt.rGeVeTr.dNumIDTrans	-	rEve.gGroupTiEvt.rGeVeTr.dNumIDTrans
+GET022	EV-01	java:tr4@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.iTipTrans	-	rEve.gGroupTiEvt.rGeVeTr.iTipTrans
+GET024	EV-01	java:tr4@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.iModTrans	-	rEve.gGroupTiEvt.rGeVeTr.iModTrans
+GET026	EV-01	java:tr4@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dTiVehTras	-	rEve.gGroupTiEvt.rGeVeTr.dTiVehTras
+GET027	EV-01	java:tr4@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dMarVeh	-	rEve.gGroupTiEvt.rGeVeTr.dMarVeh
+GET028	EV-01	java:tr4@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dTipIdenVeh	-	rEve.gGroupTiEvt.rGeVeTr.dTipIdenVeh
+GET029	EV-01	java:tr4@- ; nulo@rEve.gGroupTiEvt.rGeVeTr.dNroIDVeh	-	rEve.gGroupTiEvt.rGeVeTr.dNroIDVeh
+GET030	EV-01	java:tr4@- ; set:NRO_MATRICULA@rEve.gGroupTiEvt.rGeVeTr.dTipIdenVeh	-	rEve.gGroupTiEvt.rGeVeTr.dNroMatVeh
+# §6.1/§6.2 (app-developer, 2026-11-24): obligaciones afectadas (NT 018/022) y RUC fusionado (NT 023)
+D031	DE-05	crear	gDatGralOpe.gOpeCom.gOblAfe	gDatGralOpe.gOpeCom.gOblAfe[0].cOblAfe
+D031	DE-05	crear@gDatGralOpe.gOpeCom.gOblAfe ; set:IRE_SIMPLE@gDatGralOpe.gOpeCom.gOblAfe[0].cOblAfe ; +nulo@gDatGralOpe.gOpeCom.gOblAfe	-	gDatGralOpe.gOpeCom.gOblAfe[1].cOblAfe
+D031a	DE-05	crear@gDatGralOpe.gOpeCom.gOblAfe ; set:IRE_SIMPLE@gDatGralOpe.gOpeCom.gOblAfe[0].cOblAfe ; repetir:2@gDatGralOpe.gOpeCom.gOblAfe	-	gDatGralOpe.gOpeCom.gOblAfe[1].cOblAfe
+JBS-D-62	DE-05	crear@gDatGralOpe.gOpeCom.gOblAfe ; set:IRE_SIMPLE@gDatGralOpe.gOpeCom.gOblAfe[0].cOblAfe ; repetir:12@gDatGralOpe.gOpeCom.gOblAfe	-	gDatGralOpe.gOpeCom.gOblAfe
+JBS-H-12	DE-21	set:12	gCamDEAsoc[].dRucFus	=
+H018	DE-21	set:80000005	gCamDEAsoc[].dRucFus	=
+H018a	DE-20	set:80123456	gCamDEAsoc[].dRucFus	=

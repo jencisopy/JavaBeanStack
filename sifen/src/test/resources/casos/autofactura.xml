@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rDE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ekuatia.set.gov.py/sifen/xsd siRecepDE_v150.xsd" xmlns="http://ekuatia.set.gov.py/sifen/xsd">
+    <dVerFor>150</dVerFor>
+    <DE Id="04801234565001001000002022026112310000000204">
+        <dDVId>4</dDVId>
+        <dFecFirma>2026-11-23T10:00:05</dFecFirma>
+        <dSisFact>1</dSisFact>
+        <gOpeDE>
+            <iTipEmi>1</iTipEmi>
+            <dDesTipEmi>Normal</dDesTipEmi>
+            <dCodSeg>000000020</dCodSeg>
+        </gOpeDE>
+        <gTimb>
+            <iTiDE>4</iTiDE>
+            <dDesTiDE>Autofactura electrónica</dDesTiDE>
+            <dNumTim>12345678</dNumTim>
+            <dEst>001</dEst>
+            <dPunExp>001</dPunExp>
+            <dNumDoc>0000020</dNumDoc>
+            <dFeIniT>2026-01-02</dFeIniT>
+        </gTimb>
+        <gDatGralOpe>
+            <dFeEmiDE>2026-11-23T10:00:00</dFeEmiDE>
+            <gOpeCom>
+                <iTipTra>10</iTipTra>
+                <dDesTipTra>Compra de productos</dDesTipTra>
+                <iTImp>1</iTImp>
+                <dDesTImp>IVA</dDesTImp>
+                <cMoneOpe>PYG</cMoneOpe>
+                <dDesMoneOpe>Guarani</dDesMoneOpe>
+            </gOpeCom>
+            <gEmis>
+                <dRucEm>80123456</dRucEm>
+                <dDVEmi>5</dDVEmi>
+                <iTipCont>2</iTipCont>
+                <dNomEmi>EMPRESA FICTICIA DE PRUEBA S.A.</dNomEmi>
+                <dDirEmi>CALLE FICTICIA</dDirEmi>
+                <dNumCas>123</dNumCas>
+                <cDepEmi>1</cDepEmi>
+                <dDesDepEmi>CAPITAL</dDesDepEmi>
+                <cCiuEmi>1</cCiuEmi>
+                <dDesCiuEmi>ASUNCION (DISTRITO)</dDesCiuEmi>
+                <dTelEmi>0210000000</dTelEmi>
+                <dEmailE>facturacion@example.com</dEmailE>
+                <gActEco>
+                    <cActEco>46900</cActEco>
+                    <dDesActEco>VENTA AL POR MAYOR NO ESPECIALIZADA</dDesActEco>
+                </gActEco>
+            </gEmis>
+            <gDatRec>
+                <iNatRec>1</iNatRec>
+                <iTiOpe>1</iTiOpe>
+                <cPaisRec>PRY</cPaisRec>
+                <dDesPaisRe>Paraguay</dDesPaisRe>
+                <iTiContRec>2</iTiContRec>
+                <dRucRec>80123456</dRucRec>
+                <dDVRec>5</dDVRec>
+                <dNomRec>EMPRESA FICTICIA DE PRUEBA S.A.</dNomRec>
+            </gDatRec>
+        </gDatGralOpe>
+        <gDtipDE>
+            <gCamAE>
+                <iNatVen>1</iNatVen>
+                <dDesNatVen>No contribuyente</dDesNatVen>
+                <iTipIDVen>1</iTipIDVen>
+                <dDTipIDVen>Cédula paraguaya</dDTipIDVen>
+                <dNumIDVen>2345678</dNumIDVen>
+                <dNomVen>VENDEDOR FICTICIO</dNomVen>
+                <dDirVen>CAMINO FICTICIO</dDirVen>
+                <dNumCasVen>0</dNumCasVen>
+                <cDepVen>1</cDepVen>
+                <dDesDepVen>CAPITAL</dDesDepVen>
+                <cCiuVen>1</cCiuVen>
+                <dDesCiuVen>ASUNCION (DISTRITO)</dDesCiuVen>
+                <dDirProv>CAMINO FICTICIO</dDirProv>
+                <cDepProv>1</cDepProv>
+                <dDesDepProv>CAPITAL</dDesDepProv>
+                <cCiuProv>1</cCiuProv>
+                <dDesCiuProv>ASUNCION (DISTRITO)</dDesCiuProv>
+            </gCamAE>
+            <gCamCond>
+                <iCondOpe>1</iCondOpe>
+                <dDCondOpe>Contado</dDCondOpe>
+                <gPaConEIni>
+                    <iTiPago>1</iTiPago>
+                    <dDesTiPag>Efectivo</dDesTiPag>
+                    <dMonTiPag>150000</dMonTiPag>
+                    <cMoneTiPag>PYG</cMoneTiPag>
+                    <dDMoneTiPag>Guarani</dDMoneTiPag>
+                </gPaConEIni>
+            </gCamCond>
+            <gCamItem>
+                <dCodInt>ITEM-0201</dCodInt>
+                <dDesProSer>PRODUCTO AGRICOLA DE PRUEBA</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>10</dCantProSer>
+                <gValorItem>
+                    <dPUniProSer>15000</dPUniProSer>
+                    <dTotBruOpeItem>150000</dTotBruOpeItem>
+                    <gValorRestaItem>
+                        <dDescItem>0</dDescItem>
+                        <dPorcDesIt>0.00</dPorcDesIt>
+                        <dDescGloItem>0</dDescGloItem>
+                        <dAntPreUniIt>0</dAntPreUniIt>
+                        <dAntGloPreUniIt>0</dAntGloPreUniIt>
+                        <dTotOpeItem>150000.00</dTotOpeItem>
+                    </gValorRestaItem>
+                </gValorItem>
+            </gCamItem>
+        </gDtipDE>
+        <gTotSub>
+            <dTotOpe>150000.00</dTotOpe>
+            <dTotDesc>0</dTotDesc>
+            <dTotDescGlotem>0</dTotDescGlotem>
+            <dTotAntItem>0</dTotAntItem>
+            <dTotAnt>0</dTotAnt>
+            <dPorcDescTotal>0</dPorcDescTotal>
+            <dDescTotal>0</dDescTotal>
+            <dAnticipo>0</dAnticipo>
+            <dRedon>0</dRedon>
+            <dTotGralOpe>150000.00</dTotGralOpe>
+            <dLiqTotIVA5>0</dLiqTotIVA5>
+            <dLiqTotIVA10>0</dLiqTotIVA10>
+        </gTotSub>
+        <gCamDEAsoc>
+            <iTipDocAso>3</iTipDocAso>
+            <dDesTipDocAso>Constancia Electrónica</dDesTipDocAso>
+            <iTipCons>1</iTipCons>
+            <dDesTipCons>Constancia de no ser contribuyente</dDesTipCons>
+        </gCamDEAsoc>
+    </DE>
+</rDE>

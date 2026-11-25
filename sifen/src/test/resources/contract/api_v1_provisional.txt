@@ -1,0 +1,28 @@
+# Contrato de API v1 de jbs-sifen: firmas PROVISIONALES (@Provisional; plan JBSSIF, D43). Generado por ApiSignaturesTest.
+# Puede cambiar hasta la 2.2.0: una diferencia obliga a regenerarla y anotarlo (ApiSignaturesTest.laFotoProvisionalEsLaFijada).
+org.javabeanstack.sifen.ISifenClient public abstract org.javabeanstack.sifen.api.EventResult sendEvents(org.javabeanstack.sifen.core.beans.EventosDE) throws org.javabeanstack.sifen.core.exceptions.SifenException
+org.javabeanstack.sifen.ISifenClient public abstract org.javabeanstack.sifen.core.validation.ValidationResult validateEvents(org.javabeanstack.sifen.core.beans.EventosDE)
+org.javabeanstack.sifen.SifenClient public org.javabeanstack.sifen.api.EventResult sendEvents(org.javabeanstack.sifen.core.beans.EventosDE) throws org.javabeanstack.sifen.core.exceptions.SifenException
+org.javabeanstack.sifen.SifenClient public org.javabeanstack.sifen.core.validation.ValidationResult validateEvents(org.javabeanstack.sifen.core.beans.EventosDE)
+org.javabeanstack.sifen.SifenClient public static org.javabeanstack.sifen.ISifenClient create(org.javabeanstack.sifen.core.SifenConfig,org.javabeanstack.sifen.spi.ISendRegistry) throws org.javabeanstack.sifen.core.exceptions.SifenException
+org.javabeanstack.sifen.SifenClientRegistry public <init>(org.javabeanstack.sifen.spi.ISendRegistry)
+org.javabeanstack.sifen.api.ConnectionDiagnosis public boolean isOk()
+org.javabeanstack.sifen.api.ConnectionDiagnosis public java.lang.String getOperationId()
+org.javabeanstack.sifen.api.ConnectionDiagnosis public java.lang.String toString()
+org.javabeanstack.sifen.api.ConnectionDiagnosis public java.util.List<org.javabeanstack.sifen.api.ConnectionDiagnosis$Step> getSteps()
+org.javabeanstack.sifen.api.ConnectionDiagnosis public static org.javabeanstack.sifen.api.ConnectionDiagnosis of(java.util.List<org.javabeanstack.sifen.api.ConnectionDiagnosis$Step>,java.lang.String)
+org.javabeanstack.sifen.api.ConnectionDiagnosis type public final class implements java.io.Serializable
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step public boolean isOk()
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step public java.lang.String getCode()
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step public java.lang.String getMessage()
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step public java.lang.String getName()
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step public java.lang.String toString()
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step public long getDurationMs()
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step public static org.javabeanstack.sifen.api.ConnectionDiagnosis$Step failed(java.lang.String,long,java.lang.String,java.lang.String)
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step public static org.javabeanstack.sifen.api.ConnectionDiagnosis$Step ok(java.lang.String,long)
+org.javabeanstack.sifen.api.ConnectionDiagnosis$Step type public static final class implements java.io.Serializable
+org.javabeanstack.sifen.core.beans.EventosDE public <init>()
+org.javabeanstack.sifen.core.beans.EventosDE public java.util.List<org.javabeanstack.sifen.core.fields.request.event.TrGesEve> getrGesEveList()
+org.javabeanstack.sifen.core.beans.EventosDE public void setrGesEveList(java.util.List<org.javabeanstack.sifen.core.fields.request.event.TrGesEve>)
+org.javabeanstack.sifen.spi.ISendRegistry public abstract boolean allowSend(java.lang.String,java.lang.String)
+org.javabeanstack.sifen.spi.ISendRegistry type public abstract interface

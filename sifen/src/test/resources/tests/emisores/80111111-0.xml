@@ -1,0 +1,21 @@
+<gEmis>
+    <dRucEm>80111111</dRucEm>
+    <dDVEmi>0</dDVEmi>
+    <iTipCont>1</iTipCont>
+    <dNomEmi>EMPRESA FICTICIA DE SOFTWARE S.A.</dNomEmi>
+    <dNomFanEmi>FICTICIA SOFTWARE</dNomFanEmi>
+    <dDirEmi>CALLE FICTICIA</dDirEmi>
+    <dNumCas>123</dNumCas>
+    <cDepEmi>1</cDepEmi>
+    <dDesDepEmi>CAPITAL</dDesDepEmi>
+    <cDisEmi>1</cDisEmi>
+    <dDesDisEmi>ASUNCION (DISTRITO)</dDesDisEmi>
+    <cCiuEmi>1</cCiuEmi>
+    <dDesCiuEmi>ASUNCION (DISTRITO)</dDesCiuEmi>
+    <dTelEmi>0210000000</dTelEmi>
+    <dEmailE>facturacion@example.com</dEmailE>
+    <gActEco>
+        <cActEco>62010</cActEco>
+        <dDesActEco>ACTIVIDADES DE PROGRAMACIÓN INFORMÁTICA</dDesActEco>
+    </gActEco>
+</gEmis>

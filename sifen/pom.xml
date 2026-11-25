@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.javabeanstack</groupId>
+        <artifactId>jbs-parent</artifactId>
+        <version>2.2.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>jbs-sifen</artifactId>
+    <name>JavaBeanStack-Sifen</name>
+    <packaging>jar</packaging>
+    <description>Cliente de SIFEN (facturación electrónica de la DNIT, Paraguay): armado, firma y envío de documentos electrónicos y eventos. Deriva de rshk-jsifenlib (MIT, Roshka S.A. + Taxare S.A.); ver LICENSE-rshk-jsifenlib.md.</description>
+    <properties>
+        <!-- Identidad JPMS del artefacto: no depende del nombre de los paquetes. -->
+        <jbs.module.name>org.javabeanstack.sifen</jbs.module.name>
+        <!--
+            Tests en vivo contra el ambiente de pruebas de SIFEN:
+            el build por omisión excluye @Tag("sifen-live"), así una variable JBS_SIFEN_TEST_ENV
+            exportada en la sesión no alcanza para pegarle a SIFEN. Se corren solo con el perfil
+            sifen-live (abajo).
+        -->
+        <sifen.test.grupos></sifen.test.grupos>
+        <sifen.test.excluidos>sifen-live</sifen.test.excluidos>
+        <!-- -Dmaven.test.skip=true no compila los tests, y la verificación de los avisos vive ahí. -->
+        <maven.test.skip>false</maven.test.skip>
+    </properties>
+    <!--
+        Módulo autónomo: no depende de otros jbs-*. log4j-api, JUnit 5 y
+        jakartaee-api llegan del padre.
+    -->
+    <dependencies>
+        <!-- SAAJ: la API la provee el servidor de aplicaciones (versión y scope en el BOM). -->
+        <dependency>
+            <groupId>jakarta.xml.soap</groupId>
+            <artifactId>jakarta.xml.soap-api</artifactId>
+        </dependency>
+        <!-- Implementación SAAJ solo para los tests (en el contenedor la da el servidor). -->
+        <dependency>
+            <groupId>com.sun.xml.messaging.saaj</groupId>
+            <artifactId>saaj-impl</artifactId>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <groups>${sifen.test.grupos}</groups>
+                    <excludedGroups>${sifen.test.excluidos}</excludedGroups>
+                </configuration>
+            </plugin>
+            <!--
+                Simulador de SIFEN publicable: jbs-sifen-<versión>-tests.jar
+                con SOLO el paquete org.javabeanstack.sifen.simulator y sus recursos (respuestas grabadas y
+                certificados desechables). Nada más de test-classes: ni los tests, ni golden/casos, ni el
+                resolver de nombres de META-INF/services. Uso en una aplicación: jbs-sifen con
+                <classifier>tests</classifier> y <scope>test</scope>.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>simulador-sifen</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>org/javabeanstack/sifen/simulator/**</include>
+                                <!-- los avisos de licencia también en el -tests.jar -->
+                                <include>META-INF/LICENSE</include>
+                                <include>META-INF/NOTICE</include>
+                                <include>META-INF/LICENSE-rshk-jsifenlib.md</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*Test.class</exclude>
+                            </excludes>
+                            <archive>
+                                <manifestEntries>
+                                    <Automatic-Module-Name>org.javabeanstack.sifen.simulator</Automatic-Module-Name>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                Avisos de licencia dentro de los jars: LICENSE (LGPL v3 de
+                JavaBeanStack), NOTICE (con el aviso MIT de Roshka S.A. + Taxare S.A.) y
+                LICENSE-rshk-jsifenlib.md (la MIT del origen, que exige el aviso en cada copia) se copian a
+                META-INF/ de target/classes (jar principal) y de target/test-classes (el -tests.jar del
+                simulador los incluye arriba). Sin redeclarar <resources>: los de src/main y src/test siguen
+                igual.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>avisos-de-licencia</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/..</directory>
+                                    <includes>
+                                        <include>LICENSE</include>
+                                        <include>NOTICE</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}</directory>
+                                    <includes>
+                                        <include>LICENSE-rshk-jsifenlib.md</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Versión de la librería: src/main/filtered/jbs-sifen.properties con
+                        ${project.version} filtrado, a target/classes/org/javabeanstack/sifen/. Lo lee
+                        internal.Constants al iniciar; no hay otro literal de versión en el código.
+                    -->
+                    <execution>
+                        <id>version-de-la-libreria</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/org/javabeanstack/sifen</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/filtered</directory>
+                                    <includes>
+                                        <include>jbs-sifen.properties</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>avisos-de-licencia-simulador</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.testOutputDirectory}/META-INF</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/..</directory>
+                                    <includes>
+                                        <include>LICENSE</include>
+                                        <include>NOTICE</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}</directory>
+                                    <includes>
+                                        <include>LICENSE-rshk-jsifenlib.md</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                Verificación del empaquetado: en verify, después de package y antes de install,
+                abre los dos jars y exige los tres avisos iguales byte a byte a los del repositorio; si falta
+                uno, el build falla. El verificador está en los fuentes de test (no entra en ningún jar).
+                exec-maven-plugin 3.1.0: la versión disponible sin red en el repositorio local.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>verificar-avisos-de-licencia</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${maven.test.skip}</skip>
+                            <mainClass>org.javabeanstack.sifen.build.VerificarAvisosJar</mainClass>
+                            <classpathScope>test</classpathScope>
+                            <arguments>
+                                <argument>${project.basedir}/../LICENSE</argument>
+                                <argument>${project.basedir}/../NOTICE</argument>
+                                <argument>${project.basedir}/LICENSE-rshk-jsifenlib.md</argument>
+                                <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+                                <argument>${project.build.directory}/${project.build.finalName}-tests.jar</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <!--
+            Solo los tests en vivo (ambiente de PRUEBAS de SIFEN; nunca producción: SifenTestEnv
+            corta la corrida si SIFEN_AMBIENTE no es DEV). Sin -Djbs.sifen.test.env=<archivo> quedan
+            saltados. Uso:
+              mvn -s maven-settings.xml -pl sifen -am test -Psifen-live \
+                  -Djbs.sifen.test.env=/ruta/a/sifen-credentials.env
+        -->
+        <profile>
+            <id>sifen-live</id>
+            <properties>
+                <sifen.test.grupos>sifen-live</sifen.test.grupos>
+                <sifen.test.excluidos></sifen.test.excluidos>
+            </properties>
+        </profile>
+    </profiles>
+</project>

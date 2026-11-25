@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rDE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ekuatia.set.gov.py/sifen/xsd siRecepDE_v150.xsd" xmlns="http://ekuatia.set.gov.py/sifen/xsd">
+    <dVerFor>150</dVerFor>
+    <DE Id="01801234565001001000000822026112310000000087">
+        <dDVId>7</dDVId>
+        <dFecFirma>2026-11-23T10:00:05</dFecFirma>
+        <dSisFact>1</dSisFact>
+        <gOpeDE>
+            <iTipEmi>1</iTipEmi>
+            <dDesTipEmi>Normal</dDesTipEmi>
+            <dCodSeg>000000008</dCodSeg>
+        </gOpeDE>
+        <gTimb>
+            <iTiDE>1</iTiDE>
+            <dDesTiDE>Factura electrónica</dDesTiDE>
+            <dNumTim>12345678</dNumTim>
+            <dEst>001</dEst>
+            <dPunExp>001</dPunExp>
+            <dNumDoc>0000008</dNumDoc>
+            <dFeIniT>2026-01-02</dFeIniT>
+        </gTimb>
+        <gDatGralOpe>
+            <dFeEmiDE>2026-11-23T10:00:00</dFeEmiDE>
+            <gOpeCom>
+                <iTipTra>1</iTipTra>
+                <dDesTipTra>Venta de mercadería</dDesTipTra>
+                <iTImp>1</iTImp>
+                <dDesTImp>IVA</dDesTImp>
+                <cMoneOpe>USD</cMoneOpe>
+                <dDesMoneOpe>US Dollar</dDesMoneOpe>
+                <dCondTiCam>2</dCondTiCam>
+            </gOpeCom>
+            <gEmis>
+                <dRucEm>80123456</dRucEm>
+                <dDVEmi>5</dDVEmi>
+                <iTipCont>2</iTipCont>
+                <dNomEmi>EMPRESA FICTICIA DE PRUEBA S.A.</dNomEmi>
+                <dDirEmi>CALLE FICTICIA</dDirEmi>
+                <dNumCas>123</dNumCas>
+                <cDepEmi>1</cDepEmi>
+                <dDesDepEmi>CAPITAL</dDesDepEmi>
+                <cCiuEmi>1</cCiuEmi>
+                <dDesCiuEmi>ASUNCION (DISTRITO)</dDesCiuEmi>
+                <dTelEmi>0210000000</dTelEmi>
+                <dEmailE>facturacion@example.com</dEmailE>
+                <gActEco>
+                    <cActEco>46900</cActEco>
+                    <dDesActEco>VENTA AL POR MAYOR NO ESPECIALIZADA</dDesActEco>
+                </gActEco>
+            </gEmis>
+            <gDatRec>
+                <iNatRec>1</iNatRec>
+                <iTiOpe>1</iTiOpe>
+                <cPaisRec>PRY</cPaisRec>
+                <dDesPaisRe>Paraguay</dDesPaisRe>
+                <iTiContRec>2</iTiContRec>
+                <dRucRec>80654321</dRucRec>
+                <dDVRec>3</dDVRec>
+                <dNomRec>CLIENTE FICTICIO S.A.</dNomRec>
+                <dDirRec>RUTA FICTICIA KM 1</dDirRec>
+                <dNumCasRec>0</dNumCasRec>
+                <cDepRec>1</cDepRec>
+                <dDesDepRec>CAPITAL</dDesDepRec>
+                <cCiuRec>1</cCiuRec>
+                <dDesCiuRec>ASUNCION (DISTRITO)</dDesCiuRec>
+                <dEmailRec>recepcion@example.com</dEmailRec>
+            </gDatRec>
+        </gDatGralOpe>
+        <gDtipDE>
+            <gCamFE>
+                <iIndPres>1</iIndPres>
+                <dDesIndPres>Operación presencial</dDesIndPres>
+            </gCamFE>
+            <gCamCond>
+                <iCondOpe>1</iCondOpe>
+                <dDCondOpe>Contado</dDCondOpe>
+                <gPaConEIni>
+                    <iTiPago>1</iTiPago>
+                    <dDesTiPag>Efectivo</dDesTiPag>
+                    <dMonTiPag>380.60</dMonTiPag>
+                    <cMoneTiPag>USD</cMoneTiPag>
+                    <dDMoneTiPag>US Dollar</dDMoneTiPag>
+                    <dTiCamTiPag>7300.25</dTiCamTiPag>
+                </gPaConEIni>
+            </gCamCond>
+            <gCamItem>
+                <dCodInt>ITEM-0081</dCodInt>
+                <dDesProSer>PRODUCTO DE PRUEBA 81</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>2</dCantProSer>
+                <gValorItem>
+                    <dPUniProSer>150.25</dPUniProSer>
+                    <dTiCamIt>7300.25</dTiCamIt>
+                    <dTotBruOpeItem>300.50</dTotBruOpeItem>
+                    <gValorRestaItem>
+                        <dDescItem>0</dDescItem>
+                        <dPorcDesIt>0.00</dPorcDesIt>
+                        <dDescGloItem>0</dDescGloItem>
+                        <dAntPreUniIt>0</dAntPreUniIt>
+                        <dAntGloPreUniIt>0</dAntGloPreUniIt>
+                        <dTotOpeItem>300.50</dTotOpeItem>
+                        <dTotOpeGs>2193725.1250</dTotOpeGs>
+                    </gValorRestaItem>
+                </gValorItem>
+                <gCamIVA>
+                    <iAfecIVA>1</iAfecIVA>
+                    <dDesAfecIVA>Gravado IVA</dDesAfecIVA>
+                    <dPropIVA>100</dPropIVA>
+                    <dTasaIVA>10</dTasaIVA>
+                    <dBasGravIVA>273.18</dBasGravIVA>
+                    <dLiqIVAItem>27.32</dLiqIVAItem>
+                    <dBasExe>0</dBasExe>
+                </gCamIVA>
+            </gCamItem>
+            <gCamItem>
+                <dCodInt>ITEM-0082</dCodInt>
+                <dDesProSer>PRODUCTO DE PRUEBA 82</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>1</dCantProSer>
+                <gValorItem>
+                    <dPUniProSer>80.10</dPUniProSer>
+                    <dTiCamIt>7310.50</dTiCamIt>
+                    <dTotBruOpeItem>80.10</dTotBruOpeItem>
+                    <gValorRestaItem>
+                        <dDescItem>0</dDescItem>
+                        <dPorcDesIt>0.00</dPorcDesIt>
+                        <dDescGloItem>0</dDescGloItem>
+                        <dAntPreUniIt>0</dAntPreUniIt>
+                        <dAntGloPreUniIt>0</dAntGloPreUniIt>
+                        <dTotOpeItem>80.10</dTotOpeItem>
+                        <dTotOpeGs>585571.0500</dTotOpeGs>
+                    </gValorRestaItem>
+                </gValorItem>
+                <gCamIVA>
+                    <iAfecIVA>1</iAfecIVA>
+                    <dDesAfecIVA>Gravado IVA</dDesAfecIVA>
+                    <dPropIVA>100</dPropIVA>
+                    <dTasaIVA>10</dTasaIVA>
+                    <dBasGravIVA>72.82</dBasGravIVA>
+                    <dLiqIVAItem>7.28</dLiqIVAItem>
+                    <dBasExe>0</dBasExe>
+                </gCamIVA>
+            </gCamItem>
+        </gDtipDE>
+        <gTotSub>
+            <dSubExe>0.00</dSubExe>
+            <dSubExo>0</dSubExo>
+            <dSub5>0</dSub5>
+            <dSub10>380.60</dSub10>
+            <dTotOpe>380.60</dTotOpe>
+            <dTotDesc>0</dTotDesc>
+            <dTotDescGlotem>0</dTotDescGlotem>
+            <dTotAntItem>0</dTotAntItem>
+            <dTotAnt>0</dTotAnt>
+            <dPorcDescTotal>0</dPorcDescTotal>
+            <dDescTotal>0</dDescTotal>
+            <dAnticipo>0</dAnticipo>
+            <dRedon>0.1</dRedon>
+            <dComi>0</dComi>
+            <dTotGralOpe>380.500</dTotGralOpe>
+            <dIVA5>0</dIVA5>
+            <dIVA10>34.60</dIVA10>
+            <dLiqTotIVA5>0</dLiqTotIVA5>
+            <dLiqTotIVA10>0</dLiqTotIVA10>
+            <dIVAComi>0.00</dIVAComi>
+            <dTotIVA>34.60</dTotIVA>
+            <dBaseGrav5>0</dBaseGrav5>
+            <dBaseGrav10>346.00</dBaseGrav10>
+            <dTBasGraIVA>346.00</dTBasGraIVA>
+            <dTotalGs>2779296.1750</dTotalGs>
+        </gTotSub>
+    </DE>
+</rDE>

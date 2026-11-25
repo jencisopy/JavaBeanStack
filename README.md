@@ -6,14 +6,14 @@ Es una **librería/framework**, no una aplicación ejecutable por sí sola: se c
 
 - **Grupo Maven:** `org.javabeanstack`
 - **Artefacto padre:** `jbs-parent`
-- **Versión actual (rama `master`):** `2.1.0-SNAPSHOT`
+- **Versión actual (rama `master`):** `2.2.0-SNAPSHOT`
 - **Licencia:** GNU Lesser General Public License v3.0 (LGPL v3.0)
 
 ## Prerrequisitos
 
-- **Java 25** — el POM raíz fija `maven.compiler.release=25`, así que compilar requiere JDK 25 (un JDK anterior falla con `release version 25 not supported`) y el bytecode resultante exige Java 25 en runtime. (Jakarta EE 11 en sí pide 17 como mínimo; el proyecto adoptó 25, alineado al runtime de WildFly 40.)
+- **Java 25** — el POM raíz fija `maven.compiler.release=25`, así que compilar requiere JDK 25 (un JDK anterior falla con `release version 25 not supported`) y el bytecode resultante exige Java 25 en runtime. (Jakarta EE 11 en sí pide 17 como mínimo; el proyecto adoptó 25, alineado al runtime de WildFly 41.)
 - **Maven 3.x**
-- Para los tests de integración del módulo `business`: un servidor **WildFly 40+** corriendo (primera versión con soporte completo de Jakarta EE 11) con el EAR de pruebas desplegado.
+- Para los tests de integración del módulo `business`: un servidor **WildFly 41** corriendo (sirve cualquier WildFly 40+, la primera versión con soporte completo de Jakarta EE 11) con el EAR de pruebas desplegado.
 
 ## Estrategia de ramas
 
@@ -21,12 +21,12 @@ El proyecto mantiene dos líneas activas:
 
 | Rama | Versión | Stack | Estado |
 |---|---|---|---|
-| `master` | 2.0.0 | Jakarta EE 11 (`jakarta.*`), Java 25, PrimeFaces 15, JasperReports 7, JUnit 5 | Activa — desarrollo principal |
+| `master` | 2.2.x | Jakarta EE 11 (`jakarta.*`), Java 25, PrimeFaces 15, JasperReports 7, JUnit 5 | Activa — desarrollo principal |
 | `1.5.x` | 1.5.x | Java EE 8 (`javax.*`), PrimeFaces y JasperReports 6 antiguos | Legacy — recibe fixes que luego se portan a `master` |
 
 Al comparar o portar cambios entre ramas, las diferencias `javax.*` ↔ `jakarta.*` son equivalencias de namespace, no diferencias de lógica. Los paquetes `javax.crypto`, `javax.xml.*`, `javax.naming` y `javax.swing` pertenecen al JDK y permanecen como `javax` en ambas ramas.
 
-> **Nota sobre `master`:** PrimeFaces está en `15.0.7` (classifier `jakarta`, versión gestionada en el BOM) y su funcionamiento contra Jakarta Faces 4.1 (parte de EE11) está **verificado en runtime**: las aplicaciones consumidoras que usan `jbs-web` se despliegan y funcionan en WildFly 40 (Mojarra 4.1.7) desde julio de 2026.
+> **Nota sobre `master`:** PrimeFaces está en `15.0.17` (classifier `jakarta`, versión gestionada en el BOM) y su funcionamiento contra Jakarta Faces 4.1 (parte de EE11) está **verificado en runtime**: las aplicaciones consumidoras que usan `jbs-web` se despliegan y funcionan en WildFly 40+ (hoy WildFly 41).
 
 ## Arquitectura de módulos
 
@@ -41,14 +41,22 @@ commons     (utilidades de strings, archivos, crypto, fechas)
     ↓
 core        (manejo de errores, log de eventos, XML, configuración, recursos)
     ↓
-business    (acceso a datos JPA/EJB, servicios, seguridad, lógica de negocio)
+├── business  (acceso a datos JPA/EJB, servicios, seguridad, lógica de negocio)
+└── outputs   (salida de documentos: fuente → documento → destinos — depende solo de jbs-core)
+
+business + outputs
     ↓
-├── web     (controllers JSF, converters, filtros — solo JSF/PrimeFaces)
-└── excel   (importación/exportación Excel con Apache POI — sin PrimeFaces ni jbs-web)
+├── web       (controllers JSF, converters, filtros — solo JSF/PrimeFaces)
+└── poi       (Excel y Word con Apache POI — sin PrimeFaces ni jbs-web)
+
+outputs (+ core)
+    ↓
+├── messaging (canal de correo)
+├── jasper    (integración JasperReports)
+└── aws       (integración AWS S3 — depende solo de jbs-outputs)
 
 rest        (recursos JAX-RS — depende solo de interfaces + commons)
-jasper      (integración JasperReports — depende solo de jbs-core)
-aws         (integración AWS S3 — independiente de la cadena principal)
+sifen       (cliente de SIFEN — autónomo: no depende de ningún otro jbs-*, solo del parent)
 ```
 
 No se deben introducir imports que inviertan este orden (por ejemplo, que `core` dependa de `business`).
@@ -63,7 +71,7 @@ Los *split packages* entre `jbs-interfaces` y los jars de implementación (contr
 Bill of Materials (`jbs-bom`, packaging `pom`). Centraliza en su `dependencyManagement` las versiones de los artefactos `jbs-*` y de las dependencias de terceros (jakartaee-api, Hibernate, PrimeFaces, JasperReports, POI, log4j, JUnit). Es el parent de `jbs-parent`, por lo que todos los módulos heredan las versiones sin declararlas; los proyectos consumidores lo importan con `<scope>import</scope>`.
 
 ### `interfaces`
-Solo contratos (interfaces Java), sin implementaciones. Es la base de la que dependen todos los demás módulos. No tiene dependencias de terceros (los contratos de Excel `IExcelImportSrv`/`IExcelRowProcessor`, que exponían tipos de POI, viven ahora en el módulo `excel`).
+Solo contratos (interfaces Java), sin implementaciones. Es la base de la que dependen todos los demás módulos. No tiene dependencias de terceros (los contratos de Excel `IExcelImportSrv`/`IExcelRowProcessor`, que exponían tipos de POI, viven ahora en el módulo `poi`).
 
 ### `commons`
 Utilidades de propósito general sin dependencias de negocio: manejo de strings, archivos, criptografía y fechas. Sus tests son unitarios puros, ejecutables sin infraestructura externa.
@@ -118,6 +126,26 @@ if (!existente.getErrors().isEmpty()) { /* la fila se reporta y no se graba */ }
 - `resolver(campo, IXmlFieldResolver)` es el punto de extensión para los valores que solo la aplicación sabe interpretar (claves foráneas por clave natural).
 - No lee archivos (recibe `Element`/`Document`/`IXmlDom` ya parseados por `DomW3cParser`) y no persiste nada. La sobrecarga `toRows(IXmlDom, nodePath, type)` es la que aprovecha la herencia de textos XML (`clase`/`src`).
 
+### `outputs`
+Subsistema de salida de documentos (`jbs-outputs`): una **fuente** produce el documento en memoria y uno o más **destinos** lo entregan, cada uno por su canal. Los contratos (`IDocumentSource`, `IOutputDocument`, `IDocumentTarget`) viven en `interfaces`; el núcleo, en este módulo, que depende solo de `jbs-core`.
+
+Componentes clave:
+- **`OutputDispatcher`** — orquestador: genera el documento **una sola vez** y lo entrega a todos los destinos, con la regla *primero generar, después comprometer el destino*. Nunca lanza: todo fallo, de generación o de entrega, vuelve como `IErrorInfo`; un destino que falla no impide los demás.
+- **`OutputDocument`** — el documento en memoria (nombre, tipo de contenido y bytes).
+- **`FolderTarget`** — destino que guarda el documento en una carpeta del servidor.
+
+Las fuentes y destinos con dependencias pesadas viven en el módulo dueño de cada una: `JasperReportSource` (`jasper`), `ExcelDataSource` y `WordTemplateSource` (`poi`), `MailTarget` (`messaging`), `DownloadTarget` (`web`) y `S3Target` (`aws`).
+
+### `messaging`
+Canal de correo (`jbs-messaging`). Depende de `jbs-outputs`, `jbs-core` y `jakarta.mail-api` (la implementación la provee el servidor). Permite enviar un correo sin base de datos.
+
+Componentes clave:
+- **`MailMessage`** — el mensaje en memoria, con sus partes (`MailAddress`, `MailAttachment`).
+- **`MailAccount`** — los datos de la cuenta de envío; la aplicación decide de dónde salen (parámetros, una tabla por empresa, valores fijos).
+- **`MailSessionProvider`** — arma la sesión de correo desde la cuenta; si la cuenta no define un servidor SMTP, usa la sesión del contenedor.
+- **`MailSender`** — envío SMTP síncrono. Nunca lanza: el resultado (`MailSendResult`) dice si el fallo es definitivo o recuperable.
+- **`MailTarget`** — destino del subsistema de salida que envía el documento como adjunto de un correo.
+
 ### `web`
 Controllers JSF, converters y filtros web. Es el único módulo con dependencia de PrimeFaces; quedó libre de POI, JasperReports y JAX-RS.
 
@@ -126,15 +154,15 @@ Componentes clave:
 - **`LazyDataRows`** — paginación lazy para DataTables de PrimeFaces.
 - **`FacesContextUtil`** — utilidades sobre `FacesContext` (mensajes, request/response).
 
-### `excel`
-Importación/exportación de datos desde planillas Excel con Apache POI. Depende solo de `jbs-business` y `poi-ooxml`; usa `FacesContext`/`jakarta.servlet` directos (API provided), sin PrimeFaces ni `jbs-web`.
+### `poi`
+Todo lo construido sobre Apache POI (`jbs-poi`, antes `jbs-excel`): planillas Excel y documentos Word. Depende de `jbs-business`, `jbs-outputs` y `poi-ooxml`; usa `FacesContext`/`jakarta.servlet` directos (API provided), sin PrimeFaces ni `jbs-web`. Detalle en [`poi/README.md`](poi/README.md).
 
 Componentes clave:
-- **`ExcelUtil` / `ExcelImportSrv` / `ExcelRowProcessor`** — utilidades y flujo de importación de planillas.
-- Contratos **`IExcelImportSrv`** / **`IExcelRowProcessor`** (antes en `interfaces`).
+- **`org.javabeanstack.poi.excel`** — **`ExcelUtil`** / **`ExcelImportSrv`** / **`ExcelRowProcessor`** (importación y exportación de planillas, con sus contratos **`IExcelImportSrv`** / **`IExcelRowProcessor`**, antes en `interfaces`) y **`ExcelDataSource`** (fuente del subsistema de salida).
+- **`org.javabeanstack.poi.word`** — **`WordTemplateMerge`** (combinación de marcadores sobre plantillas `.docx`), **`WordTemplateSource`** (fuente del subsistema de salida) y **`WordToPdfConverter`**.
 
 ### `jasper`
-Integración con JasperReports. Depende solo de `jbs-core`, sin PrimeFaces ni `jbs-web`.
+Integración con JasperReports. Depende de `jbs-core` y `jbs-outputs`, sin PrimeFaces ni `jbs-web`; aporta la fuente `JasperReportSource` al subsistema de salida.
 
 - **`JasperReportUtil`** — exportación de reportes; el parámetro `device` acepta `printer`, `html`, `doc`, `pdf`, `xlsx` (y `xls` como alias de `xlsx`). `getReportPdf(...)` devuelve el PDF como `byte[]`; el envoltorio `StreamedContent` de PrimeFaces, si hace falta, lo arma la capa JSF del consumidor. Al resolver un reporte busca primero en la subcarpeta de versión `reports/v7/` y recién después en `reports/` — así los `.jasper` ya convertidos a JasperReports 7 tienen prioridad sobre los legados sin exigir una migración big-bang.
 
@@ -144,7 +172,17 @@ Recursos JAX-RS. Depende solo de `interfaces` + `commons` (no arrastra JSF).
 - **`AbstractWebResource`** — base de recursos REST (validación de token, sesión); **`CORSFilter`**, exceptions y model.
 
 ### `aws`
-Integración con AWS S3. No forma parte de la cadena principal de dependencias — puede incorporarse de forma opcional según lo necesite la aplicación consumidora.
+Integración con AWS S3. No forma parte de la cadena principal: depende solo de `jbs-outputs`, al que aporta el destino `S3Target`, y puede incorporarse de forma opcional según lo necesite la aplicación consumidora.
+
+### `sifen`
+Cliente de **SIFEN** (`jbs-sifen`), la facturación electrónica de la DNIT de Paraguay: armado, firma y envío de documentos electrónicos y eventos, y consultas. Es **autónomo**: no depende de otros módulos `jbs-*` ni de una base de datos, solo del parent. Deriva de [`rshk-jsifenlib`](https://github.com/roshkadev/rshk-jsifenlib) (Roshka S.A. + Taxare S.A., licencia MIT); el aviso está en el [`NOTICE`](NOTICE). Detalle, configuración y despliegue en [`sifen/README.md`](sifen/README.md).
+
+Componentes clave:
+- **`ISifenClient`** — fachada de la API pública v1, un cliente por empresa; **`SifenClientRegistry`** los crea y guarda por clave de empresa.
+- **Emisión en dos pasos** — `sign` (valida, calcula el CDC, firma y arma el QR; la aplicación graba el XML) y después `send`; `resolve` resuelve un envío de resultado desconocido sin reenviar a ciegas. También lote, eventos (cancelación, inutilización y los demás) y consultas de DE, RUC y lote.
+- **Validación previa** del documento, activa por omisión, con todos los errores juntos y mensajes en español.
+- **`SifenException`** — modelo de errores único, con código estable, mensaje para el usuario e id de correlación.
+- **Transporte sin reinicio** — contexto TLS por cliente, que se rearma ante una falla o un cambio de certificado sin reiniciar la JVM; tiempos de espera, proxy y reintentos configurables.
 
 ## Compilación y build
 
@@ -176,7 +214,7 @@ mvn -pl commons test
 mvn -pl commons -Dtest=StringsTest test
 
 # Un método puntual dentro de una clase de test
-mvn -pl excel -Dtest=ExcelUtilTest#testOpenWorkbook_File test
+mvn -pl poi -Dtest=ExcelUtilTest#testOpenWorkbookFile test
 
 # Cobertura de código (JaCoCo)
 mvn -Psonar-coverage test
@@ -184,7 +222,8 @@ mvn -Psonar-coverage test
 
 Qué se puede ejecutar en un entorno local sin infraestructura adicional:
 
-- **`commons`**, **`core`**, **`web`**, **`excel`** — tests unitarios puros, se pueden correr siempre (`mvn -pl commons,core,web,excel test`).
+- **`commons`**, **`core`**, **`web`**, **`poi`**, **`outputs`**, **`messaging`** — tests unitarios puros, se pueden correr siempre (`mvn -pl commons,core,web,poi,outputs,messaging test`).
+- **`sifen`** — corre sin red y sin certificado real: firma con un certificado autofirmado y prueba los envíos y consultas contra el simulador de SIFEN que se publica en su `-tests.jar` (`mvn -pl sifen test`). Los tests marcados `@Tag("sifen-live")`, que van contra el ambiente de pruebas de SIFEN, quedan **excluidos por omisión** (ver [`sifen/README.md`](sifen/README.md#tests)).
 - **`business`** (y cualquier módulo cuyos tests extiendan `TestClass`) — son **tests de integración**: requieren un servidor WildFly/JBoss corriendo con el EAR de pruebas desplegado (lookup EJB remoto vía `http-remoting`). Se configuran mediante variables de entorno:
 
   | Variable | Default | Descripción |
@@ -202,7 +241,7 @@ Qué se puede ejecutar en un entorno local sin infraestructura adicional:
 ## Gestión de dependencias — notas relevantes
 
 - **`jbs-bom` es la fuente única de versiones**: al subir la versión de una dependencia, editar solo `bom/pom.xml`. Los módulos heredan las versiones vía `jbs-parent`; los consumidores importan el BOM con `<scope>import</scope>`.
-- El BOM gestiona `poi`, `poi-ooxml` y `poi-scratchpad` a la misma versión (POI exige que todos sus artefactos coincidan — verificar con `mvn dependency:tree -Dincludes=org.apache.poi -pl excel`). Debe mantenerse alineada con el `poi` base que arrastra JasperReports.
+- El BOM gestiona `poi`, `poi-ooxml` y `poi-scratchpad` a la misma versión (POI exige que todos sus artefactos coincidan — verificar con `mvn dependency:tree -Dincludes=org.apache.poi -pl poi`). Debe mantenerse alineada con el `poi` base que arrastra JasperReports.
 - Los artefactos de JasperReports declarados en `jasper/pom.xml` (`jasperreports`, `jasperreports-servlets`, `jasperreports-excel-poi`, `jasperreports-groovy`, `jasperreports-pdf`) comparten versión en el BOM. El repositorio `jasper-3rd-party` (jaspersoft.jfrog.io) se declara en `jasper/pom.xml` porque los `<repositories>` no viajan por import de BOM.
 - `jakarta.jakartaee-api` se declara con scope `provided`: la implementación la provee el servidor de aplicaciones (WildFly).
 - `log4j-core` / `log4j-api` y JUnit se declaran en el POM padre sin `<version>` (gestionadas por el BOM); al actualizar, subir ambos artefactos de cada par juntos.
@@ -228,3 +267,5 @@ Cada push a la rama `master` dispara automáticamente un `mvn deploy` (workflow 
 ## Licencia
 
 Este proyecto se distribuye bajo los términos de la **GNU Lesser General Public License v3.0 (LGPL v3.0)**. El texto completo de la licencia se encuentra en el archivo [`LICENSE`](LICENSE) de este repositorio.
+
+El archivo [`NOTICE`](NOTICE) lleva los avisos de terceros, entre ellos el de la licencia MIT de Roshka S.A. + Taxare S.A. del que deriva `jbs-sifen` (también en [`sifen/LICENSE-rshk-jsifenlib.md`](sifen/LICENSE-rshk-jsifenlib.md)).
