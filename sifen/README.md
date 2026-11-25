@@ -24,7 +24,8 @@ repositorio; el módulo se publica bajo la LGPL v3, como el resto de JavaBeanSta
 - **Deprecado, se mantiene en `2.x`**: la fachada estática `Sifen`, los `Respuesta*` y
   `ValidezFirmaDigital`, heredados de `rshk-jsifenlib`. No se quitan ni cambian de firma dentro de `2.x`,
   no reciben operaciones nuevas y no están en la foto de firmas; se retiran en la `3.0`. No llevan la
-  anotación `@Deprecated`: el reemplazo es `ISifenClient`.
+  anotación `@Deprecated`: el reemplazo es `ISifenClient`. La misma garantía alcanza a `TxProtDe`,
+  `TxContenDE` y `GenerationCtx`, que aparecen en sus firmas.
 
 Qué ofrece:
 

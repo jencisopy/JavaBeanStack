@@ -30,8 +30,16 @@ import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.config.Property;
 import org.javabeanstack.sifen.api.DEQueryResult;
 import org.javabeanstack.sifen.api.ReconciliationItem;
 import org.javabeanstack.sifen.api.ReconciliationResult;
@@ -43,6 +51,7 @@ import org.javabeanstack.sifen.core.beans.DocumentoElectronico;
 import org.javabeanstack.sifen.core.exceptions.ErrorCategory;
 import org.javabeanstack.sifen.core.exceptions.Operation;
 import org.javabeanstack.sifen.core.exceptions.SifenException;
+import org.javabeanstack.sifen.internal.facade.Operations;
 import org.javabeanstack.sifen.simulator.RecordedRequest;
 import org.javabeanstack.sifen.simulator.Scenario;
 import org.javabeanstack.sifen.simulator.SifenSimulator;
@@ -340,29 +349,92 @@ public class SifenReconcilerTest {
                 () -> SifenReconciler.builder(c).pause(Duration.ofMillis(Long.MAX_VALUE).plusNanos(1)), "redondeado no cabe");
     }
 
-    /** M8-10: un cliente con {@code getConfig()} nulo no da un NPE: nada se consulta y todo queda sin determinar. */
+    /**
+     * M8-10 y M8-16 (a): un cliente cuyo ambiente no se puede leer —{@code getConfig()} nulo, una configuración sin
+     * ambiente o un {@code getConfig()} que lanza— no da un NPE: nada se consulta, todo queda sin determinar con
+     * {@code JBS-ENT-12} y la falla del cliente va <b>una vez</b> al log como {@code JBS-INT-00}, con su propio id
+     * (distinto del de cada documento) y sin el mensaje de la excepción. Dos documentos, para que «una vez» se note.
+     */
     @Test
     public void clienteSinConfiguracion() throws Exception {
         SignedDocument a = golden();
-        ISifenClient roto = (ISifenClient) Proxy.newProxyInstance(ISifenClient.class.getClassLoader(),
-                new Class<?>[] {ISifenClient.class}, (proxy, m, args) -> {
-                    if (m.getName().equals("getConfig")) {
-                        return null;
+        String secreto = "texto-interno-de-getconfig-que-no-va-al-log";
+        SifenConfig sinAmbiente = sim.config();
+        sinAmbiente.setEnvironment(null);
+        List<String> casos = List.of("nula", "sin ambiente", "que lanza");
+        for (String caso : casos) {
+            ISifenClient roto = (ISifenClient) Proxy.newProxyInstance(ISifenClient.class.getClassLoader(),
+                    new Class<?>[] {ISifenClient.class}, (proxy, m, args) -> {
+                        if (m.getName().equals("getConfig")) {
+                            return switch (caso) {
+                                case "nula" -> null;
+                                case "sin ambiente" -> sinAmbiente;
+                                default -> throw new IllegalStateException(secreto);
+                            };
+                        }
+                        if (m.getName().equals("toString")) {
+                            return "cliente con configuración " + caso;
+                        }
+                        throw new AssertionError("la conciliación no debía llamar a " + m.getName());
+                    });
+            List<LogEvent> log = Collections.synchronizedList(new ArrayList<>());
+            ReconciliationResult r;
+            capturar(log);
+            try {
+                r = SifenReconciler.builder(roto).pause(PAUSA).sleeper(pausas::add).build().reconcile(List.of(a, a));
+            } finally {
+                soltar();
+            }
+            Assertions.assertEquals(List.of(ReconciliationStatus.UNDETERMINED, ReconciliationStatus.UNDETERMINED),
+                    estados(r), caso);
+            Assertions.assertTrue(r.isComplete(), caso);
+            Assertions.assertEquals(0, r.getQueryCount(), caso);
+            Assertions.assertTrue(pausas.isEmpty(), caso + ": sin consultas no hay pausas");
+            List<String> idsDocumentos = new ArrayList<>();
+            for (ReconciliationItem it : r.getItems()) {
+                SifenException e = it.getError();
+                Assertions.assertEquals("JBS-ENT-12", e.getCode(), caso);
+                conId(e);
+                Assertions.assertTrue(e.getUserMessage().contains("desconocido"), caso + ": " + e.getUserMessage());
+                idsDocumentos.add(e.getCorrelationId());
+            }
+            Assertions.assertNotEquals(idsDocumentos.get(0), idsDocumentos.get(1), caso + ": un id por documento");
+
+            // la falla del cliente: una sola línea ERROR, con su id y JBS-INT-00, aunque haya dos documentos
+            List<LogEvent> errores = deNivel(log, Level.ERROR);
+            Assertions.assertEquals(1, errores.size(), caso + ": " + textos(log));
+            String linea = errores.get(0).getMessage().getFormattedMessage();
+            java.util.regex.Matcher id = java.util.regex.Pattern.compile("^\\[([0-9a-f]{8})\\] JBS-INT-00 QUERY_DE ref=")
+                    .matcher(linea);
+            Assertions.assertTrue(id.find(), caso + ": " + linea);
+            Assertions.assertFalse(idsDocumentos.contains(id.group(1)), caso + ": el id del cliente es propio");
+            Assertions.assertEquals(1, log.stream().filter(ev -> ev.getMessage().getFormattedMessage()
+                    .contains("JBS-INT-00")).count(), caso + ": JBS-INT-00 una sola vez: " + textos(log));
+            // los dos JBS-ENT-12, a WARN, cada uno con el id de su documento
+            List<LogEvent> avisos = deNivel(log, Level.WARN);
+            Assertions.assertEquals(idsDocumentos.stream().map(i -> "[" + i + "] JBS-ENT-12 QUERY_DE").toList(),
+                    avisos.stream().map(ev -> ev.getMessage().getFormattedMessage().replaceFirst(" ref=.*$", ""))
+                            .toList(), caso + ": " + textos(log));
+            // el texto de la excepción solo puede ir en el DEBUG del detalle técnico (traza sin mensajes)
+            for (LogEvent ev : log) {
+                if (ev.getLevel().isMoreSpecificThan(Level.INFO)) {
+                    Assertions.assertFalse(ev.getMessage().getFormattedMessage().contains(secreto), caso);
+                    for (Throwable t = ev.getThrown(); t != null; t = t.getCause() == t ? null : t.getCause()) {
+                        Assertions.assertFalse(String.valueOf(t.getMessage()).contains(secreto), caso + ": traza sin mensajes");
                     }
-                    if (m.getName().equals("toString")) {
-                        return "cliente sin configuración";
-                    }
-                    throw new AssertionError("la conciliación no debía llamar a " + m.getName());
-                });
-        ReconciliationResult r = SifenReconciler.builder(roto).pause(PAUSA).sleeper(pausas::add).build().reconcile(List.of(a, a));
-        Assertions.assertEquals(List.of(ReconciliationStatus.UNDETERMINED, ReconciliationStatus.UNDETERMINED), estados(r));
-        Assertions.assertTrue(r.isComplete());
-        Assertions.assertEquals(0, r.getQueryCount());
-        SifenException e = r.getItems().get(0).getError();
-        Assertions.assertEquals("JBS-ENT-12", e.getCode());
-        conId(e);
-        Assertions.assertTrue(e.getUserMessage().contains("desconocido"), e.getUserMessage());
-        Assertions.assertTrue(SifenReconciler.builder(roto).build().reconcile(List.of()).isComplete(), "sin documentos no hace falta");
+                }
+            }
+
+            // sin documentos no se lee el ambiente: ni falla ni línea en el log
+            log.clear();
+            capturar(log);
+            try {
+                Assertions.assertTrue(SifenReconciler.builder(roto).build().reconcile(List.of()).isComplete(), caso);
+            } finally {
+                soltar();
+            }
+            Assertions.assertTrue(deNivel(log, Level.ERROR).isEmpty(), caso + ": " + textos(log));
+        }
     }
 
     /** I8-25: la constante se llama como la consulta (0420) y su texto no dice «ausente». */
@@ -452,5 +524,46 @@ public class SifenReconcilerTest {
                 "DOCUMENTO ELECTRÓNICO SIN VALOR COMERCIAL NI FISCAL - GENERADO EN AMBIENTE DE PRUEBA");
         de.getgTimb().setdNumDoc(String.format("%07d", numero.incrementAndGet()));
         return de;
+    }
+
+    // ------------------------------------------------------------------ captura del log (como SifenReconcilerRamasTest)
+
+    private static final String LOGGER_OPERACIONES = Operations.class.getName();
+    private static AbstractAppender captura;
+
+    private static List<LogEvent> deNivel(List<LogEvent> log, Level nivel) {
+        synchronized (log) {
+            return log.stream().filter(ev -> ev.getLevel() == nivel).toList();
+        }
+    }
+
+    private static List<String> textos(List<LogEvent> log) {
+        synchronized (log) {
+            return log.stream().map(ev -> ev.getLevel() + " " + ev.getMessage().getFormattedMessage()).toList();
+        }
+    }
+
+    /** Captura el log de {@code Operations} (sin aditividad, para no ensuciar la salida). */
+    private static void capturar(List<LogEvent> destino) {
+        LoggerContext contexto = (LoggerContext) LogManager.getContext(false);
+        captura = new AbstractAppender("conciliacion-m816", null, null, true, Property.EMPTY_ARRAY) {
+            @Override
+            public void append(LogEvent event) {
+                destino.add(event.toImmutable());
+            }
+        };
+        captura.start();
+        LoggerConfig propio = LoggerConfig.newBuilder().withLoggerName(LOGGER_OPERACIONES).withLevel(Level.ALL)
+                .withAdditivity(false).withConfig(contexto.getConfiguration()).build();
+        propio.addAppender(captura, Level.ALL, null);
+        contexto.getConfiguration().addLogger(LOGGER_OPERACIONES, propio);
+        contexto.updateLoggers();
+    }
+
+    private static void soltar() {
+        LoggerContext contexto = (LoggerContext) LogManager.getContext(false);
+        contexto.getConfiguration().removeLogger(LOGGER_OPERACIONES);
+        contexto.updateLoggers();
+        captura.stop();
     }
 }

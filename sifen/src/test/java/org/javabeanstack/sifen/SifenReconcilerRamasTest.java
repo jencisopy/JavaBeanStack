@@ -62,42 +62,59 @@ import org.junit.jupiter.api.Test;
  * combinado con documentos de otro ambiente y el uso desde varios hilos.
  *
  * <p>Sin red y sin simulador: el cliente es un {@link Proxy} sin E/S cuyo veredicto sale solo del CDC (sin estado
- * compartido entre llamadas), y su {@code getConfig()} es un {@code new SifenConfig()} (ambiente DEV, nunca se
- * usa para conectarse). Los CDC son ficticios, con el RUC de prueba 80123456.</p>
+ * compartido entre llamadas), y su {@code getConfig()} es una configuración con el ambiente DEV fijado a mano y la
+ * URL base en un puerto local sin servicio (M8-16 c; nunca se usa para conectarse). Los CDC son ficticios, con el
+ * RUC de prueba 80123456.</p>
  */
 public class SifenReconcilerRamasTest {
     private static final String LOGGER_OPERACIONES = Operations.class.getName();
-    private static final SifenConfig CONFIG_DEV = new SifenConfig();
+    /**
+     * Configuración del cliente falso (M8-16 c): ambiente DEV fijado a mano (no el de omisión) y la URL base en un
+     * puerto local sin servicio, para que ninguna configuración armada en el test apunte a SIFEN-test. Nunca se usa
+     * para conectarse: el cliente es un {@link Proxy} sin E/S.
+     */
+    private static final SifenConfig CONFIG_DEV = configLocal();
 
     // ------------------------------------------------------------------ (1) la espera real
 
     /**
      * Sin inyectar el {@code sleeper} se usa {@code Thread.sleep}: el hueco entre dos consultas es al menos la pausa,
-     * y no hay pausa antes de la primera ni después de la última. Se mide el hueco entre la salida de una consulta y
-     * la entrada de la siguiente (no el total), así el tiempo de las consultas no entra en la cota.
+     * y no hay pausa antes de la primera ni después de la última. Solo se miden <b>cotas inferiores</b> de tiempo
+     * real (M8-16 b: una superior puede dar un rojo falso en una máquina cargada): el hueco entre la salida de una
+     * consulta y la entrada de la siguiente, y la duración total. Dónde van las pausas se comprueba sin reloj: la
+     * espera por omisión del {@code Builder} (la real, leída por reflexión) se envuelve para dejar una marca en el
+     * mismo registro de orden que las consultas, y la secuencia tiene que ser consulta, pausa, consulta, pausa,
+     * consulta. Una espera vacía en lugar de {@code Thread.sleep} hace fallar la cota del hueco.
      */
     @Test
     public void laPausaRealSeCumpleEntreConsultas() throws Exception {
         final long pausaMs = 80;
         List<long[]> marcas = Collections.synchronizedList(new ArrayList<>());
+        List<String> orden = Collections.synchronizedList(new ArrayList<>());
         ISifenClient cliente = cliente(cdc -> {
             long entra = System.nanoTime();
+            orden.add("consulta");
             DEQueryResult q = aprobado(cdc, digest(cdc));
             marcas.add(new long[] {entra, System.nanoTime()});
             return q;
         });
-        SifenReconciler rec = SifenReconciler.builder(cliente).pause(Duration.ofMillis(pausaMs)).build();
+        SifenReconciler.Sleeper real = esperaPorOmision(cliente);
+        SifenReconciler rec = SifenReconciler.builder(cliente).pause(Duration.ofMillis(pausaMs)).sleeper(p -> {
+            orden.add("pausa");
+            real.sleep(p);
+        }).build();
         List<SignedDocument> docs = List.of(dev(1), dev(2), dev(3));
 
         rec.reconcile(List.of(dev(9))); // calentamiento: carga de clases fuera de la medición
         marcas.clear();
+        orden.clear();
 
-        long inicio = System.nanoTime();
         ReconciliationResult r = rec.reconcile(docs);
-        long fin = System.nanoTime();
 
         Assertions.assertEquals(List.of(ReconciliationStatus.MATCH, ReconciliationStatus.MATCH, ReconciliationStatus.MATCH),
                 estados(r), r.toString());
+        Assertions.assertEquals(List.of("consulta", "pausa", "consulta", "pausa", "consulta"), orden,
+                "una pausa entre cada par de consultas; ninguna antes de la primera ni después de la última");
         Assertions.assertEquals(3, marcas.size());
         long umbral = TimeUnit.MILLISECONDS.toNanos(pausaMs - 1); // tolerancia de 1 ms por el redondeo del reloj
         for (int i = 1; i < marcas.size(); i++) {
@@ -105,12 +122,25 @@ public class SifenReconcilerRamasTest {
             Assertions.assertTrue(hueco >= umbral, "hueco entre la consulta " + i + " y la " + (i + 1) + ": "
                     + TimeUnit.NANOSECONDS.toMillis(hueco) + " ms < " + pausaMs + " ms");
         }
-        long antes = marcas.get(0)[0] - inicio;
-        long despues = fin - marcas.get(marcas.size() - 1)[1];
-        long pausa = TimeUnit.MILLISECONDS.toNanos(pausaMs);
-        Assertions.assertTrue(antes < pausa, "pausa antes de la primera: " + TimeUnit.NANOSECONDS.toMillis(antes) + " ms");
-        Assertions.assertTrue(despues < pausa, "pausa después de la última: " + TimeUnit.NANOSECONDS.toMillis(despues) + " ms");
         Assertions.assertTrue(r.getDurationMs() >= 2 * (pausaMs - 1), "dos pausas en la duración: " + r.getDurationMs());
+    }
+
+    /**
+     * La espera que el {@code Builder} usa si no se le inyecta otra (la de producción): se lee del campo
+     * {@code sleeper} de un constructor recién creado, para envolverla sin reemplazarla.
+     */
+    private static SifenReconciler.Sleeper esperaPorOmision(ISifenClient cliente) throws Exception {
+        SifenReconciler.Builder b = SifenReconciler.builder(cliente);
+        java.lang.reflect.Field campo;
+        try {
+            campo = SifenReconciler.Builder.class.getDeclaredField("sleeper");
+        } catch (NoSuchFieldException e) {
+            throw new AssertionError("SifenReconciler.Builder ya no tiene el campo 'sleeper': actualizar el test", e);
+        }
+        campo.setAccessible(true);
+        SifenReconciler.Sleeper s = (SifenReconciler.Sleeper) campo.get(b);
+        Assertions.assertNotNull(s, "el Builder trae una espera por omisión");
+        return s;
     }
 
     // ------------------------------------------------------------------ (2) interrupción antes de consultar
@@ -380,6 +410,27 @@ public class SifenReconcilerRamasTest {
     }
 
     // ------------------------------------------------------------------ apoyo
+
+    /** Destino local inexistente (puerto 9, «discard», sin servicio): si algo intentara conectarse, no sale del equipo. */
+    static final String URL_LOCAL_INEXISTENTE = "https://127.0.0.1:9";
+
+    private static SifenConfig configLocal() {
+        SifenConfig c = new SifenConfig();
+        c.setEnvironment(SifenConfig.Environment.DEV);
+        c.setBaseUrl(URL_LOCAL_INEXISTENTE);
+        return c;
+    }
+
+    /** La configuración del cliente falso no apunta a SIFEN: ambiente DEV explícito y URL base local. */
+    @Test
+    public void laConfiguracionDelClienteFalsoEsLocal() {
+        SifenConfig c = cliente(cdc -> {
+            throw new AssertionError("no se consulta");
+        }).getConfig();
+        Assertions.assertEquals(SifenConfig.Environment.DEV, c.getEnvironment());
+        Assertions.assertEquals(URL_LOCAL_INEXISTENTE, c.getBaseUrl(), "la URL base efectiva es la local");
+        Assertions.assertFalse(c.getBaseUrl().contains("set.gov.py"), c.getBaseUrl());
+    }
 
     /** Consulta del cliente falso. */
     @FunctionalInterface

@@ -30,6 +30,14 @@ import org.javabeanstack.sifen.internal.util.ResponseUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+/**
+ * Contenido del DE consultado ({@code xContenDE}) de la respuesta de SIFEN a la consulta de un DE por CDC.
+ *
+ * <p>Lo expone {@link org.javabeanstack.sifen.core.beans.response.RespuestaConsultaDE#getxContenDE()}, deprecada en
+ * favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): por eso se mantiene sin cambios de firma en 2.x y se
+ * retira en 3.0 con ella; no recibe operaciones nuevas (ESC-33, I8-28). Su reemplazo es
+ * {@link org.javabeanstack.sifen.api.DEQueryResult}.</p>
+ */
 public class TxContenDE extends SifenObjectBase {
     private DocumentoElectronico DE;
     private String dProtAut;

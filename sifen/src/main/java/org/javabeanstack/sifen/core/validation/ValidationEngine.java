@@ -25,6 +25,7 @@ package org.javabeanstack.sifen.core.validation;
 import org.javabeanstack.sifen.internal.util.Traces;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -220,8 +221,22 @@ final class ValidationEngine<T> {
      *                               declara.
      */
     ValidationResult validar(T raizValidada, GenerationCtx generationCtx) {
+        return validar(raizValidada, generationCtx, null);
+    }
+
+    /**
+     * Valida una raíz suponiendo una fecha de firma para el documento que no la trae (I8-27).
+     *
+     * @param raizValidada         raíz a validar; puede ser {@code null}.
+     * @param generationCtx        contexto de generación; puede ser {@code null}.
+     * @param fechaFirmaPorOmision {@link ValidationContext#getDefaultSignatureDate()}; {@code null} = ninguna.
+     * @return el resultado; nunca {@code null}.
+     * @throws IllegalStateException como {@link #validar(Object, GenerationCtx)}.
+     */
+    ValidationResult validar(T raizValidada, GenerationCtx generationCtx, LocalDateTime fechaFirmaPorOmision) {
         T raiz = raizValidada;
-        ValidationContext ctx = new ValidationContext(generationCtx, reloj, desactivadas, fechaReglas, this.raiz);
+        ValidationContext ctx = new ValidationContext(generationCtx, reloj, desactivadas, fechaReglas, this.raiz,
+                fechaFirmaPorOmision);
         if (raiz == null) {
             ctx.report(ValidationRule.JBS_VAL_01, this.raiz, null);
             return ctx.resultado();

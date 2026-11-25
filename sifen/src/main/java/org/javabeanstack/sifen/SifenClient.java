@@ -251,10 +251,15 @@ public final class SifenClient implements ISifenClient {
 
     // ------------------------------------------------------------------ validación previa
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Sin {@code dFecFirma}, valida con la que le pondría {@link #sign(DocumentoElectronico)} (la misma regla,
+     * del mismo reloj del cliente) sin cargarla en el documento (I8-27).</p>
+     */
     @Override
     public ValidationResult validateDE(DocumentoElectronico de) {
-        return DEValidator.standard().validate(de, context());
+        return DEValidator.standard().validate(de, context(), de == null ? null : signatureDateOf(de));
     }
 
     /** {@inheritDoc} */
@@ -286,7 +291,7 @@ public final class SifenClient implements ISifenClient {
             boolean ok = false;
             try {
                 if (fechaAntes == null) {
-                    de.setdFecFirma(now());
+                    de.setdFecFirma(signatureDateOf(de));
                 }
                 if (de.getgOpeDE() != null && (codSegAntes == null || codSegAntes.isBlank())) {
                     de.getgOpeDE().setdCodSeg(String.format("%09d", 1 + random.nextInt(999_999_999)));
@@ -732,6 +737,15 @@ public final class SifenClient implements ISifenClient {
             return SifenConfig.Environment.PROD;
         }
         return null;
+    }
+
+    /**
+     * La {@code dFecFirma} con que se firma el documento: la suya si la trae; si no, la hora de Asunción al
+     * segundo. Punto único de la regla (I8-27): {@code sign} la carga en el documento y {@code validateDE} solo
+     * la supone.
+     */
+    private LocalDateTime signatureDateOf(DocumentoElectronico de) {
+        return de.getdFecFirma() != null ? de.getdFecFirma() : now();
     }
 
     /** Hora de Asunción al segundo ({@code dFecFirma}). */

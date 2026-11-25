@@ -24,6 +24,7 @@ package org.javabeanstack.sifen.core.validation;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -107,6 +108,25 @@ public final class DEValidator {
      */
     public ValidationResult validate(DocumentoElectronico de, GenerationCtx generationCtx) {
         return motor.validar(de, generationCtx);
+    }
+
+    /**
+     * Valida un documento electrónico suponiendo la fecha de firma con que se lo firmaría si no la trae: es la
+     * validación previa de {@code ISifenClient.validateDE} (I8-27), que valida como firmaría {@code sign}, que
+     * completa {@code dFecFirma} con la hora de Asunción. Si el documento trae {@code dFecFirma}, se valida la
+     * suya; si no, las reglas de {@code dFecFirma} ({@code JBS-A-03}, {@code A004a}, {@code A004b}) evalúan la
+     * supuesta. El documento <b>no se modifica</b>: sigue sin {@code dFecFirma}.
+     *
+     * @param de                    documento a validar; {@code null} da {@link ValidationRule#JBS_VAL_01}.
+     * @param generationCtx         contexto de generación, como en {@link #validate(DocumentoElectronico, GenerationCtx)}.
+     * @param defaultSignatureDate  {@code dFecFirma} supuesta si el documento no la cargó; {@code null} = ninguna
+     *                              (igual que {@link #validate(DocumentoElectronico, GenerationCtx)}).
+     * @return el resultado con todos los incumplimientos; nunca {@code null}.
+     * @throws IllegalStateException como {@link #validate(DocumentoElectronico, GenerationCtx)}.
+     */
+    public ValidationResult validate(DocumentoElectronico de, GenerationCtx generationCtx,
+            LocalDateTime defaultSignatureDate) {
+        return motor.validar(de, generationCtx, defaultSignatureDate);
     }
 
     /**

@@ -118,6 +118,10 @@ public interface ISifenClient extends AutoCloseable {
      * los problemas <b>antes</b> de numerarlo en firme. No evalúa {@code JBS-CERT-11} (RUC del
      * certificado distinto del emisor): esa la informa {@link #sign(DocumentoElectronico)}.
      *
+     * <p>Si el documento no trae {@code dFecFirma}, valida como si fuera la hora actual de Asunción, la que le
+     * pondría {@link #sign(DocumentoElectronico)}, <b>sin cargarla en el documento</b>: el documento sigue sin
+     * {@code dFecFirma} (I8-27). Si la trae, valida la suya.</p>
+     *
      * @param de documento.
      * @return el resultado, con errores y avisos (índices base 0 en las rutas); nunca {@code null} ni
      *         lanza.

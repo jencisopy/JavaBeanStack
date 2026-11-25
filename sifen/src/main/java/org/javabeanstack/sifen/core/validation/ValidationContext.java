@@ -59,6 +59,7 @@ public final class ValidationContext {
     private final Set<String> desactivadas;
     private final LocalDate fechaReglas;
     private final String raiz;
+    private final LocalDateTime fechaFirmaPorOmision;
     private final List<ValidationError> reportados = new ArrayList<>();
 
     /**
@@ -102,6 +103,18 @@ public final class ValidationContext {
      */
     ValidationContext(GenerationCtx generationCtx, Clock reloj, Set<String> desactivadas, LocalDate fechaReglas,
             String raiz) {
+        this(generationCtx, reloj, desactivadas, fechaReglas, raiz, null);
+    }
+
+    /**
+     * Crea el contexto de una corrida con la fecha de firma que se supone cuando el documento no la trae
+     * (I8-27: la validación previa del cliente valida como firmaría {@code sign}).
+     *
+     * @param fechaFirmaPorOmision {@code dFecFirma} supuesta si el documento no la cargó; {@code null} = ninguna.
+     */
+    ValidationContext(GenerationCtx generationCtx, Clock reloj, Set<String> desactivadas, LocalDate fechaReglas,
+            String raiz, LocalDateTime fechaFirmaPorOmision) {
+        this.fechaFirmaPorOmision = fechaFirmaPorOmision;
         this.raiz = raiz == null ? ValidationRule.DE_ROOT : raiz;
         this.generationCtx = generationCtx;
         this.ahora = LocalDateTime.now(reloj == null ? RELOJ_PARAGUAY : reloj);
@@ -167,6 +180,19 @@ public final class ValidationContext {
      */
     public LocalDateTime getNow() {
         return ahora;
+    }
+
+    /**
+     * Devuelve la fecha de firma ({@code dFecFirma}) que esta corrida supone cuando el documento no la trae: la
+     * hora con que la completaría {@code ISifenClient.sign}. La fija
+     * {@link DEValidator#validate(org.javabeanstack.sifen.core.beans.DocumentoElectronico, GenerationCtx, LocalDateTime)},
+     * que es la que usa {@code ISifenClient.validateDE} (I8-27); en las demás corridas es {@code null} y la falta
+     * de {@code dFecFirma} se reporta ({@code JBS-A-03}). Las reglas de {@code dFecFirma} usan la del documento si está cargada y esta si no.
+     *
+     * @return la fecha supuesta, o {@code null} si la corrida no supone ninguna.
+     */
+    public LocalDateTime getDefaultSignatureDate() {
+        return fechaFirmaPorOmision;
     }
 
     /**
