@@ -105,9 +105,13 @@ import jakarta.persistence.Transient;
  * <li>un camino que no empieza en una asociación a uno de la raíz
  * ({@code @Embedded}, {@code @EmbeddedId}, un atributo inexistente) o que pasa
  * por una colección;</li>
- * <li>un camino cuyas asociaciones son todas obligatorias
- * ({@code optional = false} o columnas de unión {@code nullable = false}): el
- * {@code join} interno no descarta nada y la subconsulta solo costaría;</li>
+ * <li>un camino cuyas asociaciones son todas obligatorias, declaradas con
+ * {@code optional = false} explícito en {@code @ManyToOne}/{@code @OneToOne}:
+ * el {@code join} interno no descarta nada y la subconsulta solo costaría.
+ * <b>{@code nullable = false} en las columnas de unión no alcanza</b>: el
+ * modelo lo declara en columnas que en la base admiten y tienen nulos
+ * ({@code GiLote.giLoteestado}, con lotes sin estado), y ordenar por ellas
+ * perdía filas (XLSEXP E2-30, decisión del usuario del 2026-11-25);</li>
  * <li>la clave de la asociación ({@code customer.idcustomer}), cuando la
  * asociación es el lado dueño de la clave foránea y la une por la clave del
  * destino: Hibernate la lee de la columna de la clave foránea, sin
@@ -603,9 +607,16 @@ public final class AssociationOrderBy {
     }
 
     /**
-     * Indica si la asociación puede ser nula: no se la declaró
-     * {@code optional = false} ni todas sus columnas de unión
-     * {@code nullable = false}.
+     * Indica si la asociación puede ser nula: lo es salvo que se la declare
+     * {@code optional = false} explícito en su {@code @ManyToOne} o
+     * {@code @OneToOne}.
+     * <p>{@code nullable = false} en las columnas de unión ({@code @JoinColumn}
+     * o {@code @JoinColumns}) <b>no</b> la hace obligatoria: es una
+     * declaración del esquema que el modelo no siempre cumple —hay columnas
+     * así que en la base admiten y tienen nulos—, y tomarla por cierta dejaba
+     * el {@code join} interno que descarta esas filas (XLSEXP E2-30, decisión
+     * del usuario del 2026-11-25). Ante la duda se reescribe: el costo es una
+     * subconsulta, no filas perdidas.</p>
      *
      * @param field atributo de una asociación a uno.
      * @return {@code true} si puede ser nula.
@@ -616,19 +627,7 @@ public final class AssociationOrderBy {
             return false;
         }
         OneToOne oneToOne = field.getAnnotation(OneToOne.class);
-        if (oneToOne != null && !oneToOne.optional()) {
-            return false;
-        }
-        List<JoinColumn> joinColumns = joinColumns(field);
-        if (joinColumns.isEmpty()) {
-            return true;
-        }
-        for (JoinColumn column : joinColumns) {
-            if (column.nullable()) {
-                return true;
-            }
-        }
-        return false;
+        return oneToOne == null || oneToOne.optional();
     }
 
     /**

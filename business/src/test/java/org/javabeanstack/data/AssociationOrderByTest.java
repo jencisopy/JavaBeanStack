@@ -63,9 +63,16 @@ public class AssociationOrderByTest {
         Opcional opcional;
         @ManyToOne(optional = false)
         Obligatoria obligatoria;
+        // Solo nullable = false en la columna: desde E2-30 cuenta como opcional.
         @ManyToOne
         @JoinColumn(name = "idobligatoria2", nullable = false)
         Obligatoria obligatoriaPorColumna;
+        @ManyToOne(optional = false)
+        @JoinColumn(name = "idobligatoria3", nullable = false)
+        Obligatoria obligatoriaExplicita;
+        @OneToOne
+        @JoinColumn(name = "idobligatoria4", nullable = false)
+        Obligatoria unoAUnoPorColumna;
         @OneToOne
         Opcional unoAUno;
         @OneToMany
@@ -369,7 +376,43 @@ public class AssociationOrderByTest {
 
     @Test
     public void testMandatoryAssociationsAreUntouched() {
-        String order = "obligatoria.nombre, obligatoriaPorColumna.nombre desc, obligatoria.otra.nombre";
+        String order = "obligatoria.nombre, obligatoriaExplicita.nombre desc, obligatoria.otra.nombre";
+        assertEquals(order + ", o.idraiz", AssociationOrderBy.rewrite(Raiz.class, "o", order));
+        assertFalse(AssociationOrderBy.needsRewrite(Raiz.class, "o", order));
+    }
+
+    /**
+     * E2-30: {@code nullable = false} en la columna de unión, sin
+     * {@code optional = false}, no hace obligatoria la asociación: la base
+     * puede tener nulos ({@code GiLote.giLoteestado}) y el orden se reescribe.
+     */
+    @Test
+    public void testNullableFalseWithoutOptionalIsRewritten() {
+        assertEquals(sub("jbs_ob1", "obligatoriaPorColumna.nombre") + " desc nulls first, o.idraiz",
+                AssociationOrderBy.rewrite(Raiz.class, "o", "obligatoriaPorColumna.nombre desc"));
+        assertTrue(AssociationOrderBy.needsRewrite(Raiz.class, "o", "obligatoriaPorColumna.nombre"));
+        assertEquals(sub("jbs_ob1", "unoAUnoPorColumna.nombre") + " asc nulls last, o.idraiz",
+                AssociationOrderBy.rewrite(Raiz.class, "o", "unoAUnoPorColumna.nombre"));
+    }
+
+    /**
+     * E2-30: con {@code optional = false} explícito sigue sin reescribirse,
+     * aunque la columna también diga {@code nullable = false}.
+     */
+    @Test
+    public void testOptionalFalseIsUntouchedWithNullableFalse() {
+        assertEquals("obligatoriaExplicita.nombre, o.idraiz",
+                AssociationOrderBy.rewrite(Raiz.class, "o", "obligatoriaExplicita.nombre"));
+        assertFalse(AssociationOrderBy.needsRewrite(Raiz.class, "o", "obligatoriaExplicita.nombre"));
+    }
+
+    /**
+     * E2-30 no toca la regla de la clave foránea: {@code asociacion.<id>} se
+     * lee de la columna, sin {@code join}, sea o no obligatoria.
+     */
+    @Test
+    public void testForeignKeyIdOfNullableFalseIsUntouched() {
+        String order = "obligatoriaPorColumna.idobligatoria desc";
         assertEquals(order + ", o.idraiz", AssociationOrderBy.rewrite(Raiz.class, "o", order));
         assertFalse(AssociationOrderBy.needsRewrite(Raiz.class, "o", order));
     }

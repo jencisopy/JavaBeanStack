@@ -112,8 +112,7 @@ public class DownloadTarget implements IDocumentTarget {
         HttpServletResponse response =
                 (HttpServletResponse) facesContext.getExternalContext().getResponse();
         response.setContentType(document.getContentType());
-        response.setHeader("Content-Disposition", (inline ? "inline" : "attachment")
-                + "; filename=" + document.getFileName());
+        response.setHeader("Content-Disposition", contentDisposition(inline, document.getFileName()));
         response.setContentLengthLong(document.getSize());
         //writeTo y no getContent(): un documento respaldado por un archivo se
         //copia por bloques, sin cargarlo entero en memoria; uno en memoria
@@ -141,6 +140,75 @@ public class DownloadTarget implements IDocumentTarget {
         }
         facesContext.responseComplete();
         return new ErrorInfo();
+    }
+
+    /**
+     * Arma el valor de la cabecera {@code Content-Disposition} (RFC 6266) con
+     * el nombre del archivo en las dos formas que admiten los navegadores:
+     * <ul>
+     * <li>{@code filename="…"}: entre comillas, en ASCII, con las comillas y
+     * la barra invertida escapadas; un carácter que no es ASCII imprimible se
+     * reemplaza por {@code _}. Es la que leen los clientes viejos;</li>
+     * <li>{@code filename*=UTF-8''…}: el nombre completo en UTF-8, codificado
+     * por porcentaje (RFC 5987); la prefieren los navegadores actuales.</li>
+     * </ul>
+     * <p>Antes el nombre iba sin comillas ni escape: un nombre con espacios,
+     * {@code ;} o {@code /} («Ventas por Fecha/Nro.xlsx») llegaba cortado o
+     * con una carpeta. Ahora las barras ({@code /} y {@code \}) y los
+     * caracteres de control se reemplazan por {@code _} en las dos formas: el
+     * nombre de un archivo descargado no lleva carpeta.</p>
+     *
+     * @param inline verdadero para {@code inline}, falso para
+     * {@code attachment}.
+     * @param fileName nombre del archivo; nulo o vacío deja
+     * {@code documento}.
+     * @return el valor de la cabecera.
+     */
+    public static String contentDisposition(boolean inline, String fileName) {
+        String name = fileName == null ? "" : fileName.trim();
+        StringBuilder clean = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            clean.append(c == '/' || c == '\\' || Character.isISOControl(c) ? '_' : c);
+        }
+        if (clean.toString().trim().isEmpty()) {
+            clean.setLength(0);
+            clean.append("documento");
+        }
+        String full = clean.toString();
+        StringBuilder ascii = new StringBuilder();
+        for (int i = 0; i < full.length(); i++) {
+            char c = full.charAt(i);
+            if (c == '"' || c == '\\') {
+                ascii.append('\\').append(c);
+            } else if (c >= 0x20 && c < 0x7f) {
+                ascii.append(c);
+            } else {
+                ascii.append('_');
+            }
+        }
+        return (inline ? "inline" : "attachment") + "; filename=\"" + ascii + "\"; filename*=UTF-8''"
+                + percentEncode(full);
+    }
+
+    /**
+     * Codifica por porcentaje (RFC 5987, {@code attr-char}) los bytes UTF-8
+     * del texto: quedan sin codificar solo las letras y dígitos ASCII y
+     * {@code !#$&+-.^_`|~}.
+     */
+    private static String percentEncode(String text) {
+        StringBuilder result = new StringBuilder();
+        for (byte b : text.getBytes(java.nio.charset.StandardCharsets.UTF_8)) {
+            int c = b & 0xff;
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+                    || "!#$&+-.^_`|~".indexOf(c) >= 0) {
+                result.append((char) c);
+            } else {
+                result.append('%').append(Character.toUpperCase(Character.forDigit(c >> 4, 16)))
+                        .append(Character.toUpperCase(Character.forDigit(c & 0xf, 16)));
+            }
+        }
+        return result.toString();
     }
 
     @Override
