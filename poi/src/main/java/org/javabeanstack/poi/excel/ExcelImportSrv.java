@@ -557,6 +557,19 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      */
     @Override
     public Boolean getOverWriteData() {
+        return effectiveOverWrite();
+    }
+
+    /**
+     * Valor efectivo de «sobrescribir» según las operaciones permitidas y la
+     * opción del usuario. Lo usan {@link #getOverWriteData()} y los setters
+     * que descartan la revisión previa cuando cambia: una subclase puede
+     * sobrescribir {@code getOverWriteData()} por fila (E5-07 del plan CTBPRC
+     * de Maker) y eso no tiene que ocultar el cambio de la opción.
+     */
+    private boolean effectiveOverWrite() {
+        //Las operaciones permitidas sí van por sus métodos: una subclase las
+        //restringe por los permisos del usuario.
         if (!isAllowUpdate()) {
             return false;
         }
@@ -587,8 +600,19 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         return allowInsert;
     }
 
+    /**
+     * Establece si la importación da de alta los registros que no existen. Si
+     * cambia el valor efectivo de «sobrescribir», descarta la revisión previa
+     * (I5-25 del plan CTBPRC de Maker).
+     *
+     * @param allowInsert {@code true} para permitir las altas.
+     */
     public void setAllowInsert(boolean allowInsert) {
+        boolean previous = effectiveOverWrite();
         this.allowInsert = allowInsert;
+        if (previous != effectiveOverWrite()) {
+            invalidateReview();
+        }
     }
 
     /**
@@ -601,8 +625,19 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
         return allowUpdate;
     }
 
+    /**
+     * Establece si la importación puede modificar registros existentes. Si
+     * cambia el valor efectivo de «sobrescribir», descarta la revisión previa
+     * (I5-25 del plan CTBPRC de Maker).
+     *
+     * @param allowUpdate {@code true} para permitir las modificaciones.
+     */
     public void setAllowUpdate(boolean allowUpdate) {
+        boolean previous = effectiveOverWrite();
         this.allowUpdate = allowUpdate;
+        if (previous != effectiveOverWrite()) {
+            invalidateReview();
+        }
     }
 
     /**
@@ -785,13 +820,22 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * Establece si durante la importación deben sobrescribirse los registros ya
      * existentes. El valor recibido se normaliza con
      * {@code Fn.toLogical} (nulo se interpreta como {@code false}).
+     * <p>
+     * Si cambia el valor efectivo de la opción, se descarta la
+     * revisión previa ({@link #invalidateReview()}): la revisión no valida los
+     * registros existentes que no se van a sobrescribir, y encenderlo después
+     * de revisar los grabaría sin validar (E5-06 del plan CTBPRC de Maker).
      *
      * @param overWriteData {@code true} para sobrescribir los datos existentes;
      * {@code false} para solo insertar nuevos.
      */
     @Override
     public void setOverWriteData(Boolean overWriteData) {
+        boolean previous = effectiveOverWrite();
         this.overWriteData = Fn.toLogical(overWriteData);
+        if (previous != effectiveOverWrite()) {
+            invalidateReview();
+        }
     }
 
     /**
@@ -1081,7 +1125,11 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
      * con {@code IDataService.checkDataRow}; los registros rechazados por
      * alguna de las dos validaciones (se informan juntos; si las dos marcan el
      * mismo atributo queda el error de {@code checkDataRow}) se acumulan en
-     * {@link #getDataRowsError()} y los omitidos por los hooks se descartan. Cuando la lectura se realiza dentro de
+     * {@link #getDataRowsError()} y los omitidos por los hooks se descartan.
+     * Un registro que ya existe y no se va a sobreescribir
+     * ({@link #getOverWriteData()} en {@code false}) no se valida: queda entre
+     * los válidos y la grabación lo cuenta como «ya existe», igual que sin
+     * revisión previa. Cuando la lectura se realiza dentro de
      * {@link #importData()} ({@code errorsReviewed} en {@code true}) este método
      * solo convierte las filas: los hooks y la validación corren después, en el
      * bucle de grabación.
@@ -1208,6 +1256,15 @@ public abstract class ExcelImportSrv<T extends IDataRow> implements IExcelImport
                     }
                     //Despues de convertir
                     if (!onAfterRowConvert(source, target)) {
+                        continue;
+                    }
+                    //Registro existente que no se va a grabar (sin «sobreescribir»):
+                    //la grabación lo cuenta como «ya existe» sin validarlo, y la
+                    //revisión hace lo mismo, para no rechazarlo por las reglas de
+                    //modificación cuando nadie pidió cambiarlo (E5-05 del plan
+                    //CTBPRC de Maker). Los hooks corren igual que antes.
+                    if (target.getAction() == IDataRow.UPDATE && !getOverWriteData()) {
+                        dataRows.add(source);
                         continue;
                     }
                     //Bean Validation de las columnas de la planilla, ANTES de

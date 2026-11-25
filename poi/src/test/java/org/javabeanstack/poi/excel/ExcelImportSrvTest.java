@@ -318,6 +318,10 @@ public class ExcelImportSrvTest {
         Map<String, org.javabeanstack.error.IErrorInfo> deleteCheckErrors = new HashMap<>();
         /** Si {@code checkAndSave} rechaza la baja. */
         boolean deleteFails = false;
+        /** Errores que devuelve {@code checkDataRow} para una modificación (vacío = válida). */
+        Map<String, org.javabeanstack.error.IErrorInfo> updateCheckErrors = new HashMap<>();
+        /** Filas que recibió {@code checkDataRow} como modificación. */
+        int updateChecks = 0;
         /** Empresa del existente {@code u1} (null = sin empresa). */
         Long companyOfU1;
         /** Resultado que devuelve {@code save} (null = éxito). */
@@ -348,6 +352,10 @@ public class ExcelImportSrvTest {
                         case "checkDataRow":
                             if (((IDataRow) args[1]).getAction() == IDataRow.DELETE) {
                                 return new HashMap<>(deleteCheckErrors);
+                            }
+                            if (((IDataRow) args[1]).getAction() == IDataRow.UPDATE) {
+                                updateChecks++;
+                                return new HashMap<>(updateCheckErrors);
                             }
                             return new HashMap<>();
                         case "findById":
@@ -507,6 +515,215 @@ public class ExcelImportSrvTest {
             assertEquals(1, srv.getRowsExistCount(), "u1 existe y no se toca");
             assertEquals(1, srv.getRowsMigratedCount());
             assertEquals(IDataRow.INSERT, srv.updated.get(0).getAction());
+        }
+    }
+
+    /**
+     * E5-05 del plan CTBPRC de Maker: sin «sobreescribir», la revisión previa no
+     * valida el registro existente (las reglas de modificación lo rechazarían
+     * aunque no se va a grabar) y la grabación lo cuenta como «ya existe».
+     */
+    @Test
+    public void testRevisionPreviaNoValidaElExistenteSinSobrescribir() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.updateCheckErrors.put("fecha",
+                new org.javabeanstack.error.ErrorInfo("Tiene asiento de ajuste", 50124, "fecha"));
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowUpdate(false);
+
+            srv.checkValidation(null);
+            assertEquals(0, srv.updateChecks, "el existente no se valida como modificación");
+            assertTrue(srv.getDataRowsError().isEmpty(), "la revisión no rechaza el existente");
+            srv.importData();
+            assertEquals(1, srv.getRowsExistCount(), "u1 existe y no se toca");
+            assertEquals(1, srv.getRowsMigratedCount());
+            assertTrue(srv.getDataRowsError().isEmpty());
+        }
+    }
+
+    /**
+     * M2-26 del plan MKSIF de Maker: en la revisión previa, el salto del
+     * existente sin «sobreescribir» va después de {@code onAfterRowConvert}; el
+     * gancho sigue corriendo para esa fila (una subclase puede marcarla, como
+     * la marca DUP de la importación Marangatú).
+     */
+    @Test
+    public void testRevisionPreviaCorreElGanchoDelExistenteSinSobrescribir() throws Exception {
+        List<IDataRow> marcados = new ArrayList<>();
+        ExistingRowSrv srv = new ExistingRowSrv() {
+            @Override
+            protected boolean onAfterRowConvert(AppUser rowSource, IDataRow rowTarget) {
+                if (rowTarget.getAction() == IDataRow.UPDATE) {
+                    rowSource.getProperties().put("MARCA_EXISTENTE", Boolean.TRUE);
+                    marcados.add(rowSource);
+                }
+                return true;
+            }
+        };
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowUpdate(false);
+
+            srv.checkValidation(null);
+            assertEquals(1, marcados.size(), "el gancho corrió para el existente u1");
+            assertTrue(srv.getDataRows().stream()
+                    .anyMatch(r -> Boolean.TRUE.equals(r.getProperties().get("MARCA_EXISTENTE"))),
+                    "la fila marcada queda entre las de la revisión");
+            assertEquals(0, srv.updateChecks);
+        }
+    }
+
+    /**
+     * E5-06 del plan CTBPRC de Maker: revisar con «sobreescribir» apagado y
+     * encenderlo antes de importar descarta la revisión; la importación vuelve
+     * a validar y el existente no se graba como modificación sin validar.
+     */
+    @Test
+    public void testEncenderSobrescribirDespuesDeRevisarRevalida() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.updateCheckErrors.put("fecha",
+                new org.javabeanstack.error.ErrorInfo("Tiene asiento de ajuste", 50124, "fecha"));
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+
+            srv.checkValidation(null);
+            assertTrue(srv.getErrorsReviewed(), "revisada con sobrescribir apagado");
+            srv.setOverWriteData(true);
+            assertFalse(srv.getErrorsReviewed(), "cambiar sobrescribir descarta la revisión");
+            srv.importData();
+            assertEquals(1, srv.updateChecks, "la importación validó el existente");
+            assertTrue(srv.updated.stream().noneMatch(r -> r.getAction() == IDataRow.UPDATE),
+                    "el existente rechazado no se grabó");
+        }
+    }
+
+    /**
+     * E5-07 del plan CTBPRC de Maker: una subclase que sobrescribe
+     * {@code getOverWriteData()} por fila (en Maker, la importación del libro
+     * IVA con la última fila de gestión, que devuelve {@code false}) no oculta
+     * el cambio de la opción: encenderla después de revisar descarta la revisión.
+     */
+    @Test
+    public void testSobrescribirConGetterSobrescritoDescartaLaRevision() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv() {
+            @Override
+            public Boolean getOverWriteData() {
+                return false;
+            }
+        };
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.checkValidation(null);
+            assertTrue(srv.getErrorsReviewed());
+            srv.setOverWriteData(true);
+            assertFalse(srv.getErrorsReviewed(), "el getter sobrescrito no oculta el cambio");
+        }
+    }
+
+    /**
+     * La grabación sigue usando {@code getOverWriteData()} sobrescribible: con
+     * el getter en {@code false} el existente no se sobrescribe aunque el valor
+     * efectivo de la base sea {@code true} (en Maker, la protección por fila de
+     * los comprobantes de gestión del libro IVA).
+     */
+    @Test
+    public void testGetterSobrescritoEnFalseNoSobrescribe() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv() {
+            @Override
+            public Boolean getOverWriteData() {
+                return false;
+            }
+        };
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setOverWriteData(true);
+            srv.checkValidation(null);
+            srv.importData();
+            assertEquals(1, srv.getRowsExistCount(), "u1 no se sobrescribe");
+            assertTrue(srv.updated.stream().noneMatch(r -> r.getAction() == IDataRow.UPDATE));
+        }
+    }
+
+    /** I5-25: cambiar las operaciones permitidas después de revisar descarta la revisión si cambia el efectivo. */
+    @Test
+    public void testCambiarOperacionesDespuesDeRevisarDescartaLaRevision() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.checkValidation(null);
+            srv.setAllowInsert(false);
+            assertTrue(srv.getOverWriteData(), "sin altas, sobrescribir queda forzado");
+            assertFalse(srv.getErrorsReviewed());
+            srv.checkValidation(null);
+            srv.setAllowUpdate(true);
+            assertTrue(srv.getErrorsReviewed(), "el efectivo no cambió: la revisión queda");
+        }
+    }
+
+    /** Apagar «sobreescribir» después de revisar también descarta la revisión. */
+    @Test
+    public void testApagarSobrescribirDespuesDeRevisarDescartaLaRevision() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setOverWriteData(true);
+            srv.checkValidation(null);
+            assertTrue(srv.getErrorsReviewed());
+            srv.setOverWriteData(false);
+            assertFalse(srv.getErrorsReviewed());
+        }
+    }
+
+    /** Con la opción fijada (sin modificaciones) el valor efectivo no cambia y la revisión queda. */
+    @Test
+    public void testSobrescribirFijadoNoDescartaLaRevision() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setAllowUpdate(false);
+            srv.checkValidation(null);
+            srv.setOverWriteData(true);
+            assertFalse(srv.getOverWriteData());
+            assertTrue(srv.getErrorsReviewed(), "fijado: tocar la casilla no cambia nada");
+        }
+    }
+
+    /** Volver a poner el mismo valor de «sobreescribir» no descarta la revisión. */
+    @Test
+    public void testMismoSobrescribirNoDescartaLaRevision() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.checkValidation(null);
+            srv.setOverWriteData(false);
+            assertTrue(srv.getErrorsReviewed());
+        }
+    }
+
+    /** Con «sobreescribir», el existente se sigue validando como modificación. */
+    @Test
+    public void testRevisionPreviaValidaElExistenteConSobrescribir() throws Exception {
+        ExistingRowSrv srv = new ExistingRowSrv();
+        srv.updateCheckErrors.put("fecha",
+                new org.javabeanstack.error.ErrorInfo("Tiene asiento de ajuste", 50124, "fecha"));
+        try (Workbook wb = buildWorkbook()) {
+            srv.setExcelWorkbook(wb);
+            srv.setExcelRowProcessor(processor(wb.getSheetAt(0).getRow(0)));
+            srv.setOverWriteData(true);
+
+            srv.checkValidation(null);
+            assertEquals(1, srv.updateChecks);
+            assertEquals(1, srv.getDataRowsError().size(), "la modificación rechazada queda en errores");
         }
     }
 
