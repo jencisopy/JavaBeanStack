@@ -629,4 +629,73 @@ public class LazyDataRowsTest {
         invokeLoad(lazyRows, 0, 10);
         assertEquals(2, lazyRows.getRowCount());
     }
+
+    /**
+     * La dirección de la columna se aplica a cada término de un
+     * campo de orden con varios términos, no solo al último.
+     */
+    @Test
+    public void testSortTermVariosTerminos() {
+        assertEquals("lastName desc, customer.firstName desc",
+                LazyDataRows.sortTerm("lastName, customer.firstName", true));
+        assertEquals("lastName asc, customer.firstName asc",
+                LazyDataRows.sortTerm("lastName, customer.firstName", false));
+        // Un término solo: como antes.
+        assertEquals("fecha desc", LazyDataRows.sortTerm("fecha", true));
+        assertEquals("customer.code asc", LazyDataRows.sortTerm("customer.code", false));
+        // Un término que ya trae dirección la conserva.
+        assertEquals("fecha desc, nro asc", LazyDataRows.sortTerm("fecha desc, nro", false));
+        assertEquals("fecha desc nulls last", LazyDataRows.sortTerm("fecha desc nulls last", false));
+        // Las comas de una función o de un literal no parten el campo.
+        assertEquals("coalesce(a, b) desc", LazyDataRows.sortTerm("coalesce(a, b)", true));
+        assertEquals("concat(a, ', ', b) desc, c desc", LazyDataRows.sortTerm("concat(a, ', ', b), c", true));
+        assertNull(LazyDataRows.sortTerm(null, true));
+    }
+
+    /**
+     * Un campo nulo o vacío no aporta término (no sale {@code "null asc"}); un
+     * término con dirección propia la conserva aunque se pida la contraria, y
+     * uno con {@code nulls first|last} sin dirección la recibe antes de
+     * {@code nulls}.
+     */
+    @Test
+    public void testSortTermNuloYDireccionPropia() {
+        assertNull(LazyDataRows.sortTerm("", true));
+        assertNull(LazyDataRows.sortTerm("   ", false));
+        // Dirección propia: manda sobre la pedida, en uno o en varios términos.
+        assertEquals("createdAt desc", LazyDataRows.sortTerm("createdAt desc", false));
+        assertEquals("createdAt asc", LazyDataRows.sortTerm("createdAt asc", true));
+        assertEquals("createdAt desc, number desc", LazyDataRows.sortTerm("createdAt desc, number", true));
+        assertEquals("createdAt desc, number asc", LazyDataRows.sortTerm("createdAt desc, number", false));
+        // nulls sin dirección: la dirección va antes de nulls.
+        assertEquals("createdAt desc nulls last", LazyDataRows.sortTerm("createdAt nulls last", true));
+        assertEquals("createdAt asc NULLS FIRST", LazyDataRows.sortTerm("createdAt NULLS FIRST", false));
+        assertEquals("number desc, createdAt desc nulls last",
+                LazyDataRows.sortTerm("number, createdAt nulls last", true));
+        assertEquals("createdAt asc nulls first", LazyDataRows.sortTerm("createdAt asc nulls first", true));
+    }
+
+    /**
+     * La expresión completa con dos columnas ordenadas, una de
+     * ellas de varios términos.
+     */
+    @Test
+    public void testOrderOf() {
+        Map<String, org.primefaces.model.SortMeta> sortBy = new LinkedHashMap<>();
+        sortBy.put("nombre", org.primefaces.model.SortMeta.builder().field("lastName, customer.firstName")
+                .order(org.primefaces.model.SortOrder.DESCENDING).build());
+        sortBy.put("fecha", org.primefaces.model.SortMeta.builder().field("fecha")
+                .order(org.primefaces.model.SortOrder.ASCENDING).build());
+        sortBy.put("nada", org.primefaces.model.SortMeta.builder().field("nro")
+                .order(org.primefaces.model.SortOrder.UNSORTED).build());
+        assertEquals(" lastName desc, customer.firstName desc, fecha asc", LazyDataRows.orderOf(sortBy));
+        // Una columna ordenada sin campo de orden no aporta término.
+        Map<String, org.primefaces.model.SortMeta> sinCampo = new LinkedHashMap<>();
+        sinCampo.put("vacia", org.primefaces.model.SortMeta.builder().field("")
+                .order(org.primefaces.model.SortOrder.DESCENDING).build());
+        sinCampo.put("fecha", org.primefaces.model.SortMeta.builder().field("fecha")
+                .order(org.primefaces.model.SortOrder.ASCENDING).build());
+        assertEquals(" fecha asc", LazyDataRows.orderOf(sinCampo));
+        assertEquals("", LazyDataRows.orderOf(new LinkedHashMap<>()));
+    }
 }

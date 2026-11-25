@@ -256,17 +256,9 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             return new ArrayList();
         }
         try {
-            String order = "";
+            String order;
             if (sortBy != null) {
-                for (SortMeta sortMeta : sortBy.values()) {
-                    final SortOrder orders = sortMeta.getOrder();
-                    if (orders == SortOrder.ASCENDING || orders == SortOrder.DESCENDING) {
-                        order = order + " " + sortMeta.getField() + ((orders == SortOrder.ASCENDING) ? " asc" : " desc") + ",";
-                    }
-                }
-                if (!Strings.isNullorEmpty(order)) {
-                    order = order.substring(0, order.length() - 1);
-                }
+                order = orderOf(sortBy);
             } else {
                 order = context.getOrder();
             }
@@ -275,6 +267,126 @@ public class LazyDataRows<T extends IDataRow> extends LazyDataModel<T> {
             ErrorManager.showError(ex, LOGGER);
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * Arma la expresión {@code ORDER BY} con el orden de la grilla: un término
+     * por columna ordenada, en el orden en que llegan, con su dirección.
+     *
+     * <p>El campo de orden de una columna puede tener <b>varios términos</b>
+     * (el atributo {@code order} de la columna en el xml de la pantalla:
+     * {@code "lastName, firstName"}). La dirección se agrega a
+     * <b>cada</b> término que no traiga una propia: antes se pegaba al final
+     * del texto y en descendente solo el último término quedaba
+     * {@code desc}. Las comas dentro de paréntesis o de
+     * comillas (una función: {@code coalesce(a, b)}) no parten el campo.
+     * Una columna sin campo de orden no aporta término.</p>
+     *
+     * @param sortBy orden de la grilla.
+     * @return la expresión, o {@code ""} si ninguna columna está ordenada.
+     */
+    static String orderOf(Map<String, SortMeta> sortBy) {
+        String order = "";
+        for (SortMeta sortMeta : sortBy.values()) {
+            final SortOrder orders = sortMeta.getOrder();
+            if (orders == SortOrder.ASCENDING || orders == SortOrder.DESCENDING) {
+                String term = sortTerm(sortMeta.getField(), orders == SortOrder.DESCENDING);
+                if (term != null) {
+                    order = order + " " + term + ",";
+                }
+            }
+        }
+        if (!Strings.isNullorEmpty(order)) {
+            order = order.substring(0, order.length() - 1);
+        }
+        return order;
+    }
+
+    /**
+     * Agrega la dirección a cada término de un campo de orden que no la traiga
+     * ({@code asc} / {@code desc}, con o sin {@code nulls first|last}).
+     *
+     * <p>Un término que <b>ya trae dirección</b> la conserva aunque se pida la
+     * contraria: es un orden fijo que declaró quien configuró la columna
+     * ({@code "createdAt desc, number"} ordena siempre de lo más nuevo a lo
+     * más viejo y solo {@code number} sigue la flecha). Un término con
+     * {@code nulls first|last} y sin dirección la recibe antes de
+     * {@code nulls} ({@code createdAt nulls last} → {@code createdAt desc
+     * nulls last}).</p>
+     *
+     * @param field campo de orden de la columna (uno o varios términos).
+     * @param descending dirección pedida.
+     * @return los términos con su dirección, separados por {@code ", "}, o
+     * {@code null} si el campo es nulo o vacío.
+     */
+    static String sortTerm(String field, boolean descending) {
+        String direction = descending ? " desc" : " asc";
+        if (field == null || field.trim().isEmpty()) {
+            return null;
+        }
+        List<String> terms = splitTerms(field);
+        if (terms.size() <= 1) {
+            String term = field.trim();
+            return hasDirection(term) ? term : withDirection(field, direction);
+        }
+        StringBuilder result = new StringBuilder();
+        for (String term : terms) {
+            String trimmed = term.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            if (result.length() > 0) {
+                result.append(", ");
+            }
+            result.append(hasDirection(trimmed) ? trimmed : withDirection(trimmed, direction));
+        }
+        return result.toString();
+    }
+
+    /** Sufijo {@code nulls first|last} de un término de orden. */
+    private static final java.util.regex.Pattern NULLS_SUFFIX = java.util.regex.Pattern
+            .compile("(?is)^(.*?)(\\s+nulls\\s+(?:first|last))\\s*$");
+
+    /**
+     * Agrega la dirección a un término que no la trae, antes de un
+     * {@code nulls first|last} si lo tiene.
+     */
+    private static String withDirection(String term, String direction) {
+        java.util.regex.Matcher nulls = NULLS_SUFFIX.matcher(term);
+        if (nulls.matches()) {
+            return nulls.group(1) + direction + nulls.group(2);
+        }
+        return term + direction;
+    }
+
+    private static boolean hasDirection(String term) {
+        return term.matches("(?is).*\\s(asc|desc)(\\s+nulls\\s+(first|last))?");
+    }
+
+    /**
+     * Parte un campo de orden por las comas que no están dentro de paréntesis
+     * ni de comillas simples.
+     */
+    private static List<String> splitTerms(String field) {
+        List<String> terms = new ArrayList<>();
+        int depth = 0;
+        boolean quoted = false;
+        int start = 0;
+        for (int i = 0; i < field.length(); i++) {
+            char c = field.charAt(i);
+            if (c == '\'') {
+                quoted = !quoted;
+            } else if (!quoted && c == '(') {
+                depth++;
+            } else if (!quoted && c == ')') {
+                depth = Math.max(0, depth - 1);
+            } else if (!quoted && depth == 0 && c == ',') {
+                terms.add(field.substring(start, i));
+                start = i + 1;
+            }
+        }
+        terms.add(field.substring(start));
+        return terms;
     }
 
     /**

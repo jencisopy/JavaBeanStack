@@ -31,13 +31,17 @@ import java.util.regex.Pattern;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.PrimaryKeyJoinColumns;
 import jakarta.persistence.Transient;
 
 /**
@@ -57,16 +61,34 @@ import jakarta.persistence.Transient;
  * ({@code idcompany = 6}) y, con un segundo elemento en el {@code from},
  * Hibernate rechaza todo atributo sin calificar que exista también en la
  * entidad unida («Ambiguous unqualified attribute reference»). Por eso cada
- * término se reemplaza por una <b>subconsulta escalar correlacionada sobre la
- * raíz</b>, que no agrega nada al {@code from} de la sentencia:</p>
+ * término se reemplaza por una <b>subconsulta escalar correlacionada por la
+ * clave foránea del primer salto</b>, que no agrega nada al {@code from} de la
+ * sentencia:</p>
  * <pre>
  * customer.name asc
- *   →  (select jbs_ob1.customer.name from Invoice jbs_ob1 where jbs_ob1 = o) asc nulls last, o.idinvoice
+ *   →  (select jbs_ob1.name from Customer jbs_ob1 where jbs_ob1 = o.customer) asc nulls last, o.idinvoice
+ * customer.city.name desc
+ *   →  (select jbs_ob1.city.name from Customer jbs_ob1 where jbs_ob1 = o.customer) desc nulls first, o.idinvoice desc
  * </pre>
- * <p>Dentro de la subconsulta el {@code join} interno sigue existiendo, pero
- * solo hace que la subconsulta devuelva nulo; la fila de afuera se conserva.
- * Todo lo de adentro va calificado con su propio alias, así que no interfiere
- * con los atributos sin calificar de la sentencia.</p>
+ * <p>Si la raíz no tiene la asociación nula, la subconsulta busca la fila
+ * destino por la clave foránea; si la tiene nula (o la clave apunta a una fila
+ * que no existe), no encuentra nada y devuelve nulo: la fila de afuera se
+ * conserva. Los saltos siguientes se navegan <b>dentro</b> de la subconsulta,
+ * donde un {@code join} interno solo hace que devuelva nulo. Todo lo de adentro
+ * va calificado con su propio alias, así que no interfiere con los atributos
+ * sin calificar de la sentencia.</p>
+ *
+ * <p><b>Por qué por la clave foránea y no por la raíz.</b> La forma anterior,
+ * {@code (select jbs_ob1.customer.name from Invoice jbs_ob1 where jbs_ob1 = o)},
+ * da el mismo valor, pero obliga al motor a volver a leer la raíz por cada
+ * fila: en SQL Server, con 4,96 millones de filas, una página costaba 31 s
+ * contra 7,6 s de la correlación por la clave foránea. La forma vieja queda como
+ * respaldo cuando el primer salto no tiene en la raíz una columna simple que
+ * apunte a la clave del destino: lado inverso ({@code @OneToOne(mappedBy = ...)}),
+ * unión por otra columna ({@code referencedColumnName}), columnas de unión
+ * compuestas ({@code @JoinColumns}), {@code @JoinTable},
+ * {@code @PrimaryKeyJoinColumn} o un destino sin una clave simple
+ * ({@code @IdClass}, {@code @EmbeddedId}).</p>
  *
  * <p><b>Nulos.</b> Los términos reescritos llevan {@code nulls last} en orden
  * ascendente y {@code nulls first} en descendente (los registros sin la
@@ -79,17 +101,28 @@ import jakarta.persistence.Transient;
  * que no tienen la asociación empatan todas en nulo, pero también basta un
  * {@code customer.code} repetido) la paginación por {@code offset}/{@code fetch}
  * no garantiza un orden estable, y una página repite filas de otra mientras
- * otras no salen nunca. No se agrega lo que ya figura: si el orden ya incluye
+ * otras no salen nunca. El desempate toma la <b>dirección del último término
+ * explícito</b> del orden ({@code fecha desc} → {@code fecha desc, o.idinvoice desc};
+ * {@code codigo} → {@code codigo, o.idinvoice}): un índice sobre esa columna
+ * lleva la clave como sufijo ascendente, y solo con la misma dirección el motor
+ * puede servir la primera página recorriéndolo hacia atrás, sin ordenar toda la
+ * tabla. Cambia
+ * solo el orden entre filas empatadas en todo lo pedido; sigue siendo un
+ * orden total. No se agrega lo que ya figura: si el orden ya incluye
  * la clave, o alguno de sus componentes, como término propio (no dentro de
  * una expresión: {@code idinvoice % 2} no cuenta), queda donde está. Tampoco
  * se agrega una clave simple cuya <b>columna</b> ya está en el orden por otro
  * camino (un escalar mapeado a la misma columna, o {@code asociacion.<clave>}
  * unida por esa columna): SQL Server rechaza una columna repetida en el
- * {@code ORDER BY} (error 169). Con clave compuesta
+ * {@code ORDER BY} (error 169 de SQL Server). Con clave compuesta
  * ({@code @IdClass}) se agregan todos sus atributos {@code @Id}; con
  * {@code @EmbeddedId}, los atributos de la clase incrustada
  * ({@code o.id.parte1, o.id.parte2}), salvo que el orden ya nombre el
- * {@code @EmbeddedId} entero. No hay desempate si la clave no se puede
+ * {@code @EmbeddedId} entero. Con identidad derivada de una única asociación
+ * a uno ({@code @Id @OneToOne purchase}), el desempate es la clave del
+ * destino por esa asociación ({@code o.purchase.idpurchase}), que se lee de
+ * la clave foránea sin {@code join} (ver {@code derivedKeyOf}).
+ * No hay desempate si la clave no se puede
  * determinar con seguridad (ver {@code keyOf}). Una expresión vacía queda
  * vacía: agregar un orden donde no lo había cambiaría lo que hoy se ve.</p>
  *
@@ -109,9 +142,9 @@ import jakarta.persistence.Transient;
  * {@code optional = false} explícito en {@code @ManyToOne}/{@code @OneToOne}:
  * el {@code join} interno no descarta nada y la subconsulta solo costaría.
  * <b>{@code nullable = false} en las columnas de unión no alcanza</b>: el
- * modelo lo declara en columnas que en la base admiten y tienen nulos
- * ({@code GiLote.giLoteestado}, con lotes sin estado), y ordenar por ellas
- * perdía filas (XLSEXP E2-30, decisión del usuario del 2026-11-25);</li>
+ * modelo puede declararlo en columnas que en la base admiten y tienen nulos
+ * (una factura sin {@code status}, por ejemplo), y ordenar por ellas
+ * perdería filas;</li>
  * <li>la clave de la asociación ({@code customer.idcustomer}), cuando la
  * asociación es el lado dueño de la clave foránea y la une por la clave del
  * destino: Hibernate la lee de la columna de la clave foránea, sin
@@ -141,6 +174,10 @@ public final class AssociationOrderBy {
             + "(?:\\s+(asc|desc))?"
             + "(?:\\s+nulls\\s+(first|last))?$",
             Pattern.CASE_INSENSITIVE);
+
+    /** Dirección (y nulos) al final de un término cualquiera: {@code ... desc nulls last}. */
+    private static final Pattern TRAILING_DIRECTION = Pattern.compile(
+            "\\s(asc|desc)(?:\\s+nulls\\s+(?:first|last))?$", Pattern.CASE_INSENSITIVE);
 
     /** Un camino de atributos (uno o más segmentos), con dirección y nulos opcionales. */
     private static final Pattern TERM_PATH = Pattern.compile(
@@ -257,21 +294,38 @@ public final class AssociationOrderBy {
     private static String appendKey(Class<?> rootType, String rootAlias, String order, List<String> terms) {
         Key key = keyOf(rootType);
         if (key == null) {
+            key = derivedKeyOf(rootType);
+        }
+        if (key == null) {
             return order;
         }
         if (key.embeddedField != null && containsTerm(terms, rootAlias, key.embeddedField)) {
             return order;
         }
+        String direction = isDescending(terms.get(terms.size() - 1)) ? " desc" : "";
         StringBuilder result = new StringBuilder(order);
         boolean appended = false;
         for (String component : key.components) {
             if (!containsTerm(terms, rootAlias, component)
                     && (key.embeddedField != null || !containsKeyColumn(rootType, rootAlias, terms, component))) {
-                result.append(", ").append(rootAlias).append('.').append(component);
+                result.append(", ").append(rootAlias).append('.').append(component).append(direction);
                 appended = true;
             }
         }
         return appended ? result.toString() : order;
+    }
+
+    /**
+     * Indica si un término del orden es descendente: termina en {@code desc},
+     * con o sin {@code nulls first|last}. Vale para cualquier expresión
+     * ({@code abs(x) desc}), no solo para un camino de atributos.
+     *
+     * @param term término de la expresión original.
+     * @return {@code true} si es descendente.
+     */
+    private static boolean isDescending(String term) {
+        Matcher matcher = TRAILING_DIRECTION.matcher(term.trim());
+        return matcher.find() && "desc".equalsIgnoreCase(matcher.group(1));
     }
 
     /** La clave de una entidad: sus componentes, como caminos desde la raíz. */
@@ -279,7 +333,7 @@ public final class AssociationOrderBy {
 
         /** Atributo {@code @EmbeddedId}, o {@code null} si la clave no es incrustada. */
         private final String embeddedField;
-        /** Componentes en orden de declaración ({@code idmovimiento}, {@code id.parte1}). */
+        /** Componentes en orden de declaración ({@code idinvoice}, {@code id.parte1}). */
         private final List<String> components;
 
         private Key(String embeddedField, List<String> components) {
@@ -356,6 +410,72 @@ public final class AssociationOrderBy {
     }
 
     /**
+     * Clave para el desempate de una entidad con <b>identidad derivada de una
+     * única asociación a uno</b>: un solo {@code @Id}, que es un
+     * {@code @OneToOne} o un {@code @ManyToOne} (por ejemplo una entrega cuya
+     * clave es la compra: {@code @Id @OneToOne purchase}). El
+     * desempate es {@code o.<asociacion>.<clave del destino>}, que Hibernate
+     * lee de la columna de la clave foránea, sin {@code join}.
+     *
+     * <p>Solo con la misma regla de {@link #readsForeignKey}: lado dueño, una
+     * sola {@code @JoinColumn} (declarada, para conocer su columna y controlar
+     * el error 169), sin {@code @JoinTable} ni {@code @PrimaryKeyJoinColumn} ni
+     * {@code targetEntity}, y un destino con una clave simple que no sea a su
+     * vez una asociación. En cualquier otro caso, como antes, no hay
+     * desempate.</p>
+     *
+     * @param type clase de la entidad.
+     * @return la clave derivada, o {@code null} si no aplica.
+     */
+    private static Key derivedKeyOf(Class<?> type) {
+        Field association = null;
+        for (Class<?> current = type; current != null && current != Object.class; current = current.getSuperclass()) {
+            for (Field field : current.getDeclaredFields()) {
+                if (field.isAnnotationPresent(EmbeddedId.class)) {
+                    return null;
+                }
+                if (field.isAnnotationPresent(Id.class)) {
+                    if (association != null || !isToOne(field)) {
+                        return null;
+                    }
+                    association = field;
+                }
+            }
+        }
+        Field targetId = derivedTargetId(association);
+        return targetId == null ? null : new Key(null, List.of(association.getName() + "." + targetId.getName()));
+    }
+
+    /**
+     * Clave del destino de una asociación de identidad derivada, si la columna
+     * de unión se puede leer sin {@code join} (ver {@link #derivedKeyOf}).
+     *
+     * @param association asociación que es la clave de la raíz.
+     * @return el {@code @Id} simple del destino, o {@code null}.
+     */
+    private static Field derivedTargetId(Field association) {
+        if (association == null) {
+            return null;
+        }
+        OneToOne oneToOne = association.getAnnotation(OneToOne.class);
+        ManyToOne manyToOne = association.getAnnotation(ManyToOne.class);
+        if ((oneToOne != null && (!oneToOne.mappedBy().isEmpty() || oneToOne.targetEntity() != void.class))
+                || (manyToOne != null && manyToOne.targetEntity() != void.class)
+                || association.isAnnotationPresent(JoinTable.class)
+                || association.isAnnotationPresent(PrimaryKeyJoinColumn.class)
+                || association.isAnnotationPresent(PrimaryKeyJoinColumns.class)
+                || joinColumns(association).size() != 1) {
+            return null;
+        }
+        Key targetKey = keyOf(association.getType());
+        if (targetKey == null || targetKey.embeddedField != null || targetKey.components.size() != 1) {
+            return null;
+        }
+        Field targetId = findField(association.getType(), targetKey.components.get(0));
+        return (targetId != null && readsForeignKey(association, targetId)) ? targetId : null;
+    }
+
+    /**
      * Indica si el atributo es una asociación (a uno o a muchos).
      *
      * @param field atributo.
@@ -389,7 +509,8 @@ public final class AssociationOrderBy {
     /**
      * Indica si algún término ya ordena por la <b>columna</b> de un atributo
      * de la clave por otro camino: un atributo escalar mapeado a la misma
-     * columna, o {@code asociacion.<clave>} cuya columna de unión es esa. Si
+     * columna, una asociación a uno entera cuya columna de unión es esa, o
+     * {@code asociacion.<clave>} cuya columna de unión es esa. Si
      * se agregara igual, SQL Server rechazaría la sentencia por tener la
      * misma columna dos veces en el {@code ORDER BY} (error 169).
      *
@@ -400,11 +521,22 @@ public final class AssociationOrderBy {
      * @return {@code true} si la columna ya figura.
      */
     private static boolean containsKeyColumn(Class<?> rootType, String rootAlias, List<String> terms, String keyField) {
-        Field key = findField(rootType, keyField);
-        if (key == null) {
-            return false;
+        String keyColumn;
+        int dot = keyField.indexOf('.');
+        if (dot > 0) {
+            //Clave derivada: asociacion.<clave del destino>; su columna es la de unión.
+            Field association = findField(rootType, keyField.substring(0, dot));
+            if (association == null || derivedTargetId(association) == null) {
+                return false;
+            }
+            keyColumn = joinColumns(association).get(0).name();
+        } else {
+            Field key = findField(rootType, keyField);
+            if (key == null) {
+                return false;
+            }
+            keyColumn = columnName(key);
         }
-        String keyColumn = columnName(key);
         for (String term : terms) {
             Matcher matcher = TERM_PATH.matcher(term.trim());
             if (!matcher.matches()) {
@@ -418,6 +550,14 @@ public final class AssociationOrderBy {
                 Field field = findField(rootType, segments[first]);
                 if (field != null && !isAssociation(field) && columnName(field).equalsIgnoreCase(keyColumn)) {
                     return true;
+                }
+                // La asociación entera como término ({@code purchase desc}) ordena por su
+                // columna de unión: con identidad derivada es la misma columna de la clave.
+                if (field != null && isToOne(field)) {
+                    List<JoinColumn> columns = joinColumns(field);
+                    if (columns.size() == 1 && columns.get(0).name().equalsIgnoreCase(keyColumn)) {
+                        return true;
+                    }
                 }
             } else if (length == 2) {
                 Field association = findField(rootType, segments[first]);
@@ -484,19 +624,94 @@ public final class AssociationOrderBy {
         if (!navigatesOptionalAssociation(rootType, segments, first)) {
             return null;
         }
+        String direction = matcher.group(2) == null ? "asc" : matcher.group(2).toLowerCase();
+        String nulls = matcher.group(3) != null
+                ? matcher.group(3).toLowerCase()
+                : ("asc".equals(direction) ? "last" : "first");
+        Field firstHop = findField(rootType, segments[first]);
+        String targetEntity = foreignKeyTarget(firstHop);
+        String subquery;
+        if (targetEntity != null) {
+            // Por la clave foránea del primer salto: el resto del camino se
+            // navega dentro de la subconsulta.
+            subquery = "(select " + alias + "." + join(segments, first + 1) + " from " + targetEntity + " " + alias
+                    + " where " + alias + " = " + rootAlias + "." + segments[first] + ")";
+        } else {
+            // Respaldo: sobre la raíz, con el camino entero.
+            subquery = "(select " + alias + "." + join(segments, first) + " from " + entityName + " " + alias
+                    + " where " + alias + " = " + rootAlias + ")";
+        }
+        return subquery + " " + direction + " nulls " + nulls;
+    }
+
+    /**
+     * Une los segmentos desde {@code from} con puntos.
+     *
+     * @param segments segmentos del camino.
+     * @param from índice del primero que se incluye.
+     * @return el camino.
+     */
+    private static String join(String[] segments, int from) {
         StringBuilder path = new StringBuilder();
-        for (int i = first; i < segments.length; i++) {
+        for (int i = from; i < segments.length; i++) {
             if (path.length() > 0) {
                 path.append('.');
             }
             path.append(segments[i]);
         }
-        String direction = matcher.group(2) == null ? "asc" : matcher.group(2).toLowerCase();
-        String nulls = matcher.group(3) != null
-                ? matcher.group(3).toLowerCase()
-                : ("asc".equals(direction) ? "last" : "first");
-        return "(select " + alias + "." + path + " from " + entityName + " " + alias
-                + " where " + alias + " = " + rootAlias + ") " + direction + " nulls " + nulls;
+        return path.toString();
+    }
+
+    /**
+     * Decide si la subconsulta se puede correlacionar por la clave foránea de
+     * la asociación ({@code where x = o.<asociacion>}) en lugar de volver a leer
+     * la raíz, y devuelve el nombre de la entidad destino.
+     * <p>Solo cuando la raíz tiene una columna simple que apunta a la clave
+     * simple del destino: es el lado dueño, con a lo sumo un
+     * {@code @JoinColumn} cuyo {@code referencedColumnName} (si lo declara) es
+     * la columna de la clave del destino, sin {@code @JoinTable} ni
+     * {@code @PrimaryKeyJoinColumn} ni {@code targetEntity}, y el destino tiene un único {@code @Id}
+     * que no es una asociación. En cualquier otro caso devuelve {@code null} y
+     * se usa la forma sobre la raíz, que es la de antes.</p>
+     *
+     * @param association primer salto del camino (asociación a uno).
+     * @return nombre de la entidad destino ({@code @Entity(name)} o el nombre
+     * simple de la clase), o {@code null} si no se puede correlacionar por la
+     * clave foránea.
+     */
+    private static String foreignKeyTarget(Field association) {
+        if (association == null || !isToOne(association)) {
+            return null;
+        }
+        OneToOne oneToOne = association.getAnnotation(OneToOne.class);
+        if (oneToOne != null && (!oneToOne.mappedBy().isEmpty() || oneToOne.targetEntity() != void.class)) {
+            return null;
+        }
+        // Con targetEntity el destino no es el tipo del atributo: no se adivina.
+        ManyToOne manyToOne = association.getAnnotation(ManyToOne.class);
+        if (manyToOne != null && manyToOne.targetEntity() != void.class) {
+            return null;
+        }
+        if (association.isAnnotationPresent(JoinTable.class)
+                || association.isAnnotationPresent(PrimaryKeyJoinColumn.class)
+                || association.isAnnotationPresent(PrimaryKeyJoinColumns.class)
+                || joinColumns(association).size() > 1) {
+            return null;
+        }
+        Class<?> target = association.getType();
+        if (target.isInterface() || target.isPrimitive() || target.isArray()) {
+            return null;
+        }
+        Key key = keyOf(target);
+        if (key == null || key.embeddedField != null || key.components.size() != 1) {
+            return null;
+        }
+        Field targetId = findField(target, key.components.get(0));
+        if (targetId == null || !readsForeignKey(association, targetId)) {
+            return null;
+        }
+        Entity entity = target.getAnnotation(Entity.class);
+        return (entity != null && !entity.name().isEmpty()) ? entity.name() : target.getSimpleName();
     }
 
     /**
@@ -614,8 +829,7 @@ public final class AssociationOrderBy {
      * o {@code @JoinColumns}) <b>no</b> la hace obligatoria: es una
      * declaración del esquema que el modelo no siempre cumple —hay columnas
      * así que en la base admiten y tienen nulos—, y tomarla por cierta dejaba
-     * el {@code join} interno que descarta esas filas (XLSEXP E2-30, decisión
-     * del usuario del 2026-11-25). Ante la duda se reescribe: el costo es una
+     * el {@code join} interno que descarta esas filas. Ante la duda se reescribe: el costo es una
      * subconsulta, no filas perdidas.</p>
      *
      * @param field atributo de una asociación a uno.

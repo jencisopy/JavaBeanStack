@@ -37,9 +37,9 @@ public class DownloadTargetContentDispositionTest {
 
     @Test
     public void testNombreSimple() {
-        assertEquals("attachment; filename=\"ctactesub_20261125_0930.xlsx\"; "
-                + "filename*=UTF-8''ctactesub_20261125_0930.xlsx",
-                DownloadTarget.contentDisposition(false, "ctactesub_20261125_0930.xlsx"));
+        assertEquals("attachment; filename=\"report_20261125_0930.xlsx\"; "
+                + "filename*=UTF-8''report_20261125_0930.xlsx",
+                DownloadTarget.contentDisposition(false, "report_20261125_0930.xlsx"));
     }
 
     @Test
