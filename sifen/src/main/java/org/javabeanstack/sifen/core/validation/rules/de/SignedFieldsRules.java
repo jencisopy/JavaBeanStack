@@ -34,6 +34,7 @@ import org.javabeanstack.sifen.core.validation.NotEvaluatedReason;
 import org.javabeanstack.sifen.core.validation.Subject;
 import org.javabeanstack.sifen.core.validation.support.DEData;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.javabeanstack.sifen.core.fields.request.de.TgEmis;
 import org.javabeanstack.sifen.internal.util.SifenUtil;
@@ -56,15 +57,17 @@ final class SignedFieldsRules extends RuleSet<DocumentoElectronico, DocumentoEle
                 passes(s -> !incumpleA003(s.e())));
         declare(rule("A002").field("Id").error().dCodRes("1000").showValue(),
                 passes(s -> !incumpleA002(s.e())));
+        // I8-27: las tres reglas de dFecFirma evalúan la del documento o, si falta, la que supone la corrida
+        // (ValidationContext#getDefaultSignatureDate, la de ISifenClient.validateDE)
         declare(rule("JBS-A-03").field("dFecFirma").error().showValue(),
-                required(DocumentoElectronico::getdFecFirma));
+                passes(s -> fechaFirma(s) != null));
         declare(rule("A004a").field("dFecFirma").warning().dCodRes("1004").showValue(),
-                passes(s -> s.e().getdFecFirma() == null || !s.e().getdFecFirma().isAfter(s.ctx().getNow()), s -> s.e().getdFecFirma()));
+                passes(s -> fechaFirma(s) == null || !fechaFirma(s).isAfter(s.ctx().getNow()), SignedFieldsRules::fechaFirma));
         // §6.5 (M3-25): el valor mostrado lleva las horas desde la firma; el plazo de 72 h (MT §6.2) lo da
         // SignedDocument.getSubmissionDeadline()
         declare(rule("A004b").field("dFecFirma").warning().dCodRes("1005").showValue(),
-                passes(s -> s.e().getdFecFirma() == null || Duration.between(s.e().getdFecFirma(), s.ctx().getNow()).toHours() <= 72,
-                        s -> s.e().getdFecFirma() + " (" + Duration.between(s.e().getdFecFirma(), s.ctx().getNow()).toHours()
+                passes(s -> fechaFirma(s) == null || Duration.between(fechaFirma(s), s.ctx().getNow()).toHours() <= 72,
+                        s -> fechaFirma(s) + " (" + Duration.between(fechaFirma(s), s.ctx().getNow()).toHours()
                                 + " h; plazo: 72 h)"));
         declare(rule("JBS-A-04").field("dSisFact").error().showValue().source(RuleSource.NT_010),
                 passes(s -> s.e().getdSisFact() == 1 || s.e().getdSisFact() == 2, s -> s.e().getdSisFact()));
@@ -73,6 +76,12 @@ final class SignedFieldsRules extends RuleSet<DocumentoElectronico, DocumentoEle
     @Override
     protected List<Subject<DocumentoElectronico, DocumentoElectronico>> subjects(DocumentoElectronico raiz) {
         return unique(raiz);
+    }
+
+    /** {@code dFecFirma} del documento o, si no la trae, la que supone la corrida (I8-27); {@code null} si ninguna. */
+    private static LocalDateTime fechaFirma(Subject<DocumentoElectronico, DocumentoElectronico> s) {
+        LocalDateTime f = s.e().getdFecFirma();
+        return f != null ? f : s.ctx().getDefaultSignatureDate();
     }
 
     private static final DateTimeFormatter AAAAMMDD = DateTimeFormatter.ofPattern("yyyyMMdd");

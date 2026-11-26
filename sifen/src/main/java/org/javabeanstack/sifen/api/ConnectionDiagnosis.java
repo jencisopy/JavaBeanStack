@@ -31,8 +31,9 @@ import org.javabeanstack.sifen.Provisional;
  * documento (contrato v1, plan JBSSIF, §10.2; {@code ISifenClient.checkConnection}, que implementa
  * §5.3). Inmutable y serializable.
  *
- * <p><b>PROVISIONAL</b> en su detalle: los nombres y la cantidad de etapas pueden cambiar hasta la
- * release 2.2.0; {@link #isOk()}, {@link #getSteps()} y {@link #getOperationId()} son estables.</p>
+ * <p><b>PROVISIONAL</b> en su detalle: los nombres y la cantidad de etapas siguen provisionales en la 2.2.0
+ * y pueden cambiar dentro de {@code 2.x}; {@link #isOk()}, {@link #getSteps()} y {@link #getOperationId()} son
+ * estables.</p>
  */
 @Provisional
 public final class ConnectionDiagnosis implements Serializable {

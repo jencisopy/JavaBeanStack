@@ -341,7 +341,8 @@ public final class DEData {
     }
 
     /**
-     * {@code total} de la operación en su moneda: Σ total de los ítems + comisión, sin el redondeo
+     * {@code total} de la operación en su moneda: Σ total de los ítems + comisión (salvo en la autofactura,
+     * que no la informa), sin el redondeo
      * (el ajuste es de menos de 50 Gs o 0,50; las reglas que comparan contra el total lo toleran).
      *
      * @param de documento electrónico.
@@ -356,7 +357,8 @@ public final class DEData {
             }
             total = total.add(t);
         }
-        if (de.getgTotSub() != null) {
+        // E12-01: como TgTotSub, la autofactura no suma la comisión (F001: con C002 = 4 no se informa F025)
+        if (de.getgTotSub() != null && iTiDE(de) != 4) {
             total = total.add(cero(de.getgTotSub().getdComi()));
         }
         return total;

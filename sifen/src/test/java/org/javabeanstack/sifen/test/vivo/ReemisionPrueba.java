@@ -104,6 +104,11 @@ public final class ReemisionPrueba {
                     continue;
                 }
                 String[] c = linea.split(";", -1);
+                if (c.length < 5 || !c[2].matches(".*-\\d+")) {
+                    // M12-15 (JBSSIF): una fila sin número legible (p. ej. «—») no cuenta para la numeración ni deja la
+                    // tabla ilegible
+                    continue;
+                }
                 maximo = Math.max(maximo, numero(c[2]));
                 if (!c[3].isEmpty() && !c[4].isEmpty()) {
                     cdcPorOriginal.put(c[3], c[4]);

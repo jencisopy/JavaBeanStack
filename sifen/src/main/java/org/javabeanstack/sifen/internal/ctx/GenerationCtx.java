@@ -24,6 +24,16 @@ package org.javabeanstack.sifen.internal.ctx;
 
 import org.javabeanstack.sifen.core.SifenConfig;
 
+/**
+ * Contexto de generación del XML de un DE (configuración y CDC forzado), heredado del fork.
+ *
+ * <p>Interno, pero lo exponen las sobrecargas de la fachada estática {@link org.javabeanstack.sifen.Sifen},
+ * deprecada en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42), y también API que no es deprecada
+ * ({@code DEValidator}, {@code EventValidator}, {@code ValidationContext}, {@code DocumentoElectronico.generarXml}).
+ * Por eso sus firmas públicas se mantienen sin cambios en toda la línea 2.x (ESC-33, I8-28; decisión del usuario
+ * ESC-36, I8-35). Es lo único que se promete del tipo: lo que se retira en 3.0 son las sobrecargas de {@code Sifen}
+ * que lo reciben, no {@code GenerationCtx}. Ninguna firma de {@code ISifenClient} lo nombra.</p>
+ */
 public class GenerationCtx {
 
     private String forzarCDC;

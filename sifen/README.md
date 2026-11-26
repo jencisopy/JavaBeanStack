@@ -16,10 +16,20 @@ repositorio; el módulo se publica bajo la LGPL v3, como el resto de JavaBeanSta
   [`src/test/resources/contract/api_v1.txt`](src/test/resources/contract/api_v1.txt) y un test la
   compara en cada build.
 - **Compatibilidad**: dentro de `2.x` la API solo **agrega**; no se quita ni se cambia una firma. Lo
-  marcado `@Provisional` (hoy `sendEvents`, `validateEvents`, el detalle de `ConnectionDiagnosis` y el
-  registro de envíos `ISendRegistry`; ver
-  [`api_v1_provisional.txt`](src/test/resources/contract/api_v1_provisional.txt)) **puede cambiar**:
-  conviene usarlo aislado detrás de una clase propia.
+  marcado `@Provisional` (hoy `sendEvents`, `validateEvents`, el detalle de `ConnectionDiagnosis`, el
+  registro de envíos `ISendRegistry` y la conciliación `SifenReconciler`; ver
+  [`api_v1_provisional.txt`](src/test/resources/contract/api_v1_provisional.txt)) sigue provisional en
+  la `2.2.0` y **puede cambiar** dentro de `2.x`, con aviso en las notas de la versión: conviene usarlo
+  aislado detrás de una clase propia. Se promueve a estable en una versión posterior.
+- **Deprecado, se mantiene en `2.x`**: la fachada estática `Sifen`, los `Respuesta*` y
+  `ValidezFirmaDigital`, heredados de `rshk-jsifenlib`. No se quitan ni cambian de firma dentro de `2.x`,
+  no reciben operaciones nuevas y no están en la foto de firmas; se retiran en la `3.0`. No llevan la
+  anotación `@Deprecated`: el reemplazo es `ISifenClient`. Los 11 tipos que aparecen en sus firmas
+  mantienen sus firmas públicas en `2.x`: `TxProtDe` y `TxContenDE`, que además se retiran en la `3.0` con lo
+  que los expone, y `TgResProc`, `TgResProcLote`, `TgResProcEVe`, `TxContRuc`, `TxContenEv`, `TrContEv`,
+  `BaseResponse`, `SifenObjectBase` y `GenerationCtx`, de los que no se promete más (de `GenerationCtx`, en la
+  `3.0` se retiran las sobrecargas de `Sifen` que lo reciben, no el tipo). El motor de validación (`DEValidator`, `EventValidator`, `ValidationContext`) no es API pública: se
+  valida con `ISifenClient.validateDE` y `validateEvents`.
 
 Qué ofrece:
 
@@ -36,6 +46,16 @@ Qué ofrece:
 - **Lote** (`sendBatch`, `queryBatch`), **eventos** (`cancel`, `invalidateNumbers`, `sendEvents`),
   **consultas** (`queryDE`, `queryRuc`) y **verificación de firma** de un XML recibido
   (`verifySignature`).
+- **Conciliación** (provisional): `SifenReconciler` recorre una lista de documentos firmados con una
+  pausa entre consultas y un tope por pasada, y dice por cada uno si SIFEN lo tiene igual (`MATCH`), no lo
+  tiene aprobado (`NOT_FOUND`, «Sin aprobación en SIFEN (0420)»), lo tiene con otro digest
+  (`DIGEST_MISMATCH`) o no se pudo determinar (`UNDETERMINED`: una falla de la consulta o un documento de
+  otro ambiente nunca cuentan como ausentes). Solo consulta: no envía ni reenvía nada. La lista (p. ej.
+  los emitidos en un rango de fechas) la arma la aplicación, y **deja afuera** los documentos de un lote
+  todavía en proceso, los recién enviados y los rechazados: SIFEN también contesta 0420 por ellos, y
+  resolverlos como ausentes arriesga un duplicado o el bloqueo del RUC. **Fijar siempre el tope**
+  (`maxQueries`; por omisión `0`, sin tope): contra un SIFEN que no contesta, cada consulta espera el
+  tiempo de lectura (60 s) y la pasada no corta sola tras varias fallas.
 - **Diagnóstico**: `validateConfig()`, `getCertificateInfo()` (titular, RUC, vigencia) y
   `checkConnection()` (proxy, DNS, TCP, TLS, HTTP), sin enviar documentos.
 - **Validación previa** del DE con mensajes en español (ver abajo).
@@ -150,21 +170,44 @@ deben correr en paralelo con otras que dependan del almacén de confianza.
 <dependency>
     <groupId>org.javabeanstack</groupId>
     <artifactId>jbs-sifen</artifactId>
+    <version>2.2.0-SNAPSHOT</version>   <!-- la del jbs-bom importado; obligatoria: el BOM gestiona jbs-sifen sin clasificador -->
     <classifier>tests</classifier>
     <scope>test</scope>
 </dependency>
 ```
+
+La versión va explícita porque `dependencyManagement` distingue el clasificador: el BOM declara
+`jbs-sifen` sin clasificador, y un `jbs-sifen:tests` sin versión no se resuelve.
 
 ## Dependencias
 
 | Artefacto | Scope | Nota |
 |---|---|---|
 | `jakarta.xml.soap:jakarta.xml.soap-api` (SAAJ 3.0) | `provided` | La provee el servidor (WildFly: módulo `jakarta.xml.soap.api`) |
-| `com.sun.xml.messaging.saaj:saaj-impl` | `test` | En el contenedor la da el servidor (`com.sun.xml.messaging.saaj`); fuera de contenedor declararla en `runtime` |
+| `com.sun.xml.messaging.saaj:saaj-impl` | `test` | En el contenedor la da el servidor (`com.sun.xml.messaging.saaj`); fuera de contenedor declararla en `runtime`, **junto con la API** (ver abajo) |
 | `org.apache.logging.log4j:log4j-api` | compile (del padre) | Logging del framework; en WildFly lo da el servidor |
 | `jakarta.platform:jakarta.jakartaee-api` | `provided` (del padre) | API de Jakarta EE 11 |
 
 Versiones y scopes en `jbs-bom`. No depende de otros módulos `jbs-*` ni de ninguna base de datos.
+
+**Fuera de un contenedor** (un `main`, una herramienta) no alcanza con `saaj-impl` en `runtime`: el
+`jbs-bom` gestiona `jakarta.xml.soap-api` como `provided`, ese alcance se aplica también cuando la API
+llega por transitividad desde `saaj-impl`, y `provided` no entra en el classpath de ejecución (el
+programa falla con `NoClassDefFoundError: jakarta/xml/soap/SOAPException`). Hay que declarar las dos,
+con alcance explícito:
+
+```xml
+<dependency>
+    <groupId>com.sun.xml.messaging.saaj</groupId>
+    <artifactId>saaj-impl</artifactId>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>jakarta.xml.soap</groupId>
+    <artifactId>jakarta.xml.soap-api</artifactId>
+    <scope>runtime</scope>   <!-- o compile; sin alcance explícito queda provided -->
+</dependency>
+```
 
 ## Tests
 
@@ -190,3 +233,6 @@ Respecto de `rshk-jsifenlib`:
 |---|---|---|
 | 2.2.0 | La NT 13 ya no se puede apagar: `dBasExe` se escribe siempre. `SifenConfig.setHabilitarNotaTecnica13` (deprecado) y la clave `sifen.habilitar_nota_tecnica_13` no tienen efecto (la clave se ignora con un aviso en el log al cargarla) | Quien la tenía en `false`: su XML pasa a llevar `dBasExe`, el formato que exige la NT 13 desde el 2023-05-21 |
 | 2.2.0 | El evento de nominación escribe la ciudad del receptor como `dDesCiuRec`; antes `dDesCiuEnt` | Quien enviaba nominaciones con ciudad |
+| 2.2.0 | El ítem exonerado (`iAfecIVA` = 2) escribe en `dDesAfecIVA` el texto del XSD vigente, «Exonerado (Art. 100 - Ley 6380/2019)»; antes, el del XSD de 2019, «Exonerado (Art. 83- Ley 125/91)», que SIFEN rechaza con 0160. Al leer un XML se toma solo el código, así que un DE con el texto viejo se sigue leyendo como exonerado, y `readSigned` lo conserva tal como se firmó | Quien emitía ítems exonerados: el DE pasa a ser aceptado |
+| 2.2.0 | `gRasMerc` ya no escribe `dNomImp`, `dDirImp` ni `dNumFir` (eliminados por la NT 010; SIFEN los rechaza con 0160). Sus accesores en `TgRasMerc` quedan deprecados y sin efecto en el XML (guardan el valor y se leen de un XML anterior; se retiran en la `3.0`) y las reglas JBS-E-99..101 están de baja | Quien cargaba los datos del importador: el DE pasa a ser aceptado sin ellos |
+| 2.2.0 | Sin dirección del receptor, el DE no lleva `<dDirRec>` vacío (en B2F y en la nota de remisión salía vacío y el XSD lo rechaza); la validación previa sigue exigiéndola con D213 | Quien enviaba con la validación previa apagada: SIFEN contesta 1318 en vez de 0160 |

@@ -25,6 +25,7 @@ package org.javabeanstack.sifen.core.validation;
 import org.javabeanstack.sifen.internal.util.Traces;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -220,8 +221,37 @@ final class ValidationEngine<T> {
      *                               declara.
      */
     ValidationResult validar(T raizValidada, GenerationCtx generationCtx) {
+        return validar(raizValidada, generationCtx, null);
+    }
+
+    /**
+     * Valida una raíz suponiendo una fecha de firma para el documento que no la trae (I8-27).
+     *
+     * @param raizValidada         raíz a validar; puede ser {@code null}.
+     * @param generationCtx        contexto de generación; puede ser {@code null}.
+     * @param fechaFirmaPorOmision {@link ValidationContext#getDefaultSignatureDate()}; {@code null} = ninguna.
+     * @return el resultado; nunca {@code null}.
+     * @throws IllegalStateException como {@link #validar(Object, GenerationCtx)}.
+     */
+    ValidationResult validar(T raizValidada, GenerationCtx generationCtx, LocalDateTime fechaFirmaPorOmision) {
+        return validar(raizValidada, generationCtx, fechaFirmaPorOmision, null);
+    }
+
+    /**
+     * Valida una raíz suponiendo la fecha de firma y el {@code Id} de evento que no trae (I8-27, I8-34).
+     *
+     * @param raizValidada         raíz a validar; puede ser {@code null}.
+     * @param generationCtx        contexto de generación; puede ser {@code null}.
+     * @param fechaFirmaPorOmision {@link ValidationContext#getDefaultSignatureDate()}; {@code null} = ninguna.
+     * @param idEventoPorOmision   {@link ValidationContext#getDefaultEventId()}; {@code null} = ninguno.
+     * @return el resultado; nunca {@code null}.
+     * @throws IllegalStateException como {@link #validar(Object, GenerationCtx)}.
+     */
+    ValidationResult validar(T raizValidada, GenerationCtx generationCtx, LocalDateTime fechaFirmaPorOmision,
+            String idEventoPorOmision) {
         T raiz = raizValidada;
-        ValidationContext ctx = new ValidationContext(generationCtx, reloj, desactivadas, fechaReglas, this.raiz);
+        ValidationContext ctx = new ValidationContext(generationCtx, reloj, desactivadas, fechaReglas, this.raiz,
+                fechaFirmaPorOmision, idEventoPorOmision);
         if (raiz == null) {
             ctx.report(ValidationRule.JBS_VAL_01, this.raiz, null);
             return ctx.resultado();

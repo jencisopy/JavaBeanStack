@@ -89,7 +89,11 @@ public class TgDatRec extends SifenObjectBase {
             gDatRec.addChildElement("dNomFanRec").setTextContent(this.dNomFanRec);
 
         if (this.dDirRec != null || iTiDE.getVal() == 7 || this.iTiOpe.getVal() == 4) {
-            gDatRec.addChildElement("dDirRec").setTextContent(this.dDirRec);
+            // I12-27 (plan JBSSIF, ESC-47): sin dirección no se escribe dDirRec. En NR (iTiDE 7) y en B2F salía vacío, y el
+            // XSD vigente (tdDirec, minLength 1) no lo admite: SIFEN contestaría 0160 en vez del 1318 de D213, que la
+            // validación previa sigue aplicando. El resto del bloque no cambia
+            if (this.dDirRec != null)
+                gDatRec.addChildElement("dDirRec").setTextContent(this.dDirRec);
             gDatRec.addChildElement("dNumCasRec").setTextContent(String.valueOf(this.dNumCasRec));
 
             if (this.iTiOpe.getVal() != 4) {

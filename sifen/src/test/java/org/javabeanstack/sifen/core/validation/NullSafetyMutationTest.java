@@ -266,6 +266,10 @@ public class NullSafetyMutationTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("enriquecidos")
     public void cadaDatoAnuladoDeUnDeEnriquecidoSeReportaYNuncaTerminaEnNpe(SoporteValidacion.FuenteEnriquecida fuente) {
+        mutarEnriquecido(fuente, Map.of());
+    }
+
+    private void mutarEnriquecido(SoporteValidacion.FuenteEnriquecida fuente, Map<String, String> conocidos) {
         ValidationResult r = validador.validate(fuente.crear(), ctxSinValidacion);
         Assertions.assertTrue(r.getErrors().isEmpty(), () -> fuente + " tiene errores: " + r.getErrors());
         SoporteValidacion.Fuente base = SoporteValidacion.fuentes().get(0);
@@ -296,7 +300,18 @@ public class NullSafetyMutationTest {
             public String fachada(Object raiz, List<ValidationError> nuevos) {
                 return de.fachada(raiz, nuevos);
             }
-        });
+        }, conocidos);
+    }
+
+    static Stream<SoporteValidacion.FuenteEnriquecida> fase12() {
+        return SoporteValidacion.fuentesFase12().stream();
+    }
+
+    /** §12.2.4 (plan JBSSIF, CA12-03): la misma mutación sobre los casos de la Fase 12 que estrenan grupos. */
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("fase12")
+    public void cadaDatoAnuladoDeUnCasoDeLaFase12SeReportaYNuncaTerminaEnNpe(SoporteValidacion.FuenteEnriquecida fuente) {
+        mutarEnriquecido(fuente, SoporteValidacion.HALLAZGOS_FASE12);
     }
 
     @ParameterizedTest(name = "{0}")
@@ -306,6 +321,15 @@ public class NullSafetyMutationTest {
     }
 
     private void mutarTodo(Sujeto sujeto) {
+        mutarTodo(sujeto, Map.of());
+    }
+
+    /**
+     * Muta todo el grafo. {@code conocidos}: expresión regular sobre {@code "<ruta> <tipo>"} → código del hallazgo
+     * registrado (Fase 12, D54: no se corrige en la fase). Una violación conocida queda en el informe y no falla,
+     * pero tiene que seguir apareciendo: si ya no aparece, el hallazgo se resolvió y la entrada se quita.
+     */
+    private void mutarTodo(Sujeto sujeto, Map<String, String> conocidos) {
         Object base = sujeto.crear();
         ValidationResult rBase = sujeto.validar(base);
         Assertions.assertFalse(rBase.contains(SoporteValidacion.VAL_00),
@@ -317,13 +341,29 @@ public class NullSafetyMutationTest {
         Assertions.assertDoesNotThrow(() -> sujeto.generarSinValidacion(paraGenerar), () -> sujeto.id() + ": la base no genera");
 
         List<String> violaciones = new ArrayList<>();
+        Set<String> conocidosVistos = new TreeSet<>();
         for (GrafoDe.Punto punto : GrafoDe.puntos(base)) {
             Hallazgo h = mutar(sujeto, punto, previos);
             INFORME.add(h);
             if (h.clase() == Clase.DEFECTO
                     || (SoporteValidacion.CORRIDA_FINAL && (h.clase() == Clase.SIN_REGLA || h.clase() == Clase.RUTA_DISTINTA))) {
-                violaciones.add(h.clase() + " " + h.ruta() + " ⇐ " + h.tipo() + ": " + h.detalle());
+                String conocido = null;
+                for (Map.Entry<String, String> k : conocidos.entrySet()) {
+                    if ((h.ruta() + " " + h.tipo()).matches(k.getKey())) {
+                        conocido = k.getValue();
+                    }
+                }
+                if (conocido != null) {
+                    conocidosVistos.add(conocido);
+                    System.out.println("mutación conocida (" + conocido + "): " + sujeto.id() + " " + h.clase() + " " + h.ruta() + " ⇐ " + h.tipo());
+                } else {
+                    violaciones.add(h.clase() + " " + h.ruta() + " ⇐ " + h.tipo() + ": " + h.detalle());
+                }
             }
+        }
+        for (String codigo : new TreeSet<>(conocidos.values())) {
+            Assertions.assertTrue(!SoporteValidacion.HALLAZGO_ESPERADO_EN.getOrDefault(codigo, Set.of()).contains(sujeto.id())
+                    || conocidosVistos.contains(codigo), () -> sujeto.id() + ": " + codigo + " ya no aparece; quitarlo de los conocidos");
         }
         Assertions.assertTrue(violaciones.isEmpty(), () -> sujeto.id() + ": " + violaciones.size()
                 + " mutaciones fallan:\n  " + String.join("\n  ", violaciones.subList(0, Math.min(40, violaciones.size()))));

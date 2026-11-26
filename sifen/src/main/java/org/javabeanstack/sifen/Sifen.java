@@ -62,6 +62,9 @@ import org.apache.logging.log4j.Logger;
  * operación: configuración y certificado → argumentos → contenido → envío → respuesta. Los rechazos de
  * SIFEN ({@code dCodRes}) no son excepciones: siguen en las {@code Respuesta*}. Los
  * {@code validarFirmaDE*} no lanzan: una falla vuelve en {@link ValidezFirmaDigital} con su código.</p>
+ *
+ * <p>Deprecada en favor de {@link ISifenClient} (D42): se mantiene sin cambios de firma en 2.x y se retira
+ * en 3.0; no recibe operaciones nuevas.</p>
  */
 public class Sifen {
     private static final Logger LOGGER = LogManager.getLogger(Sifen.class);

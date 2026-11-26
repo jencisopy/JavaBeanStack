@@ -251,17 +251,28 @@ public final class SifenClient implements ISifenClient {
 
     // ------------------------------------------------------------------ validación previa
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Sin {@code dFecFirma}, valida con la que le pondría {@link #sign(DocumentoElectronico)} (la misma regla,
+     * del mismo reloj del cliente) sin cargarla en el documento (I8-27).</p>
+     */
     @Override
     public ValidationResult validateDE(DocumentoElectronico de) {
-        return DEValidator.standard().validate(de, context());
+        return DEValidator.standard().validate(de, context(), de == null ? null : signatureDateOf(de));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Sin {@code dFecFirma} o sin {@code Id}, valida con los que le pondría {@link #sendEvents(EventosDE)}: la hora
+     * de Asunción del mismo reloj del cliente y el {@code Id} que daría ahora la numeración de eventos, leído
+     * <b>sin avanzarla</b>; los eventos no se modifican (I8-34).</p>
+     */
     @Override
     @Provisional
     public ValidationResult validateEvents(EventosDE events) {
-        return EventValidator.standard().validate(events, context());
+        return EventValidator.standard().validate(events, context(), now(), supposedEventId());
     }
 
     // ------------------------------------------------------------------ emisión en dos pasos
@@ -286,7 +297,7 @@ public final class SifenClient implements ISifenClient {
             boolean ok = false;
             try {
                 if (fechaAntes == null) {
-                    de.setdFecFirma(now());
+                    de.setdFecFirma(signatureDateOf(de));
                 }
                 if (de.getgOpeDE() != null && (codSegAntes == null || codSegAntes.isBlank())) {
                     de.getgOpeDE().setdCodSeg(String.format("%09d", 1 + random.nextInt(999_999_999)));
@@ -533,7 +544,7 @@ public final class SifenClient implements ISifenClient {
                 e.setId(eventIds.get());
             }
             if (e != null && e.getdFecFirma() == null) {
-                e.setdFecFirma(now());
+                e.setdFecFirma(now());   // la misma hora que supone validateEvents (I8-34)
             }
             return transmitEvents(events, id, start);
         });
@@ -732,6 +743,25 @@ public final class SifenClient implements ISifenClient {
             return SifenConfig.Environment.PROD;
         }
         return null;
+    }
+
+    /**
+     * La {@code dFecFirma} con que se firma el documento: la suya si la trae; si no, la hora de Asunción al
+     * segundo. Punto único de la regla (I8-27): {@code sign} la carga en el documento y {@code validateDE} solo
+     * la supone.
+     */
+    private LocalDateTime signatureDateOf(DocumentoElectronico de) {
+        return de.getdFecFirma() != null ? de.getdFecFirma() : now();
+    }
+
+    /**
+     * El {@code Id} que supone {@code validateEvents} para un evento sin {@code Id} (I8-34, ESC-35): el que daría
+     * ahora la numeración de eventos ({@code SifenClientShared}, la del registro si el cliente es de uno), leído
+     * <b>sin avanzarla</b>, para que validar no consuma números. No se reserva: {@code sendEvents} toma el suyo de
+     * {@code eventIds} al enviar, que puede ser otro; los dos cumplen {@code JBS-EVENTO-01}.
+     */
+    private String supposedEventId() {
+        return shared.peekNextEventId(clock);
     }
 
     /** Hora de Asunción al segundo ({@code dFecFirma}). */

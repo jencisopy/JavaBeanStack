@@ -32,6 +32,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Protocolo de procesamiento del DE ({@code xProtDE}) de la respuesta de SIFEN a la recepción de un DE.
+ *
+ * <p>Lo expone {@link org.javabeanstack.sifen.core.beans.response.RespuestaRecepcionDE#getxProtDE()}, deprecada en
+ * favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): por eso se mantiene sin cambios de firma en 2.x y se
+ * retira en 3.0 con ella; no recibe operaciones nuevas (ESC-33, I8-28). Su reemplazo es
+ * {@link org.javabeanstack.sifen.api.SendResult}.</p>
+ */
 public class TxProtDe extends SifenObjectBase {
     private String id;
     private LocalDateTime dFecProc;

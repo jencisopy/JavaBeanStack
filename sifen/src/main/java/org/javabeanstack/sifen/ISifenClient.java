@@ -118,6 +118,10 @@ public interface ISifenClient extends AutoCloseable {
      * los problemas <b>antes</b> de numerarlo en firme. No evalúa {@code JBS-CERT-11} (RUC del
      * certificado distinto del emisor): esa la informa {@link #sign(DocumentoElectronico)}.
      *
+     * <p>Si el documento no trae {@code dFecFirma}, valida como si fuera la hora actual de Asunción, la que le
+     * pondría {@link #sign(DocumentoElectronico)}, <b>sin cargarla en el documento</b>: el documento sigue sin
+     * {@code dFecFirma} (I8-27). Si la trae, valida la suya.</p>
+     *
      * @param de documento.
      * @return el resultado, con errores y avisos (índices base 0 en las rutas); nunca {@code null} ni
      *         lanza.
@@ -126,6 +130,12 @@ public interface ISifenClient extends AutoCloseable {
 
     /**
      * Valida los eventos con las reglas del catálogo, sin contactar a SIFEN. PROVISIONAL.
+     *
+     * <p>Un evento sin {@code dFecFirma} o sin {@code Id} (nulo o en blanco) se valida como lo enviaría
+     * {@link #sendEvents(EventosDE)}, que los completa: con la hora actual de Asunción y con un {@code Id} supuesto
+     * de la numeración de eventos del cliente, <b>sin cargarlos en el evento</b> y sin consumir esa numeración
+     * (I8-34). El {@code Id} supuesto no se reserva: {@code sendEvents} puede enviar otro, que cumple la misma regla.
+     * Si el evento los trae, valida los suyos.</p>
      *
      * @param events eventos.
      * @return el resultado; nunca {@code null} ni lanza.
@@ -266,6 +276,9 @@ public interface ISifenClient extends AutoCloseable {
     /**
      * Envía los demás eventos (conformidad, disconformidad, desconocimiento, notificación,
      * nominación, transporte) con el modelo actual, <b>un evento por llamada</b>. PROVISIONAL.
+     *
+     * <p>Si el evento no trae {@code Id} (nulo o en blanco) o {@code dFecFirma}, los completa <b>en el mismo
+     * evento</b>: el {@code Id} de la numeración de eventos del cliente y la hora de Asunción, al segundo.</p>
      *
      * @param events eventos, con exactamente un {@code rGesEve}.
      * @return el resultado.

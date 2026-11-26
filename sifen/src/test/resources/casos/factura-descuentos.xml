@@ -93,10 +93,10 @@
                     <gValorRestaItem>
                         <dDescItem>10000</dDescItem>
                         <dPorcDesIt>10.00</dPorcDesIt>
-                        <dDescGloItem>0</dDescGloItem>
+                        <dDescGloItem>2000</dDescGloItem>
                         <dAntPreUniIt>0</dAntPreUniIt>
                         <dAntGloPreUniIt>0</dAntGloPreUniIt>
-                        <dTotOpeItem>180000.00</dTotOpeItem>
+                        <dTotOpeItem>176000.00</dTotOpeItem>
                     </gValorRestaItem>
                 </gValorItem>
                 <gCamIVA>
@@ -104,8 +104,8 @@
                     <dDesAfecIVA>Gravado IVA</dDesAfecIVA>
                     <dPropIVA>100</dPropIVA>
                     <dTasaIVA>10</dTasaIVA>
-                    <dBasGravIVA>163636.36</dBasGravIVA>
-                    <dLiqIVAItem>16363.64</dLiqIVAItem>
+                    <dBasGravIVA>160000.00</dBasGravIVA>
+                    <dLiqIVAItem>16000.00</dLiqIVAItem>
                     <dBasExe>0</dBasExe>
                 </gCamIVA>
             </gCamItem>
@@ -121,10 +121,10 @@
                     <gValorRestaItem>
                         <dDescItem>0</dDescItem>
                         <dPorcDesIt>0.00</dPorcDesIt>
-                        <dDescGloItem>5000</dDescGloItem>
+                        <dDescGloItem>1000</dDescGloItem>
                         <dAntPreUniIt>0</dAntPreUniIt>
                         <dAntGloPreUniIt>0</dAntGloPreUniIt>
-                        <dTotOpeItem>45000.00</dTotOpeItem>
+                        <dTotOpeItem>49000.00</dTotOpeItem>
                     </gValorRestaItem>
                 </gValorItem>
                 <gCamIVA>
@@ -132,8 +132,8 @@
                     <dDesAfecIVA>Gravado IVA</dDesAfecIVA>
                     <dPropIVA>100</dPropIVA>
                     <dTasaIVA>10</dTasaIVA>
-                    <dBasGravIVA>40909.09</dBasGravIVA>
-                    <dLiqIVAItem>4090.91</dLiqIVAItem>
+                    <dBasGravIVA>44545.45</dBasGravIVA>
+                    <dLiqIVAItem>4454.55</dLiqIVAItem>
                     <dBasExe>0</dBasExe>
                 </gCamIVA>
             </gCamItem>

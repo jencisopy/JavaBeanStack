@@ -1,0 +1,136 @@
+# Esperados de la Fase 12 (plan JBSSIF, §12.1 y §12.2; 2026-11-25). Lo leen BateriaFacturacionTest (sin red) y,
+# en §12.3, SifenVivoFase12Test. Valores fijados por test-developer desde el catálogo de §12.1 y revisados por
+# software-architect el 2026-11-25 (Jbs_20261125_sifen_fase12_visto_bueno_esperados.md). Columnas (TAB):
+#   caso     ID del catálogo (CasosFase12, CasosDePrueba o BateriaIdentificacion)
+#   clase    positivo | variante | negativo | grande | plazo | existente | evento | evento-existente | evento-negativo
+#            | operacion (recorrido de §12.3 sobre documentos de la corrida: lo prueba sin red BateriaFacturacionSimulatorTest)
+#   origen   f12 = CasosFase12 · casos = CasosDePrueba · bateria = BateriaIdentificacion · - = operación
+#   errores  códigos ERROR exactos de la validación previa (coma; - = ninguno)
+#   avisos   códigos WARNING exactos (coma; - = ninguno)
+#   sifen    dCodRes esperado en SIFEN-test (0260 aprobado, 1005 aprobado con observación, 0600 evento); ? = no se sabe
+#            (exploratorio) y un ? al final = a confirmar; - = no se envía
+#   vivo     V se envía (un número) · V0 en vivo sin número · N negativo o exploratorio (Q39: los 11) · - solo sin red
+#   tanda    tarea de §12.3 donde se envía; espera = no se envía todavía (SifenVivoFase12Test solo toma las que
+#            empiezan con 12.3.); el orden de ejecución, con 12.3.10 antes que 12.3.9, está en envios_12_3.tsv
+#   nota     qué prueba
+caso	clase	origen	errores	avisos	sifen	vivo	tanda	nota
+ID-F08	positivo	f12	-	-	0260	V	12.3.2	B2F, cédula extranjera (D208 3, D213)
+ID-F09	positivo	f12	-	-	0260?	V	12.3.2	B2F, carnet de residencia (D208 4)
+ID-C02	existente	bateria	-	-	0260?	V	12.3.2	contribuyente persona física (D205 1); Q43 si SIFEN cruza D205 con el RUC
+ID-C08	existente	bateria	-	-	0260	V	12.3.2	contribuyente en B2C
+ID-N02	existente	bateria	-	-	0260	V	12.3.2	B2C, pasaporte
+ID-N03	existente	bateria	-	-	0260	V	12.3.2	B2C, cédula extranjera
+ID-N04	existente	bateria	-	-	0260	V	12.3.2	B2C, carnet de residencia; cubre ID-N11
+ID-N05	existente	bateria	-	-	0260	V	12.3.2	B2C, tarjeta diplomática (D209 descripción oficial, 1313)
+DE-41	positivo	f12	-	-	0260?	V	12.3.2	NC al receptor nominado de una FE innominada (H004h · 2441)
+DE-16	existente	casos	-	-	0260	V	12.3.2	FE a receptor innominado (35.000 Gs), sin nominar: base de la NC de ID-I06 (I12-09)
+ID-I06	existente	bateria	D208e	-	1331	N	12.3.10	innominado en NC, sobre la FE innominada de DE-16 de la corrida: D208e · 1331 es la única regla que incumple
+ID-I08	existente	bateria	JBS-D-44	-	?	N	12.3.10	exploratorio: innominado con número distinto de 0
+ID-I09	existente	bateria	JBS-D-46	-	?	N	12.3.10	exploratorio: innominado con nombre distinto de Sin Nombre
+ID-F04	existente	bateria	D203	-	1320	N	12.3.10	B2F con país PRY
+ID-F06	existente	bateria	D213	-	1318	N	12.3.10	B2F sin dirección
+DE-09	existente	casos	-	-	0260	V	12.3.3	FE base de las NC parciales
+DE-39	positivo	f12	-	-	0260	V	12.3.3	NC parcial 1 (H004d · 2417, H004f · 2438 solo servidor)
+DE-39b	positivo	f12	-	-	0260	V	12.3.3	NC parcial 2
+DE-39c	variante	f12	-	-	2417	N	12.3.10	tercera NC: supera el total (solo servidor)
+DE-40	positivo	f12	-	-	0260?	V	12.3.3	NC sobre factura impresa (Q43: timbrado preimpreso ficticio)
+DE-36	positivo	f12	-	-	0260	V	12.3.3	anticipo USD
+DE-37	positivo	f12	-	-	0260	V	12.3.3	final USD con anticipo por ítem (cantidad 1)
+DE-37b	variante	f12	-	-	-	-	-	final USD con cantidad 2 (E3-25), solo sin red
+DE-38	positivo	f12	-	-	0260?	V	12.3.3	NC USD sobre la final con anticipo
+DE-37n	variante	f12	-	-	2438	N	12.3.10	final PYG con anticipo USD (solo servidor)
+DE-42	positivo	f12	-	-	0260?	V	12.3.3	autofactura a vendedor extranjero con pasaporte (E304 · 2562 solo servidor)
+DE-43	positivo	f12	-	-	-	-	-	autofactura con cédula extranjera, solo sin red
+B-neg1	negativo	f12	H005	-	2405	-	-	NC impresa sin timbrado
+B-neg2	negativo	f12	JBS-E-78	-	-	-	-	anticipo aplicado sin dCDCAnticipo (E719)
+B-neg3	negativo	f12	H001	-	2400	-	-	autofactura sin documento asociado
+B-neg4	negativo	f12	H002	-	2416	-	-	autofactura asociada a un DE electrónico, no a una constancia
+B-neg5	negativo	f12	E601	-	1503	-	-	autofactura a crédito
+DE-15	existente	casos	-	-	0260?	V	12.3.4	B2G con gCompPub y DNCP (Q43: códigos ficticios); 0160 posible por la errata del XSD en dEntCont (I12-07)
+DE-33	positivo	f12	-	-	0260	V	12.3.4	B2G sin gCompPub, con dCodConDncp
+C-neg2a	negativo	f12	E025	-	1402	-	-	dFeCodCont posterior a la emisión
+C-neg2b	variante	f12	-	-	-	-	-	dFeCodCont igual a la emisión: la validación 1402 solo rechaza la posterior ("no puede ser superior"); acepta (I12-04)
+C-neg2c	negativo	f12	JBS-E-63	-	-	-	-	dDncpG de 9 caracteres (uno de 7 se completa con ceros, I6-09)
+C-neg2d	negativo	f12	JBS-E-65	-	-	-	-	dDncpE de 2 caracteres
+DE-34	positivo	f12	-	-	0260?	V	12.3.4	exportación de bienes (D57, Q44)
+DE-35	positivo	f12	-	-	0260?	V	12.3.4	exportación de servicios
+D-neg1	negativo	f12	D213	-	1318	-	-	exterior sin dirección
+D-neg2	negativo	f12	D203	-	1320	-	-	exterior con país PRY
+D-neg3	negativo	f12	JBS-E-147	-	-	-	-	gTransp sin modalidad
+D-neg4	negativo	f12	JBS-E-148	-	-	-	-	gTransp sin responsable del flete
+DE-44	positivo	f12	-	-	0260	V	12.3.5	tarjeta de crédito con procesadora (1603: en vivo el RUC del emisor de prueba)
+DE-45	positivo	f12	-	-	0260	V	12.3.5	cheque
+DE-46	positivo	f12	-	-	0260	V	12.3.5	cuatro medios de pago
+DE-47	positivo	f12	-	-	0260	V	12.3.5	PYG pagada en parte en USD
+DE-46x	variante	f12	-	JBS-E-30	?	N	12.3.10	exploratorio: los pagos no suman el total
+S1-neg1	negativo	f12	E620	-	1600	-	-	tarjeta sin gPagTarCD
+S1-neg2	negativo	f12	E630	-	1650	-	-	cheque sin gPagCheq
+S1-neg3	variante	f12	-	-	-	-	-	cheque de 6 dígitos: setdNumCheq completa con ceros hasta 8 (MT), acepta (I12-03)
+S1-neg3b	negativo	f12	JBS-E-44	-	-	-	-	cheque con letras
+S1-neg4	negativo	f12	E606	-	1553	-	-	pago bancario (16) en una FE que no es operación bancaria
+DE-19	existente	casos	-	-	0260	V	12.3.5	crédito en tres cuotas
+DE-48	positivo	f12	-	-	0260	V	12.3.5	cuotas con entrega inicial
+DE-19x	variante	f12	-	JBS-E-51	?	N	12.3.10	exploratorio: las cuotas no suman el saldo
+S2-neg1	negativo	f12	E650	-	1750	-	-	cuotas sin gCuotas
+S2-neg2	negativo	f12	E644a	-	1706	-	-	plazo con dCuotas
+S2-neg3	negativo	f12	E643a	-	1704	-	-	cuotas con dPlazoCre
+DE-12	existente	casos	-	-	0260?	V	12.3.5	solo exonerado
+DE-49	positivo	f12	-	-	0260	V	12.3.5	solo exentos
+DE-13	existente	casos	-	-	0260	V	12.3.5	descuento por ítem y global (EA004 · 1862)
+DE-50	positivo	f12	-	-	0260	V	12.3.5	descuento global proporcional con redondeo
+DE-51	positivo	f12	-	-	0260?	V	12.3.5	ítem bonificado al 100 %
+DE-08	existente	casos	-	-	0260	V	12.3.5	USD con cambio por ítem
+DE-52	positivo	f12	-	-	0260	V	12.3.5	EUR cambio global
+DE-53	positivo	f12	-	-	0260	V	12.3.5	BRL cambio por ítem
+DE-54	positivo	f12	-	-	0260	V	12.3.5	ARS cotización de cuatro decimales
+DE-55	grande	f12	-	-	0260	V	12.3.7	500 ítems
+DE-56	grande	f12	-	-	0260	V	12.3.7	999 ítems
+DE-56n	negativo	f12	JBS-E-57	-	-	-	-	1000 ítems
+DE-56x	grande	f12	-	-	0200?	N	12.3.10	exploratorio: 999 ítems de más de 1000 KB (M12-01); o corte de conexión sin respuesta (MT 12.3.1.1): resolve antes de inutilizar
+DE-56s	grande	f12	-	-	0260?	V	12.3.10	sonda de I12-23 (decisión del usuario, 2026-11-25): 500 ítems con los textos largos de DE-56x (≈ 650 KB); solo si el reintento de DE-56 repite el 0160 genérico, en lugar de DE-56x y con su número; aprueba: el límite de SIFEN-test es por cantidad de ítems; 0160: por bytes
+DE-57	positivo	f12	-	-	0260	V	12.3.6	NR traslado entre locales
+DE-58	positivo	f12	-	-	0260	V	12.3.6	NR consignación
+DE-59	positivo	f12	-	-	0260?	V	12.3.6	NR exportación (receptor B2F)
+DE-60	positivo	f12	-	-	0260	V	12.3.6	NR motivo Otro
+S7-neg1	negativo	f12	JBS-E-150	-	-	-	-	NR de importación sin dNuDespImp
+S7-neg2	negativo	f12	E900	-	2100	-	-	NR sin gTransp
+S7-neg3	negativo	f12	E501	-	2606	-	-	traslado entre locales con otro receptor
+DE-61	positivo	f12	-	-	0260?	V	12.3.6	ND sobre FE electrónica (Q40; 1101-1106 si el timbrado no la habilita)
+DE-22	existente	casos	-	-	0260?	V	12.3.6	ND sobre factura impresa (Q40, Q43)
+DE-62	positivo	f12	-	-	0260?	V	12.3.6	comisión con IVA incluido: dComi 110000, dIVAComi 10000.00 (dComi/11, I3-20), dTotIVA 110000.00, dTotGralOpe 1210000; 0260 confirma los valores, no la fórmula (F026 sin validación); 2371 posible (F017a: F015+F016, sin F026)
+DE-63	positivo	f12	-	-	0260?	-	-	vehículo nuevo (Q42: sin red); XSD publicado: patrón de dCilin con errata (I12-07)
+DE-64	positivo	f12	-	-	0260	-	-	energía (Q42: sin red; I12-01)
+DE-65	positivo	f12	-	-	0260	-	-	seguros (Q42: sin red)
+DE-66	positivo	f12	-	-	0260	-	-	supermercado (Q42: sin red)
+DE-67	positivo	f12	-	-	0260	V	12.3.6	ciclo con contrato (Q42: en vivo)
+DE-68	positivo	f12	-	-	0260	V	12.3.6	rastreo de mercadería (Q42: en vivo)
+S14-neg1	negativo	f12	JBS-E-127	-	-	-	-	seguros sin pólizas
+S14-neg2	negativo	f12	E822	-	2050	-	-	ciclo sin fechas
+S14-neg3	negativo	f12	E823b	-	2054	-	-	fin del ciclo anterior al inicio
+S14-neg4	negativo	f12	JBS-E-105	-	-	-	-	chasis de 16 caracteres
+OP-20	plazo	f12	-	A004b	1005?	V	12.3.8	dFecFirma y dFeEmiDE 73 h atrás (D56): aprobado con observación
+OP-22	plazo	f12	-	D002	1150	N	12.3.10	dFeEmiDE 31 días atrás; exige dFeIniT del timbrado anterior a la fecha de emisión atrasada (C004b · 1103, NT 001)
+OP-23	plazo	f12	-	D002f	1151	-	-	dFeEmiDE 6 días en el futuro
+EV-07	evento	f12	-	-	0600?	V0	12.3.8	notificación de recepción (Q41); va primero sobre su FE (GEN001 · 4113); el XSD publicado no trae dTotalGs
+EV-08	evento	f12	-	-	0600	V0	12.3.8	desconocimiento
+EV-08c	operacion	-	-	-	4156?	V0	12.3.8	conformidad sobre la FE desconocida en EV-08 (GCO001; el punto 5 de la NT 019 la contradice)
+EV-09	evento	f12	-	-	0600?	V0	12.3.8	conformidad total después de EV-03; NT 019, GCO002: 4150 o 4158 si SIFEN admite una sola conformidad
+EV-03	evento-existente	casos	-	-	0600	V0	12.3.8	conformidad parcial (GCO004 · 4154)
+EV-04	evento-existente	casos	-	-	0600	V0	12.3.8	disconformidad; la conformidad que la corrige es EV-04c
+EV-04c	operacion	-	-	-	0600	V0	12.3.8	conformidad total que corrige la disconformidad de EV-04, sobre la misma FE (GCO002c: hasta 15 días)
+OP-05b	evento-negativo	f12	GEI006	-	4067	-	-	inutilización de más de 1000 números
+OP-05c	evento-negativo	f12	GEI006a	-	4068	-	-	inutilización con el rango invertido
+OP-01	operacion	-	-	-	4009	V0	12.3.8	cancelar 001-001-0001001 (aprobada el 2026-11-24 09:08) pasadas 48 h: desde el 2026-11-26 09:15; antes, 001-001-0000051 desde el 2026-11-25 21:35
+OP-02	operacion	-	-	-	4010	V0	12.3.12	cancelar la NC 001-001-0000060 fuera de plazo (168 h): desde el 2026-11-30, no bloquea (D56)
+OP-03	operacion	-	-	-	4065	V0	12.3.8	inutilizar un número con un DE aprobado de la corrida (GEI005)
+OP-04	operacion	-	-	-	4003	V0	12.3.8	cancelar 001-001-0001050, ya cancelada en §8.7 (GEC002b)
+OP-05	operacion	-	-	-	4002	-	-	cancelar un CDC inexistente: solo simulador
+OP-06	operacion	-	-	-	0600?	V0	12.3.8	el emisor cancela la FE que el receptor conformó (EV-03): la NT 025 quitó 4004
+OP-10	operacion	-	-	-	0300+0362	V	12.3.9	lote de 5 FE: 4 válidas y 1 con dFeIniT cambiada (1107); el rechazado se inutiliza (D55)
+OP-11	operacion	-	-	-	0300+0362	V	12.3.9	lote de 50 FE mínimas, una sola vez y al final (Q46); queryDE de cinco al azar
+OP-12	operacion	-	-	-	-	-	-	lote de 51 (JBS-ENT-01), vacío (JBS-ENT-11) y mezclado (JBS-ENT-09): rechazo local sin pedidos
+OP-21	operacion	-	-	-	1005?	V	12.3.12	DE-05 firmado en §12.3.1 y enviado 72 h después con readSigned (opcional, Q45; no bloquea)
+C-neg1	operacion	-	-	-	1332	N	espera	organismo del Estado como B2B: solo si el usuario da el RUC (Q43; hoy no)
+OP-30	operacion	-	-	-	0600?	V	12.3.9	S9 (pedido del usuario, 2026-11-25): FE propia (OP-30-FE, 150.000) y NC parcial aprobada sobre ella (OP-30-NC, 50.000), y después cancel de la FE dentro de las 48 h de su aprobación (MT §11.1.2 y Tabla J; GDE004a · 4009); el MT (§11.1, Tabla J) pide cancelar antes el último DTE asociado, sin código de validación en §11.6.1 (4000–4010): exploratorio; 2 números
+OP-31	operacion	-	-	-	0600?	V	12.3.9	S9 (pedido del usuario, 2026-11-25): FE propia (OP-31-FE, 80.000) y NC por el total aprobada (OP-31-NC), y después cancel de la FE dentro de las 48 h (ídem OP-30; GCO002e · 4155 usa el «ajustado en su totalidad» solo para la conformidad): exploratorio; 2 números
+OP-32	operacion	-	-	-	2404	V	12.3.9	S9 (pedido del usuario, 2026-11-25): FE propia (OP-32-FE, 60.000) aprobada y cancelada (0600) y después una NC sobre ella (OP-32-NC): H004b · 2404, solo servidor (la librería no sabe del estado); la NC rechazada se inutiliza en 12.3.11 con tipo 5 (D55); 2 números

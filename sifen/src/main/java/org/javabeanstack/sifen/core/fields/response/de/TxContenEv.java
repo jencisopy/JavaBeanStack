@@ -30,6 +30,16 @@ import org.w3c.dom.Node;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Eventos del DE consultado ({@code xContEv}) en la respuesta de SIFEN a la consulta de un DE por CDC.
+ *
+ * <p>Lo expone {@link org.javabeanstack.sifen.core.fields.response.de.TxContenDE#getxContEv()}, que cuelga de
+ * {@link org.javabeanstack.sifen.core.beans.response.RespuestaConsultaDE#getxContenDE()}, deprecada en favor de
+ * {@link org.javabeanstack.sifen.ISifenClient} (D42): por eso sus firmas públicas se mantienen sin cambios en toda
+ * la línea 2.x, sin {@code @Deprecated} (decisión del usuario ESC-36, I8-35). No es contrato v1: la aplicación usa
+ * {@link org.javabeanstack.sifen.ISifenClient} y sus resultados de {@code api}. Su reemplazo es {@link
+ * org.javabeanstack.sifen.api.DEQueryResult#getEvents()}.</p>
+ */
 public class TxContenEv extends SifenObjectBase {
     private final List<TrContEv> rContEvList = new ArrayList<>();
 

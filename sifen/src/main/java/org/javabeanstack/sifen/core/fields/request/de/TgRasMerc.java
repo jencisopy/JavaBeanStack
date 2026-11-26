@@ -31,6 +31,19 @@ import jakarta.xml.soap.SOAPElement;
 import jakarta.xml.soap.SOAPException;
 import java.time.LocalDate;
 
+/**
+ * Grupo de rastreo de la mercadería ({@code gRasMerc}, E8.4 del MT; {@code tgRasMerc} del XSD).
+ *
+ * <p>Sale en el orden del XSD vigente de la DNIT: {@code dNumLote}, {@code dVencMerc}, {@code dNSerie},
+ * {@code dNumPedi}, {@code dNumSegui}, {@code dNumReg} y {@code dNumRegEntCom}. {@code dNomPro} (E761, agregado por la
+ * NT 010) todavía no está en la librería (plan JBSSIF, Fase 7).</p>
+ *
+ * <p>E12-08 (plan JBSSIF, decisión del usuario del 2026-11-25, ESC-44): la NT 010 (04/02/2022, apartado 1.4) eliminó
+ * los campos del importador ({@code dNomImp} E756, {@code dDirImp} E757 y {@code dNumFir} E758), y SIFEN rechaza con
+ * 0160 el DE que los trae. Sus seis accesores quedan deprecados y sin efecto en el XML: guardan y devuelven el valor,
+ * se siguen leyendo de un XML anterior, pero no se escriben. Sus reglas de validación (JBS-E-99, JBS-E-100 y
+ * JBS-E-101) están de baja.</p>
+ */
 public class TgRasMerc extends SifenObjectBase {
     private String dNumLote;
     private LocalDate dVencMerc;
@@ -60,14 +73,7 @@ public class TgRasMerc extends SifenObjectBase {
         if (this.dNumSegui != null)
             gRasMerc.addChildElement("dNumSegui").setTextContent(this.dNumSegui);
 
-        if (this.dNomImp != null)
-            gRasMerc.addChildElement("dNomImp").setTextContent(this.dNomImp);
-
-        if (this.dDirImp != null)
-            gRasMerc.addChildElement("dDirImp").setTextContent(this.dDirImp);
-
-        if (this.dNumFir != null)
-            gRasMerc.addChildElement("dNumFir").setTextContent(this.dNumFir);
+        // E12-08: dNomImp, dDirImp y dNumFir no se escriben; la NT 010 los eliminó del grupo (SIFEN rechaza con 0160)
 
         if (this.dNumReg != null)
             gRasMerc.addChildElement("dNumReg").setTextContent(this.dNumReg);
@@ -152,26 +158,68 @@ public class TgRasMerc extends SifenObjectBase {
         this.dNumSegui = dNumSegui;
     }
 
+    /**
+     * Nombre del importador (E756).
+     *
+     * @return el valor cargado o leído de un XML anterior a la NT 010.
+     * @deprecated eliminado por la NT 010 (04/02/2022, apartado 1.4); se conserva sin efecto en 2.x (guarda el valor pero no se escribe en el XML) y se retira en 3.0 (E12-08).
+     */
+    @Deprecated(since = "2.2.0")
     public String getdNomImp() {
         return dNomImp;
     }
 
+    /**
+     * Nombre del importador (E756).
+     *
+     * @param dNomImp se guarda, pero no se escribe en el XML.
+     * @deprecated eliminado por la NT 010 (04/02/2022, apartado 1.4); se conserva sin efecto en 2.x (guarda el valor pero no se escribe en el XML) y se retira en 3.0 (E12-08).
+     */
+    @Deprecated(since = "2.2.0")
     public void setdNomImp(String dNomImp) {
         this.dNomImp = dNomImp;
     }
 
+    /**
+     * Dirección del importador (E757).
+     *
+     * @return el valor cargado o leído de un XML anterior a la NT 010.
+     * @deprecated eliminado por la NT 010 (04/02/2022, apartado 1.4); se conserva sin efecto en 2.x (guarda el valor pero no se escribe en el XML) y se retira en 3.0 (E12-08).
+     */
+    @Deprecated(since = "2.2.0")
     public String getdDirImp() {
         return dDirImp;
     }
 
+    /**
+     * Dirección del importador (E757).
+     *
+     * @param dDirImp se guarda, pero no se escribe en el XML.
+     * @deprecated eliminado por la NT 010 (04/02/2022, apartado 1.4); se conserva sin efecto en 2.x (guarda el valor pero no se escribe en el XML) y se retira en 3.0 (E12-08).
+     */
+    @Deprecated(since = "2.2.0")
     public void setdDirImp(String dDirImp) {
         this.dDirImp = dDirImp;
     }
 
+    /**
+     * Número de registro de la firma del importador (E758).
+     *
+     * @return el valor cargado o leído de un XML anterior a la NT 010.
+     * @deprecated eliminado por la NT 010 (04/02/2022, apartado 1.4); se conserva sin efecto en 2.x (guarda el valor pero no se escribe en el XML) y se retira en 3.0 (E12-08).
+     */
+    @Deprecated(since = "2.2.0")
     public String getdNumFir() {
         return dNumFir;
     }
 
+    /**
+     * Número de registro de la firma del importador (E758).
+     *
+     * @param dNumFir se guarda, pero no se escribe en el XML.
+     * @deprecated eliminado por la NT 010 (04/02/2022, apartado 1.4); se conserva sin efecto en 2.x (guarda el valor pero no se escribe en el XML) y se retira en 3.0 (E12-08).
+     */
+    @Deprecated(since = "2.2.0")
     public void setdNumFir(String dNumFir) {
         this.dNumFir = dNumFir;
     }

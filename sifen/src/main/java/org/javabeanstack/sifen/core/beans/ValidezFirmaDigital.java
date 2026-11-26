@@ -40,6 +40,10 @@ import java.util.List;
  * correlación}, igual que en una {@link SifenException}. Un <b>veredicto</b> (firma inválida, RUC que
  * no coincide, documento sin firma) no lleva código, salvo {@code JBS-FIRMA-05} (certificado sin
  * número de documento del titular).</p>
+ *
+ * <p>Deprecada en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): se mantiene sin cambios de
+ * firma en 2.x y se retira en 3.0; no recibe operaciones nuevas. Su reemplazo es {@link
+ * org.javabeanstack.sifen.api.SignatureVerification}.</p>
  */
 public class ValidezFirmaDigital {
     private boolean esValido;

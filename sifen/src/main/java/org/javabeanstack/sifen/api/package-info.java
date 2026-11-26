@@ -22,7 +22,8 @@
  */
 /**
  * Tipos del contrato de API v1 de {@code jbs-sifen} (plan JBSSIF, Fase 10, D34): lo que devuelven y
- * reciben las operaciones de {@code org.javabeanstack.sifen.ISifenClient}.
+ * reciben las operaciones de {@code org.javabeanstack.sifen.ISifenClient}, y los resultados de la conciliación
+ * de {@code org.javabeanstack.sifen.SifenReconciler} ({@code Reconciliation*}, PROVISIONALES; plan JBSSIF, §8.8).
  *
  * <p>Reglas comunes:</p>
  * <ul>
@@ -33,7 +34,9 @@
  *   <li>Ningún tipo de este paquete nombra {@code org.javabeanstack.sifen.internal.*}.</li>
  *   <li>Los enums ({@link org.javabeanstack.sifen.api.ResultStatus},
  *       {@link org.javabeanstack.sifen.api.BatchStatus}) son abiertos: un valor que la aplicación no
- *       conoce se trata como {@code UNRECOGNIZED}.</li>
+ *       conoce se trata como {@code UNRECOGNIZED}; en
+ *       {@link org.javabeanstack.sifen.api.ReconciliationStatus}, como {@code UNDETERMINED} (nunca como
+ *       {@code NOT_FOUND}).</li>
  * </ul>
  */
 package org.javabeanstack.sifen.api;

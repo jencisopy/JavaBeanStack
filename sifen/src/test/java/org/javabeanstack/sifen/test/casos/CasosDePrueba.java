@@ -482,8 +482,11 @@ public final class CasosDePrueba {
         DocumentoElectronico de = base(TTiDE.FACTURA_ELECTRONICA, "0000013", "000000013", CMondT.PYG, TTipTra.VENTA_MERCADERIA, receptorContribuyente(TiTiOpe.B2B));
         TgCamItem a = gravado10("ITEM-0131", "PRODUCTO DE PRUEBA 131", "2", "100000");
         a.getgValorItem().getgValorRestaItem().setdDescItem(bd("10000"));
+        // I12-21 (EA004 · 1862): el descuento global (2 % del total bruto) va prorrateado en cada ítem,
+        // dDescGloItem = dPorcDescTotal × dPUniProSer / 100 → 2000 y 1000 (el total sigue en 2000 × 2 + 1000 × 1 = 5000)
+        a.getgValorItem().getgValorRestaItem().setdDescGloItem(bd("2000"));
         TgCamItem b = gravado10("ITEM-0132", "PRODUCTO DE PRUEBA 132", "1", "50000");
-        b.getgValorItem().getgValorRestaItem().setdDescGloItem(bd("5000"));
+        b.getgValorItem().getgValorRestaItem().setdDescGloItem(bd("1000"));
         de.getgDtipDE().getgCamItemList().add(a);
         de.getgDtipDE().getgCamItemList().add(b);
         contado(de, "225000", CMondT.PYG, null);

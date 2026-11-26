@@ -22,6 +22,7 @@
  */
 /**
  * Puntos de extensión que implementa la aplicación y consulta la librería (plan JBSSIF, Fase 10).
- * Todo lo de este paquete es <b>PROVISIONAL</b> hasta la release 2.2.0.
+ * Todo lo de este paquete es <b>PROVISIONAL</b>: sigue provisional en la 2.2.0 y puede cambiar dentro de
+ * {@code 2.x}.
  */
 package org.javabeanstack.sifen.spi;

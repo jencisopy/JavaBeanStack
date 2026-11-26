@@ -135,6 +135,21 @@ public class ReemisionPruebaTest {
         Assertions.assertEquals(51, new ReemisionPrueba(emisor(), 50, tabla).getSiguiente());
     }
 
+    /**
+     * M12-15 (JBSSIF): una fila con el número «—» (la que dejaba la consulta de un lote con un CDC ajeno a la tabla) no
+     * deja la tabla ilegible ni cuenta para la numeración.
+     */
+    @Test
+    public void filaSinNumeroLegibleNoRompeLaTabla() throws Exception {
+        Path tabla = dir.resolve("equivalencias.csv");
+        ReemisionPrueba r = new ReemisionPrueba(emisor(), 50, tabla);
+        ReemisionPrueba.Reemision ra = r.reemitir("7", produccion(CasosDePrueba.documentos().get(4).construir()), FECHA);
+        r.registrar("—", new ReemisionPrueba.Reemision("—", "—", null, "01" + "0".repeat(42), FECHA), "ISifenClient.queryBatch:1", 200,
+                "0260", "APPROVED", "ok");
+        Assertions.assertEquals("001-001-0000050", ra.enviado);
+        Assertions.assertEquals(51, new ReemisionPrueba(emisor(), 50, tabla).getSiguiente(), "la fila «—» se ignora");
+    }
+
     @Test
     public void cdcYEmisorDePruebaRecalculados() throws Exception {
         ReemisionPrueba r = new ReemisionPrueba(emisor(), 50, dir.resolve("t.csv"));

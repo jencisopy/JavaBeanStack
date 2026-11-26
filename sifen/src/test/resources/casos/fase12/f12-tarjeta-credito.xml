@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rDE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ekuatia.set.gov.py/sifen/xsd siRecepDE_v150.xsd" xmlns="http://ekuatia.set.gov.py/sifen/xsd">
+    <dVerFor>150</dVerFor>
+    <DE Id="01801234565001001000004422026112310000000446">
+        <dDVId>6</dDVId>
+        <dFecFirma>2026-11-23T10:00:05</dFecFirma>
+        <dSisFact>1</dSisFact>
+        <gOpeDE>
+            <iTipEmi>1</iTipEmi>
+            <dDesTipEmi>Normal</dDesTipEmi>
+            <dCodSeg>000000044</dCodSeg>
+        </gOpeDE>
+        <gTimb>
+            <iTiDE>1</iTiDE>
+            <dDesTiDE>Factura electrónica</dDesTiDE>
+            <dNumTim>12345678</dNumTim>
+            <dEst>001</dEst>
+            <dPunExp>001</dPunExp>
+            <dNumDoc>0000044</dNumDoc>
+            <dFeIniT>2026-01-02</dFeIniT>
+        </gTimb>
+        <gDatGralOpe>
+            <dFeEmiDE>2026-11-23T10:00:00</dFeEmiDE>
+            <gOpeCom>
+                <iTipTra>1</iTipTra>
+                <dDesTipTra>Venta de mercadería</dDesTipTra>
+                <iTImp>1</iTImp>
+                <dDesTImp>IVA</dDesTImp>
+                <cMoneOpe>PYG</cMoneOpe>
+                <dDesMoneOpe>Guarani</dDesMoneOpe>
+            </gOpeCom>
+            <gEmis>
+                <dRucEm>80123456</dRucEm>
+                <dDVEmi>5</dDVEmi>
+                <iTipCont>2</iTipCont>
+                <dNomEmi>DE generado en ambiente de prueba - sin valor comercial ni fiscal</dNomEmi>
+                <dDirEmi>CALLE FICTICIA</dDirEmi>
+                <dNumCas>123</dNumCas>
+                <cDepEmi>1</cDepEmi>
+                <dDesDepEmi>CAPITAL</dDesDepEmi>
+                <cCiuEmi>1</cCiuEmi>
+                <dDesCiuEmi>ASUNCION (DISTRITO)</dDesCiuEmi>
+                <dTelEmi>0210000000</dTelEmi>
+                <dEmailE>facturacion@example.com</dEmailE>
+                <gActEco>
+                    <cActEco>46900</cActEco>
+                    <dDesActEco>VENTA AL POR MAYOR NO ESPECIALIZADA</dDesActEco>
+                </gActEco>
+            </gEmis>
+            <gDatRec>
+                <iNatRec>1</iNatRec>
+                <iTiOpe>1</iTiOpe>
+                <cPaisRec>PRY</cPaisRec>
+                <dDesPaisRe>Paraguay</dDesPaisRe>
+                <iTiContRec>2</iTiContRec>
+                <dRucRec>80654321</dRucRec>
+                <dDVRec>3</dDVRec>
+                <dNomRec>CLIENTE FICTICIO S.A.</dNomRec>
+                <dDirRec>RUTA FICTICIA KM 1</dDirRec>
+                <dNumCasRec>0</dNumCasRec>
+                <cDepRec>1</cDepRec>
+                <dDesDepRec>CAPITAL</dDesDepRec>
+                <cCiuRec>1</cCiuRec>
+                <dDesCiuRec>ASUNCION (DISTRITO)</dDesCiuRec>
+                <dEmailRec>recepcion@example.com</dEmailRec>
+            </gDatRec>
+        </gDatGralOpe>
+        <gDtipDE>
+            <gCamFE>
+                <iIndPres>1</iIndPres>
+                <dDesIndPres>Operación presencial</dDesIndPres>
+            </gCamFE>
+            <gCamCond>
+                <iCondOpe>1</iCondOpe>
+                <dDCondOpe>Contado</dDCondOpe>
+                <gPaConEIni>
+                    <iTiPago>3</iTiPago>
+                    <dDesTiPag>Tarjeta de crédito</dDesTiPag>
+                    <dMonTiPag>150000</dMonTiPag>
+                    <cMoneTiPag>PYG</cMoneTiPag>
+                    <dDMoneTiPag>Guarani</dDMoneTiPag>
+                    <gPagTarCD>
+                        <iDenTarj>1</iDenTarj>
+                        <dDesDenTarj>Visa</dDesDenTarj>
+                        <dRSProTar>PROCESADORA FICTICIA S.A.</dRSProTar>
+                        <dRUCProTar>80123456</dRUCProTar>
+                        <dDVProTar>5</dDVProTar>
+                        <iForProPa>1</iForProPa>
+                        <dCodAuOpe>123456</dCodAuOpe>
+                        <dNomTit>TITULAR FICTICIO</dNomTit>
+                        <dNumTarj>1234</dNumTarj>
+                    </gPagTarCD>
+                </gPaConEIni>
+            </gCamCond>
+            <gCamItem>
+                <dCodInt>ITEM-0044</dCodInt>
+                <dDesProSer>DOCUMENTO ELECTRÓNICO SIN VALOR COMERCIAL NI FISCAL - GENERADO EN AMBIENTE DE PRUEBA</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>1</dCantProSer>
+                <gValorItem>
+                    <dPUniProSer>150000</dPUniProSer>
+                    <dTotBruOpeItem>150000</dTotBruOpeItem>
+                    <gValorRestaItem>
+                        <dDescItem>0</dDescItem>
+                        <dPorcDesIt>0.00</dPorcDesIt>
+                        <dDescGloItem>0</dDescGloItem>
+                        <dAntPreUniIt>0</dAntPreUniIt>
+                        <dAntGloPreUniIt>0</dAntGloPreUniIt>
+                        <dTotOpeItem>150000.00</dTotOpeItem>
+                    </gValorRestaItem>
+                </gValorItem>
+                <gCamIVA>
+                    <iAfecIVA>1</iAfecIVA>
+                    <dDesAfecIVA>Gravado IVA</dDesAfecIVA>
+                    <dPropIVA>100</dPropIVA>
+                    <dTasaIVA>10</dTasaIVA>
+                    <dBasGravIVA>136363.64</dBasGravIVA>
+                    <dLiqIVAItem>13636.36</dLiqIVAItem>
+                    <dBasExe>0</dBasExe>
+                </gCamIVA>
+            </gCamItem>
+        </gDtipDE>
+        <gTotSub>
+            <dSubExe>0.00</dSubExe>
+            <dSubExo>0</dSubExo>
+            <dSub5>0</dSub5>
+            <dSub10>150000.00</dSub10>
+            <dTotOpe>150000</dTotOpe>
+            <dTotDesc>0</dTotDesc>
+            <dTotDescGlotem>0</dTotDescGlotem>
+            <dTotAntItem>0</dTotAntItem>
+            <dTotAnt>0</dTotAnt>
+            <dPorcDescTotal>0</dPorcDescTotal>
+            <dDescTotal>0</dDescTotal>
+            <dAnticipo>0</dAnticipo>
+            <dRedon>0</dRedon>
+            <dComi>0</dComi>
+            <dTotGralOpe>150000</dTotGralOpe>
+            <dIVA5>0</dIVA5>
+            <dIVA10>13636.36</dIVA10>
+            <dLiqTotIVA5>0</dLiqTotIVA5>
+            <dLiqTotIVA10>0</dLiqTotIVA10>
+            <dIVAComi>0.00</dIVAComi>
+            <dTotIVA>13636.36</dTotIVA>
+            <dBaseGrav5>0</dBaseGrav5>
+            <dBaseGrav10>136363.64</dBaseGrav10>
+            <dTBasGraIVA>136363.64</dTBasGraIVA>
+        </gTotSub>
+    </DE>
+</rDE>

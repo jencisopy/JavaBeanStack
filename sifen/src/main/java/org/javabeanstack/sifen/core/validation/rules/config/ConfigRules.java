@@ -84,7 +84,8 @@ final class ConfigRules extends RuleSet<SifenConfig, SifenConfig> {
                         s -> new Object[] {String.join(", ", s.e().getUnknownProperties())}));
         declare(rule("JBS-CFG-12").field("usarCertificadoCliente").error().showValue().source(RuleSource.JBS),
                 passes(s -> s.e().isUseClientCertificate(), s -> s.e().isUseClientCertificate()));
-        // Los tiempos de espera son constantes de la librería hasta que la Fase 5 (§5.2) los haga configurables.
+        // Los tiempos de espera son configurables desde §5.2 (sifen.http.*) y un tiempo <= 0 ya lo rechaza
+        // SifenConfig (el setter lanza; load lo deja como clave inválida, JBS-CFG-10): la regla no se evalúa (I8-36).
         declareNotEvaluated(rule("JBS-CFG-13").field("httpConnectTimeout").error().source(RuleSource.JBS), NotEvaluatedReason.CONSTANT);
         declare(rule("JBS-CFG-14").field("validacionReglasDesactivadas").warning().source(RuleSource.JBS),
                 passesWithArgs(s -> desactivadasInvalidas(s.e()).isEmpty(),

@@ -40,6 +40,10 @@ import java.util.List;
  * <p>Delta del fork 2.0.0-SNAPSHOT (plan JBSSIF, §1.4.5; ficha 10 del informe de línea base):
  * campo {@code dCodConDncp} (E827, NT 020) con getter y setter, escrito entre {@code dContrato} y
  * {@code dSalAnt} y leído antes de {@code dSalAnt}.</p>
+ *
+ * <p>E12-02 (plan JBSSIF, Fase 12): un {@code null} dentro de {@code dVencPagList} no se escribe (la línea base
+ * daba {@code NullPointerException}); con la validación previa no se llega a armar, porque lo rechaza JBS-E-195.
+ * La lista del llamador no se modifica.</p>
  */
 public class TgGrupAdi extends SifenObjectBase {
     private String dCiclo;
@@ -60,7 +64,9 @@ public class TgGrupAdi extends SifenObjectBase {
 
         if (this.dVencPagList != null) {
             for (LocalDate dVencPag : this.dVencPagList) {
-                gGrupAdi.addChildElement("dVencPag").setTextContent(dVencPag.toString());
+                if (dVencPag != null) { // sin la validación previa, un nulo no da NPE (JBS-E-195 lo reporta; E12-02)
+                    gGrupAdi.addChildElement("dVencPag").setTextContent(dVencPag.toString());
+                }
             }
         }
 

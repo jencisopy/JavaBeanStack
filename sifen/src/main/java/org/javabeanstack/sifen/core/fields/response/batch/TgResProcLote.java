@@ -32,6 +32,16 @@ import org.w3c.dom.Node;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Resultado de procesamiento de un DE del lote ({@code gResProcLote}) en la respuesta de SIFEN a la consulta de
+ * un lote.
+ *
+ * <p>Lo expone {@link org.javabeanstack.sifen.core.beans.response.RespuestaConsultaLoteDE#getgResProcLoteList()},
+ * deprecada en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): por eso sus firmas públicas se
+ * mantienen sin cambios en toda la línea 2.x, sin {@code @Deprecated} (decisión del usuario ESC-36, I8-35). No es
+ * contrato v1: la aplicación usa {@link org.javabeanstack.sifen.ISifenClient} y sus resultados de {@code api}. Su
+ * reemplazo es {@link org.javabeanstack.sifen.api.BatchQueryResult}.</p>
+ */
 public class TgResProcLote extends SifenObjectBase {
     private String id;
     private String dEstRes;

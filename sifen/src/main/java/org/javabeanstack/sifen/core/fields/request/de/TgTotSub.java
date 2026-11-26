@@ -57,6 +57,12 @@ import static org.javabeanstack.sifen.core.fields.util.FieldFormatUtil.formattdC
  * {@code dRedon} ≠ 0— y se puede fijar con {@link #setRedondeo(Boolean)} (§4.2, E0-01, M0-02); la tasa
  * del IVA se compara por valor, {@code 10.00} suma igual que {@code 10} (§4.5, E0-17); la escala de
  * cálculo es 2 en todas las monedas (D38 a, I3-41).</p>
+ *
+ * <p>Fase 12 (plan JBSSIF, E12-01): la comisión ({@code dComi}, F025) cargada con {@link #setdComi(BigDecimal)}
+ * o leída del XML llega al XML y suma a {@code dTotGralOpe} (F014 = F008 − F013 + F025), salvo en la autofactura,
+ * que no informa F025/F026. I3-20 (decisión del usuario del 2026-11-25): la comisión incluye el IVA al 10 %,
+ * {@code dIVAComi} (F026) = {@code dComi / 11}, con la escala y el redondeo del IVA (2 decimales, HALF_UP; D38 a),
+ * y {@code dTotIVA} (F017) lo suma.</p>
  */
 public class TgTotSub extends SifenObjectBase {
     private Boolean redondeo = true;
@@ -206,11 +212,16 @@ public class TgTotSub extends SifenObjectBase {
         } else {
             this.dRedon = BigDecimal.ZERO;
         }
-        this.dTotGralOpe = this.dTotOpe.subtract(this.dRedon).add(SifenUtil.coalesce(this.dComi, BigDecimal.ZERO));
+        // E12-01 (Fase 12): la comisión es dato de entrada y resetValues ya no la borra. F001: con C002 = 4
+        // (autofactura) no se informan F025/F026, así que tampoco entra al total; el dato cargado se conserva.
+        BigDecimal comision = iTiDE.getVal() == 4 ? BigDecimal.ZERO : SifenUtil.coalesce(this.dComi, BigDecimal.ZERO);
+        this.dTotGralOpe = this.dTotOpe.subtract(this.dRedon).add(comision);
         this.dRedon = this.dRedon.abs();
 
         if (this.dComi != null) {
-            this.dIVAComi = this.dComi.divide(BigDecimal.valueOf(1.1), scale, RoundingMode.HALF_UP);
+            // I3-20 (decisión del usuario, 2026-11-25): F026 «se aplica la tasa del 10 % para comisiones» con el
+            // IVA incluido en dComi, IVA = dComi / 11 (110000 → 10000.00); la línea base dividía por 1,1 (la base)
+            this.dIVAComi = comision.divide(BigDecimal.valueOf(11), scale, RoundingMode.HALF_UP);
         }
 
         this.dTotIVA = this.dIVA5.add(this.dIVA10).subtract(this.dLiqTotIVA5).subtract(this.dLiqTotIVA10).add(this.dIVAComi);
@@ -374,7 +385,11 @@ public class TgTotSub extends SifenObjectBase {
         dDescTotal = BigDecimal.ZERO;
         dAnticipo = BigDecimal.ZERO;
         dRedon = BigDecimal.ZERO;
-        dComi = BigDecimal.ZERO;
+        // E12-01: dComi es dato de entrada (setdComi o el XML leído), no un acumulado; solo el nulo pasa a
+        // cero, como antes, para que dComi y dIVAComi se sigan escribiendo
+        if (dComi == null) {
+            dComi = BigDecimal.ZERO;
+        }
         dTotGralOpe = BigDecimal.ZERO;
         dIVA5 = BigDecimal.ZERO;
         dIVA10 = BigDecimal.ZERO;

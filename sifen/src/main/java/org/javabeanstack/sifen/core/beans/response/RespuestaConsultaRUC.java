@@ -30,6 +30,10 @@ import org.w3c.dom.Node;
 
 /**
  * Clase principal que contiene la respuesta de Sifen a la consulta de un RUC de un contribuyente.
+ *
+ * <p>Deprecada en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42): se mantiene sin cambios de
+ * firma en 2.x y se retira en 3.0; no recibe operaciones nuevas. Su reemplazo es {@link
+ * org.javabeanstack.sifen.api.RucQueryResult}.</p>
  */
 public class RespuestaConsultaRUC extends BaseResponse {
     private TxContRuc xContRUC;

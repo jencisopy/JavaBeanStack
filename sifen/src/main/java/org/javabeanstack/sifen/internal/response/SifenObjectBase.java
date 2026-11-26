@@ -31,7 +31,15 @@ import jakarta.xml.soap.SOAPException;
 import java.math.BigDecimal;
 
 /**
- * Clase abstracta heredada por las clases utilizadas como parte de las respuestas a las peticiones.
+ * Clase abstracta heredada por las clases utilizadas como parte de las respuestas a las peticiones, y también
+ * por el modelo de entrada ({@code DocumentoElectronico}, {@code EventosDE} y los grupos {@code Tg*}/{@code Tr*}).
+ *
+ * <p>Es de un paquete interno ({@code internal.*}: «no utilizar»), pero es la superclase de los
+ * {@code Respuesta*} deprecados en favor de {@link org.javabeanstack.sifen.ISifenClient} (D42) y de los tipos de
+ * respuesta que ellos exponen. Por eso, como excepción a lo interno, su firma pública
+ * ({@link #setValueFromChildNode(Node)}) se mantiene sin cambios en toda la línea 2.x, sin {@code @Deprecated}
+ * (decisión del usuario ESC-36, I8-35). No es contrato v1 ni se retira con lo deprecado: el modelo de entrada,
+ * que sí es contrato, también la extiende.</p>
  */
 public abstract class SifenObjectBase {
     public abstract void setValueFromChildNode(Node value) throws SifenException;

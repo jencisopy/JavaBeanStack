@@ -26,8 +26,9 @@ import org.javabeanstack.sifen.Provisional;
 
 /**
  * Registro de envíos de la aplicación, que la librería consulta antes de transmitir un documento
- * (plan JBSSIF, §10.2, D41; M3-26). <b>PROVISIONAL</b> hasta la release 2.2.0: puede cambiar con
- * aviso en la bitácora del plan; la aplicación lo implementa detrás de una clase propia.
+ * (plan JBSSIF, §10.2, D41; M3-26). <b>PROVISIONAL</b> (sigue provisional en la 2.2.0): puede cambiar
+ * dentro de {@code 2.x}, con aviso en las notas de la versión y en el contrato; la aplicación lo implementa
+ * detrás de una clase propia.
  *
  * <p>El bloqueo contra el doble envío <b>entre WAR o entre nodos</b> es de la aplicación: su transición
  * de estado en la base ({@code UPDATE … WHERE estado = <anterior>} con una fila afectada). Este
