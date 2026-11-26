@@ -137,6 +137,43 @@ public final class Scenario {
                 "recepción rechazada (" + code + ")");
     }
 
+    /** Código de observación por omisión de {@link #approvedWithObservation()} (A004b, DE firmado hace más de 72 h). */
+    public static final String DEFAULT_OBSERVATION_CODE = "1005";
+    /** Mensaje de observación por omisión. */
+    public static final String DEFAULT_OBSERVATION_MESSAGE = "Transmisión extemporánea del DE";
+
+    /**
+     * DE <b>aprobado con observación</b> ({@code dEstRes} «Aprobado con observación», con tilde, y protocolo de
+     * autorización) con la observación por omisión: {@link #DEFAULT_OBSERVATION_CODE}, la extemporaneidad de un DE
+     * firmado hace más de 72 horas (A004b, plan JBSSIF §12.1, OP-20).
+     *
+     * @return el escenario.
+     */
+    public static Scenario approvedWithObservation() {
+        return approvedWithObservation(DEFAULT_OBSERVATION_CODE, DEFAULT_OBSERVATION_MESSAGE);
+    }
+
+    /**
+     * DE <b>aprobado con observación</b> con el {@code dCodRes}/{@code dMsgRes} de la observación que se pida, con
+     * el CDC, el {@code DigestValue} del DE recibido y un protocolo propio. La librería lo interpreta como
+     * {@code ResultStatus.APPROVED_WITH_OBSERVATION}. La forma sigue el MT v150 (la de una recepción aprobada con un
+     * {@code gResProc} de observación); la respuesta real de SIFEN-test se graba en §12.4.4 del plan JBSSIF.
+     *
+     * <pre>{@code
+     * sim.once(SimulatedService.RECEIVE_DE, Scenario.approvedWithObservation("1005", "Transmisión extemporánea del DE"));
+     * SendResult r = sifen.send(firmado);   // r.getStatus() == APPROVED_WITH_OBSERVATION
+     * }</pre>
+     *
+     * @param code    {@code dCodRes} de la observación (p. ej. {@code 1005}).
+     * @param message {@code dMsgRes} (se escapa para XML).
+     * @return el escenario.
+     */
+    public static Scenario approvedWithObservation(String code, String message) {
+        return new Scenario(Kind.RESPOND, 200, SOAP, read(RESOURCES + "receive-de-approved-observation.xml"), true,
+                Objects.requireNonNull(code, "code"), Objects.requireNonNull(message, "message"), null, null,
+                "recepción aprobada con observación (" + code + ")");
+    }
+
     /** @return lote recibido (0300) con el número {@link #BATCH_NUMBER}. */
     public static Scenario batchReceived() {
         return resource(200, "receive-batch-received.xml");

@@ -40,11 +40,17 @@ import org.javabeanstack.sifen.core.validation.support.DEData;
  *
  * <p>Una regla por fila del catálogo (D33): ficha y chequeo juntos, en el orden del catálogo.
  * Migrado de los grupos de §3.3 sin cambio de comportamiento (§3.6, CA3-07).</p>
+ *
+ * <p>E12-02 (Fase 12, decisión del usuario del 2026-11-25, excepción a D54): JBS-E-195 rechaza un {@code null}
+ * dentro de la lista, en la ruta del elemento ({@code dVencPag[i]}); sin la validación previa, {@code TgGrupAdi}
+ * lo omite al armar.</p>
  */
 final class PaymentDueDateRules extends RuleSet<DocumentoElectronico, LocalDate> {
 
     PaymentDueDateRules() {
         super("E-dVencPag", RuleGroup.E, "gDtipDE.gCamEsp.gGrupAdi.dVencPag[]");
+        declare(rule("JBS-E-195").field("").error().showValue(),
+                groupRequiredIf(s -> true));
         declare(rule("E824").field("").error().dCodRes("2055").showValue(),
                 passes(s -> s.root().getgDatGralOpe() == null || s.root().getgDatGralOpe().getdFeEmiDE() == null
                 || !s.e().isBefore(s.root().getgDatGralOpe().getdFeEmiDE().toLocalDate()), s -> s.e()));

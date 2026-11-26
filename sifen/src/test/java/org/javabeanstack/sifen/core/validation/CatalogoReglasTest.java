@@ -69,7 +69,7 @@ public class CatalogoReglasTest {
     @Test
     public void elCatalogoSeArmaDeLosConjuntosSinRepetidos() {
         List<ValidationRule> todas = RuleCatalog.all();
-        Assertions.assertEquals(699, todas.size(), "649 del catálogo de §3.1 + JBS-VAL-00..02 + 14 JBS-CFG + 15 JBS-CERT (§3.7) + D208g (I3-31) + 6 de formato del número de documento (E3-26) + 2 en eventos (I3-43) + 7 de la Fase 6 (D031, D031a, D032, JBS-D-62, JBS-H-12, H018, H018a) + JBS-E-194 (I6-09) + JBS-EVENTO-56 (E8-01)");
+        Assertions.assertEquals(700, todas.size(), "649 del catálogo de §3.1 + JBS-VAL-00..02 + 14 JBS-CFG + 15 JBS-CERT (§3.7) + D208g (I3-31) + 6 de formato del número de documento (E3-26) + 2 en eventos (I3-43) + 7 de la Fase 6 (D031, D031a, D032, JBS-D-62, JBS-H-12, H018, H018a) + JBS-E-194 (I6-09) + JBS-EVENTO-56 (E8-01) + JBS-E-195 (E12-02)");
         Set<String> codigos = new HashSet<>();
         for (ValidationRule r : todas) {
             Assertions.assertTrue(codigos.add(r.getCode()), "repetido: " + r);
@@ -218,8 +218,12 @@ public class CatalogoReglasTest {
         Assertions.assertFalse(v.isInForceOn(LocalDate.of(2027, 2, 28)));
         Assertions.assertTrue(v.isInForceOn(LocalDate.of(2027, 3, 1)));
         Assertions.assertFalse(v.isInForceOn(LocalDate.of(2028, 1, 1)));
-        // §6.3 (D25), §6.2 (NT 026) y E8-01 (app-developer): JBS-VAL-03, JBS-E-64 y JBS-EVENTO-43 están de baja
-        Assertions.assertEquals(RuleCatalog.all().size() - 3, RuleCatalog.inForceOn(LocalDate.of(2026, 11, 24)).size());
+        // §6.3 (D25), §6.2 (NT 026) y E8-01 (app-developer): JBS-VAL-03, JBS-E-64 y JBS-EVENTO-43 están de baja;
+        // E12-08 (NT 010): también JBS-E-99, JBS-E-100 y JBS-E-101
+        Assertions.assertEquals(RuleCatalog.all().size() - 6, RuleCatalog.inForceOn(LocalDate.of(2026, 11, 24)).size());
+        for (String e1208 : new String[] {"JBS-E-99", "JBS-E-100", "JBS-E-101"}) {
+            Assertions.assertFalse(RuleCatalog.byCode(e1208).orElseThrow().isInForceOn(LocalDate.of(2022, 2, 4)), e1208);
+        }
         Assertions.assertFalse(RuleCatalog.byCode("JBS-EVENTO-43").orElseThrow().isInForceOn(LocalDate.of(2026, 11, 24)));
         Assertions.assertFalse(RuleCatalog.byCode("JBS-E-64").orElseThrow().isInForceOn(LocalDate.of(2025, 6, 16)));
         Assertions.assertFalse(RuleCatalog.byCode("JBS-VAL-03").orElseThrow().isInForceOn(LocalDate.of(2026, 11, 24)));

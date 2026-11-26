@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rDE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ekuatia.set.gov.py/sifen/xsd siRecepDE_v150.xsd" xmlns="http://ekuatia.set.gov.py/sifen/xsd">
+    <dVerFor>150</dVerFor>
+    <DE Id="07801234565001001000005722026112310000000570">
+        <dDVId>0</dDVId>
+        <dFecFirma>2026-11-23T10:00:05</dFecFirma>
+        <dSisFact>1</dSisFact>
+        <gOpeDE>
+            <iTipEmi>1</iTipEmi>
+            <dDesTipEmi>Normal</dDesTipEmi>
+            <dCodSeg>000000057</dCodSeg>
+            <dInfoFisc>Traslado de mercaderias de prueba</dInfoFisc>
+        </gOpeDE>
+        <gTimb>
+            <iTiDE>7</iTiDE>
+            <dDesTiDE>Nota de remisión electrónica</dDesTiDE>
+            <dNumTim>12345678</dNumTim>
+            <dEst>001</dEst>
+            <dPunExp>001</dPunExp>
+            <dNumDoc>0000057</dNumDoc>
+            <dFeIniT>2026-01-02</dFeIniT>
+        </gTimb>
+        <gDatGralOpe>
+            <dFeEmiDE>2026-11-23T10:00:00</dFeEmiDE>
+            <gEmis>
+                <dRucEm>80123456</dRucEm>
+                <dDVEmi>5</dDVEmi>
+                <iTipCont>2</iTipCont>
+                <dNomEmi>DE generado en ambiente de prueba - sin valor comercial ni fiscal</dNomEmi>
+                <dDirEmi>CALLE FICTICIA</dDirEmi>
+                <dNumCas>123</dNumCas>
+                <cDepEmi>1</cDepEmi>
+                <dDesDepEmi>CAPITAL</dDesDepEmi>
+                <cCiuEmi>1</cCiuEmi>
+                <dDesCiuEmi>ASUNCION (DISTRITO)</dDesCiuEmi>
+                <dTelEmi>0210000000</dTelEmi>
+                <dEmailE>facturacion@example.com</dEmailE>
+                <gActEco>
+                    <cActEco>46900</cActEco>
+                    <dDesActEco>VENTA AL POR MAYOR NO ESPECIALIZADA</dDesActEco>
+                </gActEco>
+            </gEmis>
+            <gDatRec>
+                <iNatRec>1</iNatRec>
+                <iTiOpe>1</iTiOpe>
+                <cPaisRec>PRY</cPaisRec>
+                <dDesPaisRe>Paraguay</dDesPaisRe>
+                <iTiContRec>2</iTiContRec>
+                <dRucRec>80123456</dRucRec>
+                <dDVRec>5</dDVRec>
+                <dNomRec>EMPRESA FICTICIA DE PRUEBA S.A.</dNomRec>
+                <dDirRec>RUTA FICTICIA KM 1</dDirRec>
+                <dNumCasRec>0</dNumCasRec>
+                <cDepRec>1</cDepRec>
+                <dDesDepRec>CAPITAL</dDesDepRec>
+                <cCiuRec>1</cCiuRec>
+                <dDesCiuRec>ASUNCION (DISTRITO)</dDesCiuRec>
+                <dEmailRec>recepcion@example.com</dEmailRec>
+            </gDatRec>
+        </gDatGralOpe>
+        <gDtipDE>
+            <gCamNRE>
+                <iMotEmiNR>7</iMotEmiNR>
+                <dDesMotEmiNR>Traslado entre locales de la empresa</dDesMotEmiNR>
+                <iRespEmiNR>1</iRespEmiNR>
+                <dDesRespEmiNR>Emisor de la factura</dDesRespEmiNR>
+                <dKmR>25</dKmR>
+                <dFecEm>2026-11-24</dFecEm>
+            </gCamNRE>
+            <gCamItem>
+                <dCodInt>ITEM-0231</dCodInt>
+                <dDesProSer>DOCUMENTO ELECTRÓNICO SIN VALOR COMERCIAL NI FISCAL - GENERADO EN AMBIENTE DE PRUEBA</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>12</dCantProSer>
+                <cRelMerc>1</cRelMerc>
+                <dDesRelMerc>Tolerancia de quiebra</dDesRelMerc>
+                <dCanQuiMer>0</dCanQuiMer>
+                <dPorQuiMer>0</dPorQuiMer>
+            </gCamItem>
+            <gTransp>
+                <iTipTrans>1</iTipTrans>
+                <dDesTipTrans>Propio</dDesTipTrans>
+                <iModTrans>1</iModTrans>
+                <dDesModTrans>Terrestre</dDesModTrans>
+                <iRespFlete>1</iRespFlete>
+                <dIniTras>2026-11-24</dIniTras>
+                <dFinTras>2026-11-25</dFinTras>
+                <gCamSal>
+                    <dDirLocSal>CALLE FICTICIA</dDirLocSal>
+                    <dNumCasSal>123</dNumCasSal>
+                    <cDepSal>1</cDepSal>
+                    <dDesDepSal>CAPITAL</dDesDepSal>
+                    <cCiuSal>1</cCiuSal>
+                    <dDesCiuSal>ASUNCION (DISTRITO)</dDesCiuSal>
+                </gCamSal>
+                <gCamEnt>
+                    <dDirLocEnt>RUTA FICTICIA KM 1</dDirLocEnt>
+                    <dNumCasEnt>0</dNumCasEnt>
+                    <cDepEnt>1</cDepEnt>
+                    <dDesDepEnt>CAPITAL</dDesDepEnt>
+                    <cCiuEnt>1</cCiuEnt>
+                    <dDesCiuEnt>ASUNCION (DISTRITO)</dDesCiuEnt>
+                </gCamEnt>
+                <gVehTras>
+                    <dTiVehTras>CAMION</dTiVehTras>
+                    <dMarVeh>TOYOTA</dMarVeh>
+                    <dTipIdenVeh>2</dTipIdenVeh>
+                    <dNroMatVeh>AAA000</dNroMatVeh>
+                </gVehTras>
+                <gCamTrans>
+                    <iNatTrans>1</iNatTrans>
+                    <dNomTrans>EMPRESA FICTICIA DE PRUEBA S.A.</dNomTrans>
+                    <dRucTrans>80123456</dRucTrans>
+                    <dDVTrans>5</dDVTrans>
+                    <dNumIDChof>3456789</dNumIDChof>
+                    <dNomChof>CHOFER FICTICIO</dNomChof>
+                    <dDomFisc>CALLE FICTICIA</dDomFisc>
+                    <dDirChof>CALLE FICTICIA</dDirChof>
+                </gCamTrans>
+            </gTransp>
+        </gDtipDE>
+    </DE>
+</rDE>

@@ -164,9 +164,9 @@ JBS-E-94	*	largo:81	gDtipDE.gCamItem[].gRasMerc.dNumLote	=
 JBS-E-96	*	largo:11	gDtipDE.gCamItem[].gRasMerc.dNSerie	=
 JBS-E-97	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumPedi	=
 JBS-E-98	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumSegui	=
-JBS-E-99	*	largo:61	gDtipDE.gCamItem[].gRasMerc.dNomImp	=
-JBS-E-100	*	largo:256	gDtipDE.gCamItem[].gRasMerc.dDirImp	=
-JBS-E-101	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumFir	=
+# E12-08 (app-developer, 2026-11-25): JBS-E-99 de baja (NT 010 eliminó el campo; D33, el código no se reasigna)
+# E12-08 (app-developer, 2026-11-25): JBS-E-100 de baja (NT 010 eliminó el campo; D33, el código no se reasigna)
+# E12-08 (app-developer, 2026-11-25): JBS-E-101 de baja (NT 010 eliminó el campo; D33, el código no se reasigna)
 JBS-E-102	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumReg	=
 JBS-E-103	*	largo:21	gDtipDE.gCamItem[].gRasMerc.dNumRegEntCom	=
 JBS-E-105	*	largo:18	gDtipDE.gCamItem[].gVehNuevo.dChasis	=
@@ -631,3 +631,5 @@ JBS-D-62	DE-05	crear@gDatGralOpe.gOpeCom.gOblAfe ; set:IRE_SIMPLE@gDatGralOpe.gO
 JBS-H-12	DE-21	set:12	gCamDEAsoc[].dRucFus	=
 H018	DE-21	set:80000005	gCamDEAsoc[].dRucFus	=
 H018a	DE-20	set:80123456	gCamDEAsoc[].dRucFus	=
+# E12-02 (app-developer, 2026-11-25): elemento nulo en la lista de vencimientos del pago
+JBS-E-195	DE-05	lista:2026-12-01@gDtipDE.gCamEsp.gGrupAdi.dVencPag ; +nulo@gDtipDE.gCamEsp.gGrupAdi.dVencPag	-	gDtipDE.gCamEsp.gGrupAdi.dVencPag[1]

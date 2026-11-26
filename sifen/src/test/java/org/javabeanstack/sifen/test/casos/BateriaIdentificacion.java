@@ -185,6 +185,11 @@ public final class BateriaIdentificacion {
         l.add(new Combinacion("ID-F05", "B2C con país ARG (extranjero sin B2F, como DE-17)", EXT, de -> { }, s("D203"), "1320"));
         l.add(new Combinacion("ID-F06", "B2F sin dirección", B2F, de -> r(de).setdDirRec(null), s("D213"), "1318"));
         l.add(new Combinacion("ID-F07", "B2F con departamento", B2F, de -> r(de).setcDepRec(TDepartamento.CAPITAL), s(), "no informar si D202 = 4; desde I3-42 JBS-D-50 es AVISO: TgDatRec no escribe cDepRec en B2F"));
+        // Fase 12 (plan JBSSIF, §12.1, grupo A; 2026-11-25): B2F con documentos de extranjero distintos del pasaporte
+        l.add(new Combinacion("ID-F08", "B2F con cédula extranjera", B2F, de -> doc(de, TiTipDocRec.CEDULA_EXTRANJERA, "12345678"), s(),
+                "D208 3 con D213 dDirRec (1318); sin departamento ni ciudad. SIFEN: 0260"));
+        l.add(new Combinacion("ID-F09", "B2F con carnet de residencia", B2F, de -> doc(de, TiTipDocRec.CARNET_DE_RESIDENCIA, "R-12345"), s(),
+                "D208 4, número con guion (tdNumDocId). SIFEN: 0260 a confirmar (residente con país distinto de PRY)"));
         // ---- nombre, dirección y otros
         l.add(new Combinacion("ID-R01", "Nombre con ñ, tildes, comillas y & («Peña & Hijos \"Ñandú\" S.Á.»)", B2B,
                 de -> r(de).setdNomRec("Peña & Hijos \"Ñandú\" S.Á."), s(), "se escapa en el XML"));

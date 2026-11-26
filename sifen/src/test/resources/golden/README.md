@@ -14,6 +14,7 @@ igualdad byte a byte.
 | `DE-06.obj.xml` | DE-06 armado por objeto: difería del releído porque el flag de redondeo se perdía al leer (E0-01); desde la Fase 4 (§4.2) es igual a `DE-06.xml`, como `DE-26.obj.xml` y `DE-28.obj.xml` |
 | `EV-nn.xml` | Sobre `rEnviEventoDe` firmado |
 | `LT-01.xml` | `rLoteDE` del zip del lote (el nombre de la entrada y la fecha del zip cambian en cada corrida y no se comparan) |
+| `candidatos/<ID>.xml` | (Fase 12, D53; 2026-11-25) XML de referencia **candidato** de los casos de `CasosFase12` (DE-33…DE-68, ID-F08, ID-F09, EV-07…EV-09): lo genera **`jbs-sifen`**, no el fork, y no entra al arnés A/B. Lo compara `CandidatosFase12Test` después de revisar los campos del MT; pasa a aceptado cuando SIFEN-test aprueba el caso (§12.3). `DE-62` lleva la comisión desde la corrección de E12-01 (2026-11-25); `dIVAComi` = `dComi`/11, IVA incluido (I3-20) |
 
 Son una sola línea (es la forma canónica). Para leerlos: `xmllint --format golden/DE-01.xml`.
 
@@ -61,3 +62,32 @@ golden fuera del catálogo del A/B (el fork no tiene `gOblAfe` y `CasosDePrueba`
 PYG de DE-05 con dos `gOblAfe` (NT 018), lo compara `NotasTecnicasFase6Test.goldenF601` y se congela con
 `-Djbs.sifen.f6.congelar=<carpeta>`. La NT 13 ya no se puede apagar (§6.3, D25): todos los golden tenían el flag en
 `true` y ninguno cambió por eso.
+
+**Fase 12 (2026-11-25, E12-07, decisión del usuario ESC-43)**: `DE-12` regenerado con `jbs-sifen` (`congelar-nuevos`
+del arnés, desde la salida de `jbs-sifen`): `dDesAfecIVA` del ítem exonerado «Exonerado (Art. 83- Ley 125/91)» →
+«Exonerado (Art. 100 - Ley 6380/2019)», el texto de `tdDesAfecIVA` del XSD vigente de la DNIT (SIFEN-test rechazó el
+viejo con 0160, 0001100); cambian también, por consecuencia, `DigestValue`, `SignatureValue` y `dCarQR`; el CDC no.
+`DE-12.xml` y `DE-12.obj.xml` quedan en `Comparador.EXCLUIDOS` del arnés A/B con su motivo (el fork escribe el texto
+viejo). La entrada `../casos/factura-exonerado.xml` **no** se regeneró: es la salida del fork, conserva el texto viejo
+y así prueba que un DE emitido antes de la corrección se sigue leyendo (`AfectacionIvaExoneradoE1207Test`). Antes,
+diff por elemento y A/B en `jbs_sifen_insumos/fase12/e12_07/`.
+
+**Fase 12 (2026-11-25, E12-08, decisión del usuario ESC-44, opción A1)**: `candidatos/DE-68.xml` regenerado con
+`CandidatosFase12Test -Djbs.sifen.f12.congelar` (solo ese archivo; los otros 77 congelados daban lo mismo): `gRasMerc`
+ya no lleva `dNomImp`, `dDirImp` ni `dNumFir`, que la NT 010 eliminó (SIFEN-test rechazó el primero con 0160,
+0001117), y sale en el orden del XSD vigente; cambian por consecuencia `DigestValue`, `SignatureValue` y `dCarQR`, el
+CDC no. La entrada `../casos/fase12/f12-rastreo-mercaderia.xml` **no** se regeneró: conserva el importador y así prueba
+que un XML anterior se sigue leyendo (lo leído no se escribe; `RastreoMercaderiaImportadorE1208Test`). Ningún golden de
+DE-01 a DE-32 lleva `gRasMerc`. I12-27 (`dDirRec` vacío sin dirección en B2F y NR) no cambió ningún golden ni
+candidato. Evidencia en `jbs_sifen_insumos/fase12/e12_08/` y `.../i12_27/`.
+
+**Fase 12 (2026-11-25, I12-21, decisión del usuario ESC-45, opción (a))**: cambia el **dato** de DE-13, no la
+librería. `CasosDePrueba.facturaDescuentos` reparte el descuento global del 2 % en cada ítem (`dDescGloItem` 2000 y
+1000, antes 0 y 5000), como pide EA004 (SIFEN-test rechazó el dato viejo con 1862, 0001102). Se regeneraron la entrada
+`../casos/factura-descuentos.xml` (`correr.sh entradas`, desde el fork) y `DE-13.xml` (`congelar`, desde el fork), los
+dos sobre copias, y se pasaron a mano solo esos dos archivos. Cambian `dDescGloItem`, `dTotOpeItem`, `dBasGravIVA`,
+`dLiqIVAItem` y, por consecuencia, `DigestValue`, `SignatureValue` y `dCarQR`; los totales de `gTotSub` y el CDC no.
+Como entrada y referencia salen del mismo objeto, DE-13 sigue con un solo golden (sin `DE-13.obj.xml`): el camino
+desde el XML y el camino por objeto comparan contra el mismo archivo. En el A/B, DE-13 sigue **igual** entre el fork y
+`jbs-sifen` (no se excluye): solo cambia el largo de sus dos filas, 7706 → 7709. Diff de campos y A/B en
+`jbs_sifen_insumos/fase12/i12_21/ab_c3/`.

@@ -421,6 +421,44 @@ final class SoporteValidacion {
         return l;
     }
 
+    /**
+     * Casos de la Fase 12 que estrenan grupos (plan JBSSIF, §12.2.4): tarjeta y débito sin procesadora, cheque,
+     * pago en otra moneda, cuotas con entrega, B2G con {@code gGrupAdi}, autofactura a un extranjero,
+     * {@code gTransp} y {@code gCamCarg} en una factura (exportación), remisión a un receptor del exterior,
+     * vehículo nuevo, rastreo de la mercadería y los cuatro grupos de {@code gCamEsp}. DE-55 y DE-56 quedan
+     * fuera (cientos de ítems iguales: no agregan rutas y multiplican el tiempo). {@code gCompPub} ya lo muta
+     * DE-15, que es de las fuentes del catálogo.
+     */
+    static final List<String> FASE12 = List.of("DE-44", "DE-45", "DE-46", "DE-47", "DE-48", "DE-33", "DE-42", "DE-34",
+            "DE-59", "DE-63", "DE-68", "DE-64", "DE-65", "DE-66", "DE-67");
+
+    /**
+     * Hallazgos de la Fase 12 que la mutación encuentra y la fase no corrige (D54): expresión sobre
+     * {@code "<ruta> <tipo>"} → código. Vacío: el único, E12-02 (un {@code null} dentro de {@code dVencPag} no lo
+     * reportaba ninguna regla y {@code TgGrupAdi.setupSOAPElements} daba NPE también con la validación activa), se
+     * corrigió en la fase por decisión del usuario (2026-11-25, ESC-40): lo rechaza JBS-E-195 y el armado omite el nulo.
+     */
+    static final Map<String, String> HALLAZGOS_FASE12 = Map.of();
+
+    /** Fuentes en las que cada hallazgo conocido tiene que seguir apareciendo (vacío: ver {@link #HALLAZGOS_FASE12}). */
+    static final Map<String, Set<String>> HALLAZGO_ESPERADO_EN = Map.of();
+
+    /** Fuentes de la Fase 12 ({@link #FASE12}), armadas por objeto desde {@code CasosFase12}. */
+    static List<FuenteEnriquecida> fuentesFase12() {
+        List<FuenteEnriquecida> l = new ArrayList<>();
+        for (String id : FASE12) {
+            l.add(new FuenteEnriquecida(id + "/f12", org.javabeanstack.sifen.test.casos.CasosFase12.todos().get(id)));
+        }
+        // DE-67 trae los tres dVencPag del máximo: un nulo agregado da además JBS-E-143 (más de 3); con dos, el nulo
+        // queda solo y lo tiene que reportar JBS-E-195 en su índice (E12-02)
+        l.add(new FuenteEnriquecida("DE-67/f12-2venc", () -> {
+            DocumentoElectronico de = org.javabeanstack.sifen.test.casos.CasosFase12.todos().get("DE-67").get();
+            de.getgDtipDE().getgCamEsp().getgGrupAdi().getdVencPagList().remove(2);
+            return de;
+        }));
+        return l;
+    }
+
     /** DE enriquecido a mutar. */
     record FuenteEnriquecida(String id, java.util.function.Supplier<DocumentoElectronico> fabrica) {
         DocumentoElectronico crear() {

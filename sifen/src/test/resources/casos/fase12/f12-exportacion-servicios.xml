@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rDE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ekuatia.set.gov.py/sifen/xsd siRecepDE_v150.xsd" xmlns="http://ekuatia.set.gov.py/sifen/xsd">
+    <dVerFor>150</dVerFor>
+    <DE Id="01801234565001001000003522026112310000000359">
+        <dDVId>9</dDVId>
+        <dFecFirma>2026-11-23T10:00:05</dFecFirma>
+        <dSisFact>1</dSisFact>
+        <gOpeDE>
+            <iTipEmi>1</iTipEmi>
+            <dDesTipEmi>Normal</dDesTipEmi>
+            <dCodSeg>000000035</dCodSeg>
+            <dInfoFisc>Exportacion de servicios. Pais de destino: Brasil. Instrucciones de pago: transferencia bancaria al contado</dInfoFisc>
+        </gOpeDE>
+        <gTimb>
+            <iTiDE>1</iTiDE>
+            <dDesTiDE>Factura electrónica</dDesTiDE>
+            <dNumTim>12345678</dNumTim>
+            <dEst>001</dEst>
+            <dPunExp>001</dPunExp>
+            <dNumDoc>0000035</dNumDoc>
+            <dFeIniT>2026-01-02</dFeIniT>
+        </gTimb>
+        <gDatGralOpe>
+            <dFeEmiDE>2026-11-23T10:00:00</dFeEmiDE>
+            <gOpeCom>
+                <iTipTra>2</iTipTra>
+                <dDesTipTra>Prestación de servicios</dDesTipTra>
+                <iTImp>1</iTImp>
+                <dDesTImp>IVA</dDesTImp>
+                <cMoneOpe>USD</cMoneOpe>
+                <dDesMoneOpe>US Dollar</dDesMoneOpe>
+                <dCondTiCam>1</dCondTiCam>
+                <dTiCam>7300.25</dTiCam>
+            </gOpeCom>
+            <gEmis>
+                <dRucEm>80123456</dRucEm>
+                <dDVEmi>5</dDVEmi>
+                <iTipCont>2</iTipCont>
+                <dNomEmi>DE generado en ambiente de prueba - sin valor comercial ni fiscal</dNomEmi>
+                <dDirEmi>CALLE FICTICIA</dDirEmi>
+                <dNumCas>123</dNumCas>
+                <cDepEmi>1</cDepEmi>
+                <dDesDepEmi>CAPITAL</dDesDepEmi>
+                <cCiuEmi>1</cCiuEmi>
+                <dDesCiuEmi>ASUNCION (DISTRITO)</dDesCiuEmi>
+                <dTelEmi>0210000000</dTelEmi>
+                <dEmailE>facturacion@example.com</dEmailE>
+                <gActEco>
+                    <cActEco>46900</cActEco>
+                    <dDesActEco>VENTA AL POR MAYOR NO ESPECIALIZADA</dDesActEco>
+                </gActEco>
+            </gEmis>
+            <gDatRec>
+                <iNatRec>2</iNatRec>
+                <iTiOpe>4</iTiOpe>
+                <cPaisRec>BRA</cPaisRec>
+                <dDesPaisRe>Brasil</dDesPaisRe>
+                <iTipIDRec>9</iTipIDRec>
+                <dDTipIDRec>Identificación tributaria</dDTipIDRec>
+                <dNumIDRec>12345678000190</dNumIDRec>
+                <dNomRec>IMPORTADORA FICTICIA LTDA</dNomRec>
+                <dDirRec>RUA FICTICIA 100</dDirRec>
+                <dNumCasRec>100</dNumCasRec>
+                <dEmailRec>compras@example.com</dEmailRec>
+            </gDatRec>
+        </gDatGralOpe>
+        <gDtipDE>
+            <gCamFE>
+                <iIndPres>1</iIndPres>
+                <dDesIndPres>Operación presencial</dDesIndPres>
+            </gCamFE>
+            <gCamCond>
+                <iCondOpe>1</iCondOpe>
+                <dDCondOpe>Contado</dDCondOpe>
+                <gPaConEIni>
+                    <iTiPago>5</iTiPago>
+                    <dDesTiPag>Transferencia</dDesTiPag>
+                    <dMonTiPag>5000.00</dMonTiPag>
+                    <cMoneTiPag>USD</cMoneTiPag>
+                    <dDMoneTiPag>US Dollar</dDMoneTiPag>
+                    <dTiCamTiPag>7300.25</dTiCamTiPag>
+                </gPaConEIni>
+            </gCamCond>
+            <gCamItem>
+                <dCodInt>SERV-035</dCodInt>
+                <dDesProSer>DOCUMENTO ELECTRÓNICO SIN VALOR COMERCIAL NI FISCAL - GENERADO EN AMBIENTE DE PRUEBA</dDesProSer>
+                <cUniMed>77</cUniMed>
+                <dDesUniMed>UNI</dDesUniMed>
+                <dCantProSer>1</dCantProSer>
+                <gValorItem>
+                    <dPUniProSer>5000.00</dPUniProSer>
+                    <dTotBruOpeItem>5000.00</dTotBruOpeItem>
+                    <gValorRestaItem>
+                        <dDescItem>0</dDescItem>
+                        <dPorcDesIt>0.00</dPorcDesIt>
+                        <dDescGloItem>0</dDescGloItem>
+                        <dAntPreUniIt>0</dAntPreUniIt>
+                        <dAntGloPreUniIt>0</dAntGloPreUniIt>
+                        <dTotOpeItem>5000.00</dTotOpeItem>
+                    </gValorRestaItem>
+                </gValorItem>
+                <gCamIVA>
+                    <iAfecIVA>3</iAfecIVA>
+                    <dDesAfecIVA>Exento</dDesAfecIVA>
+                    <dPropIVA>0</dPropIVA>
+                    <dTasaIVA>0</dTasaIVA>
+                    <dBasGravIVA>0</dBasGravIVA>
+                    <dLiqIVAItem>0</dLiqIVAItem>
+                    <dBasExe>0</dBasExe>
+                </gCamIVA>
+            </gCamItem>
+        </gDtipDE>
+        <gTotSub>
+            <dSubExe>5000.00</dSubExe>
+            <dSubExo>0</dSubExo>
+            <dSub5>0</dSub5>
+            <dSub10>0</dSub10>
+            <dTotOpe>5000.00</dTotOpe>
+            <dTotDesc>0</dTotDesc>
+            <dTotDescGlotem>0</dTotDescGlotem>
+            <dTotAntItem>0</dTotAntItem>
+            <dTotAnt>0</dTotAnt>
+            <dPorcDescTotal>0</dPorcDescTotal>
+            <dDescTotal>0</dDescTotal>
+            <dAnticipo>0</dAnticipo>
+            <dRedon>0</dRedon>
+            <dComi>0</dComi>
+            <dTotGralOpe>5000.00</dTotGralOpe>
+            <dIVA5>0</dIVA5>
+            <dIVA10>0</dIVA10>
+            <dLiqTotIVA5>0</dLiqTotIVA5>
+            <dLiqTotIVA10>0</dLiqTotIVA10>
+            <dIVAComi>0.00</dIVAComi>
+            <dTotIVA>0.00</dTotIVA>
+            <dBaseGrav5>0</dBaseGrav5>
+            <dBaseGrav10>0</dBaseGrav10>
+            <dTBasGraIVA>0</dTBasGraIVA>
+            <dTotalGs>36501250.0000</dTotalGs>
+        </gTotSub>
+    </DE>
+</rDE>

@@ -326,9 +326,9 @@ JBS-E-95	ERROR
 JBS-E-96	ERROR
 JBS-E-97	ERROR
 JBS-E-98	ERROR
-JBS-E-99	ERROR
-JBS-E-100	ERROR
-JBS-E-101	ERROR
+# E12-08 (app-developer, 2026-11-25): JBS-E-99 de baja (NT 010 eliminó el campo; D33, el código no se reasigna)
+# E12-08 (app-developer, 2026-11-25): JBS-E-100 de baja (NT 010 eliminó el campo; D33, el código no se reasigna)
+# E12-08 (app-developer, 2026-11-25): JBS-E-101 de baja (NT 010 eliminó el campo; D33, el código no se reasigna)
 JBS-E-102	ERROR
 JBS-E-103	ERROR
 JBS-E-104	ERROR
@@ -674,3 +674,4 @@ JBS-D-62	ERROR
 JBS-H-12	ERROR
 H018	ERROR
 H018a	ERROR
+JBS-E-195	ERROR

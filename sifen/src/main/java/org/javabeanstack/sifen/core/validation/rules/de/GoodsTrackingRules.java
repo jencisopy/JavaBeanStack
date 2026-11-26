@@ -56,12 +56,19 @@ final class GoodsTrackingRules extends RuleSet<DocumentoElectronico, TgRasMerc> 
                 length(TgRasMerc::getdNumPedi, 1, 20));
         declare(rule("JBS-E-98").field("dNumSegui").error().showValue(),
                 length(TgRasMerc::getdNumSegui, 1, 20));
-        declare(rule("JBS-E-99").field("dNomImp").error().lengthOnly().source(RuleSource.NT_010),
-                length(TgRasMerc::getdNomImp, 4, 60));
-        declare(rule("JBS-E-100").field("dDirImp").error().lengthOnly().source(RuleSource.NT_010),
-                length(TgRasMerc::getdDirImp, 1, 255));
-        declare(rule("JBS-E-101").field("dNumFir").error().showValue().source(RuleSource.NT_010),
-                length(TgRasMerc::getdNumFir, 20, 20));
+        // E12-08 (D33, ESC-44 opción A1): de baja. La NT 010 (04/02/2022, ap. 1.4) eliminó dNomImp, dDirImp y dNumFir
+        // del grupo y la librería ya no los escribe (sus accesores quedan deprecados y sin efecto en el XML): no hay nada
+        // que controlar, así que pasan siempre, también con una fecha de reglas anterior a la baja. Los códigos no se
+        // reasignan; el aviso de «campo eliminado, se ignora» es una regla nueva de la Fase 7.
+        declare(rule("JBS-E-99").field("dNomImp").error().lengthOnly().source(RuleSource.NT_010)
+                        .until(java.time.LocalDate.of(2022, 2, 4), "NT 010 (ap. 1.4): se elimina dNomImp (E756); no se escribe en el XML (E12-08)"),
+                passes(s -> true));
+        declare(rule("JBS-E-100").field("dDirImp").error().lengthOnly().source(RuleSource.NT_010)
+                        .until(java.time.LocalDate.of(2022, 2, 4), "NT 010 (ap. 1.4): se elimina dDirImp (E757); no se escribe en el XML (E12-08)"),
+                passes(s -> true));
+        declare(rule("JBS-E-101").field("dNumFir").error().showValue().source(RuleSource.NT_010)
+                        .until(java.time.LocalDate.of(2022, 2, 4), "NT 010 (ap. 1.4): se elimina dNumFir (E758); no se escribe en el XML (E12-08)"),
+                passes(s -> true));
         declare(rule("JBS-E-102").field("dNumReg").error().showValue().source(RuleSource.NT_010),
                 length(TgRasMerc::getdNumReg, 1, 20));
         declare(rule("JBS-E-103").field("dNumRegEntCom").error().showValue().source(RuleSource.NT_010),

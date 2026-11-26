@@ -24,9 +24,17 @@ package org.javabeanstack.sifen.core.types;
 
 import java.util.Arrays;
 
+/**
+ * Afectación tributaria del IVA del ítem ({@code iAfecIVA} y su descripción {@code dDesAfecIVA}).
+ *
+ * <p>E12-07 (plan JBSSIF, Fase 12, 2026-11-25): la descripción de {@link #EXONERADO} es la del XSD vigente de la DNIT
+ * ({@code tdDesAfecIVA}: «Exonerado (Art. 100 - Ley 6380/2019)»); la del XSD de 2019, «Exonerado (Art. 83- Ley
+ * 125/91)», SIFEN la rechaza con 0160. La lectura de un XML toma solo el código ({@code iAfecIVA}), así que un DE
+ * emitido con el texto viejo se sigue leyendo como exonerado.</p>
+ */
 public enum TiAfecIVA {
     GRAVADO((short) 1, "Gravado IVA"),
-    EXONERADO((short) 2, "Exonerado (Art. 83- Ley 125/91)"),
+    EXONERADO((short) 2, "Exonerado (Art. 100 - Ley 6380/2019)"),
     EXENTO((short) 3, "Exento"),
     GRAVADO_PARCIAL((short) 4, "Gravado parcial (Grav- Exento)");
 

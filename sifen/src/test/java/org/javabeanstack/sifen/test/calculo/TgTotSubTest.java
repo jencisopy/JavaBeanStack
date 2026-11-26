@@ -25,8 +25,10 @@ package org.javabeanstack.sifen.test.calculo;
 import org.javabeanstack.sifen.core.SifenConfig;
 import org.javabeanstack.sifen.core.beans.DocumentoElectronico;
 import org.javabeanstack.sifen.core.fields.request.de.TgTotSub;
+import org.javabeanstack.sifen.core.validation.support.DEData;
 import org.javabeanstack.sifen.internal.ctx.GenerationCtx;
 import org.javabeanstack.sifen.test.casos.CasosDePrueba;
+import org.javabeanstack.sifen.test.casos.CasosFase12;
 import org.javabeanstack.sifen.test.casos.FallasFachada;
 import org.javabeanstack.sifen.test.casos.FixturesSifen;
 import org.javabeanstack.sifen.test.casos.XmlCanonico;
@@ -211,7 +213,7 @@ public class TgTotSubTest {
         Resultado r = porObjeto("DE-13");
         igual("225000", r.t.getdTotOpe(), "dTotOpe");
         igual("20000", r.t.getdTotDesc(), "dTotDesc = 10000 × 2");
-        igual("5000", r.t.getdTotDescGlotem(), "dTotDescGlotem = 5000 × 1 (NT 001, F033)");
+        igual("5000", r.t.getdTotDescGlotem(), "dTotDescGlotem = 2000 × 2 + 1000 × 1 (NT 001, F033; I12-21: el descuento global prorrateado en cada ítem, EA004)");
         igual("25000", r.t.getdDescTotal(), "dDescTotal");
         igual("2.00000000", r.t.getdPorcDescTotal(), "dPorcDescTotal = global / (total + descuento), escala 8");
         igual("20454.55", r.t.getdIVA10(), "dIVA10");
@@ -298,5 +300,129 @@ public class TgTotSubTest {
         CasosDePrueba.Caso c = caso("DE-01");
         String xml = c.leer(FixturesSifen.entrada(c)).generarXml(aMano, cfg);
         Assertions.assertNotNull(XmlCanonico.texto(xml, "dBasExe"), "dBasExe se escribe siempre (NT 13)");
+    }
+
+    // ------------------------------------------------------------- comisión (Fase 12, E12-01)
+
+    /**
+     * E12-01: la comisión cargada con {@code setdComi} llega al XML (F025) y suma al total (F014 = F008 − F013 + F025);
+     * generar no la borra del objeto y generar dos veces da lo mismo. La línea base la perdía en {@code resetValues}
+     * ({@code dComi 0}, {@code dIVAComi 0.00}, {@code dTotGralOpe} 1100000). {@code dIVAComi} es el IVA incluido en la
+     * comisión, {@code dComi / 11} (I3-20, decisión del usuario del 2026-11-25), y {@code dTotIVA} lo suma.
+     */
+    @Test
+    public void comisionLlegaAlXmlYSumaAlTotalE1201() throws Exception {
+        DocumentoElectronico de = CasosFase12.todos().get("DE-62").get();
+        String xml = de.generarXml(ctx, cfg);
+        TgTotSub t = de.getgTotSub();
+        igual("110000", t.getdComi(), "dComi se conserva tras generar");
+        igual("1210000", t.getdTotGralOpe(), "dTotGralOpe = dTotOpe − dRedon + dComi");
+        igual("10000.00", t.getdIVAComi(), "dIVAComi = dComi / 11 (I3-20; la línea base: / 1,1 = 100000.00)");
+        igual("110000.00", t.getdTotIVA(), "dTotIVA = dIVA10 + dIVAComi");
+        Assertions.assertEquals("110000", XmlCanonico.texto(xml, "dComi"));
+        Assertions.assertEquals("1210000", XmlCanonico.texto(xml, "dTotGralOpe"));
+        Assertions.assertEquals("10000.00", XmlCanonico.texto(xml, "dIVAComi"));
+        Assertions.assertEquals("110000.00", XmlCanonico.texto(xml, "dTotIVA"));
+        Assertions.assertEquals(0, new BigDecimal("1210000").compareTo(DEData.operationTotal(de)), "la validación previa ve el mismo total");
+        String otraVez = de.generarXml(ctx, cfg);
+        Assertions.assertArrayEquals(XmlCanonico.canonico(xml), XmlCanonico.canonico(otraVez), "generar dos veces da lo mismo");
+        igual("110000", de.getgTotSub().getdComi(), "dComi tras la segunda generación");
+    }
+
+    /** E12-01: releída del XML, la comisión se conserva y regenerar da el mismo DE. */
+    @Test
+    public void comisionReleidaDelXmlSeConservaE1201() throws Exception {
+        String xml = CasosFase12.todos().get("DE-62").get().generarXml(ctx, cfg);
+        DocumentoElectronico leido = new DocumentoElectronico(xml);
+        String regenerado = leido.generarXml(ctx, cfg);
+        igual("110000", leido.getgTotSub().getdComi(), "dComi releído");
+        Assertions.assertArrayEquals(XmlCanonico.canonico(xml), XmlCanonico.canonico(regenerado));
+    }
+
+    /**
+     * E12-01 (F001: con C002 = 4 no se informan F025 ni F026): en la autofactura la comisión no se escribe ni suma al
+     * total, ni en el XML ni en la validación previa; el dato cargado queda en el objeto. El DE sale igual que sin ella.
+     */
+    @Test
+    public void autofacturaNoInformaNiSumaLaComisionE1201() throws Exception {
+        DocumentoElectronico sin = caso("DE-20").construir();
+        String xmlSin = sin.generarXml(ctx, cfg);
+        DocumentoElectronico con = caso("DE-20").construir();
+        con.getgTotSub().setdComi(new BigDecimal("1000"));
+        String xmlCon = con.generarXml(ctx, cfg);
+        Assertions.assertNull(XmlCanonico.texto(xmlCon, "dComi"));
+        Assertions.assertNull(XmlCanonico.texto(xmlCon, "dIVAComi"));
+        Assertions.assertEquals(sin.getgTotSub().getdTotGralOpe(), con.getgTotSub().getdTotGralOpe());
+        Assertions.assertEquals(DEData.operationTotal(sin), DEData.operationTotal(con));
+        Assertions.assertArrayEquals(XmlCanonico.canonico(xmlSin), XmlCanonico.canonico(xmlCon));
+        igual("1000", con.getgTotSub().getdComi(), "el dato cargado se conserva");
+    }
+
+    /** Una comisión nula se escribe en 0 ({@code dComi 0}, {@code dIVAComi 0.00}), como en la línea base. */
+    @Test
+    public void comisionNulaSeEscribeEnCero() throws Exception {
+        DocumentoElectronico de = caso("DE-05").construir();
+        String sinTocar = de.generarXml(ctx, cfg);
+        DocumentoElectronico nula = caso("DE-05").construir();
+        nula.getgTotSub().setdComi(null);
+        String xml = nula.generarXml(ctx, cfg);
+        Assertions.assertEquals("0", XmlCanonico.texto(xml, "dComi"));
+        Assertions.assertEquals("0.00", XmlCanonico.texto(xml, "dIVAComi"));
+        Assertions.assertArrayEquals(XmlCanonico.canonico(sinTocar), XmlCanonico.canonico(xml));
+    }
+
+    // ------------------------------------------------------------- redondeo de dIVAComi (Fase 12, M12-05)
+
+    /**
+     * M12-05: {@code dIVAComi} = {@code dComi / 11} con 2 decimales y {@code HALF_UP} (I3-20) en guaraníes, con
+     * divisiones no exactas. 100000 / 11 = 9090.909… da 9090.91 ({@code DOWN} daría 9090.90) y 1 / 11 = 0.0909… da
+     * 0.09 ({@code UP} daría 0.10); {@code dTotIVA} y {@code dTotGralOpe} siguen al valor redondeado.
+     */
+    @Test
+    public void ivaDeLaComisionNoExactaRedondeaHalfUpEnGuaraniesM1205() throws Exception {
+        String[][] casos = {
+            // dComi, dIVAComi, dTotIVA (dIVA10 100000 + dIVAComi), dTotGralOpe (1100000 + dComi)
+            {"100000", "9090.91", "109090.91", "1200000"},
+            {"1", "0.09", "100000.09", "1100001"}};
+        for (String[] k : casos) {
+            DocumentoElectronico de = CasosFase12.todos().get("DE-62").get();
+            de.getgTotSub().setdComi(new BigDecimal(k[0]));
+            String xml = de.generarXml(ctx, cfg);
+            Assertions.assertEquals(k[1], XmlCanonico.texto(xml, "dIVAComi"), "dIVAComi de " + k[0]);
+            Assertions.assertEquals(k[2], XmlCanonico.texto(xml, "dTotIVA"), "dTotIVA con la comisión " + k[0]);
+            Assertions.assertEquals(k[3], XmlCanonico.texto(xml, "dTotGralOpe"), "dTotGralOpe con la comisión " + k[0]);
+            igual(k[1], de.getgTotSub().getdIVAComi(), "dIVAComi de " + k[0]);
+        }
+    }
+
+    /**
+     * M12-05 en moneda extranjera (DE-07, USD con cambio global): 10.00 / 11 = 0.909… da 0.91 ({@code DOWN}: 0.90);
+     * 1.375 / 11 = 0.125 exacto da 0.13 ({@code HALF_EVEN} y {@code HALF_DOWN}: 0.12); 1.00 / 11 = 0.0909… da 0.09
+     * ({@code UP}: 0.10). {@code dTotIVA} es el del mismo DE sin comisión más {@code dIVAComi}, {@code dTotGralOpe}
+     * suma la comisión y {@code dTotalGs} = {@code dTotGralOpe} × {@code dTiCam}.
+     */
+    @Test
+    public void ivaDeLaComisionNoExactaRedondeaHalfUpEnMonedaExtranjeraM1205() throws Exception {
+        DocumentoElectronico sin = caso("DE-07").construir();
+        String xmlSin = sin.generarXml(ctx, cfg);
+        Assertions.assertEquals("USD", XmlCanonico.texto(xmlSin, "cMoneOpe"));
+        Assertions.assertEquals("1", XmlCanonico.texto(xmlSin, "dCondTiCam"), "cambio global");
+        BigDecimal ivaSin = new BigDecimal(XmlCanonico.texto(xmlSin, "dTotIVA"));
+        BigDecimal totalSin = new BigDecimal(XmlCanonico.texto(xmlSin, "dTotGralOpe"));
+        BigDecimal cambio = new BigDecimal(XmlCanonico.texto(xmlSin, "dTiCam"));
+        String[][] casos = {{"10.00", "0.91"}, {"1.375", "0.13"}, {"1.00", "0.09"}};
+        for (String[] k : casos) {
+            DocumentoElectronico de = caso("DE-07").construir();
+            BigDecimal comision = new BigDecimal(k[0]);
+            de.getgTotSub().setdComi(comision);
+            String xml = de.generarXml(ctx, cfg);
+            BigDecimal iva = new BigDecimal(k[1]);
+            Assertions.assertEquals(k[1], XmlCanonico.texto(xml, "dIVAComi"), "dIVAComi de " + k[0] + " USD");
+            Assertions.assertEquals(ivaSin.add(iva).toPlainString(), XmlCanonico.texto(xml, "dTotIVA"), "dTotIVA con la comisión " + k[0]);
+            BigDecimal total = totalSin.add(comision);
+            Assertions.assertEquals(total.toPlainString(), XmlCanonico.texto(xml, "dTotGralOpe"), "dTotGralOpe con la comisión " + k[0]);
+            Assertions.assertEquals(0, total.multiply(cambio).compareTo(new BigDecimal(XmlCanonico.texto(xml, "dTotalGs"))),
+                    "dTotalGs = dTotGralOpe × dTiCam con la comisión " + k[0]);
+        }
     }
 }
